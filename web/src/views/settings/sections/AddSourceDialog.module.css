@@ -1,0 +1,14 @@
+/* The topics, for our proposals and the AI's. */
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* The topic picked, and the way back to the others. */
+.picked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

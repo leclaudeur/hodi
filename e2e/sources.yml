@@ -1,0 +1,19 @@
+# The sources of the end-to-end tests: two made-up sites that e2e/server.ts serves itself.
+topics:
+  - id: monde
+    label: { fr: Monde, en: World }
+    young: [teen, child]
+    sources:
+      - id: alpha
+        name: Alpha Info
+        url: https://alpha.example/feed
+        domains: [alpha.example]
+        base: [fr, en]
+        young: [teen]
+        young_base: [teen]
+      - id: beta
+        name: Beta Presse
+        url: https://beta.example/feed
+        domains: [beta.example]
+        base: [fr, en]
+listen: []

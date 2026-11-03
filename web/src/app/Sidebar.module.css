@@ -1,0 +1,197 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  height: calc(100dvh - var(--titlebar-height));
+  flex-shrink: 0;
+  border-right: 1px solid var(--divider);
+  background: var(--column);
+}
+
+.header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  /* 44px controls, as the footer's: the logo keeps its place and the line stays level with the lists'. The height
+     is set: the wordmark is a little taller than the controls and would push the line 2px below the lists'. */
+  box-sizing: border-box;
+  height: 61px;
+  padding: 17px 14px 0 22px;
+}
+
+.logo {
+  /* Down 3px so the logo's baseline sits on the list column's title beside it ("Le fil", "Réglages"). */
+  position: relative;
+  top: 3px;
+  text-decoration: none;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.rule {
+  flex-shrink: 0;
+  height: 2px;
+  margin-top: 18px;
+  background: var(--control);
+}
+
+.scroll {
+  flex-grow: 1;
+  min-height: 0;
+  padding: 18px 12px;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-nav);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--text);
+}
+
+.link[aria-current='page'] {
+  border-color: var(--border);
+  background: var(--card);
+  color: var(--text);
+}
+
+.square {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--control);
+  color: var(--text-nav);
+}
+
+/* The main lists: the active one gets a raised square and a medium weight. */
+.link[aria-current='page']:not([data-topic]) {
+  font-weight: 500;
+}
+
+.link[aria-current='page']:not([data-topic]) .square {
+  border-color: transparent;
+  background: var(--raised);
+  color: var(--text);
+}
+
+.topicSquare {
+  border-color: var(--topic-border);
+  background: var(--topic-surface);
+  color: var(--topic);
+}
+
+.label {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text-nav);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.accent {
+  border-color: var(--rust-border);
+  background: var(--rust-surface-2);
+  color: var(--rust-text);
+}
+
+/* Shares: what the household sent, in blue so it never reads as news from a source. */
+.info {
+  border-color: var(--info-border);
+  background: var(--info-mark);
+  color: var(--info-icon);
+}
+
+.reaction {
+  padding: 0;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.divider {
+  height: 1px;
+  margin: 18px 4px;
+  background: var(--divider);
+}
+
+.heading {
+  display: block;
+  padding: 0 8px 8px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.footer {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: 8px;
+  /* As the list column's foot: 12 above, 16 under a 44 row. */
+  padding: 12px 14px 16px;
+  border-top: 1px solid var(--divider);
+}
+
+/* The wheel and its count of requests, on its top right edge as the phone bar's counts. */
+.settings {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.settingsBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--rust);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  pointer-events: none;
+}

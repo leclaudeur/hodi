@@ -1,0 +1,955 @@
+# ==========================================
+# Hodi sources: the themes, their sources, and the channels of "Écouter et regarder".
+# Every field is described in docs/sources.md ("Fields"); in short:
+#
+# topics: one tab per theme.
+#   id, label: the theme's id, and its name in every language (Tech) or per language ({ fr: Monde, en: World }).
+#   young: [teen, child]: the kinds of young profiles that see this theme (none when missing).
+#   sources: the theme's article feeds (RSS or Atom), each with:
+#     id, name, url: the source's id, its name, and its feed's https address.
+#     lang: the language it writes in, fr when missing.
+#     domains: hosts Hodi may fetch article pages from, to show them in its reader. Articles that do not open
+#       there (subscriber-only, too short) are hidden.
+#     reader: false lists every article with its feed summary and a link to the site instead (no domains needed).
+#     skip: paths whose pages are not articles (videos...), left out without being fetched.
+#     base: [fr] and/or [en]: a base source for a household set up in that language, one every new profile starts
+#       with. Every other source is only suggested in Réglages > Sources.
+#     young: [teen, child]: in the catalogue of these young profiles, for their parents to turn on
+#       (Réglages > Profils > Gérer > Sources).
+#     young_base: [teen, child]: these young profiles start with it turned on (it is in their catalogue too).
+#     adults: false: made for young readers, never suggested to the adults.
+# listen: "Écouter et regarder", one section per theme (id, label, sources), with YouTube channels (kind: video,
+#   the default here) and podcasts (kind: podcast), from the last 60 days. YouTube Shorts are left out.
+#
+# The file fills the database once, when the household is set up: later edits to its feeds change nothing on an
+# existing install (a renamed theme shows after `docker compose restart app`). After an edit, run `npm run sources:list` to update docs/source-list.md.
+# Check every feed from the server with:
+#   docker compose exec app node dist/server/cli/check-sources.js
+# ==========================================
+
+topics:
+  - id: belgique
+    label: { fr: Belgique, en: Belgium }
+    young: [teen, child]
+    # r/belgium is left out: many posts are in Dutch.
+    sources:
+      # Made for young readers: their parents turn them on (Réglages > Profils > Gérer), never offered to adults.
+      - id: jde
+        name: JDE
+        url: https://www.lejde.be/feed/
+        domains: [lejde.be]
+        young: [child, teen]
+        young_base: [child]
+        adults: false
+      - id: rtbf-info
+        name: RTBF Info
+        url: https://rss.rtbf.be/article/rss/highlight_rtbf_info-belgique.xml?source=internal
+        domains: [rtbf.be]
+      - id: la-libre
+        name: La Libre
+        url: https://www.lalibre.be/arc/outboundfeeds/rss/section/belgique/?outputType=xml
+        domains: [lalibre.be]
+      - id: rtl-info
+        name: RTL info
+        url: https://www.rtl.be/rss.xml
+        base: [fr]
+        domains: [rtl.be]
+        young: [teen]
+        young_base: [teen]
+      # 7sur7 redirects every article to a consent page: the app shows its titles
+      # and summaries from the feed, with a link to read the article on 7sur7.be.
+      - id: 7sur7
+        name: 7sur7
+        url: https://www.7sur7.be/belgique/rss.xml
+        base: [fr]
+        reader: false
+        young: [teen]
+        young_base: [teen]
+      - id: daardaar
+        name: DaarDaar
+        url: https://daardaar.be/feed/
+        domains: [daardaar.be]
+      # A household set up in English starts with this one. The Brussels Times (no feed since its site became a
+      # web app) and Belga News Agency (feed gone, only stale press releases left) were dropped in November 2026.
+      - id: vrt-nws-en
+        name: VRT NWS
+        url: https://www.vrt.be/vrtnws/en.rss.articles.xml
+        lang: en
+        base: [en]
+        domains: [vrt.be, vrtnws.be]
+      # BX1 refuses requests from the server.
+
+  - id: monde
+    label: { fr: Monde, en: World }
+    young: [teen, child]
+    # International news and geopolitics: conflicts, EU, G20, the world economy.
+    # Politics and economy feeds focused on France are left out.
+    sources:
+      - id: jde-monde
+        name: JDE Monde
+        url: https://www.lejde.be/category/monde/feed/
+        domains: [lejde.be]
+        young: [child]
+        young_base: [child]
+        adults: false
+      - id: 1jour1actu-monde
+        name: 1jour1actu
+        url: https://www.1jour1actu.com/monde/feed/
+        domains: [1jour1actu.com]
+        young: [child]
+        young_base: [child]
+        adults: false
+      - id: euronews-fr
+        name: Euronews
+        url: https://fr.euronews.com/rss
+        domains: [euronews.com]
+      - id: rfi
+        name: RFI
+        url: https://www.rfi.fr/fr/rss
+        base: [fr]
+        domains: [rfi.fr]
+        young: [teen]
+        young_base: [teen]
+      - id: france24-fr
+        name: France 24
+        url: https://www.france24.com/fr/rss
+        base: [fr]
+        domains: [france24.com]
+        # Video pages: a player behind a cookie wall and a caption.
+        skip: [/fr/vidéo/]
+        young: [teen]
+        young_base: [teen]
+      - id: grand-continent
+        name: Le Grand Continent
+        url: https://legrandcontinent.eu/fr/feed/
+        domains: [legrandcontinent.eu]
+      - id: diploweb
+        name: Diploweb
+        url: https://www.diploweb.com/spip.php?page=backend
+        domains: [diploweb.com]
+      - id: bbc-world
+        name: BBC News
+        url: https://feeds.bbci.co.uk/news/world/rss.xml
+        lang: en
+        base: [en]
+        domains: [bbc.com, bbc.co.uk]
+        # Video and live pages are not articles.
+        skip: [/news/videos/, /news/live/]
+      - id: guardian-world
+        name: The Guardian
+        url: https://www.theguardian.com/world/rss
+        lang: en
+        base: [en]
+        domains: [theguardian.com]
+
+  - id: tech
+    label: Tech
+    young: [teen]
+    sources:
+      - id: geek-junior
+        name: Geek Junior
+        url: https://www.geekjunior.fr/feed/
+        domains: [geekjunior.fr]
+        young: [teen]
+        adults: false
+      - id: numerama
+        name: Numerama
+        url: https://www.numerama.com/feed/
+        domains: [numerama.com]
+      - id: frandroid
+        name: Frandroid
+        url: https://www.frandroid.com/feed
+        domains: [frandroid.com]
+      - id: les-numeriques
+        name: Les Numériques
+        url: https://www.lesnumeriques.com/rss.xml
+        domains: [lesnumeriques.com]
+      - id: korben
+        name: Korben
+        url: https://korben.info/feed
+        domains: [korben.info]
+      - id: the-verge
+        name: The Verge
+        url: https://www.theverge.com/rss/index.xml
+        lang: en
+        domains: [theverge.com]
+      - id: ars-technica
+        name: Ars Technica
+        url: https://feeds.arstechnica.com/arstechnica/index
+        lang: en
+        domains: [arstechnica.com]
+
+  - id: science
+    label: Science
+    young: [teen, child]
+    sources:
+      - id: debrouillards
+        name: Les Débrouillards
+        url: https://www.lesdebrouillards.com/feed/
+        domains: [lesdebrouillards.com]
+        young: [child, teen]
+        young_base: [child]
+        adults: false
+      - id: science-vie-junior
+        name: Science & Vie Junior
+        url: https://www.science-et-vie.com/junior/feed
+        domains: [science-et-vie.com]
+        young: [teen]
+        young_base: [teen]
+        adults: false
+      - id: curium
+        name: Curium
+        url: https://www.curiummag.com/feed/
+        domains: [curiummag.com]
+        young: [teen]
+        adults: false
+      - id: futura-sciences
+        name: Futura
+        url: https://www.futura-sciences.com/rss/actualites.xml
+        domains: [futura-sciences.com]
+      - id: franceinfo-sciences
+        name: franceinfo
+        url: https://www.francetvinfo.fr/sciences.rss
+        domains: [francetvinfo.fr, franceinfo.fr]
+      - id: phys-org
+        name: Phys.org
+        url: https://phys.org/rss-feed/
+        lang: en
+        domains: [phys.org]
+      - id: sciencealert
+        name: ScienceAlert
+        url: https://www.sciencealert.com/feed
+        lang: en
+        domains: [sciencealert.com]
+
+  # Pop culture: blockbusters, series and streaming (Marvel, Star Wars, Disney, Netflix, HBO...).
+  - id: films-series
+    label: { fr: Films / Séries, en: Film & TV }
+    young: [teen, child]
+    sources:
+      - id: ecran-large
+        name: Écran Large
+        url: https://www.ecranlarge.com/rss
+        domains: [ecranlarge.com]
+      - id: allocine
+        name: AlloCiné
+        url: https://www.allocine.fr/rss/news.xml
+        domains: [allocine.fr]
+      - id: journal-du-geek
+        name: Journal du Geek
+        url: https://www.journaldugeek.com/feed/
+        domains: [journaldugeek.com]
+      - id: numerama-pop-culture
+        name: Numerama Pop culture
+        url: https://www.numerama.com/pop-culture/feed/
+        domains: [numerama.com]
+      - id: serieously
+        name: Serieously
+        url: https://serieously.com/feed/
+        # Articles now live on serieously.ouest-france.fr.
+        domains: [serieously.com, ouest-france.fr]
+      - id: collider
+        name: Collider
+        url: https://collider.com/feed/
+        lang: en
+        domains: [collider.com]
+      - id: screen-rant
+        name: Screen Rant
+        url: https://screenrant.com/feed/
+        lang: en
+        domains: [screenrant.com]
+      - id: den-of-geek
+        name: Den of Geek
+        url: https://www.denofgeek.com/feed/
+        lang: en
+        domains: [denofgeek.com]
+      - id: slashfilm
+        name: /Film
+        url: https://www.slashfilm.com/feed/
+        lang: en
+        domains: [slashfilm.com]
+      - id: cinemablend
+        name: CinemaBlend
+        url: https://www.cinemablend.com/feeds/tag/movies
+        lang: en
+        domains: [cinemablend.com]
+      # Les Toiles Héroïques and CinéSéries refuse requests from the server; The Direct has no feed.
+
+  - id: jeux-video
+    label: { fr: Jeux vidéo, en: Gaming }
+    young: [teen, child]
+    sources:
+      - id: jeuxvideo-com
+        name: Jeuxvideo.com
+        url: https://www.jeuxvideo.com/rss/rss.xml
+        domains: [jeuxvideo.com]
+      - id: gamekult
+        name: Gamekult
+        url: https://www.gamekult.com/feed.xml
+        domains: [gamekult.com]
+      - id: gameblog
+        name: Gameblog
+        url: https://www.gameblog.fr/rss.php
+        domains: [gameblog.fr]
+      - id: actugaming
+        name: ActuGaming
+        url: https://www.actugaming.net/feed/
+        domains: [actugaming.net]
+      - id: gamergen
+        name: GamerGen
+        url: https://gamergen.com/rss
+        domains: [gamergen.com]
+      - id: playstation-blog
+        name: PlayStation Blog
+        url: https://blog.fr.playstation.com/feed/
+        domains: [blog.fr.playstation.com]
+      - id: ign
+        name: IGN
+        url: https://feeds.feedburner.com/ign/all
+        lang: en
+        domains: [ign.com]
+      - id: vgc
+        name: VGC
+        url: https://www.videogameschronicle.com/feed/
+        lang: en
+        domains: [videogameschronicle.com]
+      # GameSpot refuses article pages from the server.
+
+  - id: ia
+    label: { fr: IA, en: AI }
+    young: [teen]
+    sources:
+      - id: actuia
+        name: ActuIA
+        url: https://www.actuia.com/feed/
+        domains: [actuia.com]
+      - id: the-decoder
+        name: The Decoder
+        url: https://the-decoder.com/feed/
+        lang: en
+        domains: [the-decoder.com]
+      - id: techcrunch-ai
+        name: TechCrunch IA
+        url: https://techcrunch.com/category/artificial-intelligence/feed/
+        lang: en
+        domains: [techcrunch.com]
+      - id: openai
+        name: OpenAI
+        url: https://openai.com/news/rss.xml
+        lang: en
+        domains: [openai.com]
+      - id: google-deepmind
+        name: Google DeepMind
+        url: https://deepmind.google/blog/rss.xml
+        lang: en
+        domains: [deepmind.google]
+      - id: hugging-face
+        name: Hugging Face
+        url: https://huggingface.co/blog/feed.xml
+        lang: en
+        domains: [huggingface.co]
+      - id: simon-willison
+        name: Simon Willison
+        url: https://simonwillison.net/atom/everything/
+        lang: en
+        domains: [simonwillison.net]
+      - id: import-ai
+        name: Import AI
+        url: https://importai.substack.com/feed
+        lang: en
+        domains: [importai.substack.com]
+
+  - id: broadcast
+    label: Broadcast
+    young: [teen]
+    sources:
+      - id: mediakwest
+        name: Mediakwest
+        url: https://www.mediakwest.com/feed/
+        domains: [mediakwest.com]
+      - id: sonovision
+        name: Sonovision
+        url: https://www.sonovision.com/feed/
+        domains: [sonovision.com]
+      - id: tvbeurope
+        name: TVBEurope
+        url: https://www.tvbeurope.com/feed
+        lang: en
+        domains: [tvbeurope.com]
+      - id: tv-technology
+        name: TV Technology
+        url: https://www.tvtechnology.com/feeds.xml
+        lang: en
+        domains: [tvtechnology.com]
+
+  # ---- Themes a profile fills itself ----
+  # A topic shows in the app only for a profile that reads one of its sources. Their sources below are
+  # proposals: the address of the site, whose feed the app finds (and tries) when a profile adds it from
+  # Réglages > Sources > "Sources proposées".
+
+  - id: lifestyle
+    label: Lifestyle
+    young: [teen]
+    sources:
+      - id: konbini
+        name: Konbini
+        url: https://www.konbini.com/fr/
+        domains: [konbini.com]
+      - id: madmoizelle
+        name: Madmoizelle
+        url: https://www.madmoizelle.com/feed
+        domains: [madmoizelle.com]
+      - id: lifehacker
+        name: Lifehacker
+        url: https://lifehacker.com/
+        lang: en
+        domains: [lifehacker.com]
+      - id: guardian-life
+        name: The Guardian Life
+        url: https://www.theguardian.com/lifeandstyle/rss
+        lang: en
+        domains: [theguardian.com]
+
+  - id: auto-moto
+    label: { fr: Auto / Moto, en: Motoring }
+    young: [teen]
+    sources:
+      - id: caradisiac
+        name: Caradisiac
+        url: https://www.caradisiac.com/
+        domains: [caradisiac.com]
+      - id: moniteur-automobile
+        name: Moniteur Automobile
+        url: https://www.moniteurautomobile.be/
+        domains: [moniteurautomobile.be]
+      - id: automobile-propre
+        name: Automobile Propre
+        url: https://www.automobile-propre.com/feed/
+        domains: [automobile-propre.com]
+      - id: electrek
+        name: Electrek
+        url: https://electrek.co/feed/
+        lang: en
+        domains: [electrek.co]
+      - id: jalopnik
+        name: Jalopnik
+        url: https://www.jalopnik.com/
+        lang: en
+        domains: [jalopnik.com]
+
+  - id: sport
+    label: Sport
+    young: [teen, child]
+    sources:
+      - id: rtbf-sport
+        name: RTBF Sport
+        url: https://rss.rtbf.be/article/rss/highlight_rtbf_sport.xml?source=internal
+        domains: [rtbf.be]
+      - id: lequipe
+        name: L’Équipe
+        # Its site turns Hodi away (bot wall); its feed does not.
+        url: https://dwh.lequipe.fr/api/edito/rss?path=/
+        domains: [lequipe.fr]
+      - id: dh-sports
+        name: DH Les Sports+
+        url: https://www.dhnet.be/sports/
+        domains: [dhnet.be]
+      - id: bbc-sport
+        name: BBC Sport
+        url: https://feeds.bbci.co.uk/sport/rss.xml
+        lang: en
+        domains: [bbc.com, bbc.co.uk]
+      - id: guardian-sport
+        name: The Guardian Sport
+        url: https://www.theguardian.com/sport/rss
+        lang: en
+        domains: [theguardian.com]
+
+  - id: argent-conso
+    label: { fr: Argent & Conso, en: Money }
+    young: [teen]
+    sources:
+      - id: 60-millions
+        name: 60 Millions de consommateurs
+        url: https://www.60millions-mag.com/feed
+        domains: [60millions-mag.com]
+      - id: capital
+        name: Capital
+        url: https://www.capital.fr/
+        domains: [capital.fr]
+      - id: guardian-money
+        name: The Guardian Money
+        url: https://www.theguardian.com/money/rss
+        lang: en
+        domains: [theguardian.com]
+      - id: bbc-business
+        name: BBC Business
+        url: https://feeds.bbci.co.uk/news/business/rss.xml
+        lang: en
+        domains: [bbc.com, bbc.co.uk]
+
+  - id: sante
+    label: { fr: Santé & Bien-être, en: Health }
+    young: [teen]
+    sources:
+      - id: fil-sante-jeunes
+        name: Fil Santé Jeunes
+        url: https://www.filsantejeunes.com/feed/
+        domains: [filsantejeunes.com]
+        young: [teen]
+        adults: false
+      - id: sante-magazine
+        name: Santé Magazine
+        url: https://www.santemagazine.fr/
+        domains: [santemagazine.fr]
+      - id: top-sante
+        name: Top Santé
+        url: https://www.topsante.com/
+        domains: [topsante.com]
+      - id: bbc-health
+        name: BBC Health
+        url: https://feeds.bbci.co.uk/news/health/rss.xml
+        lang: en
+        domains: [bbc.com, bbc.co.uk]
+      - id: medical-xpress
+        name: Medical Xpress
+        url: https://medicalxpress.com/rss-feed/
+        lang: en
+        domains: [medicalxpress.com]
+
+  - id: cuisine
+    label: { fr: Cuisine, en: Food }
+    young: [teen, child]
+    sources:
+      - id: journal-des-femmes-cuisine
+        name: Journal des Femmes Cuisine
+        url: https://cuisine.journaldesfemmes.fr/rss/
+        domains: [cuisine.journaldesfemmes.fr]
+      - id: regal
+        name: Régal
+        url: https://www.regal.fr/
+        domains: [regal.fr]
+      - id: guardian-food
+        name: The Guardian Food
+        url: https://www.theguardian.com/food/rss
+        lang: en
+        domains: [theguardian.com]
+      - id: smitten-kitchen
+        name: Smitten Kitchen
+        url: https://smittenkitchen.com/feed/
+        lang: en
+        domains: [smittenkitchen.com]
+
+  - id: voyage
+    label: { fr: Voyage, en: Travel }
+    young: [teen]
+    sources:
+      - id: geo
+        name: GEO
+        url: https://feed.prismamediadigital.com/v1/geo/rss?limit=20
+        domains: [geo.fr]
+      - id: tourmag
+        name: TourMaG
+        url: https://www.tourmag.com/xml/syndication.rss
+        domains: [tourmag.com]
+      - id: guardian-travel
+        name: The Guardian Travel
+        url: https://www.theguardian.com/travel/rss
+        lang: en
+        domains: [theguardian.com]
+      - id: nomadic-matt
+        name: Nomadic Matt
+        url: https://www.nomadicmatt.com/feed/
+        lang: en
+        domains: [nomadicmatt.com]
+
+  - id: musique
+    label: { fr: Musique, en: Music }
+    young: [teen, child]
+    sources:
+      - id: les-inrocks-musique
+        name: Les Inrocks
+        url: https://www.lesinrocks.com/musique/
+        domains: [lesinrocks.com]
+      - id: tsugi
+        name: Tsugi
+        url: https://www.tsugi.fr/
+        domains: [tsugi.fr]
+      - id: rolling-stone-fr
+        name: Rolling Stone
+        url: https://www.rollingstone.fr/
+        domains: [rollingstone.fr]
+      - id: pitchfork
+        name: Pitchfork
+        url: https://pitchfork.com/feed/feed-news/rss
+        lang: en
+        domains: [pitchfork.com]
+      - id: stereogum
+        name: Stereogum
+        url: https://www.stereogum.com/feed/
+        lang: en
+        domains: [stereogum.com]
+
+  - id: culture
+    label: Culture
+    young: [teen, child]
+    sources:
+      - id: telerama
+        name: Télérama
+        url: https://www.telerama.fr/
+        domains: [telerama.fr]
+      - id: les-inrocks
+        name: Les Inrocks
+        url: https://www.lesinrocks.com/feed/
+        domains: [lesinrocks.com]
+      - id: guardian-culture
+        name: The Guardian Culture
+        url: https://www.theguardian.com/culture/rss
+        lang: en
+        domains: [theguardian.com]
+      - id: open-culture
+        name: Open Culture
+        url: https://www.openculture.com/feed
+        lang: en
+        domains: [openculture.com]
+
+  - id: maison-deco
+    label: { fr: Maison & Déco, en: Home & Decor }
+    sources:
+      - id: planete-deco
+        name: Planète Déco
+        url: https://www.planete-deco.fr/feed/
+        domains: [planete-deco.fr]
+      - id: deco-fr
+        name: Deco.fr
+        url: https://www.deco.fr/rss.xml
+        domains: [deco.fr]
+      - id: apartment-therapy
+        name: Apartment Therapy
+        url: https://www.apartmenttherapy.com/
+        lang: en
+        domains: [apartmenttherapy.com]
+      - id: dezeen
+        name: Dezeen
+        url: https://www.dezeen.com/feed/
+        lang: en
+        domains: [dezeen.com]
+
+  - id: famille
+    label: { fr: Famille & Parents, en: Family }
+    sources:
+      - id: parents-fr
+        name: Parents
+        url: https://www.parents.fr/
+        domains: [parents.fr]
+      - id: guardian-family
+        name: The Guardian Family
+        url: https://www.theguardian.com/lifeandstyle/family/rss
+        lang: en
+        domains: [theguardian.com]
+      - id: fatherly
+        name: Fatherly
+        url: https://www.fatherly.com/
+        lang: en
+        domains: [fatherly.com]
+
+  - id: mode-beaute
+    label: { fr: Mode & Beauté, en: Fashion }
+    young: [teen]
+    sources:
+      - id: vogue-fr
+        name: Vogue France
+        url: https://www.vogue.fr/
+        domains: [vogue.fr]
+      - id: guardian-fashion
+        name: The Guardian Fashion
+        url: https://www.theguardian.com/fashion/rss
+        lang: en
+        domains: [theguardian.com]
+      - id: fashionista
+        name: Fashionista
+        url: https://fashionista.com/
+        lang: en
+        domains: [fashionista.com]
+
+  - id: climat
+    label: { fr: Climat & Environnement, en: Climate }
+    young: [teen, child]
+    sources:
+      - id: reporterre
+        name: Reporterre
+        url: https://reporterre.net/
+        domains: [reporterre.net]
+      - id: vert
+        name: Vert
+        url: https://vert.eco/
+        domains: [vert.eco]
+      - id: bon-pote
+        name: Bon Pote
+        url: https://bonpote.com/
+        domains: [bonpote.com]
+      - id: carbon-brief
+        name: Carbon Brief
+        url: https://www.carbonbrief.org/feed/
+        lang: en
+        domains: [carbonbrief.org]
+      - id: grist
+        name: Grist
+        url: https://grist.org/feed/
+        lang: en
+        domains: [grist.org]
+
+  - id: animaux
+    label: { fr: Animaux, en: Animals }
+    young: [teen, child]
+    sources:
+      - id: wamiz
+        name: Wamiz
+        url: https://wamiz.com/
+        domains: [wamiz.com]
+      - id: woopets
+        name: Woopets
+        url: https://www.woopets.fr/rss/
+        domains: [woopets.fr]
+      - id: mongabay
+        name: Mongabay
+        url: https://news.mongabay.com/feed/
+        lang: en
+        domains: [news.mongabay.com]
+      - id: guardian-animals
+        name: The Guardian Animals
+        url: https://www.theguardian.com/world/animals/rss
+        lang: en
+        domains: [theguardian.com]
+
+listen:
+  - id: films-series
+    label: { fr: Films / Séries, en: Film & TV }
+    sources:
+      # Followed
+      - id: yt-mestre-thibaut
+        name: Mestre Thibaut
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC2KS7d-AX_qTnazWE1Ey9tA
+      - id: yt-kevin-bukkart
+        name: Kevin Bukkart
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCnUiNjxobt87xkhf9Fo7_Dw
+      - id: yt-captain-popcorn
+        name: Captain Popcorn
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZeyUZmGAyRLDfM2ir3q-OQ
+      - id: yt-sofyan
+        name: Sofyan
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCGWoTWsXJi1UtCjOiBHIsfw
+      - id: yt-nateflix
+        name: Nateflix
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCwbuBWSQMwk0B0JIMyssFUA
+      - id: yt-kaskette
+        name: Kaskette
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC88DgWhh6wyDQBvSOpMXlxg
+      # Suggested
+      - id: yt-mbobine
+        name: Le ciné-club de M. Bobine
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCMAOGbM65D7VzbVTmpKeKgQ
+      - id: yt-durendal
+        name: Durendal
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCcliHNE38fJ4n4gYYB0TCQw
+      - id: yt-meeea
+        name: Meeea
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCEEi1rclmzywXicV7JfPjWw
+      - id: yt-nexus-vi
+        name: Nexus VI
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8-UThnwzBI5ApzVG4MY7VQ
+      - id: yt-iro-sef
+        name: Iro Sef
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLz6B7LxOdwgHbcgFi_hpQQ
+      - id: yt-absolute
+        name: Absolute
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCdVFeetcsXwFVS0pKOcvUfQ
+      - id: yt-marvel
+        name: Marvel Entertainment
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvC4D8onUfXzvjTOM-dBfEA
+        lang: en
+      - id: yt-star-wars
+        name: Star Wars
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZGYJFUizSax-yElQaFDp5Q
+        lang: en
+
+  - id: jeux-video
+    label: { fr: Jeux vidéo, en: Gaming }
+    sources:
+      # Followed
+      - id: yt-ign
+        name: IGN
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCKy1dAqELo0zrOtPkf0eTMw
+        lang: en
+      - id: yt-playstation
+        name: PlayStation
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC-2Y8dQb0S6DtpxNgAKoJKA
+        lang: en
+      - id: yt-bugland
+        name: Bugland
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCNymP44F_1VH78Krsd999Ww
+      - id: yt-hors-meta-quete
+        name: Hors Meta Quête
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC2MV9Rhl91G2UorytKkUvjw
+      - id: yt-toujours-thomas
+        name: Toujours Thomas
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCr9-KlHHxzCKULBV73-eq8w
+      - id: yt-kombo
+        name: Kombo
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCn0VbHe_Chjws3qjUF4JJMw
+      - id: yt-galax
+        name: Galax
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCDlg0T0r9v2_XRCG8yqB2vQ
+      - id: yt-try
+        name: TRY
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCdV6JBe40vqPQOsG4boS5zQ
+      - id: yt-the-great-review
+        name: TheGreatReview
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC2ruguOcwnVR2_4DtiGnmLg
+      # Suggested
+      - id: yt-joueur-du-grenier
+        name: Joueur Du Grenier
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC_yP2DpIgs5Y1uWC0T03Chw
+      - id: yt-alt-236
+        name: ALT 236
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC1KxoDAzbWOWOhw5GbsE-Bw
+      - id: yt-exserv
+        name: ExServ
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCznXfdSQuXdWB4FPUt8M0tw
+      - id: yt-mistermv
+        name: MisterMV
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCus9EeXDcLaCJhVXYd6PJcg
+      - id: yt-digital-foundry
+        name: Digital Foundry
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC9PBzalIcEQCsiIkq36PyUA
+        lang: en
+
+  - id: science
+    label: Science
+    sources:
+      # Followed
+      - id: yt-max-bird
+        name: Max Bird
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC-4WUubuVGowG_R7gdgesPA
+      - id: yt-dr-nozman
+        name: Dr Nozman
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCWnfDPdZw6A23UtuBpYBbAg
+      # Suggested
+      - id: yt-dirtybiology
+        name: DirtyBiology
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtqICqGbPSbTN09K1_7VZ3Q
+      - id: yt-science-etonnante
+        name: Science Étonnante
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCaNlbnghtwlsGF-KzAFThqA
+      - id: yt-astronogeek
+        name: AstronoGeek
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC5X4e8ScZI2AFd_vkjSoyoQ
+      - id: yt-balade-mentale
+        name: Balade Mentale
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCS_7tplUgzJG4DhA16re5Yg
+      - id: yt-scilabus
+        name: Scilabus
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCeR8BYZS7IHYjk_9Mh5JgkA
+
+  - id: ia
+    label: { fr: IA, en: AI }
+    sources:
+      # Suggested
+      - id: yt-defend-intelligence
+        name: Defend Intelligence
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCnEHCrot2HkySxMTmDPhZyg
+      - id: yt-machine-learnia
+        name: Machine Learnia
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCmpptkXu8iIFe6kfDK5o7VQ
+      - id: yt-ai-explained
+        name: AI Explained
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCNJ1Ymd5yFuUPtn21xtRbbw
+        lang: en
+      - id: yt-matt-wolfe
+        name: Matt Wolfe
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UChpleBmo18P08aKCIgti38g
+        lang: en
+      - id: yt-matthew-berman
+        name: Matthew Berman
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCawZsQWqfGSbCI5yjkdVkTA
+        lang: en
+      - id: yt-two-minute-papers
+        name: Two Minute Papers
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg
+        lang: en
+
+  - id: tech
+    label: Tech
+    sources:
+      # Followed
+      - id: yt-aywen
+        name: Aywen
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZo7D6E3ejS7KpsmpfVRRzw
+      - id: yt-sebastian-lague
+        name: Sebastian Lague
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCmtyQOKKmrMVaKuRXz02jbQ
+        lang: en
+      - id: yt-overflow
+        name: overfl0w
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCKpOpDFWOZQ2QXjDkVU3WTQ
+      - id: yt-grafikart
+        name: Grafikart
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCj_iGliGCkLcHSZ8eqVNPDQ
+      - id: yt-thinmatrix
+        name: ThinMatrix
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCUkRj4qoT1bsWpE_C8lZYoQ
+        lang: en
+      - id: yt-v2f
+        name: V2F
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCnxEvD2eagj2VgtkFL5wDHA
+      - id: yt-jojol
+        name: Jojol
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCJy0lX8ThZ7lCtst7JnegWQ
+      - id: yt-french-hardware
+        name: FrenchHardware
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCU8_onYYhNxwGUB3hA34C4Q
+      - id: yt-guillaume
+        name: Guillaume
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCDBYphtxNDXGQe5eyHYZ6Fw
+      - id: yt-mathis-et-gauthier
+        name: Mathis et Gauthier
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCQSA6pCffm7epqxFqouL0Xg
+      - id: yt-micode
+        name: Micode
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCYnvxJ-PKiGXo_tYXpWAC-w
+      # Suggested
+      - id: yt-underscore
+        name: Underscore_
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCWedHS9qKebauVIK2J7383g
+      - id: yt-benjamin-code
+        name: Benjamin Code
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLOAPb7ATQUs_nDs9ViLcMw
+      - id: yt-cocadmin
+        name: Cocadmin
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCVRJ6D343dX-x730MRP8tNw
+      - id: yt-monsieur-bidouille
+        name: Monsieur Bidouille
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCSULDz1yaHLVQWHpm4g_GHA
+      - id: yt-graven
+        name: Graven
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCIHVyohXw6j2T-83-uLngEg
+      - id: yt-fireship
+        name: Fireship
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCsBjURrPoezykLs9EqgamOA
+        lang: en
+
+  - id: divers
+    label: { fr: Divers, en: Other }
+    sources:
+      # Followed
+      - id: yt-what-a-fail
+        name: What a Fail !
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UC48oj72zQHh4bvLYSHhyzpg
+      - id: yt-ego
+        name: EGO
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCxH16958KSxT4Z9yL_9JYtw
+      - id: yt-astre
+        name: ASTRE
+        url: https://www.youtube.com/feeds/videos.xml?channel_id=UCYh5Fx5M2_yl7sFGY4QQDZg
+
+  # Podcasts: add them to a section with kind: podcast once their feed URLs are confirmed.

@@ -1,0 +1,326 @@
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.tiles.four {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--column);
+  /* The figure's caption, mono as every caption (and as the Sources tiles). */
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tile strong {
+  color: var(--text);
+  letter-spacing: normal;
+  text-transform: none;
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--column);
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cardIntro {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+/* Lus · En cours · Survolés, side by side in proportion. */
+.split {
+  display: flex;
+  gap: 3px;
+  height: 10px;
+}
+
+.split span {
+  min-width: 6px;
+  border-radius: var(--radius-pill);
+}
+
+.splitRead {
+  background: var(--rust);
+}
+
+.splitStarted {
+  background: var(--rust-border);
+}
+
+.splitSkimmed {
+  background: var(--border);
+}
+
+.splitLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  list-style: none;
+}
+
+.splitLegend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* On a phone the three keys share one line, spread across the card; only a very narrow screen wraps them. */
+@media (max-width: 600px) {
+  .splitLegend {
+    justify-content: space-between;
+    gap: 10px;
+    letter-spacing: 0;
+  }
+
+  .splitLegend li {
+    gap: 6px;
+  }
+}
+
+.splitLegend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.up {
+  color: var(--topic-science);
+}
+
+.down {
+  color: var(--danger);
+}
+
+.legend {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash {
+  width: 16px;
+  border-top: 1px dashed var(--text-3);
+}
+
+.chart {
+  margin: 0 -6px;
+}
+
+.chart :global(.recharts-surface) {
+  overflow: visible;
+}
+
+.chart :global(.recharts-yAxis-tick-labels) text,
+.tick text {
+  fill: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.tickDate {
+  fill: var(--text-faint) !important;
+}
+
+.todayTick text {
+  fill: var(--rust);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.baseline {
+  stroke: var(--divider);
+}
+
+.average :global(line),
+.average {
+  stroke: var(--text-3);
+}
+
+.bar {
+  fill: var(--raised);
+}
+
+.chart :global(.recharts-bar-rectangle:hover) .bar,
+.bar:hover {
+  fill: var(--text-2);
+}
+
+.todayBar {
+  fill: var(--rust);
+}
+
+.todayLabel {
+  fill: var(--rust);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.cursor {
+  fill: var(--control);
+}
+
+.tooltip {
+  display: block;
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: var(--text);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.topicRow,
+.sourceRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--topic);
+}
+
+.rowName {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topicRow .rowName {
+  flex: 0 0 90px;
+}
+
+.track {
+  flex: 1;
+  overflow: hidden;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--control);
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--topic);
+}
+
+.count {
+  min-width: 18px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: right;
+}
+
+@media (max-width: 700px) {
+  .pair {
+    grid-template-columns: 1fr;
+  }
+
+  /* Three figures side by side don't fit a phone: one per row, the figure then what it counts. */
+  .tiles,
+  .tiles.four {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .tile {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 12px;
+    padding: 14px 18px;
+  }
+
+  .tile strong {
+    font-size: 32px;
+  }
+}
+
+/* "Articles", "Vidéos", "Favoris": the lists' separators, on the page's own background and edges. */
+/* "Ton foyer" and "Tes statistiques": the page's two parts, each title with what it covers on its right. */
+.subtitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding-top: 12px;
+}
+
+.subtitleText {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.subtitleNote {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.separator {
+  padding: 12px 0 0;
+  background: transparent;
+}

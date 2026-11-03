@@ -1,0 +1,23 @@
+/* The box of a line of Bebas Neue (line-height 1, ascender 0.9em, descender 0.3em) with 0.12em above, as the titles:
+   the baseline sits 0.92em from the top. The h (722 units above the baseline) is 0.7em, Bebas's cap height; the round letters dip 12 units below. */
+.logo {
+  display: inline-block;
+  box-sizing: border-box;
+  height: 1.12em;
+  padding-top: 0.22em;
+}
+
+.mark {
+  display: block;
+  width: auto;
+  height: 0.7116em;
+}
+
+.word {
+  fill: var(--text);
+}
+
+.dot {
+  /* The brand colour, so it follows the accent chosen in Réglages > Lecture et affichage. */
+  fill: var(--rust);
+}

@@ -1,0 +1,28 @@
+/* A pill of the controls' height (44px), the value between its two 34px rounds. */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+  height: var(--button-height);
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+}
+
+.value {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A long press repeats: no text selection, callout or double-tap zoom on the way. */
+.stepper button {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+}

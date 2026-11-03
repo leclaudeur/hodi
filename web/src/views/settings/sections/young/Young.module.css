@@ -1,0 +1,214 @@
+/* A young profile's page for its parents, and its dialogs. */
+
+/* A dialog's long list: the dialog's body scrolls it. */
+.scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* No footer under it. */
+.scrollToEnd {
+  gap: 14px;
+}
+
+.intro {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* A theme's name over its sources, as the settings' group labels. */
+.group {
+  margin-top: 16px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.intro + .group {
+  margin-top: 20px;
+}
+
+/* One row per source or theme: its square, its name and site, its switch, in a card as the settings' groups on a
+   phone (and the profiles of "Envoyer à…"), with a line between rows. */
+.list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--column);
+  list-style: none;
+}
+
+/* 20px over the footer's line, as for fields and text. */
+.list:last-child,
+section:last-child > .list {
+  margin-bottom: 14px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 66px;
+  padding: 10px 16px;
+}
+
+.item + .item {
+  border-top: 1px solid var(--divider);
+}
+
+.itemText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemName {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemSite {
+  overflow: hidden;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A theme's square, in its colour. */
+.topicIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--topic-border);
+  border-radius: 8px;
+  background: var(--topic-surface);
+  color: var(--topic);
+}
+
+/* The two hours of a range, as Notifications' quiet hours, under their switch. */
+/* A switch and its line, in the dialog: the same row as a settings row, without its card. */
+.switchRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* "Sa semaine": seven bars, today last, each day's time on screen. */
+.bars {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+  height: 140px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--column);
+}
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+  min-width: 0;
+}
+
+.barFill {
+  width: 100%;
+  max-width: 28px;
+  min-height: 2px;
+  border-radius: 6px 6px 2px 2px;
+  background: var(--topic, var(--text-3));
+  transition: height var(--duration) var(--ease);
+}
+
+.barDay {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.today .barDay {
+  color: var(--text);
+}
+
+/* Its totals, side by side: time, articles, videos. */
+.totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--column);
+}
+
+.totalValue {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.totalLabel {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+}
+
+/* A rule's dialog: its switch, its value, then its answers. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form > :last-child {
+  margin-top: 0;
+}
+
+/* A theme's separator, as in Réglages › Sources, flush with the dialog's rows. */
+section > .separator {
+  padding: 16px 0 8px;
+  background: none;
+}
+
+/* The first theme right under the dialog's intro. */
+section:first-child > .separator {
+  padding-top: 0;
+}

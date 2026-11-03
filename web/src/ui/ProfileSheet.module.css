@@ -1,0 +1,752 @@
+/* A profile's sheet in the household game: its face and grade, then its badges as a grid of small cards. Everything
+   above the footer's line scrolls, the dialog's header and footer stay. */
+
+/* Not as tall as other dialogs may grow: about a row and a half of badges shows under the grade, enough to see that
+   it scrolls, with or without the footer. [open] outweighs the dialog's own cap (60% of the screen, 80% on a phone),
+   which still applies on a short screen. */
+.dialog[open] {
+  max-height: min(60dvh, 560px);
+}
+
+.dialog[open]:has(.body + *) {
+  max-height: min(60dvh, 640px);
+}
+
+@media (max-width: 600px) {
+  .dialog[open]:has(.body + *) {
+    max-height: min(80dvh, 600px);
+  }
+}
+
+/* 12px between the last badges and the footer's line, the gap between two rows. */
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The dialog's body scrolls it, from under the header's line down to the footer's (the cards' corners reach past
+   them: the body's padding leaves them room). */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.name {
+  padding-top: 6px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.meta {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The grade, the next one, the bar between them and the points. */
+.level {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grades {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.grade {
+  font-weight: 600;
+}
+
+.nextGrade {
+  color: var(--text-3);
+}
+
+.bar {
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--raised);
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--topic);
+  transition: width var(--duration) var(--ease);
+}
+
+.points {
+  text-align: center;
+}
+
+.points b {
+  color: var(--text);
+  font-weight: 400;
+}
+
+/* Room above for the first row's corners; under the last row, the rows' own gap. */
+.badges {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 10px;
+  margin: 0 0 12px;
+  padding: 7px 0 0;
+  list-style: none;
+}
+
+.toEdge .badges {
+  margin-bottom: var(--pad);
+}
+
+@media (max-width: 600px) {
+  .badges {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.badges > li {
+  display: flex;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--control);
+  color: inherit;
+  font: inherit;
+  text-align: center;
+}
+
+.card[data-worn] {
+  border-color: var(--text-3);
+}
+
+button.card {
+  cursor: pointer;
+  transition:
+    background var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  button.card:hover {
+    background: var(--control-hover);
+  }
+}
+
+/* Still to earn: the same card as an earned one (it opens just the same), its grey square, empty stars and lock
+   saying what is missing. Its name a step quieter, never dimmed as a control that does nothing. */
+.locked .label {
+  color: var(--text-2);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  min-height: 2.5em;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.card .meta {
+  font-size: 10px;
+}
+
+/* As Réglages' icons: a 44px square; an earned badge in its tier's colours. */
+.tile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text-3);
+}
+
+.tile[data-tier] {
+  border-color: color-mix(in srgb, var(--tier) 40%, transparent);
+  background: var(--tier-surface);
+  color: var(--tier);
+}
+
+.tile[data-tier='bronze'] {
+  --tier: var(--bronze);
+  --tier-surface: var(--bronze-surface);
+}
+
+.tile[data-tier='silver'] {
+  --tier: var(--silver);
+  --tier-surface: var(--silver-surface);
+}
+
+.tile[data-tier='gold'] {
+  --tier: var(--gold);
+  --tier-surface: var(--gold-surface);
+}
+
+/* Worn (a check) or still to earn (a lock): past the card's corner, cut out of the sheet. */
+.corner {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--raised);
+  box-shadow: 0 0 0 3px var(--card);
+  color: var(--text-2);
+}
+
+.corner[data-worn] {
+  background: var(--text);
+  color: var(--bg);
+}
+
+/* A check's long stroke pulls the eye up and right: brought back by one unit of its 24 grid to look centred. */
+.corner[data-worn] svg {
+  translate: -4% 2%;
+}
+
+/* The three tiers: an empty star until reached, then in that tier's colour. */
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  color: var(--text-3);
+  opacity: 0.5;
+}
+
+.star[data-tier] {
+  opacity: 1;
+  color: var(--tier);
+  fill: var(--tier);
+}
+
+/* A reached tier in metal: a light runs across the star, darker in its middle, with a darker edge. */
+.metal path {
+  stroke: color-mix(in srgb, var(--tier) 70%, black);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.metalHigh {
+  stop-color: color-mix(in srgb, var(--tier) 30%, white);
+}
+
+.metalLight {
+  stop-color: color-mix(in srgb, var(--tier) 70%, white);
+}
+
+.metalBase {
+  stop-color: var(--tier);
+}
+
+.metalDeep {
+  stop-color: color-mix(in srgb, var(--tier) 75%, black);
+}
+
+.metalSoft {
+  stop-color: color-mix(in srgb, var(--tier) 85%, white);
+}
+
+.metalEnd {
+  stop-color: color-mix(in srgb, var(--tier) 55%, white);
+}
+
+.star[data-tier='bronze'],
+.medal[data-tier='bronze'],
+.detail[data-tier='bronze'] {
+  --tier: var(--bronze);
+  --tier-surface: var(--bronze-surface);
+}
+
+.star[data-tier='silver'],
+.medal[data-tier='silver'],
+.detail[data-tier='silver'] {
+  --tier: var(--silver);
+  --tier-surface: var(--silver-surface);
+}
+
+.star[data-tier='gold'],
+.medal[data-tier='gold'],
+.detail[data-tier='gold'] {
+  --tier: var(--gold);
+  --tier-surface: var(--gold-surface);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 20px 20px;
+  border: 2px solid var(--border);
+  border-radius: 24px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--text-3) 14%, var(--card)) 0%, var(--card) 45%);
+  text-align: center;
+}
+
+/* A badge's or a celebration's page: the dialog may grow taller than its usual 60 %, so that it never scrolls. */
+.dialog.tall[open] {
+  max-height: min(720px, 85dvh);
+}
+
+/* A collectible card: framed and lit in the colour of the tier reached. */
+.detail[data-tier] {
+  border-color: color-mix(in srgb, var(--tier) var(--tier-line), var(--border));
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--tier) var(--tier-glow), var(--card)) 0%,
+    var(--card) 45%
+  );
+}
+
+/* The badge as a medal: a round in its tier's colours, ringed; grey until earned. */
+.medal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+  margin-bottom: 6px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  background: var(--control);
+  box-shadow:
+    0 0 0 4px var(--card),
+    0 0 0 5px var(--border);
+  color: var(--text-3);
+}
+
+.medal[data-tier] {
+  border-color: var(--tier);
+  background: var(--tier-surface);
+  box-shadow:
+    0 0 0 4px var(--card),
+    0 0 0 5px color-mix(in srgb, var(--tier) 40%, transparent);
+  color: var(--tier);
+}
+
+.detailName {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.rule {
+  max-width: 32ch;
+  margin: 0 0 6px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Bronze, silver, gold: what each needs, and how far the one being earned is. */
+.tierList {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  margin: 4px 0 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  list-style: none;
+  text-align: left;
+}
+
+.tierList > li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 16px;
+}
+
+.tierList > li + li {
+  border-top: 1px solid var(--divider);
+}
+
+.tierName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tierNeeds {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  /* One line beside the tier's name: units are kept short for a phone. */
+  white-space: nowrap;
+}
+
+.tierNeeds b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* The celebration's next pages and the sheet after them: the same card, its content fading in (as a dialog opened
+   from another one). No movement. */
+.swap {
+  animation: swap-in var(--duration) var(--ease) both;
+}
+
+@keyframes swap-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The new grade, centred. From the grade before, the avatar's ring and the bar fill to the brim in 1.1 s; at 1.3 s
+   (LEVEL_FULL_MS) the level and the grade change in place, the avatar pops and a burst of colours goes off around it.
+   Each element's resting state is the end: with less motion, the new grade shows at once. */
+.party {
+  --full: 1300ms;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0 8px;
+  text-align: center;
+}
+
+.partyAvatar {
+  position: relative;
+  display: flex;
+  margin: 4px 0 14px;
+  animation: party-pop 450ms var(--ease) var(--full) both;
+}
+
+.partyRing {
+  position: absolute;
+  inset: 0;
+  width: 104px;
+  max-width: none;
+  height: 104px;
+  transform: rotate(-90deg);
+  fill: none;
+  stroke-width: 3;
+}
+
+.partyAvatar > [data-topic] {
+  border-color: transparent;
+}
+
+/* As ProfileAvatar's .track. */
+.partyTrack {
+  stroke: color-mix(in srgb, var(--topic) 30%, transparent);
+}
+
+/* 2π × 50.5 */
+.partyArc {
+  stroke: var(--topic);
+  stroke-dasharray: 317.3;
+  stroke-linecap: round;
+  animation: party-ring 1100ms var(--ease) 200ms both;
+}
+
+.partyTitle {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 46px;
+  line-height: 1;
+}
+
+/* The one before and the new one in the same place: the box as wide as the longer. */
+.flip {
+  display: inline-grid;
+}
+
+.flip > * {
+  grid-area: 1 / 1;
+}
+
+.before {
+  opacity: 0;
+  animation: flip-out 250ms var(--ease) var(--full) both;
+}
+
+.after {
+  animation: flip-in 450ms var(--ease) var(--full) both;
+}
+
+/* From the grade before to the new one, as the sheet's own bar. */
+.partyLevel {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 8px;
+  max-width: 280px;
+  width: 100%;
+  margin: 6px auto 4px;
+}
+
+.partyFrom {
+  color: var(--text-3);
+  animation: grade-off 300ms var(--ease) var(--full) both;
+}
+
+.partyTo {
+  color: var(--text);
+  font-weight: 600;
+  animation: grade-on 300ms var(--ease) var(--full) both;
+}
+
+.partyFill {
+  width: 100%;
+  animation: party-fill 1100ms var(--ease) 200ms both;
+}
+
+.partyText {
+  max-width: 280px;
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* What the new grade says comes with it. */
+.party .partyText {
+  animation: swap-in 400ms var(--ease) var(--full) both;
+}
+
+.partyText b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Dots flying out from just outside the ring, as it closes. */
+.partyBurst {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  pointer-events: none;
+}
+
+.partyBurst i {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color);
+  opacity: 0;
+  /* forwards, not both: while waiting, a dot stays hidden rather than showing around the avatar. */
+  animation: party-spark 800ms cubic-bezier(0.2, 0.7, 0.3, 1) var(--full) forwards;
+}
+
+@keyframes party-ring {
+  from {
+    stroke-dashoffset: 317.3;
+  }
+}
+
+@keyframes party-fill {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes party-pop {
+  45% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes party-spark {
+  0% {
+    opacity: 1;
+    transform: translate(calc(cos(var(--angle)) * 58px), calc(sin(var(--angle)) * 58px)) scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(cos(var(--angle)) * var(--distance)), calc(sin(var(--angle)) * var(--distance)))
+      scale(0.4);
+  }
+}
+
+@keyframes flip-out {
+  from {
+    opacity: 1;
+  }
+}
+
+@keyframes flip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes grade-off {
+  from {
+    color: var(--text);
+    font-weight: 600;
+  }
+}
+
+@keyframes grade-on {
+  from {
+    color: var(--text-3);
+    font-weight: 400;
+  }
+}
+
+/* A badge just won: a light crosses its medal. */
+.shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(110deg, transparent 30%, color-mix(in srgb, white 55%, transparent) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: shine 900ms ease-out 400ms both;
+  content: '';
+}
+
+/* An earned badge opened from the list: the same light, fainter. */
+.shine[data-shine='earned']::after {
+  background-image: linear-gradient(
+    110deg,
+    transparent 38%,
+    color-mix(in srgb, white 28%, transparent) 50%,
+    transparent 62%
+  );
+  animation-delay: 250ms;
+}
+
+@keyframes shine {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -20% 0;
+  }
+}
+
+/* After the celebration, the sheet: the bar fills from nothing. */
+[data-cheer] .fill {
+  animation: cheer-fill 800ms ease-out 400ms both;
+}
+
+@keyframes cheer-fill {
+  from {
+    width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partyBurst {
+    display: none;
+  }
+
+  .swap,
+  .partyAvatar,
+  .partyArc,
+  .partyFill,
+  .partyFrom,
+  .partyTo,
+  .flip > *,
+  .party .partyText,
+  .shine::after,
+  [data-cheer] .fill {
+    animation: none;
+  }
+}
+
+/* A short window (a laptop's browser, a small phone): a celebration's or a badge's page tighter, still without a
+   scroll. */
+@media (max-height: 640px) {
+  .dialog.tall[open] {
+    max-height: 94dvh;
+  }
+
+  .party {
+    gap: 6px;
+    padding: 0;
+  }
+
+  .partyAvatar {
+    margin: 0 0 8px;
+  }
+
+  .partyTitle {
+    font-size: 36px;
+  }
+
+  .detail {
+    gap: 8px;
+    padding: 16px 16px 12px;
+  }
+
+  .medal {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 2px;
+  }
+
+  .medal svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .detailName {
+    font-size: 28px;
+  }
+
+  .rule {
+    margin-bottom: 0;
+  }
+
+  .tierList > li {
+    min-height: 40px;
+  }
+}

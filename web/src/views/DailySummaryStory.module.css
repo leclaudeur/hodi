@@ -1,0 +1,234 @@
+/* "Résumé du jour" as a story: StoryViewer's frame, in the AI's violet, with text instead of a picture. */
+
+/* ---- Desktop: in the main panel ---- */
+
+.header {
+  height: var(--button-height);
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ai-text-2);
+  white-space: nowrap;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.desktop .done,
+.fill {
+  background: var(--ai);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  border: 1px solid var(--ai-border);
+  border-radius: 18px;
+  background: var(--ai-surface);
+}
+
+.point {
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* "Les articles", under the topic's paragraphs. */
+.articles {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 5px;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--ai-border);
+  border-radius: var(--radius-pill);
+  color: var(--ai-text-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.articles:hover {
+  color: var(--ai-text);
+}
+
+.meta {
+  color: var(--ai-text-3);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+/* Narrow: "Régénérer" keeps its icon only. */
+@media (max-width: 1279px) {
+  .tools .regenerate {
+    width: var(--button-height);
+    padding: 0;
+  }
+
+  .tools .regenerateLabel {
+    display: none;
+  }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loadingLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--ai-text-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.loadingMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ai-icon);
+  color: var(--ai-text);
+  animation: spin 2.4s linear infinite;
+}
+
+/* Lines tinted like the card, not the grey of the lists. */
+.loading .loadingLine {
+  background: color-mix(in srgb, var(--ai) 22%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loadingMark {
+    animation: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.emptyTitle {
+  font-family: var(--font-title);
+  font-size: 28px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.emptyText {
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.generate {
+  margin-top: 8px;
+}
+
+/* ---- Phone and tablet: full screen ---- */
+
+.phone {
+  justify-content: flex-start;
+  background: linear-gradient(170deg, var(--ai-button) 0%, var(--ai-surface) 45%, var(--bg) 85%);
+  user-select: text;
+}
+
+.phoneTop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: calc(14px + env(safe-area-inset-top)) 14px 8px;
+}
+
+.phoneMark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ai-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.markIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ai-icon);
+  color: var(--ai-text);
+}
+
+.phoneTools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The topic's paragraphs, scrolled when longer than the screen. */
+.phoneBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  padding: 16px 24px;
+  overscroll-behavior: contain;
+}
+
+/* Long topics start at the top, not halfway up. */
+.phoneBody > :first-child {
+  margin-top: auto;
+}
+
+.phoneBody > :last-child {
+  margin-bottom: auto;
+}
+
+.phone .point {
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.phoneBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 24px calc(24px + env(safe-area-inset-bottom));
+}
+
+.phoneBottom .meta {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}

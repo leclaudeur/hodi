@@ -1,0 +1,75 @@
+/* As the settings menu's squares: 44px. */
+.mark {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ai-button-border);
+  border-radius: 12px;
+  background: var(--ai-button);
+  color: var(--ai-text);
+}
+
+.track {
+  overflow: hidden;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--control);
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ai);
+}
+
+/* The same width on every row, so the bars end together and the figures line up on the right. */
+.count {
+  flex-shrink: 0;
+  min-width: 72px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.count strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* "Tout le foyer" and its "Tout réinitialiser". */
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.labelRow > h2 {
+  margin-top: 0;
+}
+
+/* A profile's limits, straight in its accordion: a line above each, the header's included. */
+.flat {
+  /* Out of the accordion body's padding: the rows go edge to edge, as the header. */
+  margin: -12px -16px -16px;
+  list-style: none;
+}
+
+.flat > li {
+  border-top: 1px solid var(--divider);
+}
+
+.keyActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}

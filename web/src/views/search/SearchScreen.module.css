@@ -1,0 +1,348 @@
+/* The search, from the charter's "Recherche", "Recherche · colonne" and "Mobile · Recherche" boards. */
+
+.header {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  /* The line under it on the sidebar's. */
+  padding: 18px 12px 17px;
+  border-bottom: 2px solid var(--control);
+  background: var(--column);
+}
+
+/* The results have scrolled under the field: they fade out beneath it, as above a phone's bottom buttons. */
+.stuck::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  /* The bottom navigation's fade (see MobileNav), upside down. */
+  height: 88px;
+  background: linear-gradient(
+    color-mix(in srgb, var(--column) 85%, transparent),
+    color-mix(in srgb, var(--column) 50%, transparent) 45%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.phone .header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  padding: var(--header-top) var(--gutter) 16px;
+  border-bottom: 0;
+  background: transparent;
+}
+
+/* On a phone the field and its button float, in glass, as the article's buttons and the navigation:
+   once results scroll under them, only the bottom navigation's fade, upside down, behind them. */
+.phone .header.stuck {
+  background: linear-gradient(
+    color-mix(in srgb, var(--column) 85%, transparent),
+    color-mix(in srgb, var(--column) 50%, transparent) 45%,
+    transparent
+  );
+}
+
+.phone .header.stuck::after {
+  display: none;
+}
+
+.form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  /* As tall as the round back button beside it, the cross as far from the right edge as from the top. */
+  height: var(--button-height);
+  padding: 0 8px 0 16px;
+  border-radius: var(--radius-pill);
+  background: var(--control);
+}
+
+/* As tall as the round back button beside it; the cross inside as far from the right edge as from the top. */
+.phone .field {
+  height: var(--button-height);
+  padding: 0 7px 0 16px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill);
+  box-shadow: 0 4px 16px var(--shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+.field:focus-within {
+  box-shadow: inset 0 0 0 1px var(--rust-border);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.fieldIcon {
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  caret-color: var(--rust);
+  font-size: 15px;
+}
+
+.input::placeholder {
+  color: var(--text-3);
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.clear {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--raised);
+  color: var(--text);
+}
+
+.screen {
+  padding-bottom: 32px;
+}
+
+.phone {
+  min-height: var(--screen-height, 100dvh);
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  background: var(--column);
+}
+
+.stale {
+  opacity: 0.6;
+  transition: opacity var(--duration) var(--ease);
+}
+
+/* ---- Results ---- */
+
+.filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -12px;
+  padding: 18px 12px 16px;
+  border-bottom: 2px solid var(--control);
+  scroll-padding: 0 12px;
+  scroll-snap-type: x mandatory;
+}
+
+/* Scrolled freely, settling on a whole filter, as the article sliders. */
+.filters > * {
+  scroll-snap-align: start;
+}
+
+.phone .filters {
+  margin: 0;
+  padding: 18px var(--gutter) 0;
+  border-bottom: 0;
+  scroll-padding: 0 var(--gutter);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 2px 10px;
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.phone .summary {
+  padding: 16px var(--gutter) 10px;
+}
+
+.follow {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px 0 10px;
+  border: 1px solid var(--rust-border);
+  border-radius: var(--radius-pill);
+  background: var(--rust-surface);
+  color: var(--rust-strong);
+  font-size: 13px;
+  line-height: 14px;
+  font-weight: 500;
+}
+
+.following {
+  border-color: var(--rust);
+  background: var(--rust-surface-2);
+}
+
+.none {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 8px 2px 0;
+  padding: 16px;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-card);
+  color: var(--text-3);
+}
+
+.phone .none {
+  margin: 8px var(--gutter) 0;
+}
+
+.none p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.none span {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.message {
+  padding: 24px 10px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+/* ---- Recent searches, trends, topics ---- */
+
+.section {
+  padding: 28px 10px 0;
+}
+
+.phone .section {
+  padding: 24px var(--gutter) 0;
+}
+
+/* As Le fil's day separators: "TENDANCES ——— 48 H". */
+.label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.labelLine {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--divider);
+}
+
+.recent {
+  display: flex;
+  align-items: center;
+}
+
+.recentButton,
+.trend {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  text-align: left;
+}
+
+.recentButton {
+  height: 40px;
+}
+
+.recentButton svg {
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+
+@media (hover: hover) {
+  .recentButton:hover,
+  .trend:hover .trendLabel {
+    color: var(--link-hover);
+  }
+}
+
+.trend {
+  width: 100%;
+  height: 41px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.phone .trend {
+  height: 52px;
+}
+
+.rank {
+  width: 16px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.rank.top {
+  color: var(--rust);
+}
+
+.trendLabel {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.count {
+  min-width: 24px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-align: right;
+}

@@ -1,0 +1,79 @@
+/* In the shared dialog (Dialog.tsx), from the charter's "Raccourcis" board. */
+.groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.group {
+  margin-bottom: 10px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The label on the left, the keys on the right; the keys come first in the markup. */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.row dt {
+  order: 2;
+}
+
+.row dd {
+  margin: 0;
+  font-size: 14px;
+}
+
+.keys {
+  display: flex;
+  gap: 6px;
+}
+
+.keys kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--control);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--divider);
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.note svg {
+  color: var(--ai);
+}
+
+@media (max-width: 700px) {
+  .groups {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

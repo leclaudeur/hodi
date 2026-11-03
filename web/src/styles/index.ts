@@ -1,0 +1,10 @@
+// Self-hosted fonts (no request to Google): only the subsets a page uses are downloaded.
+import '@fontsource-variable/geist/wght.css'
+import '@fontsource-variable/geist-mono/wght.css'
+import '@fontsource/bebas-neue/400.css'
+import '@fontsource-variable/archivo/standard.css'
+import './fonts.css'
+import 'overlayscrollbars/overlayscrollbars.css'
+import './tokens.css'
+import './base.css'
+import './scrollbars.css'

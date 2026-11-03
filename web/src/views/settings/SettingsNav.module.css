@@ -1,0 +1,159 @@
+/* The settings' list, from the charter's "Menu des réglages" and "Mobile · Réglages" boards. */
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 24px;
+}
+
+.desktop {
+  padding-top: 18px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* A line between the groups, as between the sidebar's links and its topics. "~" and not "+": an open request's
+   dialog sits between the requests and the first group. */
+.desktop .group ~ .group {
+  padding-top: 18px;
+  border-top: 1px solid var(--divider);
+}
+
+.groupLabel {
+  padding: 0 10px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-nav);
+  text-align: left;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .entry:hover {
+    background: var(--control-hover);
+    color: var(--text);
+  }
+}
+
+.entry.active {
+  border-color: var(--border);
+  background: var(--card);
+  color: var(--text);
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  /* As tall as the label and hint beside it. */
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--control);
+}
+
+.active .icon {
+  border-color: var(--raised);
+  background: var(--raised);
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hint {
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Phone: grouped cards ---- */
+
+.phone {
+  gap: 0;
+  padding: 0 0 calc(120px + env(safe-area-inset-bottom));
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 var(--gutter);
+}
+
+.phone .groupLabel {
+  padding: 0;
+}
+
+.phone .entries {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.phone .entries li + li {
+  border-top: 1px solid var(--divider);
+}
+
+.phone .entry {
+  min-height: 58px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 0;
+  color: var(--text);
+}
+
+.phone .label {
+  font-size: 15px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+/* Leaving looks like the other lines: nothing is lost, the password brings everything back. */
+.logout {
+  color: var(--text);
+}

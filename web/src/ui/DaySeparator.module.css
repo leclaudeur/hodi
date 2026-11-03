@@ -1,0 +1,61 @@
+.separator {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 14px 14px;
+  background: var(--column);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Out of the row: it never takes a gap. */
+.fade {
+  display: none;
+}
+
+/* Held at the top, a fade under it: the list scrolling beneath melts in rather than being cut short. Only once stuck, so the first row is never
+   dimmed while the separator still sits in the flow. */
+@supports (container-type: scroll-state) {
+  .separator {
+    container-type: scroll-state;
+  }
+
+  .fade {
+    display: block;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--column) 80%, transparent), transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration) var(--ease);
+  }
+
+  @container scroll-state(stuck: top) {
+    .fade {
+      opacity: 1;
+    }
+  }
+}
+
+.still {
+  position: static;
+}
+
+.first {
+  padding-top: 18px;
+}
+
+.line {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--divider);
+}

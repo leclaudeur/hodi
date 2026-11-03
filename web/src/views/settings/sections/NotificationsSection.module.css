@@ -1,0 +1,11 @@
+.link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    background: var(--control-hover);
+    color: var(--text);
+  }
+}

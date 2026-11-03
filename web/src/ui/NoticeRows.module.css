@@ -1,0 +1,119 @@
+.reactions {
+  display: flex;
+  flex-direction: column;
+  margin: 20px var(--gutter) 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  /* The hover fill stops at the card's rounded corners. */
+  overflow: hidden;
+}
+
+/* On a computer the rows' text lines up with the cards' (their 14px inset). */
+.desktop {
+  margin: 16px 0 8px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 10px 14px;
+}
+
+.row + .row {
+  border-top: 1px solid var(--divider);
+}
+
+/* A row that opens something fills on hover, as the settings rows with a chevron. */
+@media (hover: hover) {
+  .row:has(> .link:hover) {
+    background: var(--control-hover);
+  }
+}
+
+.link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.text b {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.title {
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.when {
+  color: var(--text-3);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* On top of Réglages: a group of the list, under its label. */
+.settings {
+  margin: 0;
+}
+
+/* "Voir les 4 autres": a row's text alone, as a button. */
+.more {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+/* A teen's answer, where a reaction has its avatar: a check on green or a cross on red, a coloured border on a
+   darker fill of the same colour, as the destructive buttons. */
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid;
+  border-radius: 50%;
+}
+
+.yes {
+  border-color: var(--approve-border);
+  background: var(--approve);
+  color: var(--approve-text);
+}
+
+.no {
+  border-color: var(--destructive-border);
+  background: var(--destructive);
+  color: var(--destructive-text);
+}

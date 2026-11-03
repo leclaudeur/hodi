@@ -1,0 +1,83 @@
+/* Sites to add: "Nos propositions" in the neutral colours, the AI's suggestions in violet. */
+
+.list {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--column);
+}
+
+.ai {
+  border-color: var(--ai-border);
+  background: var(--ai-surface);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 12px 20px;
+}
+
+.item + .item {
+  border-top: 1px solid var(--divider);
+}
+
+.ai .item + .item {
+  border-top-color: var(--ai-border);
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.name {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.site {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.added {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: var(--button-height);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .item {
+    flex-wrap: wrap;
+  }
+
+  .actions {
+    margin-left: auto;
+  }
+}

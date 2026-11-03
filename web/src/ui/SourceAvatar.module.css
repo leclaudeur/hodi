@@ -1,0 +1,60 @@
+.avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  background: var(--control);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar:has(img) {
+  border-color: transparent;
+}
+
+.size18 {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  font-size: 10px;
+}
+
+.size20 {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+.size22 {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+/* The mobile stories' header. */
+.size26 {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+/* A source's card in Réglages > Sources: as tall as its name and status, as the settings' icon tiles. */
+.size44 {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 13px;
+}

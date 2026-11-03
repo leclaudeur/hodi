@@ -1,0 +1,154 @@
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* Folded, as tall and as round as an accordion of the settings (66px, 16px). */
+  padding: 16px 20px;
+  border: 1px solid var(--info-border);
+  border-radius: 16px;
+  background: var(--info-surface);
+}
+
+/* With round buttons at the right: the title and text beside them. */
+.withSide {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Clickable all over: a link under the content, the round buttons above it. */
+.linked {
+  position: relative;
+  transition: border-color var(--duration) var(--ease);
+}
+
+.linked:hover {
+  border-color: var(--info-icon);
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.linked .main {
+  pointer-events: none;
+}
+
+.linked .side {
+  position: relative;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.side {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.heading {
+  font: inherit;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Folding: the whole header opens it, its chevron in a 34px round as its mark. */
+button.header {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.chevron {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  border: 1px solid var(--info-border);
+  border-radius: 50%;
+  background: var(--info-mark);
+  color: var(--info-icon);
+}
+
+.chevron svg {
+  transition: transform var(--duration) var(--ease);
+}
+
+.header[aria-expanded='true'] .chevron svg {
+  transform: rotate(180deg);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.content[hidden] {
+  display: none;
+}
+
+.mark {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--info-border);
+  border-radius: 50%;
+  background: var(--info-mark);
+  color: var(--info-icon);
+}
+
+.title {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Flush with the mark, as in the AI cards. A block, not a flex column: a link inside a sentence stays in
+   its line. Paragraphs are spaced among themselves. */
+.text {
+  color: var(--info-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.text p {
+  margin: 0;
+}
+
+.text p + p {
+  margin-top: 10px;
+}
+
+.text a {
+  color: var(--info-icon);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

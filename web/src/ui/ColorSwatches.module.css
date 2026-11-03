@@ -1,0 +1,58 @@
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* One row whatever the width: spread out to the edges, each round at most 32px. */
+.row {
+  display: grid;
+  grid-template-columns: repeat(var(--count), minmax(0, 32px));
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.row .swatch {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: var(--swatch);
+  background-clip: padding-box;
+  color: var(--bg);
+}
+
+/* The colour picked: a ring around it, the card's colour between. */
+.swatch[aria-pressed='true'] {
+  border-color: var(--swatch);
+  box-shadow: inset 0 0 0 2px var(--card);
+}
+
+/* Small: 24px rounds, a little closer. In a row, at most 24px each. */
+.small {
+  gap: 6px;
+}
+
+.small .swatch {
+  width: 24px;
+  height: 24px;
+}
+
+.small.row {
+  grid-template-columns: repeat(var(--count), minmax(0, 24px));
+}
+
+.small.row .swatch {
+  width: 100%;
+  height: auto;
+}

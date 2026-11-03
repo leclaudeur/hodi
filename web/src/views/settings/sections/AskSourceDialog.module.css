@@ -1,0 +1,6 @@
+/* The link, what happens next, then the answers. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}

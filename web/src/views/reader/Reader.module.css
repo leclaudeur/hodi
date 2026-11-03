@@ -1,0 +1,1036 @@
+/* The reader, from the charter's "Lecteur", "Article", "Lecteur externe" and "Mobile · Article" boards. */
+
+.reader {
+  position: relative;
+  container-type: inline-size;
+  padding-bottom: 64px;
+}
+
+/* ---- Desktop: the sticky bar ---- */
+
+.bar {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  margin: 0 -40px;
+  padding: 0 40px;
+  /* Edge to edge, as every header's line. */
+  border-bottom: 2px solid var(--control);
+  background: color-mix(in srgb, var(--card) var(--header-opacity), transparent);
+  -webkit-backdrop-filter: var(--header-blur);
+  backdrop-filter: var(--header-blur);
+}
+
+.barInner {
+  /* Source, title in the middle, actions: the sides share what the title leaves, so a short title sits
+     centred and a long one stops at the source and the actions. */
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr);
+  align-items: center;
+  gap: 16px;
+  max-width: 640px;
+  margin: 0 auto;
+  /* The line under it on the sidebar's. */
+  padding: 16px 0;
+}
+
+/* Tablets held across: the bar across the panel, its line edge to edge, as a video's (see WatchPanel). */
+.across .bar {
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter);
+}
+
+.across .barInner,
+.across .progress {
+  max-width: none;
+}
+
+/* Once the title has scrolled away: the title in the middle, the reading line, and the text
+   fading out under the bar, as above a phone's bottom buttons. */
+.scrolled::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  /* The bottom navigation's fade (see MobileNav), upside down. */
+  height: 88px;
+  background: linear-gradient(
+    color-mix(in srgb, var(--card) 85%, transparent),
+    color-mix(in srgb, var(--card) 50%, transparent) 45%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.barSource {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.barSourceName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barSource > span:first-child {
+  border-radius: 6px;
+}
+
+.barStart {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* A tablet held across, while the article loads or fails: the way back, where the bar will be. */
+.backRow {
+  padding: 14px 0;
+}
+
+.barTitle {
+  overflow: hidden;
+  min-width: 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Rises into its line, masked by it, once the title has scrolled away; sinks back out of it on the way up. */
+.barTitleText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(100%);
+  transition:
+    transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 200ms ease;
+}
+
+.scrolled .barTitleText {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barTitleText {
+    transform: none;
+    transition: opacity 200ms ease;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-self: end;
+  gap: 8px;
+}
+
+.progress {
+  height: 2px;
+  overflow: hidden;
+  background: var(--control);
+}
+
+/* On the bar's line, edge to edge, above the text's fade under the bar. */
+.desktop .progress {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: -2px;
+  left: 0;
+  background: transparent;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--rust);
+  transform: scaleX(0);
+  transform-origin: left;
+  /* A jump glides (see ReadingBar); a scroll follows at once. */
+  transition: transform var(--duration) var(--ease);
+}
+
+/* ---- Header ---- */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 0 0;
+  text-align: center;
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: 42px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+}
+
+.byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.bylineSource {
+  color: var(--text-strong);
+}
+
+.bylineAuthor {
+  color: var(--text-3);
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: -6px;
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.dateRow time {
+  letter-spacing: 0.04em;
+}
+
+/* ---- Body ---- */
+
+.body {
+  max-width: 640px;
+  margin: 52px auto 0;
+}
+
+.body > :global(#summary) {
+  margin-bottom: 44px;
+}
+
+.content {
+  color: var(--text-strong);
+  font-size: calc(17px * var(--text-scale, 1));
+  line-height: 1.75;
+  overflow-wrap: break-word;
+}
+
+.content p {
+  margin: 0 0 26px;
+}
+
+.content a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--rust);
+  text-underline-offset: 4px;
+}
+
+.content h2 {
+  margin: 52px 0 14px;
+  color: var(--text);
+  font-family: var(--font-title);
+  font-size: 30px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.content h3,
+.content h4 {
+  margin: 40px 0 12px;
+  color: var(--link-hover);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content ul,
+.content ol {
+  margin: 0 0 26px;
+  padding-left: 22px;
+}
+
+.content ul {
+  list-style: disc;
+}
+
+.content ol {
+  list-style: decimal;
+}
+
+.content li {
+  margin-bottom: 8px;
+  padding-left: 6px;
+}
+
+.content li::marker {
+  color: var(--rust);
+}
+
+/* A quote: a card in the column, in the text's own size, under a small "Citation" heading with Lucide's quote
+   icon (both added by lib/article-embeds.ts). */
+.content blockquote {
+  margin: 0 0 26px;
+  padding: 16px 20px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  color: var(--text-strong);
+}
+
+.content blockquote p {
+  margin: 0 0 12px;
+}
+
+.content blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.content [data-quote-label] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.content [data-quote-label] svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--rust);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.content blockquote cite,
+.content figcaption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.content blockquote cite::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: var(--rust);
+}
+
+.content figure {
+  margin: 0 0 26px;
+}
+
+.content img {
+  display: block;
+  /* A picture never runs past the column; a smaller one keeps its size, centred. */
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+}
+
+/* Pictures one after the other (grouped by the server). Large ones stack; small ones, once their size is known
+   (lib/article-embeds.ts), sit in a grid: three columns on a computer, two on a tablet, one on a phone. */
+.content [data-gallery] {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 26px;
+}
+
+.content [data-gallery] > * {
+  min-width: 0;
+  margin: 0;
+}
+
+.content [data-gallery][data-layout='grid'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+.content [data-gallery][data-layout='grid'] img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+/* An embedded video, as a card: its thumbnail, a play mark and the network's name. */
+.content a[data-embed-card] {
+  display: block;
+  position: relative;
+  margin: 0 0 26px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  color: var(--text-2);
+  text-decoration: none;
+}
+
+.content a[data-embed-card] img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+}
+
+.content a[data-embed-card] > span:not([data-embed-play], [data-embed-brand]) {
+  display: block;
+  padding: 14px 18px 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.content [data-embed-play] {
+  display: grid;
+  position: absolute;
+  top: calc(50% - 40px);
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 6px 18px var(--shadow);
+  transition: scale var(--duration) var(--ease);
+}
+
+.content [data-embed-play] svg {
+  width: 28px;
+  height: 28px;
+}
+
+.content a[data-embed-card]:hover [data-embed-play] {
+  scale: 1.06;
+}
+
+/* The network's logo and "Voir sur X" / "Regarder sur YouTube", under a post or a video. */
+.content [data-embed-brand] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px 14px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.content blockquote [data-embed-brand] {
+  margin-top: 12px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--divider);
+}
+
+.content [data-embed-brand] svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text);
+}
+
+.content p > img {
+  margin: 8px 0;
+}
+
+/* A figure as wide as its picture, so a small picture's caption stays under it rather than across the column. */
+.content figure:not([data-gallery] > *) {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+/* While its picture loads, the figure has no width of its own: it takes the column's, so the caption is not squeezed. */
+.content figure[data-loading]:not([data-gallery] > *) {
+  width: auto;
+}
+
+/* Takes the picture's width without widening the figure. */
+.content figure:not([data-gallery] > *) figcaption {
+  width: 0;
+  min-width: 100%;
+}
+
+/* The caption on the left under the picture, its credit on the right: on the same line when both fit. */
+.content figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* The credit, set apart by the server: "Source : White House". */
+.content figcaption small {
+  display: block;
+  margin-left: auto;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.content figcaption a {
+  color: inherit;
+}
+
+/* A long list of short items, marked by the server (the games of a bundle): in columns. */
+.content ul[data-compact],
+.content ol[data-compact] {
+  columns: 2 140px;
+  column-gap: 32px;
+}
+
+.content [data-compact] li {
+  break-inside: avoid;
+}
+
+.content pre,
+.content table {
+  display: block;
+  overflow-x: auto;
+  margin: 0 0 26px;
+  font-size: 14px;
+}
+
+/* The paragraph being read aloud. */
+.content [data-speaking] {
+  margin-inline: -10px;
+  padding-inline: 10px;
+  border-radius: 8px;
+  background: var(--rust-surface);
+}
+
+/* ---- Unreadable: summary and notice ---- */
+
+.summary {
+  margin-bottom: 24px;
+  color: var(--text);
+  font-size: calc(17px * var(--text-scale, 1));
+  line-height: 1.65;
+}
+
+/* ---- Aussi couvert par ---- */
+
+.covered {
+  margin-top: 40px;
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--divider);
+}
+
+.coveredList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---- After the article: Aussi couvert par, Article suivant ---- */
+
+.after {
+  margin-top: 32px;
+  border-top: 1px solid var(--divider);
+}
+
+.after > :first-child {
+  margin-top: 32px;
+}
+
+/* Under a line, the article's source and what Hodi did to it; the link to the original beside it, under it on a phone. */
+.attribution {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--divider);
+}
+
+.attribution p {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.attribution b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (min-width: 601px) {
+  .attribution {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+}
+
+/* As "Les articles" in Résumé du jour, in neutral: purple is for the AI. */
+.seeOn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    background var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+.seeOn > svg {
+  flex-shrink: 0;
+}
+
+@media (hover: hover) {
+  .seeOn:hover {
+    background: var(--control-hover);
+    color: var(--text);
+  }
+}
+
+.reply {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--divider);
+}
+
+.reply + .after {
+  margin-top: 20px;
+}
+
+/* ---- Article suivant ---- */
+
+.next {
+  margin-top: 40px;
+}
+
+/* The fil's card, framed as the reader's other boxes: the notice's padding, "Aussi couvert par"'s surface. */
+.next [data-card] {
+  padding: 16px 20px;
+  border: 1px solid var(--divider);
+  border-radius: 16px;
+  background: var(--column);
+}
+
+@media (hover: hover) {
+  .next [data-card]:hover {
+    border-color: var(--border);
+    background: var(--control-hover);
+  }
+}
+
+/* In the reader's wider column, its title and summary keep a list's measure. */
+.next h3,
+.next [data-card] p {
+  max-width: 460px;
+}
+
+/* ---- Read aloud ---- */
+
+.player {
+  position: fixed;
+  z-index: 3;
+  /* In the row of the phone's bottom buttons, between them. */
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  left: 50%;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: var(--glass-fill);
+  box-shadow: 0 4px 16px var(--shadow);
+  transform: translateX(-50%);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+.player button {
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.player button:first-child {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.playerWait {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+/* ---- Skeleton ---- */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeletonBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 14px 0;
+}
+
+.skeletonSource {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeletonHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-top: 40px;
+}
+
+.skeletonLines {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 640px;
+  margin: 52px auto 0;
+}
+
+/* ---- Wide panel ("Article" board) ---- */
+
+@container (min-width: 960px) {
+  .desktop .header {
+    gap: 22px;
+    max-width: 860px;
+    padding: 56px 0 40px;
+  }
+
+  .desktop .header:has(> .shareNote) {
+    padding-bottom: 0;
+  }
+
+  .desktop .title {
+    max-width: 760px;
+    font-size: 50px;
+  }
+
+  .desktop .body {
+    margin-top: 12px;
+  }
+}
+
+/* ---- Phone ---- */
+
+.phone {
+  min-height: 100dvh;
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  /* Whatever a site's article holds, the page never scrolls sideways (clip, not hidden: the bars stay sticky). */
+  overflow-x: clip;
+  background: var(--column);
+}
+
+.phone .content :where(img, picture, figure, table, pre) {
+  max-width: 100%;
+}
+
+.phone .content [data-gallery][data-layout='grid'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 600px) {
+  .phone .content [data-gallery][data-layout='grid'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.phone .content {
+  overflow-wrap: anywhere;
+}
+
+.phone .header {
+  gap: 14px;
+  padding: 24px var(--gutter) 0;
+}
+
+.phone .title {
+  font-size: 30px;
+  line-height: 1.05;
+}
+
+.phone .byline {
+  font-size: 13px;
+}
+
+.phone .dateRow {
+  margin-top: -2px;
+  font-size: 10px;
+}
+
+.phone .body {
+  margin: 22px var(--gutter) 0;
+}
+
+/* A computer's shared article: the note as wide as the article, as close to it as on a tablet. */
+.desktop .shareNote {
+  align-self: center;
+  max-width: 640px;
+}
+
+.desktop .header:has(> .shareNote) + .body {
+  margin-top: 28px;
+}
+
+.phone .body > :global(#summary) {
+  margin-bottom: 28px;
+}
+
+.phone .content {
+  font-size: calc(16px * var(--text-scale, 1));
+  line-height: 1.7;
+}
+
+.phone .content h2 {
+  font-size: 26px;
+}
+
+.phone .summary {
+  font-size: calc(16px * var(--text-scale, 1));
+}
+
+.phone .skeletonHeader,
+.phone .skeletonLines {
+  padding-inline: var(--gutter);
+}
+
+.phone .skeletonHeader {
+  padding-top: 24px;
+}
+
+.fade {
+  position: fixed;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: calc(88px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--column));
+  pointer-events: none;
+}
+
+.fabs {
+  position: fixed;
+  z-index: 2;
+  right: 16px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  left: 16px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.fabs > * {
+  pointer-events: auto;
+}
+
+.aiFab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--ai-button-border);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ai-button) var(--glass-opacity), transparent);
+  box-shadow: 0 4px 16px var(--shadow);
+  color: var(--ai-text);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+.backButton {
+  flex-shrink: 0;
+}
+
+/* Tablets held upright: the article in a centred column. */
+@media (min-width: 700px) {
+  .phone .header {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 36px 0 0;
+  }
+
+  .phone .title {
+    font-size: 40px;
+  }
+
+  .phone .body {
+    max-width: 680px;
+    margin: 28px auto 0;
+  }
+
+  .phone .skeletonHeader,
+  .phone .skeletonLines {
+    max-width: 680px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+/* An embedded post (a tweet): the quote's card, in the network's smaller type. */
+.reader .content blockquote[data-embed] {
+  margin: 0 0 26px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-stretch: 100%;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* The post's author, as the network shows it: name, handle, and the network's logo on the right. */
+.reader .content blockquote [data-embed-author] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: var(--text);
+}
+
+.reader .content blockquote [data-embed-author] strong {
+  font-weight: 600;
+}
+
+.reader .content blockquote [data-embed-author] span {
+  overflow: hidden;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reader .content blockquote [data-embed-author] svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+}
+
+/* Its date, and the link to the post on the right. */
+.reader .content blockquote [data-embed-date] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reader .content blockquote [data-embed-date] [data-embed-brand] {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

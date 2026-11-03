@@ -1,0 +1,76 @@
+.wrap {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  /* Centred in what is left under a list's header. */
+  min-height: calc(100dvh - 74px);
+  padding: 24px var(--gutter) 120px;
+}
+
+/* In a desktop list, under its header: the space left, no more, and up by half the header, so it is level
+   with the empty reader beside it (ListColumn measures --list-top). */
+[data-list-column] > .wrap {
+  min-height: 0;
+  padding-bottom: 24px;
+  transform: translateY(calc(var(--list-top, 0px) / -2));
+}
+
+.compact {
+  min-height: 0;
+  padding: 40px var(--gutter) 32px;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The same tile as the empty reader beside the lists (PanePlaceholder). */
+  width: 44px;
+  height: 44px;
+  margin-bottom: 2px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--tile);
+  color: var(--text-2);
+}
+
+.icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.05;
+}
+
+.text {
+  max-width: 320px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 4px;
+}

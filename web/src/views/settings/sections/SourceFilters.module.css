@@ -1,0 +1,139 @@
+/* The state's select, then the topics' field, on one line. */
+.select,
+.topics {
+  position: relative;
+}
+
+.topics {
+  flex: 1;
+  min-width: 0;
+}
+
+/* As a text field: a 44 px capsule on the controls' colour. */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--button-height);
+  padding: 0 14px 0 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .trigger:hover {
+    background: var(--control-hover);
+  }
+}
+
+.count {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-2);
+  transition: transform var(--duration) var(--ease);
+}
+
+[aria-expanded='true'] > .chevron {
+  transform: rotate(180deg);
+}
+
+/* As the topic field of "Changer les thèmes", growing a line when the tags fill one. */
+.field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--button-height);
+  padding: 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--control);
+}
+
+.field:has(.open:focus-visible) {
+  border-color: var(--rust-border);
+}
+
+/* The rest of the field: it opens the menu. */
+.open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px 0 12px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.open:focus-visible {
+  outline: none;
+}
+
+.placeholder {
+  flex: 1;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A chosen topic: its capsule, with the cross that takes it back. */
+.tag {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--topic-border, var(--border));
+  border-radius: var(--radius-pill);
+  background: var(--topic-surface, transparent);
+  color: var(--topic, var(--text-2));
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 12px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tag > svg:last-child {
+  opacity: 0.7;
+}
+
+@media (hover: hover) {
+  .tag:hover > svg:last-child {
+    opacity: 1;
+  }
+}
+
+/* A topic's square in the menu, in its colours. */
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--topic-border, var(--border));
+  border-radius: 8px;
+  background: var(--topic-surface, transparent);
+  color: var(--topic, var(--text-2));
+}

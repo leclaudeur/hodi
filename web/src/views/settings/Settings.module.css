@@ -1,0 +1,201 @@
+/* A settings section, from the charter's "Réglages" boards: a title, a line, then cards of rows. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 0 64px;
+}
+
+.phonePage {
+  max-width: none;
+  padding: 4px var(--gutter) calc(120px + env(safe-area-inset-bottom));
+}
+
+/* A phone's "7 jours · 30 jours": under the title, each half of the width. */
+.aside {
+  display: flex;
+}
+
+.aside > * {
+  flex: 1;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* As every screen's title (Le fil, Suivis, Historique): Bebas and the accent dot. */
+.title {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.intro {
+  max-width: 64ch;
+  margin-top: 6px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.label {
+  margin-top: 8px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--column);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 66px;
+  padding: 14px 20px;
+}
+
+/* A row whose control is too wide beside its text on a phone (the accent colours): the control goes under it. */
+.stackedRow {
+  flex-wrap: wrap;
+}
+
+.stackedRow > .rowText {
+  flex-basis: 100%;
+}
+
+.card > * + * {
+  border-top: 1px solid var(--divider);
+}
+
+.rowText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.rowTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+}
+
+.rowHint {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.dim {
+  opacity: 0.5;
+}
+
+.note {
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.mono {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* "Ajouter un sujet" and the sources' filter: a pill field. */
+/* A row's square mark: a muted word's crossed eye; rust, a followed subject's star. */
+.tile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  /* 44px, as the settings menu's squares. */
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--control);
+  color: var(--text-2);
+}
+
+/* A list with no row yet (EmptyCard): the same card, in dashes and quiet. */
+.emptyCard {
+  border-style: dashed;
+  background: transparent;
+}
+
+.emptyTile {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-3);
+}
+
+.rustTile {
+  border-color: var(--rust-border);
+  background: var(--rust-surface);
+  color: var(--rust);
+}
+
+.fieldRow {
+  display: flex;
+  gap: 10px;
+}
+
+/* The field takes the room the button leaves. */
+.fieldRow > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .row {
+    padding: 12px 14px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+}
+
+/* A row that opens another page, with its chevron. */
+.rowLink {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.rowLink > svg {
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+@media (hover: hover) {
+  .rowLink:hover {
+    background: var(--control-hover);
+    color: var(--text);
+  }
+}

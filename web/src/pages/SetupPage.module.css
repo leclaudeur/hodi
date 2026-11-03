@@ -1,0 +1,252 @@
+/* From the charter's "Installation" boards: the logo above, one step at a time in a 362px column. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding: 32px 40px calc(24px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.welcome,
+.stepLabel {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  /* Room between the blocks (heading, fields, choices, buttons), each one still read as one. */
+  gap: 28px;
+  width: 100%;
+  /* Every step as wide as the setup code's six boxes (6 × 52px and their gaps): the profile form then
+     stacks its avatar above its fields. */
+  max-width: 362px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.bars {
+  display: flex;
+  gap: 6px;
+}
+
+.bars span {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--border);
+}
+
+.bars .done {
+  background: var(--rust);
+}
+
+.titleRow {
+  /* The help "?" in the corner of this larger title, as a footnote call. */
+  --help-title: 38px;
+
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: 38px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.05;
+}
+
+.intro {
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--text);
+  text-align: left;
+}
+
+/* Hovered and chosen share one surface, half-way to the raised grey (the card-hover step alone barely shows on a
+   card); the check on the right tells the chosen card apart. */
+.choice {
+  --choice-on: color-mix(in srgb, var(--card-hover) 50%, var(--raised));
+}
+
+.choice[aria-checked='true'] {
+  border-color: var(--text-3);
+  background: var(--choice-on);
+}
+
+/* An AI provider is always violet, as the AI cards in the reader; the "Sans IA" choice stays grey. */
+.aiChoice {
+  --choice-on: color-mix(in srgb, var(--ai-surface) 80%, var(--ai-button));
+
+  border-color: var(--ai-border);
+  background: var(--ai-surface);
+}
+
+.aiChoice[aria-checked='true'] {
+  border-color: var(--ai-button-border);
+  background: var(--choice-on);
+}
+
+@media (hover: hover) {
+  .choice[aria-checked='false']:hover {
+    background: var(--choice-on);
+  }
+}
+
+.choiceMark {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--control);
+  color: var(--text-2);
+}
+
+.aiChoice .choiceMark {
+  border-color: var(--ai-button-border);
+  background: var(--ai-button);
+  color: var(--ai-text);
+}
+
+.aiChoice .choiceHint {
+  color: var(--ai-text-3);
+}
+
+.choiceText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.choiceCheck {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  /* A ring of the page colour cuts the round out of the card's border. */
+  box-shadow: 0 0 0 3px var(--bg);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.aiChoice .choiceCheck {
+  background: var(--ai-button-border);
+  color: var(--ai-on-border);
+}
+
+.choiceLabel {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.choiceHint {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+/* The profile step's form spaced as the other steps, its footer line included. */
+.profileForm {
+  gap: 28px;
+}
+
+/* Under the code, as under a profile's PIN: 20px rather than the form's 28. */
+.codeStatus {
+  margin-top: -8px;
+}
+
+/* The same footer as the profile step's form: a line above the buttons on every step. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--divider);
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* Inline in the footer rather than held to the bottom as on the login screen. */
+.copyright {
+  position: static;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 24px 16px calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .main {
+    align-items: flex-start;
+    padding: 28px 0;
+  }
+
+  .titleRow {
+    --help-title: 30px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+}

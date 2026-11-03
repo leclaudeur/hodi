@@ -1,0 +1,12 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 24px var(--gutter);
+}
+
+.hint {
+  color: var(--text-3);
+  font-size: 10px;
+}

@@ -1,0 +1,324 @@
+/* Hodi foundations: fonts, reset and the few rules every screen shares. */
+
+:root {
+  /* Every button with a label (ui/Button), on every screen. */
+  --button-height: 44px;
+  /* The side margins of a phone or upright-tablet page: every header, list and text lines up on them. */
+  --gutter: 20px;
+  /* Above every phone header: the status bar, then room for the blur iOS lays under it. */
+  --header-top: calc(28px + env(safe-area-inset-top));
+  /* Behind a header held over the page: see-through, the page blurred under it. */
+  --header-opacity: 78%;
+  --header-blur: blur(20px);
+  /* What floats over the page (the bottom bar, the buttons over a picture): see-through and blurred too. */
+  --glass-blur: blur(16px);
+  --glass-fill: var(--glass);
+  --glass-opacity: 85%;
+  --image-veil: var(--scrim);
+  --image-glass: var(--glass);
+  --font-body: 'Geist Hodi', 'Geist Variable', system-ui, sans-serif;
+  --font-mono: 'Geist Mono Hodi', 'Geist Mono Variable', ui-monospace, monospace;
+  /* Screen titles ("Le fil", "Réglages") and the logo. */
+  --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  /* Article titles in the reader, condensed (font-stretch 75%). */
+  --font-title: 'Archivo Variable', 'Arial Narrow', sans-serif;
+
+  /* Everything that is clicked has fully rounded ends; containers are softer. */
+  --radius-pill: 999px;
+  --radius-card: 16px;
+  --radius-panel: 20px;
+  --radius-thumb: 10px;
+
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --duration: 160ms;
+
+  /* The app has its own pull-to-refresh: the browser's would reload the whole page. */
+  overscroll-behavior-y: contain;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* On a touch screen the page is always moving under the bars, and a blur redraws on every frame of a scroll:
+   the GPU's work, which a phone pays in battery. There the floating surfaces are solid instead. A dialog keeps
+   its blur, since nothing moves behind it. */
+@media (hover: none) and (pointer: coarse) {
+  :root {
+    --header-opacity: 100%;
+    --header-blur: none;
+    --glass-blur: none;
+    --glass-fill: var(--card);
+    --glass-opacity: 100%;
+    --image-veil: color-mix(in srgb, var(--scrim) 100%, var(--card) 35%);
+    --image-glass: var(--image-veil);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+ul,
+ol {
+  margin: 0;
+}
+
+/* Natural line breaks: titles share their words evenly over their lines. */
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+/* Inherited: every text, in a paragraph, a card or a settings row, keeps no word alone on its last line. */
+body {
+  text-wrap: pretty;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* Safari zooms the whole page on a field under 16px when it takes the focus: never on a touch screen. */
+@media (pointer: coarse) {
+  input:not([type='checkbox'], [type='radio'], [type='range']),
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+a {
+  color: var(--text);
+}
+
+@media (hover: hover) {
+  a:hover {
+    color: var(--link-hover);
+  }
+}
+
+@media (min-width: 700px) {
+  :root {
+    --gutter: 28px;
+  }
+}
+
+/* Installed on a computer, the app draws in the title bar too (manifest: window-controls-overlay): no
+   browser buttons, only the window's own. A strip of the column's colour above the app keeps the window
+   draggable and clear of its buttons. */
+:root {
+  --titlebar-height: 0px;
+}
+
+@media (display-mode: window-controls-overlay) {
+  :root {
+    --titlebar-height: env(titlebar-area-height, 0px);
+  }
+
+  body {
+    padding-top: var(--titlebar-height);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: var(--titlebar-height);
+    background: var(--column);
+    app-region: drag;
+    -webkit-app-region: drag;
+  }
+}
+
+/* One motion for every hover and press: colours and surfaces ease in, nothing moves. */
+a,
+button,
+summary,
+label,
+input,
+textarea,
+select,
+[data-card] {
+  transition-property: background-color, border-color, color, opacity, box-shadow;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--ease);
+}
+
+:focus-visible {
+  outline: 2px solid var(--rust);
+  outline-offset: 2px;
+}
+
+/* Text fields show focus on their own frame (a lighter border) and the caret: no ring around them. */
+input:not([type='checkbox'], [type='radio'], [type='range']):focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+::selection {
+  background: var(--rust-surface-2);
+  color: var(--text);
+}
+
+/* Small capitals in Geist Mono: counters, dates, labels. */
+.mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Screen titles end on the logo's round accent dot ("Le fil.", "Réglages."), drawn so it is never read aloud.
+   It is exactly the size of the dot of the logo's "!" in the headers (148 of 734 units of a 0.7116em mark at the
+   Logo's default 34px), whatever the title's own size, so every dot on screen matches. */
+.screen-title {
+  /* The dot stays with the last word. */
+  white-space: nowrap;
+}
+
+.screen-title::after {
+  content: '';
+  display: inline-block;
+  width: calc(34px * 0.7116 * 148 / 734);
+  height: calc(34px * 0.7116 * 148 / 734);
+  margin-left: 0.06em;
+  border-radius: 50%;
+  background: var(--rust);
+}
+
+/* Watched by useStuck, just above a sticky header: one pixel, taking no room. */
+.stuck-sentinel {
+  height: 1px;
+  margin-bottom: -1px;
+}
+
+/* A dialog rises a little out of a page that dims, rather than appearing at once. */
+dialog[open] {
+  animation: dialog-in 240ms var(--ease);
+}
+
+dialog[open]::backdrop {
+  animation: backdrop-in 240ms var(--ease);
+}
+
+/* Not during the guided tour (app/Tour.tsx): it goes into the dialog, and would fade and move with it. */
+:root[data-story],
+:root[data-story] body {
+  overflow: hidden;
+}
+
+:root[data-touring] dialog[open],
+:root[data-touring] dialog[open]::backdrop {
+  animation: none;
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Content taking the place of its skeleton eases in rather than replacing it at once. */
+.appear {
+  animation: appear 220ms var(--ease);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Pictures with lib/fade-in's props come in once loaded, not line by line or all at once. */
+img.fade-in {
+  opacity: 0;
+  transition: opacity 280ms var(--ease);
+}
+
+img.fade-in[data-loaded] {
+  opacity: 1;
+}
+
+/* The page stays still behind an open player or dialog. */
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* Less motion, less battery: animations shrink to nothing when the system asks for it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,93 @@
+.home {
+  min-height: var(--screen-height, 100dvh);
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+}
+
+.section {
+  padding: 20px 0 4px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gutter) 12px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--topic, var(--text-3));
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text-nav);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.all:hover {
+  color: var(--text-nav);
+}
+
+.slider {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 0 var(--gutter);
+  scroll-padding: 0 var(--gutter);
+  scroll-snap-type: x mandatory;
+}
+
+.divider {
+  height: 1px;
+  margin: 16px var(--gutter) 0;
+  background: var(--divider);
+}
+
+.storiesSkeleton {
+  display: flex;
+  gap: 14px;
+  overflow: hidden;
+  /* As StoriesRow on a phone. */
+  padding: 16px var(--gutter);
+}
+
+.storySkeleton {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.filtersSkeleton {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+  padding: 14px var(--gutter);
+  border-top: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
+}
+
+/* Tablets held upright: wider, better spaced cards, two and a half in view. */
+@media (min-width: 700px) {
+  .slider {
+    gap: 24px;
+  }
+}

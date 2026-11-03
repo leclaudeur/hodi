@@ -1,0 +1,1747 @@
+{
+  "common": {
+    "back": "Retour",
+    "continue": "Continuer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "close": "Fermer",
+    "gotIt": "Compris",
+    "retry": "Réessayer",
+    "none": "Aucun",
+    "tryAgainSoon": "Réessaie dans un instant.",
+    "tooManyAttempts": "Trop de tentatives. Réessaie dans {{minutes}} min.",
+    "unreachable": "Impossible de joindre Hodi pour le moment.",
+    "help": "Aide : {{title}}",
+    "licence": "Logiciel libre (AGPL-3.0)",
+    "noResult": "Aucun résultat.",
+    "loading": "Chargement…",
+    "serverDown": "Le serveur ne répond pas pour le moment.",
+    "saving": "Enregistrement…"
+  },
+  "language": {
+    "label": "Langue",
+    "profileHint": "Celle de l’interface ; les articles restent dans la leur",
+    "householdLabel": "Langue du foyer",
+    "householdHint": "Pour l’écran de connexion et les profils qui n’en ont pas choisi",
+    "in": {
+      "fr": "En français",
+      "en": "En anglais"
+    }
+  },
+  "app": {
+    "unreachableTitle": "Impossible de joindre Hodi",
+    "unreachableText": "Le serveur ne répond pas pour le moment."
+  },
+  "login": {
+    "tagline": "Ton fil d’actu, rien que pour toi.",
+    "password": "Mot de passe",
+    "wrongPassword": "Mot de passe incorrect, réessaie.",
+    "failed": "Une erreur est survenue. Réessaie dans un instant.",
+    "signingIn": "Connexion…",
+    "enter": "Entrer"
+  },
+  "password": {
+    "show": "Afficher le mot de passe",
+    "hide": "Masquer le mot de passe",
+    "levels": {
+      "tooShort": "Trop court",
+      "weak": "Faible",
+      "fair": "Moyen",
+      "strong": "Solide",
+      "excellent": "Excellent"
+    },
+    "minimum": "{{count}} caractères minimum.",
+    "missing_one": "Encore {{count}} caractère.",
+    "missing_other": "Encore {{count}} caractères.",
+    "another": "Ajoute un mot pour atteindre {{level}}.",
+    "perfect": "Parfait.",
+    "tips": {
+      "keyboard": "Évite les suites du clavier (azerty, 1234).",
+      "repeat": "Évite les répétitions et les suites (aaa, abc).",
+      "dates": "Évite les dates et les années, faciles à deviner.",
+      "common": "Ce mot de passe est trop courant : choisis-en un autre.",
+      "word": "Un mot ou un nom seul se devine vite : ajoutes-en d’autres."
+    },
+    "gauge": "Sécurité du mot de passe"
+  },
+  "aiKey": {
+    "ok": "Clé vérifiée : l’IA est prête.",
+    "invalid": "Cette clé est refusée. Vérifie qu’elle est complète et toujours active.",
+    "unreachable": "Le fournisseur ne répond pas. Réessaie dans un instant.",
+    "failed": "La vérification a échoué. Réessaie dans un instant.",
+    "label": "Clé d’API {{provider}}",
+    "check": "Vérifier",
+    "console": "Créer une clé sur la console {{provider}}"
+  },
+  "regions": {
+    "timeZone": "Fuseau horaire",
+    "searchTimeZone": "Chercher un fuseau horaire",
+    "timeZonePlaceholder": "Une ville : Paris, Tokyo…",
+    "country": "Pays",
+    "searchCountry": "Chercher un pays",
+    "countryPlaceholder": "Belgique, Canada…",
+    "noCountry": "Aucun en particulier"
+  },
+  "profileForm": {
+    "colors": {
+      "belgique": "Ocre",
+      "monde": "Bleu",
+      "tech": "Turquoise",
+      "science": "Vert",
+      "films-series": "Rose",
+      "jeux-video": "Corail",
+      "ia": "Olive",
+      "broadcast": "Lavande",
+      "sport": "Orange",
+      "musique": "Violet"
+    },
+    "photoTooBig": "Cette photo dépasse 20 Mo. Choisis-en une plus légère.",
+    "photoUnreadable": "Cette image ne peut pas être lue. Essaie une autre photo.",
+    "saveFailed": "Le profil n’a pas pu être enregistré. Réessaie dans un instant.",
+    "changePhoto": "Changer la photo",
+    "addPhoto": "Ajouter une photo",
+    "photoMax": "20 Mo max",
+    "removePhoto": "Retirer la photo",
+    "name": "Prénom",
+    "namePlaceholder": "Ex. Léa",
+    "color": "Couleur",
+    "security": "Sécurité",
+    "private": "Profil privé",
+    "privateHint": "Son code est demandé avant de l’ouvrir",
+    "removePin": "Retirer le code",
+    "deleteProfile": "Supprimer le profil",
+    "delete": "Supprimer",
+    "create": "Créer le profil",
+    "type": "Type",
+    "kinds": {
+      "adult": "Adulte",
+      "teen": "Ado",
+      "child": "Enfant"
+    },
+    "kindHints": {
+      "adult": "Toute l’app. Gère aussi les profils des jeunes.",
+      "teen": "La même app, sources et temps réglés par ses parents.",
+      "child": "App simple, sources de ses parents."
+    },
+    "avatar": "Avatar",
+    "avatars": {
+      "fox": "Renard",
+      "pirate": "Pirate",
+      "astronaut": "Astronaute",
+      "robot": "Robot",
+      "dragon": "Dragon",
+      "panda": "Panda",
+      "owl": "Chouette",
+      "kitten": "Chaton",
+      "trex": "T-rex",
+      "koala": "Koala",
+      "reporter": "Reporter",
+      "scientist": "Scientifique"
+    },
+    "childSoon": {
+      "title": "Bientôt, une app rien que pour lui",
+      "text": "Le profil Enfant est en préparation. En attendant, choisis Ado ou Adulte."
+    }
+  },
+  "setup": {
+    "step": "Étape {{step}} sur {{total}}",
+    "codeWrong": "Ce code ne correspond pas.",
+    "restarted": "Hodi a redémarré : entre le nouveau code de son journal.",
+    "codeCheckFailed": "Impossible de vérifier le code. Réessaie dans un instant.",
+    "setupFailed": "L’installation n’a pas abouti. Réessaie dans un instant.",
+    "start": {
+      "title": "Bienvenue dans Hodi",
+      "intro": "Ton fil d’actu, sur ton propre serveur. Quatre étapes et c’est parti : le foyer, ton profil, l’IA si tu veux, puis ta région.",
+      "codeHelpTitle": "Le code d’installation",
+      "codeHelpWhy": "Ce serveur est joignable depuis Internet : pour que personne ne l’installe à ta place, Hodi demande le code à 6 chiffres écrit dans son journal au démarrage. Chaque redémarrage en tire un nouveau : prends le dernier.",
+      "codeHelpServer": "Sur le serveur :",
+      "codeHelpLocal": "Depuis l’ordinateur du serveur ou ton réseau local, aucun code n’est demandé.",
+      "code": "Code d’installation",
+      "button": "Commencer"
+    },
+    "household": {
+      "title": "Crée ton foyer",
+      "intro": "Jusqu’à 5 profils partagent ce mot de passe, chacun avec ses lectures.",
+      "helpTitle": "Un foyer, un mot de passe",
+      "help": "Chaque appareil le demande une fois, puis le garde 90 jours. 8 caractères minimum : plus il est long et mélange majuscules, chiffres et symboles, plus il est solide. Tu pourras changer le nom et le mot de passe dans Réglages › Foyer.",
+      "name": "Nom du foyer",
+      "namePlaceholder": "Ex. La maison Martin",
+      "password": "Mot de passe",
+      "confirm": "Confirme le mot de passe",
+      "mismatch": "Les deux mots de passe ne sont pas identiques.",
+      "typeAgain": "Le mot de passe n’est jamais gardé sur l’appareil : retape-le pour reprendre là où tu t’étais arrêté."
+    },
+    "profile": {
+      "title": "Et toi, c’est qui ?",
+      "intro": "Ton profil est l’admin du foyer : il gère les sources, l’IA et les autres profils."
+    },
+    "ai": {
+      "title": "L’IA, si tu veux",
+      "intro": "Résumer un article, lui poser des questions, le Résumé du jour : avec ta propre clé, payée à l’usage. Sans IA, tout le reste marche pareil.",
+      "helpTitle": "Rien ne part sans un clic",
+      "help": "Chaque bouton violet est un appel payé sur tes crédits, jamais automatique. Fixe une limite de dépense mensuelle sur la console du fournisseur. Tu pourras ajouter, changer ou retirer la clé dans Réglages › IA et crédits.",
+      "label": "IA",
+      "providerHint": "Avec ta clé d’API, facturée à l’usage",
+      "none": "Sans IA",
+      "noneHint": "Les boutons violets restent cachés",
+      "countryHint": "Situe ses recherches web : « il fera beau demain ? »"
+    },
+    "done": {
+      "title": "Tout est prêt",
+      "intro": "On a deviné ta région depuis ce navigateur. Corrige si besoin, puis entre dans Hodi.",
+      "household": "Foyer",
+      "admin": "{{household}} · {{profile}}, admin",
+      "ai": "IA",
+      "keyChecked": "{{provider}} · clé vérifiée",
+      "enter": "Entrer dans Hodi"
+    }
+  },
+  "nav": {
+    "label": "Navigation",
+    "main": "Navigation principale",
+    "home": "Hodi, Le fil",
+    "backHome": "Retour à l’accueil",
+    "search": "Rechercher",
+    "topics": "Thèmes",
+    "newReaction": "Nouvelle réaction",
+    "newReactionOn": "{{label}}, nouvelle réaction {{reaction}}",
+    "savedCount_one": "{{label}}, {{count}} article",
+    "savedCount_other": "{{label}}, {{count}} articles",
+    "newCount_one": "{{label}}, {{count}} nouveau",
+    "newCount_other": "{{label}}, {{count}} nouveaux",
+    "today": "Le fil",
+    "saved": "Enregistrés",
+    "followed": "Suivis",
+    "shares": "Partages",
+    "watch": "Vidéos",
+    "history": "Historique",
+    "settings": "Réglages",
+    "backToFeed": "Retour au fil",
+    "backToSettings": "Retour aux réglages"
+  },
+  "profiles": {
+    "pending": "Des changements faits hors ligne n’ont pas encore été envoyés. Reconnecte-toi avant de changer de profil.",
+    "wrongPin": "Ce code n’est pas le bon.",
+    "openFailed": "Impossible d’ouvrir ce profil pour le moment.",
+    "pin": "Code PIN",
+    "switch": "Changer de profil",
+    "switchFrom": "{{name}}, changer de profil",
+    "private": "Privé",
+    "create": "Créer un profil",
+    "new": "Nouveau profil",
+    "added": "{{name}} ajouté",
+    "yours": "{{name}}, ton profil",
+    "of": "Profil de {{name}}",
+    "loadFailed": "Impossible de charger les profils. Recharge la page dans un instant.",
+    "who": "Qui lit ?",
+    "locked": "Protégé par un code",
+    "add": "Ajouter",
+    "manage": "Gérer les profils",
+    "parentalPin": "Code parental",
+    "admin": "Admin"
+  },
+  "limits": {
+    "fiveMinutes": "Plus que 5 minutes de lecture aujourd’hui",
+    "byeChild": "À demain, {{name}} !",
+    "byeTeen": "À demain, {{name}}",
+    "laterChild": "À tout à l’heure, {{name}} !",
+    "laterTeen": "À tout à l’heure, {{name}}",
+    "timeUp": "Ton temps de lecture est fini pour aujourd’hui. Tu pourras relire demain à {{time}}.",
+    "after": "C’est l’heure de faire une pause. Tu pourras relire demain à {{time}}.",
+    "before": "Tu pourras lire à partir de {{time}}.",
+    "switch": "Changer de profil",
+    "timeUpTomorrow": "Ton temps de lecture est fini pour aujourd’hui. Tu pourras relire demain.",
+    "meHint": "Nom, photo, temps du jour",
+    "meIntro": "Ton nom, ta photo et ton temps de lecture du jour.",
+    "today": "Aujourd’hui",
+    "readingTime": "Temps d’écran restant",
+    "readingHint": "{{time}} / jour · réglé par tes parents",
+    "left": "Temps restant aujourd’hui : {{time}}",
+    "quietHint": "Réglé par tes parents",
+    "quietNone": "Aucune"
+  },
+  "young": {
+    "manage": "Gérer",
+    "manageLabel": "Gérer {{name}}",
+    "edit": "Modifier",
+    "perDay": "{{time}} par jour",
+    "noLimit": "Temps illimité",
+    "hm": "{{h}} h {{m}}",
+    "range": "{{start}} – {{end}}",
+    "notFound": "Ce profil n’existe plus.",
+    "loadFailed": "Ses réglages n’ont pas pu être chargés. Réessaie dans un instant.",
+    "saveFailed": "Ça n’a pas pu être enregistré. Réessaie dans un instant.",
+    "saved": "Enregistré",
+    "reading": "Lecture",
+    "sources": "Sources",
+    "sourcesHint": "{{sources}} sur {{topics}}",
+    "sourcesNone": "Aucune source pour l’instant",
+    "topicCount_one": "{{count}} thème",
+    "topicCount_other": "{{count}} thèmes",
+    "sourcesTitle": "Sources du profil",
+    "sourceToggle": "{{name}} pour {{profile}}",
+    "topics": "Thèmes",
+    "topicsHint": "Ceux que {{name}} voit dans son fil",
+    "visible_one": "{{count}} visible",
+    "visible_other": "{{count}} visibles",
+    "topicsTitle": "Thèmes du profil",
+    "time": "Temps",
+    "daily": "Temps par jour",
+    "dailyHint": "Une fois écoulé, l’app se met en pause jusqu’à demain",
+    "dailyTitle": "Temps d’écran",
+    "dailyToggle": "Limiter le temps",
+    "dailyToggleHint": "Compté seulement quand l’app est à l’écran",
+    "less": "Moins",
+    "more": "Plus",
+    "noLimitShort": "Illimité",
+    "window": "Horaires",
+    "windowHint": "{{name}} peut lire seulement entre ces heures",
+    "windowAll": "Toute la journée",
+    "windowToggle": "Limiter les horaires",
+    "windowToggleHint": "En dehors, l’app dit à quelle heure elle rouvre",
+    "windowWrong": "L’heure de fin doit venir après l’heure de début.",
+    "start": "Début",
+    "end": "Fin",
+    "quiet": "Ne pas déranger",
+    "quietHint": "Aucune notification pendant ces heures",
+    "quietNone": "Jamais",
+    "quietToggle": "Ne pas déranger",
+    "quietToggleHint": "Par exemple de {{start}} à {{end}}",
+    "ai": "IA",
+    "explain": "Explications IA par jour",
+    "explainHint": "Quand {{name}} demande à l’IA d’expliquer un article ou un mot",
+    "explainTitle": "Explications IA par jour",
+    "explainNone": "Aucune",
+    "followUp": "Suivi",
+    "week": "Sa semaine",
+    "weekHint": "{{time}} · {{articles}}",
+    "weekNone": "Rien lu cette semaine",
+    "weekTitle": "Bilan de la semaine",
+    "weekTime": "À l’écran",
+    "weekThemes": "Ses thèmes",
+    "weekThemesNone": "Pas encore de thème lu cette semaine",
+    "see": "Voir",
+    "profile": "Profil",
+    "delete": "Supprimer le profil",
+    "deleteHint": "Ses lectures, ses statistiques et ses badges sont effacés",
+    "deleteButton": "Supprimer",
+    "editTitle": "Modifier {{name}}",
+    "profileSaved": "Profil enregistré",
+    "deleted": "{{name}} supprimé",
+    "deleteFailed": "La suppression a échoué. Réessaie dans un instant.",
+    "backToProfiles": "Retour aux profils",
+    "perDayCount": "{{count}} / jour",
+    "channels": "Chaînes YouTube"
+  },
+  "family": {
+    "title": "Famille",
+    "parentalCode": "Code parental",
+    "parentalHint": "Demandé pour ouvrir un profil adulte qui n’est pas privé",
+    "parentalNone": "Aucun : les profils adultes s’ouvrent sans code",
+    "set": "Définir",
+    "change": "Changer",
+    "setTitle": "Définir le code parental",
+    "changeTitle": "Changer le code parental",
+    "current": "Code actuel",
+    "new": "Nouveau code (4 chiffres)",
+    "again": "Encore une fois",
+    "mismatch": "Les deux codes ne sont pas les mêmes.",
+    "wrong": "Le code actuel n’est pas le bon.",
+    "failed": "Le code n’a pas pu être enregistré. Réessaie dans un instant.",
+    "saved": "Code parental enregistré",
+    "code": "Code",
+    "removeTitle": "Retirer le code parental",
+    "remove": "Retirer le code",
+    "removed": "Code parental retiré"
+  },
+  "requests": {
+    "push": "{{name}} demande {{source}}",
+    "ask": "Demander une source",
+    "link": "Lien du site ou de la chaîne",
+    "placeholder": "Ex. numerama.com",
+    "send": "Demander",
+    "sent": "Demande envoyée",
+    "mine": "Mes demandes",
+    "pending": "En attente",
+    "pendingLabel": "En attente de tes parents",
+    "byParents": "Ajoutées par tes parents",
+    "count_one": "{{count}} demande",
+    "count_other": "{{count}} demandes",
+    "errors": {
+      "invalid": "Ce n’est pas un lien. Colle l’adresse d’un site.",
+      "blocked": "Cette adresse n’est pas publique.",
+      "none": "Aucun flux trouvé à cette adresse. Essaie la page d’accueil du site.",
+      "empty": "Ce flux est vide pour le moment.",
+      "failed": "Le site ne répond pas. Réessaie dans un instant.",
+      "reddit": "Reddit ne se suit plus : il ferme ses flux.",
+      "channel": "Les podcasts ne se demandent pas : seulement les sites et les chaînes YouTube.",
+      "following": "Tu lis déjà cette source.",
+      "pending": "Tu as déjà demandé cette source.",
+      "full": "Déjà 3 demandes en attente : attends tes parents.",
+      "other": "La demande n’a pas pu être envoyée. Réessaie dans un instant."
+    },
+    "title": "Demandes",
+    "waiting_one": "{{count}} en attente",
+    "waiting_other": "{{count}} en attente",
+    "asks": "{{name}} demande {{source}}",
+    "dialogTitle": "Demande de source",
+    "topic": "Thème",
+    "accept": "Accepter",
+    "refuse": "Refuser",
+    "accepted": "{{source}} ajoutée pour {{name}}",
+    "refused": "Demande refusée",
+    "answerFailed": "La réponse n’a pas pu être envoyée. Réessaie dans un instant.",
+    "gone": "Cette demande a déjà reçu une réponse.",
+    "fiche": "Demandes",
+    "ficheNone": "Aucune en attente",
+    "see": "Voir",
+    "changeTopic": "Changer",
+    "asksRow": "<b>{{name}}</b> demande une source",
+    "answerAccepted": "<b>Tes parents</b> ont accepté",
+    "answerRefused": "<b>Tes parents</b> ont refusé",
+    "answers": "Demandes traitées",
+    "waitingTitle": "Demandes en attente",
+    "more_one": "Voir l’autre demande",
+    "more_other": "Voir les {{count}} autres",
+    "asksChannelRow": "<b>{{name}}</b> demande une chaîne",
+    "intro": "Tes parents choisissent tes sources. Tu peux masquer celles qui ne t’intéressent pas, et en demander une nouvelle : elle arrive dans ton fil s’ils l’acceptent."
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "intro": "Sur ordinateur, Hodi se parcourt au clavier : passer d’un article à l’autre, changer de thème, enregistrer, masquer ou chercher. Appuie sur ? n’importe où pour revoir cette liste.",
+    "aiNote": "R affiche le bouton du résumé, il ne lance jamais l’IA tout seul.",
+    "escape": "Échap",
+    "groups": {
+      "navigate": "Naviguer",
+      "article": "Article"
+    },
+    "next": "Article suivant",
+    "previous": "Article précédent",
+    "open": "Ouvrir",
+    "previousTopic": "Thème précédent",
+    "nextTopic": "Thème suivant",
+    "search": "Rechercher",
+    "save": "Enregistrer",
+    "hide": "Masquer l’article",
+    "summary": "Résumé IA",
+    "nextArticle": "Article suivant",
+    "back": "Retour à la liste",
+    "help": "Cette aide",
+    "close": "Fermer"
+  },
+  "tour": {
+    "skip": "Passer",
+    "adding": "Hodi ajoute tes sources",
+    "profile": {
+      "title": "Ton profil",
+      "points": "Chaque article lu te rapporte des points.",
+      "open": "Ouvre ton profil pour voir ton grade.",
+      "via": "Passe par le fil pour ouvrir ton profil."
+    },
+    "level": {
+      "title": "Grades et badges",
+      "grades": "Lis pour monter de grade, jusqu’à Légende.",
+      "badges": "Tes badges passent du bronze à l’or.",
+      "wear": "Touche un badge gagné pour le porter."
+    },
+    "welcome": {
+      "title": "Bienvenue sur Hodi",
+      "ask": "Qu’est-ce qui t’intéresse ?",
+      "pick": "Choisis un ou plusieurs thèmes."
+    },
+    "first": {
+      "title": "Ta première source",
+      "together": "Ajoutons-en une ensemble, pour {{topic}}.",
+      "settings": "Commence par ouvrir les réglages."
+    },
+    "sources": {
+      "title": "Les sources",
+      "what": "Les sites et les chaînes que Hodi lit pour toi.",
+      "open": "Ouvre « Sources »."
+    },
+    "add": {
+      "title": "Ajouter une source",
+      "how": "Par son lien ou parmi nos suggestions.",
+      "press": "Appuie ici pour en ajouter une."
+    },
+    "byTopic": {
+      "title": "Pour un thème",
+      "noLink": "Pas de lien sous la main ?",
+      "offers": "Hodi te propose des sites par thème.",
+      "pick": "Choisis « Pour un thème »."
+    },
+    "topic": {
+      "suggestions": "Chaque thème a ses suggestions.",
+      "pick": "Choisis « {{topic}} »."
+    },
+    "site": {
+      "title": "Choisis un site",
+      "feed": "Hodi trouve son flux tout seul.",
+      "add": "Ajoute celui qui te plaît."
+    },
+    "direction": {
+      "title": "Direction {{topic}}",
+      "filed": "Ta source est rangée dans {{topic}}.",
+      "open": "Ouvre ce thème pour lire ses articles.",
+      "via": "Passe par le fil pour ouvrir ce thème."
+    },
+    "end": {
+      "title": "C’est tout bon !",
+      "here": "Voici {{topic}}, avec ta nouvelle source.",
+      "others": "Tes autres thèmes sont aussi dans le fil.",
+      "feed": "Elle arrive aussi dans le fil.",
+      "enjoy": "Profite bien de Hodi.",
+      "go": "C’est parti"
+    },
+    "next": "Suivant",
+    "teen": {
+      "welcome": {
+        "title": "Bienvenue sur Hodi",
+        "yours": "Ton journal à toi, avec l’actu qui t’intéresse.",
+        "how": "Voici comment ça marche."
+      },
+      "feed": {
+        "title": "Ton fil",
+        "chosen": "Ici, l’actu choisie avec tes parents.",
+        "open": "Appuie sur un article pour l’ouvrir."
+      },
+      "ask": {
+        "title": "Demander une source",
+        "missing": "Un site te manque ? Tu peux le demander.",
+        "settings": "Appuie sur Réglages.",
+        "sources": "Puis sur Sources.",
+        "paste": "Ici, colle le lien d’un site que tu aimes.",
+        "parents": "Tes parents reçoivent ta demande et décident.",
+        "requests": "Ouvre Mes demandes.",
+        "press": "Appuie sur Demander une source."
+      },
+      "end": {
+        "title": "C’est parti !",
+        "enjoy": "Bonne lecture.",
+        "go": "C’est parti"
+      }
+    }
+  },
+  "offline": {
+    "title": "Hors ligne",
+    "withUnread_one": "Hors ligne · {{count}} article à lire",
+    "withUnread_other": "Hors ligne · {{count}} articles à lire",
+    "since": "Dernière mise à jour à {{time}}"
+  },
+  "card": {
+    "save": "Enregistrer",
+    "unsave": "Retirer",
+    "hide": "Masquer",
+    "undoLabel": "{{label}} :",
+    "ofReading": "de lecture",
+    "alsoOn_one": "Aussi sur {{count}} source",
+    "alsoOn_other": "Aussi sur {{count}} sources",
+    "offline": "Dispo hors ligne",
+    "onSite": "Sur le site",
+    "hideKind": {
+      "article": "Masquer l’article",
+      "video": "Masquer la vidéo",
+      "podcast": "Masquer l’épisode"
+    },
+    "saved": "Ajouté aux Enregistrés",
+    "unsaved": "Retiré des Enregistrés"
+  },
+  "notFound": {
+    "title": "Cette page n’existe pas, ou plus",
+    "text": "Le lien est peut-être cassé, ou l’article a quitté le fil après 3 jours.",
+    "error": "ERREUR 404"
+  },
+  "time": {
+    "minutes_one": "{{count}} MIN",
+    "minutes_other": "{{count}} MIN",
+    "hours_one": "{{count}} H",
+    "hours_other": "{{count}} H",
+    "days_one": "{{count}} J",
+    "days_other": "{{count}} J",
+    "day": "{{weekday}}. {{numbers}}",
+    "today": "Aujourd’hui",
+    "yesterday": "Hier · {{day}}"
+  },
+  "count": {
+    "article_one": "{{count}} article",
+    "article_other": "{{count}} articles",
+    "video_one": "{{count}} vidéo",
+    "video_other": "{{count}} vidéos",
+    "episode_one": "{{count}} épisode",
+    "episode_other": "{{count}} épisodes",
+    "day_one": "{{count}} jour",
+    "day_other": "{{count}} jours",
+    "item_one": "{{count}} élément",
+    "item_other": "{{count}} éléments",
+    "source_one": "{{count}} source",
+    "source_other": "{{count}} sources",
+    "read_one": "{{count}} lu",
+    "read_other": "{{count}} lus",
+    "view_one": "{{count}} vue",
+    "view_other": "{{count}} vues",
+    "subject_one": "{{count}} sujet",
+    "subject_other": "{{count}} sujets",
+    "search_one": "{{count}} recherche",
+    "search_other": "{{count}} recherches",
+    "result_one": "{{count}} résultat",
+    "result_other": "{{count}} résultats",
+    "word_one": "{{count}} mot",
+    "word_other": "{{count}} mots",
+    "profile_one": "{{count}} profil",
+    "profile_other": "{{count}} profils"
+  },
+  "state": {
+    "read": {
+      "article": "Lu",
+      "video": "Vu",
+      "podcast": "Écouté"
+    },
+    "hidden": {
+      "article": "Masqué",
+      "video": "Masquée",
+      "podcast": "Masqué"
+    },
+    "undo": {
+      "article": "Article masqué",
+      "video": "Vidéo masquée",
+      "podcast": "Épisode masqué"
+    }
+  },
+  "pull": {
+    "refreshing": "Actualisation…",
+    "release": "Relâche pour actualiser",
+    "pull": "Tire pour actualiser",
+    "updated": "MAJ {{age}}"
+  },
+  "feed": {
+    "loadDay": "Charger {{day}}",
+    "loadFailed": "Impossible de charger le fil",
+    "loadTopicFailed": "Impossible de charger {{topic}}",
+    "savedOffline": "Tes enregistrés se lisent hors ligne.",
+    "savedOfflineLabel": "Enregistrés, disponibles hors ligne",
+    "allRead": "Tout est lu",
+    "nothingNew": "Rien de neuf",
+    "allReadText": "Tes réglages masquent les articles lus.",
+    "nothingNewDesktop": "Les jours précédents sont en dessous.",
+    "nothingNewPhone": "Tire vers le bas pour actualiser.",
+    "nothingInTopic": "Rien dans ce thème pour l’instant.",
+    "all": "TOUT",
+    "allTopics": "Tout",
+    "allOf_one": "Tout {{topic}}, {{count}} article",
+    "allOf_other": "Tout {{topic}}, {{count}} articles",
+    "title": "Le fil",
+    "topicsFailed": "Impossible de charger les thèmes"
+  },
+  "lists": {
+    "filter": "Filtrer par thème",
+    "nothingFor": "Rien pour « {{query}} »",
+    "nothingHere": "Rien ici"
+  },
+  "resume": {
+    "title": "Reprendre",
+    "left_one": "Il reste {{count}} min",
+    "left_other": "Il reste {{count}} min",
+    "remove": "Retirer de Reprendre"
+  },
+  "saved": {
+    "empty": "Rien d’enregistré",
+    "emptyText": "Garde un article avec son marque-page.",
+    "noMatch": "Aucun article enregistré ne correspond.",
+    "search": "Chercher dans tes enregistrés"
+  },
+  "history": {
+    "unread": {
+      "article": "Marquer comme non lu",
+      "video": "Marquer comme non vue",
+      "podcast": "Marquer comme non écouté"
+    },
+    "cleared": "Historique effacé",
+    "clear": "Effacer l’historique",
+    "loadFailed": "Impossible de charger l’historique",
+    "empty": "Rien lu ni vu ces 7 derniers jours",
+    "emptyText": "Ce que tu lis et regardes arrive ici.",
+    "noMatch": "Rien de lu ni de vu ne correspond.",
+    "search": "Chercher dans ton historique"
+  },
+  "help": {
+    "feed": {
+      "title": "Le fil",
+      "desktop": [
+        "Les articles des 3 derniers jours de tes thèmes, le plus récent en haut. En tête, le Résumé du jour et À la une : les sujets du jour, à parcourir comme des stories.",
+        "« Reprendre » garde les articles commencés ; la croix les écarte. Un article lu s’estompe, survole une carte pour la masquer. Touche <b>?</b> pour les raccourcis clavier."
+      ],
+      "phone": [
+        "Un rail par thème avec les articles du jour. En tête, le Résumé du jour et À la une, à parcourir comme des stories.",
+        "Tire vers le bas pour actualiser. Glisse vers la gauche ou la droite pour passer d’un thème à l’autre. Dans un thème, glisse une carte vers la droite pour l’enregistrer, vers la gauche pour la masquer."
+      ]
+    },
+    "followed": {
+      "title": "Suivis",
+      "desktop": [
+        "Les articles de tous les thèmes qui parlent des sujets que tu suis, le plus récent en haut. Un article qui parle de deux sujets apparaît sous les deux. Ajoute ou retire des sujets dans Réglages › Sujets suivis."
+      ],
+      "phone": [
+        "Les articles de tous les thèmes qui parlent des sujets que tu suis, le plus récent en haut. Glisse une carte vers la droite pour l’enregistrer, vers la gauche pour la masquer. Tes sujets se gèrent dans Réglages › Sujets suivis."
+      ]
+    },
+    "shares": {
+      "title": "Partages",
+      "desktop": [
+        "Ce que les autres profils du foyer t’ont envoyé avec « Pour… », pendant 7 jours. Un article lu ou masqué s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
+      ],
+      "phone": [
+        "Ce que les autres profils du foyer t’ont envoyé avec « Pour… », pendant 7 jours. Un article lu, ou glissé vers la gauche, s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
+      ]
+    },
+    "videos": {
+      "title": "Vidéos",
+      "desktop": [
+        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Elles se lisent ici, à côté de la liste. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans « Reprendre » sur Le fil. Ajoute des chaînes dans Réglages › Sources."
+      ],
+      "phone": [
+        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans « Reprendre » sur l’accueil. Ajoute des chaînes dans Réglages › Sources."
+      ]
+    }
+  },
+  "pane": {
+    "article": "Choisis un article",
+    "articleText": "Il s’ouvre ici, à côté de la liste.",
+    "video": "Choisis une vidéo",
+    "videoText": "Elle se lit ici, sans quitter Hodi.",
+    "keys": "↑ ↓ pour naviguer · Entrée pour ouvrir",
+    "result": "Choisis un résultat",
+    "resultText": "Il s’ouvre ici, à côté des résultats."
+  },
+  "reader": {
+    "alsoCovered": "Aussi couvert par",
+    "next": "Article suivant",
+    "loadFailed": "Impossible de charger l’article",
+    "openOn": "Ouvrir sur {{site}}",
+    "by": "par {{author}}",
+    "sourceDown": "{{source}} ne répond pas pour le moment",
+    "notInHodi": "{{source}} ne se lit pas dans Hodi",
+    "readOn": "Lire sur {{source}}",
+    "attribution": "Article de <b>{{source}}</b>, remis en page par Hodi pour une lecture sans publicité. Le texte n’est pas réécrit, et les commentaires restent sur le site.",
+    "readOriginal": "Lire l’original",
+    "externalText": "Le résumé vient du flux. L’article complet s’ouvre sur le site.",
+    "embed": {
+      "seeOn": "Voir sur {{network}}",
+      "watchOn": "Regarder sur {{network}}",
+      "quote": "Citation"
+    }
+  },
+  "speech": {
+    "pause": "Mettre la lecture en pause",
+    "resume": "Reprendre la lecture",
+    "preparing": "Préparation de la voix… (toucher pour annuler)",
+    "listenArticle": "Écouter l’article",
+    "stopLabel": "Arrêter la lecture",
+    "player": "Lecture à voix haute",
+    "preparingShort": "Préparation…",
+    "pauseShort": "Pause",
+    "resumeShort": "Reprendre",
+    "stop": "Arrêter"
+  },
+  "summary": {
+    "summarizeArticle": "Résumer l’article",
+    "capped": "Plus de résumés aujourd’hui : la limite du jour est atteinte.",
+    "offer": "L’essentiel de l’article.",
+    "summarize": "Résumer",
+    "title": "L’essentiel",
+    "writing": "Résumé en cours…",
+    "note": "Écrit par l’IA · peut contenir des erreurs",
+    "errors": {
+      "limited": "La limite de résumés du jour est atteinte. Réessaie demain.",
+      "refused": "L’IA n’a pas pu résumer cet article.",
+      "unreadable": "Cet article ne peut pas être résumé.",
+      "unknown": "Cet article n’est plus dans les flux.",
+      "unavailable": "Les résumés IA ne sont pas activés sur le serveur.",
+      "failed": "Le résumé n’a pas pu être généré."
+    }
+  },
+  "questions": {
+    "ask": "Poser une question",
+    "sources": "Sources",
+    "answering": "Réponse en cours…",
+    "capped": "Plus de questions aujourd’hui : limite atteinte",
+    "placeholder": "Une question sur cet article ?",
+    "yours": "Ta question",
+    "send": "Envoyer la question",
+    "errors": {
+      "limited": "La limite de questions du jour est atteinte. Réessaie demain.",
+      "refused": "L’IA n’a pas pu répondre à cette question.",
+      "unreadable": "Cet article ne peut pas être analysé.",
+      "unknown": "Cet article n’est plus dans les flux.",
+      "unavailable": "Les questions IA ne sont pas activées sur le serveur.",
+      "noAnswer": "Pas de réponse pour le moment. Réessaie."
+    }
+  },
+  "shareMenu": {
+    "share": "Partager",
+    "copyPrompt": "Copie le lien :",
+    "copied": "Copié",
+    "copy": "Copier le lien",
+    "email": "E-mail",
+    "heading": {
+      "article": "Partager l’article",
+      "video": "Partager la vidéo",
+      "podcast": "Partager l’épisode"
+    }
+  },
+  "shareTo": {
+    "sent": "Envoyé à {{names}}",
+    "failed": "L’article n’a pas pu être envoyé.",
+    "label": "Envoyer à un profil du foyer",
+    "title": "Envoyer à…",
+    "nobody": "Personne d’autre du foyer ne reçoit de partages pour l’instant.",
+    "noteLabel": "Un mot avec l’article",
+    "notePlaceholder": "Ajouter un mot…",
+    "send": "Envoyer"
+  },
+  "share": {
+    "sentBy": "Envoyé par {{name}}",
+    "sentYouArticle": "<b>{{name}}</b> t’a envoyé cet article",
+    "sentYouVideo": "<b>{{name}}</b> t’a envoyé cette vidéo",
+    "opinionFor": "Ton avis pour {{name}}",
+    "opinion": "Ton avis pour <b>{{name}}</b> ?",
+    "reactFor": "Réagir pour {{name}}"
+  },
+  "videos": {
+    "loadFailed": "Impossible de charger les vidéos",
+    "empty": "Rien cette semaine",
+    "emptyText": "Les semaines précédentes sont en dessous.",
+    "previousWeek": "Semaine précédente",
+    "loadPreviousWeek": "Charger la semaine précédente",
+    "gone": "Cette vidéo n’est plus là",
+    "goneText": "Elle a plus de 60 jours, ou sa chaîne ne fait plus partie de tes sources.",
+    "openYouTube": "Ouvrir sur YouTube",
+    "openSite": "Ouvrir le site",
+    "backToList": "Retour à la liste",
+    "play": "Lire",
+    "resume": "Reprendre",
+    "replay": "Revoir"
+  },
+  "dailySummary": {
+    "bubble": "Résumé",
+    "errors": {
+      "failed": "Le Résumé du jour n’a pas pu être écrit.",
+      "refused": "L’IA a refusé d’écrire le Résumé du jour.",
+      "limited": "Assez de Résumés du jour pour aujourd’hui : réessaie demain."
+    },
+    "yesterdayAt": "HIER {{time}}",
+    "writingShort": "Écriture…",
+    "regenerate": "Régénérer",
+    "writeNew": "Écrire un nouveau résumé (1 appel)",
+    "capped": "Plus de Résumé du jour aujourd’hui : la limite du jour est atteinte",
+    "upToDate": "Déjà à jour : un nouveau résumé est possible dès {{time}}",
+    "listen": "Écouter tout le résumé",
+    "writing": "L’IA écrit le Résumé du jour…",
+    "none": "Pas de Résumé du jour",
+    "unavailable": "Les fonctions IA ne sont pas activées sur le serveur.",
+    "pitch": "L’essentiel de la journée, en 3 minutes",
+    "nothingLost": "Rien n’a été perdu : réessaie dans un instant.",
+    "pitchText": "Un paragraphe par sujet, thème par thème, écrit par l’IA d’après la une. 1 clic = 1 appel.",
+    "generate": "Générer le Résumé du jour",
+    "meta": "PAR L’IA · {{time}} · {{minutes}} MIN",
+    "articles": "Les articles",
+    "name": "Résumé du jour",
+    "of": "Résumé du jour : {{topic}}",
+    "bubbleWriting": "Résumé du jour, en cours d’écriture",
+    "bubbleSeen": "Résumé du jour, déjà lu"
+  },
+  "stories": {
+    "headlines": "À la une",
+    "previous": "Précédente",
+    "next": "Suivante",
+    "of": "À la une : {{topic}}",
+    "bubbleSeen": "À la une : {{topic}}, déjà vu",
+    "published": "PUBLIÉ {{age}}",
+    "read": "Lire",
+    "site": "SITE"
+  },
+  "followed": {
+    "filter": "Filtrer par sujet",
+    "none": "Aucun sujet suivi",
+    "add": "Ajouter un sujet",
+    "noneText": "Suis un sujet pour voir ses articles ici.",
+    "loadFailed": "Impossible de charger tes sujets",
+    "nothingNew": "Rien sur ce sujet ces trois derniers jours."
+  },
+  "shares": {
+    "filter": "Filtrer par profil",
+    "loadFailed": "Impossible de charger tes partages",
+    "empty": "Rien pour l’instant",
+    "emptyText": "Ce que le foyer t’envoie arrive ici.",
+    "reactions": "Réactions à tes partages",
+    "reacted": "<b>{{name}}</b> a réagi {{reaction}}",
+    "dismiss": "Effacer"
+  },
+  "search": {
+    "title": "Recherche",
+    "close": "Fermer la recherche",
+    "placeholder": "Sujet, source, mot…",
+    "clear": "Effacer",
+    "recent": "Récentes",
+    "forget": "Oublier « {{query}} »",
+    "trends": "Tendances",
+    "filter": "Filtrer les résultats",
+    "failed": "La recherche ne répond pas. Réessaie dans un instant.",
+    "searching": "Recherche en cours…",
+    "more": "d’autres arrivent",
+    "following": "Sujet suivi",
+    "follow": "Suivre ce sujet",
+    "nothing": "Rien pour « {{query}} » dans les trois derniers jours.",
+    "nothingText": "Essaie un autre mot, ou suis ce sujet pour être prévenu."
+  },
+  "stats": {
+    "yours": "Tes statistiques",
+    "title": "Statistiques",
+    "articles": "Articles",
+    "favourites": "Favoris",
+    "topTopics": "Thèmes les plus lus",
+    "topSources": "Sources préférées",
+    "nothing": "Rien {{period}}.",
+    "period": {
+      "week": "cette semaine",
+      "month": "en 30 jours",
+      "label": "Période"
+    },
+    "split": {
+      "started": "En cours",
+      "article": {
+        "title": "Lus ou survolés",
+        "intro_one": "{{count}} article ouvert {{period}}, {{percent}} % lus",
+        "intro_other": "{{count}} articles ouverts {{period}}, {{percent}} % lus",
+        "read": "Lus",
+        "skimmed": "Survolés"
+      },
+      "video": {
+        "title": "Vues ou survolées",
+        "intro_one": "{{count}} vidéo ouverte {{period}}, {{percent}} % vues",
+        "intro_other": "{{count}} vidéos ouvertes {{period}}, {{percent}} % vues",
+        "read": "Vues",
+        "skimmed": "Survolées"
+      }
+    },
+    "chart": {
+      "article": "Articles lus par jour",
+      "video": "Vidéos vues par jour",
+      "same": "autant que la période d’avant",
+      "versus": "par rapport à la période d’avant",
+      "average": "Moy. {{value}}"
+    },
+    "tiles": {
+      "readingTime": "de lecture",
+      "watchTime": "de visionnage",
+      "streak_one": "jour d’affilée",
+      "streak_other": "jours d’affilée",
+      "article": {
+        "read_one": "lu",
+        "read_other": "lus",
+        "skimmed_one": "survolé",
+        "skimmed_other": "survolés"
+      },
+      "video": {
+        "read_one": "vue",
+        "read_other": "vues",
+        "skimmed_one": "survolée",
+        "skimmed_other": "survolées"
+      }
+    },
+    "loading": "Chargement des statistiques",
+    "intro": "Ce que tu as lu, sur tous tes appareils. Un article est lu quand tu l’as parcouru jusqu’à 80 % et que tu y as passé au moins un tiers de son temps de lecture ; une vidéo, vue à 80 %. Au-delà de 15 %, il reste en cours et t’attend dans « Reprendre » ; en dessous, il est survolé."
+  },
+  "game": {
+    "yourHousehold": "Ton foyer",
+    "tiers": {
+      "1": "Bronze",
+      "2": "Argent",
+      "3": "Or",
+      "bronze": "Bronze",
+      "silver": "Argent",
+      "gold": "Or"
+    },
+    "yourProfile": "Ton profil",
+    "profile": "Profil",
+    "loadFailed": "Le profil n’a pas pu être chargé. Réessaie dans un instant.",
+    "wearFailed": "Le badge n’a pas pu être changé. Réessaie dans un instant.",
+    "level": "Niv. {{level}}",
+    "pts": "pts",
+    "badgeWorn": "{{name}}, {{tier}}, porté",
+    "badgeWear": "{{name}}, {{tier}}, le porter",
+    "badgeLocked": "{{name}}, à gagner",
+    "household": "Foyer",
+    "thisWeek": "Cette semaine",
+    "challenge": "Défi du foyer",
+    "challengeReached": "Défi relevé : {{read}} articles lus sur {{goal}}, bravo !",
+    "challengeAlone_one": "{{count}} article lu sur {{goal}}, d’ici dimanche",
+    "challengeAlone_other": "{{count}} articles lus sur {{goal}}, d’ici dimanche",
+    "challengeTogether_one": "{{count}} article lu sur {{goal}} à vous {{profiles}}, d’ici dimanche",
+    "challengeTogether_other": "{{count}} articles lus sur {{goal}} à vous {{profiles}}, d’ici dimanche",
+    "rankLabel_one": "{{rank}}. {{name}}, {{grade}}, {{count}} point",
+    "rankLabel_other": "{{rank}}. {{name}}, {{grade}}, {{count}} points",
+    "back": "Retour",
+    "stars_other": "{{count}} étoiles sur 3",
+    "badgesHint": "Des défis à part du niveau, en trois paliers",
+    "wear": "Porter ce badge",
+    "unwear": "Ne plus le porter",
+    "worn": "Porté",
+    "open": "Voir {{name}}",
+    "stars_one": "{{count}} étoile sur 3",
+    "badges": {
+      "early-bird": {
+        "rule": "Lu avant 7 h",
+        "text": "Les articles que tu lis avant 7 h du matin.",
+        "unit_one": "lecture",
+        "unit_other": "lectures"
+      },
+      "night-owl": {
+        "rule": "Lu après 23 h",
+        "text": "Les articles que tu lis après 23 h.",
+        "unit_one": "lecture",
+        "unit_other": "lectures"
+      },
+      "faithful": {
+        "rule": "Jours de lecture",
+        "text": "Les jours où tu as lu, depuis ton premier jour.",
+        "unit_one": "jour",
+        "unit_other": "jours"
+      },
+      "globetrotter": {
+        "rule": "Lu dans Monde",
+        "text": "Les articles que tu lis dans le thème Monde.",
+        "unit_one": "lecture",
+        "unit_other": "lectures"
+      },
+      "all-rounder": {
+        "rule": "Dans chaque thème",
+        "text": "Les articles lus dans chacun de tes thèmes. C’est le thème que tu lis le moins qui compte.",
+        "unit_one": "par thème",
+        "unit_other": "par thème"
+      },
+      "postman": {
+        "rule": "Partagés avec un mot",
+        "text": "Les articles que tu envoies à quelqu’un du foyer avec un mot.",
+        "unit_one": "partage",
+        "unit_other": "partages"
+      },
+      "crowd-pleaser": {
+        "rule": "Réactions reçues",
+        "text": "Les réactions reçues sur les articles que tu as partagés.",
+        "unit_one": "réaction",
+        "unit_other": "réactions"
+      },
+      "sleuth": {
+        "rule": "Alertes ouvertes",
+        "text": "Les notifications de tes sujets suivis que tu ouvres.",
+        "unit_one": "alerte",
+        "unit_other": "alertes"
+      },
+      "encyclopedia": {
+        "rule": "Articles lus",
+        "text": "Tous les articles que tu lis, quel que soit le thème.",
+        "unit_one": "lecture",
+        "unit_other": "lectures"
+      },
+      "team-player": {
+        "rule": "Défis du foyer",
+        "text": "Les défis de la semaine que le foyer réussit ensemble.",
+        "unit_one": "défi",
+        "unit_other": "défis"
+      }
+    },
+    "newGrade": "Nouveau grade",
+    "newBadge": "Nouveau badge",
+    "levelN": "Niveau {{level}}",
+    "gradeText": "Tu passes au grade <b>{{name}}</b>. Le prochain, <b>{{next}}</b>, est dans {{points}} pts.",
+    "gradeTop": "Tu atteins <b>{{name}}</b>, le plus haut grade.",
+    "next": "Suivant",
+    "great": "Super !",
+    "wearIt": "Le porter"
+  },
+  "sync": {
+    "offline": "Hors ligne : tes changements partiront au retour du réseau.",
+    "refused": "Un changement n’a pas pu être enregistré sur le serveur."
+  },
+  "toast": {
+    "saved": "Réglage enregistré"
+  },
+  "settings": {
+    "logout": "Se déconnecter",
+    "groups": {
+      "reading": "Lecture",
+      "subjects": "Sujets",
+      "you": "Toi",
+      "household": "Foyer",
+      "device": "Cet appareil",
+      "about": "Hodi"
+    },
+    "nav": {
+      "reading": "Lecture et affichage",
+      "themes": "Thèmes",
+      "sources": "Sources",
+      "followed": "Sujets suivis",
+      "muted": "Sujets masqués",
+      "me": "Ton profil",
+      "stats": "Statistiques",
+      "sharing": "Partage",
+      "household": "Foyer",
+      "profiles": "Profils",
+      "ai": "IA et crédits",
+      "notifications": "Notifications",
+      "account": "Données",
+      "shortcuts": "Raccourcis clavier",
+      "about": "À propos"
+    },
+    "hints": {
+      "reading": "Apparence, taille du texte",
+      "themes": "Ordre et visibilité",
+      "sources": "État des flux",
+      "failing": "{{count}} en erreur",
+      "none": "Aucun",
+      "me": "Nom, photo, code privé",
+      "stats": "Lectures et vidéos",
+      "on": "Activé",
+      "off": "Désactivé",
+      "household": "Nom, mot de passe, région",
+      "callsLeft_one": "{{count}} appel restant aujourd’hui",
+      "callsLeft_other": "{{count}} appels restants aujourd’hui",
+      "aiOff": "Non activée",
+      "ai": "Appels du jour",
+      "onPlural": "Activées",
+      "offPlural": "Désactivées",
+      "account": "Stockage, hors ligne",
+      "shortcuts": "Touche ?",
+      "about": "Version, code source, crédits"
+    },
+    "titles": {
+      "reading": "Lecture",
+      "themes": "Thèmes",
+      "sources": "Sources",
+      "followed": "Sujets suivis",
+      "muted": "Sujets masqués",
+      "notifications": "Notifications",
+      "me": "Ton profil",
+      "stats": "Statistiques",
+      "ai": "IA et crédits",
+      "household": "Foyer",
+      "profiles": "Profils",
+      "sharing": "Partage",
+      "account": "Données",
+      "shortcuts": "Raccourcis",
+      "about": "À propos"
+    },
+    "themes": {
+      "intro": "Les rubriques de ton fil, dans l’ordre du menu. Glisse-les pour changer cet ordre. Un thème masqué quitte ton fil et le menu, mais reste visible pour les autres profils. Un thème sans aucune source n’apparaît pas.",
+      "move": "Déplacer {{name}} (flèches haut et bas)",
+      "hidden": "masqué",
+      "show": "Afficher {{name}}"
+    },
+    "reading": {
+      "intro": "La langue de Hodi, ses couleurs et la taille du texte des articles. Ces réglages sont à toi seul et te suivent sur tous tes appareils. Masquer ce que tu as lu garde ton fil court : tout reste dans la recherche, les stats et l’Historique.",
+      "appearance": "Apparence",
+      "appearanceHint": "Poudré : le thème sombre, en rose",
+      "themes": {
+        "system": "Système",
+        "light": "Clair",
+        "dark": "Sombre",
+        "poudre": "Poudré"
+      },
+      "accent": "Couleur d’accent",
+      "accentHint": "Logo, onglet actif, compteurs, progression",
+      "accents": {
+        "auto": "Rouille (celle du thème)",
+        "autoPoudre": "Rose poudré (celle du thème)",
+        "rose": "Rose",
+        "corail": "Corail",
+        "ocre": "Ocre",
+        "vert": "Vert",
+        "turquoise": "Turquoise",
+        "bleu": "Bleu",
+        "lavande": "Lavande"
+      },
+      "textSize": "Taille du texte",
+      "textSizeHint": "S’applique au texte des articles",
+      "sizes": ["Très petit", "Normal", "Grand", "Très grand", "Énorme"],
+      "hideRead": "Masquer les articles lus et les vidéos vues",
+      "hideReadHint": "Ils restent dans les recherches, les stats et l’historique",
+      "history": "Historique",
+      "historyHint": "Tes articles lus et vidéos vues des 7 derniers jours"
+    },
+    "followed": {
+      "intro": "Un mot ou une expression. Les articles et les vidéos qui en parlent prennent une étoile et vont dans Suivis. Avec son alerte, un sujet t’envoie une notification quand un nouvel article en parle, au plus une toutes les 3 heures.",
+      "placeholder": "Ajouter un sujet, ex. « Silksong »",
+      "field": "Sujet à suivre",
+      "add": "Suivre",
+      "emptyTitle": "Aucun sujet suivi",
+      "emptyHint": "Ajoute un mot au-dessus : ses articles iront dans Suivis.",
+      "searching": "Recherche…",
+      "nothingThisWeek": "Rien cette semaine",
+      "thisWeek": "{{count}} cette semaine",
+      "alert": "Alerte",
+      "alertFor": "Alerte pour « {{word}} »",
+      "unfollow": "Ne plus suivre « {{word}} »",
+      "pausedTitle": "Alertes en pause",
+      "paused": "Les alertes demandent d’activer les notifications sur cet appareil : <link>Notifications</link>."
+    },
+    "muted": {
+      "intro": "Les articles et les vidéos dont le titre ou le résumé contient un de ces mots disparaissent du fil, des stories et de Vidéos, mais restent dans la recherche. « foot » masque aussi « football ».",
+      "placeholder": "Ajouter un mot, ex. « Kardashian »",
+      "field": "Mot à masquer",
+      "add": "Masquer",
+      "emptyTitle": "Aucun sujet masqué",
+      "emptyHint": "Ajoute un mot au-dessus : ses articles quitteront ton fil.",
+      "hiddenToday_zero": "Aucun article masqué aujourd’hui",
+      "hiddenToday_one": "{{count}} article masqué aujourd’hui",
+      "hiddenToday_other": "{{count}} articles masqués aujourd’hui",
+      "unmute": "Ne plus masquer « {{word}} »"
+    },
+    "sharing": {
+      "intro": "Envoie des articles aux autres profils du foyer, et reçois les leurs. Dans le lecteur, « Pour… » envoie l’article à un profil, avec un mot si tu veux. Ce qu’on t’envoie arrive dans Partages, jamais dans le fil.",
+      "toggle": "Partager avec le foyer",
+      "onHint": "Tu envoies et tu reçois des articles",
+      "offHint": "Ni envoi ni réception, Partages est caché",
+      "receiveFrom": "Recevoir de",
+      "mutedHint": "Tu ne reçois plus ses articles",
+      "receivingHint": "Tu reçois ses articles",
+      "receive": "Recevoir les partages de {{name}}"
+    },
+    "account": {
+      "browser": "Navigateur",
+      "intro": "Ce que cet appareil garde de Hodi, et pour combien de temps. Ta connexion dure 90 jours, puis le mot de passe est redemandé. Le texte des articles pas encore lus est gardé ici, pour les lire sans réseau.",
+      "sessionHint": "Connecté pour 90 jours, puis le mot de passe est redemandé",
+      "thisDevice": "Cet appareil",
+      "offline": "Hors ligne",
+      "offlineReading": "Lecture hors ligne",
+      "ready_one": "{{count}} prêt ici",
+      "ready_other": "{{count}} prêts ici",
+      "offlineHint": "Le texte des articles du fil pas encore lus, gardé quand l’app est ouverte"
+    },
+    "roles": {
+      "admin": "Admin",
+      "member": "Membre"
+    },
+    "edit": "Modifier",
+    "editName": "Modifier {{name}}",
+    "editProfileTitle": "Modifier le profil",
+    "profileSaved": "Profil enregistré",
+    "me": {
+      "intro": "Ce qui n’appartient qu’à toi : ton nom, ta photo et ton code, qui rend ton profil privé. Tu peux aussi revoir la visite guidée, ou remettre tes réglages et tes statistiques à zéro, sans toucher aux autres profils.",
+      "help": "Aide",
+      "tour": "Visite guidée",
+      "tourHint": "Ajouter une source pas à pas, comme au premier jour",
+      "replay": "Revoir",
+      "reset": "Remise à zéro",
+      "resetSettingsHint": "Thèmes, sources, sujets, apparence : tout revient par défaut",
+      "resetSettingsTitle": "Réinitialiser les réglages ?",
+      "resetSettingsMessage": "Thèmes, sources, sujets et apparence reviennent par défaut.",
+      "resetAction": "Réinitialiser",
+      "resetSettingsDone": "Réglages réinitialisés",
+      "clearStats": "Statistiques de lecture",
+      "clearStatsHint": "Effacées sur tous tes appareils",
+      "clearStatsTitle": "Effacer les stats de lecture ?",
+      "clearStatsMessage": "Tes lectures sont effacées sur tous tes appareils. Ça ne se récupère pas.",
+      "clearAction": "Effacer",
+      "clearStatsDone": "Statistiques effacées",
+      "tourHintTeen": "Ton fil et comment demander une source, pas à pas"
+    },
+    "profiles": {
+      "intro": "Jusqu’à {{max}} lecteurs sur ce compte, chacun avec ses enregistrés, ses lectures, ses statistiques et ses réglages. L’admin ajoute et supprime les profils, les autres modifient le leur. Un profil peut devenir privé avec un code, dans Ton profil.",
+      "deleteTitle": "Supprimer {{name}} ?",
+      "deleteMessage": "Ses enregistrés, ses lectures et ses réglages sont supprimés aussi. Impossible d’annuler.",
+      "deleted": "{{name}} supprimé",
+      "deleteFailed": "La suppression a échoué. Réessaie dans un instant.",
+      "active": "Actif",
+      "add": "Ajouter un profil",
+      "resetPinTitle": "Retirer le code de {{name}} ?",
+      "resetPinMessage": "Son profil redevient public. Il pourra choisir un nouveau code dans Ton profil.",
+      "pinRemoved": "Code de {{name}} retiré",
+      "pinRemoveFailed": "Le code n’a pas pu être retiré. Réessaie dans un instant."
+    },
+    "notifications": {
+      "errors": {
+        "denied": "Les notifications sont refusées pour Hodi. Autorise-les dans les réglages de l’appareil, puis réessaie.",
+        "unavailable": "Les notifications ne sont pas encore activées sur le serveur.",
+        "brave": "Brave bloque les notifications par défaut. Dans brave://settings/privacy, active « Utiliser les services Google pour la messagerie push », relance Brave puis réessaie.",
+        "failed": "L’activation n’a pas marché. Réessaie dans un instant."
+      },
+      "disabled": "Notifications désactivées",
+      "enabled": "Notifications activées",
+      "unsupportedTitle": "Pas disponibles dans ce navigateur",
+      "unsupported": "Sur iPhone, ajoute Hodi à l’écran d’accueil (iOS 16.4 ou plus) et ouvre-le de là.",
+      "onHere": "Activées sur cet appareil",
+      "offHere": "Désactivées sur cet appareil",
+      "perDevice": "Chaque appareil s’active séparément.",
+      "toggle": "Notifications sur cet appareil",
+      "intro": "Hodi peut te prévenir d’un nouvel article sur un sujet suivi avec alerte, d’un article qu’on t’envoie, ou d’une réaction à tes partages. Chaque appareil s’active à part, rien n’est envoyé sans ton accord, et rien n’arrive pendant tes heures de silence.",
+      "test": "Notification de test",
+      "testHint": "Pour vérifier qu’elles arrivent bien.",
+      "testAction": "Tester",
+      "triggers": "Ce qui déclenche une notification",
+      "noSubject": "Tu ne suis encore aucun sujet.",
+      "subjects": "Un nouvel article sur un sujet avec alerte : {{alerts}} sur {{total}}. Une par sujet toutes les 3 heures, 12 par jour au plus.",
+      "shares": "Articles partagés",
+      "sharesHint": "Quand quelqu’un du foyer t’envoie un article ou une vidéo avec « Pour… ».",
+      "reactions": "Réactions à tes partages",
+      "reactionsHint": "Quand quelqu’un réagit d’un emoji à un article que tu lui as envoyé.",
+      "badge": "Pastille sur l’icône",
+      "badgeHint": "Le nombre de nouveaux articles. Revient à zéro à l’ouverture de Suivis.",
+      "silence": "Silence",
+      "dnd": "Ne pas déranger",
+      "dndHint": "Aucune notification pendant ces heures.",
+      "hours": "Plage horaire",
+      "start": "Début du silence",
+      "end": "Fin du silence",
+      "testBody": "Les notifications arrivent bien sur cet appareil."
+    },
+    "data": {
+      "kb": "{{value}} Ko",
+      "mb": "{{value}} Mo",
+      "clearedFreed": "Textes vidés ({{size}} libérés)",
+      "cleared": "Textes vidés",
+      "clearFailed": "Impossible de vider les textes. Réessaie dans un instant.",
+      "server": "Serveur",
+      "database": "Base de données",
+      "articles_one": "{{total}} article, dont {{texts}} avec son texte",
+      "articles_other": "{{total}} articles, dont {{texts}} avec leur texte",
+      "databaseHint": "Articles, réglages, lectures et résumés IA",
+      "texts": "Texte des articles",
+      "textsHint": "Gardé pour les relire hors des flux ; au-delà, le titre et le lien restent",
+      "days_one": "{{count}} jour",
+      "days_other": "{{count}} jours",
+      "kept": "Textes gardés",
+      "keptHint": "Sauf ceux des Enregistrés ; un article rouvert est relu sur son site",
+      "clearTitle": "Vider les textes ?",
+      "clearMessage": "Les textes d’articles gardés sur le serveur sont effacés. Les Enregistrés gardent les leurs.",
+      "clear": "Vider",
+      "clearing": "Vidage…",
+      "backups": "Sauvegardes",
+      "backupsHint": "Une copie de la base chaque nuit, les 7 dernières gardées",
+      "backupsCount_one": "Une copie de la base chaque nuit, les 7 dernières gardées ({{count}} pour l’instant)",
+      "backupsCount_other": "Une copie de la base chaque nuit, les 7 dernières gardées ({{count}} pour l’instant)",
+      "sevenKept": "7 gardées"
+    },
+    "household": {
+      "renameTitle": "Renommer le foyer",
+      "renameFailed": "Le nom n’a pas pu être enregistré. Réessaie dans un instant.",
+      "wrongPassword": "Le mot de passe actuel n’est pas le bon.",
+      "passwordFailed": "Le mot de passe n’a pas pu être changé. Réessaie dans un instant.",
+      "passwordTitle": "Changer le mot de passe",
+      "currentPassword": "Mot de passe actuel",
+      "newPassword": "Nouveau mot de passe",
+      "signedOut": "Autres appareils déconnectés",
+      "signOutFailed": "Les autres appareils n’ont pas pu être déconnectés. Réessaie dans un instant.",
+      "intro": "Ce qui vaut pour toute l’installation, et que seul l’admin voit : le mot de passe, les sources et l’IA que partagent tous les profils. Le fuseau horaire fixe le changement de jour du fil, du Résumé du jour et des heures calmes ; le pays aide l’IA à situer tes questions.",
+      "loadFailed": "Impossible de lire les réglages du foyer. Réessaie dans un instant.",
+      "heading": "Le foyer",
+      "name": "Nom",
+      "nameHint": "« {{name}} » · affiché sur l’écran de connexion",
+      "rename": "Renommer",
+      "passwordChanged": "Le même pour tous les profils · changé le {{date}}",
+      "passwordHint": "Le même pour tous les profils",
+      "otherDevices": "Autres appareils",
+      "otherDevicesHint": "Ils devront retaper le mot de passe du foyer",
+      "signOutTitle": "Déconnecter les autres appareils ?",
+      "signOutMessage": "Tous les appareils du foyer, sauf celui-ci, reviennent à l’écran de connexion.",
+      "signOut": "Déconnecter",
+      "region": "Région",
+      "timeZone": "Fuseau horaire",
+      "timeZoneHint": "Nouveau jour, Résumé du jour, heures calmes · {{offset}}",
+      "regionFailed": "La région n’a pas pu être enregistrée. Réessaie dans un instant.",
+      "game": "Jeu",
+      "gameToggle": "Niveaux et badges",
+      "gameHint": "Des points pour chaque lecture, un défi et un classement chaque semaine",
+      "gameOn": "Jeu activé",
+      "gameOff": "Jeu désactivé",
+      "gameFailed": "Le jeu n’a pas pu être changé. Réessaie dans un instant."
+    },
+    "proposals": {
+      "errors": {
+        "limit": "Le foyer a atteint son maximum de sources.",
+        "followed": "Cette source est déjà suivie.",
+        "none": "Ce site n’a plus de flux lisible. Essaie une autre source.",
+        "failed": "Le site ne répond pas. Réessaie dans un instant."
+      },
+      "trying": "Hodi cherche le flux du site et essaie trois articles.",
+      "inLanguage": {
+        "fr": "En français",
+        "en": "En anglais"
+      }
+    },
+    "addSource": {
+      "replace": "Remplacer {{name}}",
+      "replaceTitle": "Remplacer la source",
+      "title": "Ajouter une source",
+      "how": "Comment ajouter",
+      "byLink": "Par un lien",
+      "forTopic": "Pour un thème",
+      "pickTopic": "Choisis un thème",
+      "changeTopic": "Changer de thème"
+    },
+    "about": {
+      "intro": "Hodi est un logiciel libre, sous licence AGPL-3.0 : son code est ouvert à tous, et chacun peut l’installer chez lui. Ici, la version de cette installation et les crédits de ceux qui l’ont rendu possible.",
+      "app": "Hodi",
+      "version": "Version",
+      "versionHint": "Le numéro de cette installation",
+      "licence": "Licence",
+      "licenceHint": "Logiciel libre, sous licence AGPL-3.0",
+      "source": "Code source",
+      "credits": "Crédits",
+      "people": {
+        "antho": {
+          "name": "Antho",
+          "role": "Idée, design et direction du projet"
+        },
+        "claude": {
+          "name": "Claude, d’Anthropic",
+          "role": "L’IA qui a écrit le code avec Antho"
+        },
+        "gptImage": {
+          "name": "GPT Image, d’OpenAI",
+          "role": "Les avatars des profils Enfant"
+        },
+        "lucide": {
+          "name": "Lucide",
+          "role": "Les icônes, sous licence ISC"
+        },
+        "fonts": {
+          "name": "Bebas Neue, Archivo et Geist",
+          "role": "Les polices, sous licence SIL OFL"
+        }
+      }
+    }
+  },
+  "pin": {
+    "wrongCurrent": "Le code actuel n’est pas le bon.",
+    "tooMany": "Trop d’essais. Réessaie dans quelques minutes.",
+    "saveFailed": "Le code n’a pas pu être enregistré. Réessaie dans un instant.",
+    "nowPrivate": "Profil privé",
+    "nowPublic": "Profil public",
+    "changed": "Code changé",
+    "setTitle": "Rendre ton profil privé",
+    "removeTitle": "Rendre ton profil public",
+    "changeTitle": "Changer le code",
+    "lockedHint": "Ton code est demandé dans « Qui lit ? » avant d’ouvrir ton profil",
+    "openHint": "Tout le monde dans le foyer peut ouvrir ton profil",
+    "digits": "4 chiffres",
+    "change": "Changer",
+    "yourCurrent": "Ton code actuel",
+    "current": "Code actuel",
+    "yours": "Ton code (4 chiffres)",
+    "new": "Nouveau code (4 chiffres)",
+    "again": "Encore une fois",
+    "mismatch": "Les deux codes ne sont pas les mêmes.",
+    "makePrivate": "Rendre privé",
+    "makePublic": "Rendre public"
+  },
+  "addSource": {
+    "videos": "Ses vidéos arrivent dans Vidéos.",
+    "readable_one": "{{count}} article sur {{tried}} s’ouvre dans Hodi.",
+    "readable_other": "{{count}} articles sur {{tried}} s’ouvrent dans Hodi.",
+    "notReadable": "Ses articles ne s’ouvrent pas dans Hodi : leur résumé s’affiche, avec un lien vers le site.",
+    "seeSite": "Voir le site de {{name}}",
+    "added": "Ajoutée",
+    "removeTopic": "Retirer {{name}}",
+    "anotherTopic": "Un autre thème ?",
+    "typeTopic": "Tape un thème, ex. « Sport »",
+    "errors": {
+      "invalid": "Ce n’est pas un lien. Colle l’adresse d’un site, d’un flux, ou d’une chaîne YouTube.",
+      "blocked": "Cette adresse n’est pas publique : Hodi ne va pas la chercher.",
+      "none": "Aucun flux trouvé à cette adresse. Essaie la page d’accueil du site ou l’adresse de son flux RSS.",
+      "empty": "Ce flux est vide pour le moment.",
+      "failed": "Le site ne répond pas. Réessaie dans un instant.",
+      "reddit": "Hodi ne suit plus Reddit, qui ferme ses flux.",
+      "limit": "Le foyer a atteint son maximum de sources. Retires-en une pour en ajouter une autre.",
+      "followed": "Cette source est déjà suivie.",
+      "bad_section": "Choisis un autre thème pour cette source."
+    },
+    "origins": {
+      "feed": "Flux",
+      "youtube": "YouTube"
+    },
+    "placeholder": "Lien d’un site, d’un flux RSS, d’une chaîne YouTube…",
+    "field": "Lien de la source à ajouter",
+    "searching": "Recherche…",
+    "search": "Chercher",
+    "trying": "Hodi cherche le flux et essaie trois articles. Ça prend quelques secondes.",
+    "followedAs": "Déjà suivie sous le nom « {{name}} ».",
+    "whichTopics": "Dans quels thèmes ?",
+    "whichSection": "Dans quelle section de Vidéos ?",
+    "topics": "Thèmes de la source",
+    "count": "{{added}} / {{limit}} sources du foyer",
+    "adding": "Ajout…"
+  },
+  "suggest": {
+    "add": {
+      "limit": "Le foyer a atteint son maximum de sources.",
+      "followed": "Déjà suivie.",
+      "failed": "La source n’a pas pu être ajoutée. Réessaie dans un instant."
+    },
+    "capped": "Plus de suggestions aujourd’hui : la limite du jour est atteinte.",
+    "offer": "Des sources pour {{topic}}, trouvées par l’IA.",
+    "pickTopic": "Choisis un thème, l’IA te propose des sources.",
+    "button": "Suggérer",
+    "loading": "L’IA propose des sites, puis Hodi cherche leur flux et essaie leurs articles.",
+    "errors": {
+      "unavailable": "L’IA n’est pas activée sur ce serveur.",
+      "not_found": "Ce thème n’existe plus.",
+      "limited": "Plus de suggestions pour aujourd’hui : la limite du jour est atteinte. Reviens demain.",
+      "refused": "L’IA n’a pas pu proposer de sources pour ce thème.",
+      "failed": "Les suggestions n’ont pas pu être faites. Réessaie dans un instant."
+    },
+    "noFeed": "Aucun site proposé n’a de flux lisible. Réessaie plus tard.",
+    "last": "Dernier article : {{title}}"
+  },
+  "sources": {
+    "deleteMessage": "Elle disparaît pour tout le foyer et ne reviendra pas d’elle-même.",
+    "deleted": "{{name}} supprimée",
+    "deleteFailed": "La source n’a pas pu être supprimée. Réessaie dans un instant.",
+    "hideLowTitle_one": "Masquer la source peu ouverte ?",
+    "hideLowTitle_other": "Masquer les {{count}} sources peu ouvertes ?",
+    "hideOneTitle": "Masquer {{name}} ?",
+    "hideLowMessage": "Leurs articles quittent le fil et les thèmes de ce profil. Tu peux les réafficher ici une par une.",
+    "hideAll": "Tout masquer",
+    "hidden_one": "Source masquée",
+    "hidden_other": "{{count}} sources masquées",
+    "replaced": "Source ajoutée, {{name}} masquée",
+    "added": "Source ajoutée",
+    "topicsSaved": "Thèmes enregistrés",
+    "topicsFailed": "Les thèmes n’ont pas pu être enregistrés. Réessaie dans un instant.",
+    "kinds": {
+      "article": "Articles",
+      "video": "Vidéos",
+      "podcast": "Podcasts"
+    },
+    "groups": {
+      "mine": "Mes sources",
+      "channels": "Mes chaînes",
+      "household": "Ajoutées par le foyer",
+      "base": "Sources de base"
+    },
+    "status": {
+      "error": "Erreur"
+    },
+    "deletedProfile": "un profil supprimé",
+    "errorTitle": "Erreur : {{error}}",
+    "by": "Par {{name}}",
+    "changeTopicsOf": "Changer les thèmes de {{name}}",
+    "changeTopics": "Changer les thèmes",
+    "seeSite": "Voir le site",
+    "deleteFor": "Supprimer {{name}} pour tout le foyer",
+    "intro": "Les sites et les chaînes qui remplissent ton fil, vérifiés toutes les 15 minutes. Une source que tu ajoutes rejoint la liste de tout le foyer, masquée pour les autres profils : chacun l’affiche s’il le veut. Les sources de base se masquent mais ne se suppriment pas.",
+    "search": "Chercher une source ou un thème",
+    "searchLabel": "Chercher une source",
+    "filter": "Filtrer les sources",
+    "filters": {
+      "all": "Toutes",
+      "low": "Peu ouvertes",
+      "error": "En erreur",
+      "hidden": "Masquées"
+    },
+    "filterTopic": "Filtrer par thème",
+    "allTopics": "Tous les thèmes",
+    "loadFailed": "Impossible de charger les sources. Réessaie dans un instant.",
+    "noMatch": "Aucune source ne correspond.",
+    "topicsOf": "Thèmes de {{name}}",
+    "groupIntros": {
+      "mine": "Les sites que tu as ajoutés. Toi seul, et l’admin, pouvez changer leurs thèmes ou les supprimer.",
+      "channels": "Les chaînes YouTube et les podcasts que tu suis. Ils arrivent dans Vidéos, jamais dans le fil.",
+      "household": "Ajoutées par les autres profils. Elles restent masquées pour toi tant que tu ne les affiches pas.",
+      "parents": "Les sources que tes parents ont choisies pour toi. Masque celles qui ne t’intéressent pas.",
+      "base": "Choisies avec Hodi pour bien démarrer. Tu peux les masquer, pas les supprimer.",
+      "requests": "Les sources que tu as demandées. Elles arrivent dans ton fil quand tes parents les acceptent."
+    },
+    "moreFor": "Actions pour {{name}}",
+    "replace": "Remplacer par une autre",
+    "delete": "Supprimer la source",
+    "filterValue": "Filtrer les sources : {{value}}"
+  },
+  "ai": {
+    "kinds": {
+      "summary": "Résumés d’articles",
+      "question": "Questions sur un article",
+      "dailySummary": "Résumé du jour",
+      "sources": "Suggestions de sources"
+    },
+    "resetKindLabel": "Réinitialiser : {{kind}}",
+    "replaceKey": "Remplacer la clé",
+    "turnOn": "Activer l’IA",
+    "keyFailed": "La clé n’a pas pu être enregistrée. Réessaie dans un instant.",
+    "countryFailed": "Le pays n’a pas pu être enregistré. Réessaie dans un instant.",
+    "on": "IA activée",
+    "removed": "IA retirée",
+    "removeTitle": "Retirer la clé ?",
+    "removeMessage": "Les boutons violets disparaissent pour tout le foyer. Ce que l’IA a déjà écrit reste.",
+    "remove": "Retirer",
+    "removeFailed": "La clé n’a pas pu être retirée. Réessaie dans un instant.",
+    "provider": "Fournisseur",
+    "model": "Modèle {{model}}",
+    "key": "Clé d’API",
+    "replace": "Remplacer",
+    "countryHint": "Situe les recherches web de l’IA : « il fera beau demain ? »",
+    "off": "IA non activée",
+    "offAdmin": "Ajoute une clé d’API pour les résumés, les questions et le Résumé du jour.",
+    "addKey": "Ajouter une clé",
+    "resetDone": "Réinitialisé",
+    "resetFailed": "La réinitialisation a échoué. Réessaie dans un instant.",
+    "resetHousehold": {
+      "summary": "Réinitialiser les résumés du foyer ?",
+      "question": "Réinitialiser les questions du foyer ?",
+      "dailySummary": "Réinitialiser les Résumés du jour du foyer ?",
+      "sources": "Réinitialiser les suggestions de sources du foyer ?"
+    },
+    "resetHouseholdAll": "Tout réinitialiser pour le foyer ?",
+    "resetHouseholdMessage": "Les appels des dernières 24 heures ne comptent plus, pour aucun profil.",
+    "resetProfile": {
+      "summary": "Réinitialiser les résumés de {{name}} ?",
+      "question": "Réinitialiser les questions de {{name}} ?",
+      "dailySummary": "Réinitialiser les Résumés du jour de {{name}} ?",
+      "sources": "Réinitialiser les suggestions de sources de {{name}} ?"
+    },
+    "resetProfileAll": "Tout réinitialiser pour {{name}} ?",
+    "resetProfileMessage": "{{name}} retrouve ses crédits. Le total du foyer, lui, ne change pas.",
+    "intro": "Chaque bouton violet est un appel à l’IA, payé sur les crédits du foyer : rien ne part sans un clic. Le plafond du foyer se partage à parts égales entre les profils et se compte sur 24 heures glissantes. Plafond atteint, les boutons IA se désactivent.",
+    "loadFailed": "Impossible de lire les appels du jour. Réessaie dans un instant.",
+    "offMember": "L’admin du foyer peut l’activer ici avec une clé d’API.",
+    "householdDay": "Tout le foyer · 24 heures",
+    "profilesDay": "Par profil · 24 heures",
+    "yoursOf": "Tes appels · {{name}} · 24 heures",
+    "yours": "Tes appels · 24 heures",
+    "introAdmin": "Réinitialiser un profil lui rend ses crédits sans baisser le total du foyer."
+  },
+  "push": {
+    "someone": "Quelqu’un du foyer",
+    "shared": {
+      "article": "{{name}} t’envoie un article",
+      "video": "{{name}} t’envoie une vidéo",
+      "podcast": "{{name}} t’envoie un épisode"
+    },
+    "note": "« {{note}} » · {{title}}",
+    "reacted": "{{name}} a réagi {{reaction}}"
+  },
+  "passwordChange": {
+    "confirm": "Confirme le nouveau mot de passe"
+  },
+  "hourCycle": {
+    "label": "Format des heures",
+    "hint": "Pour tous les profils : réglages, notifications, horaires",
+    "option24": "24 h",
+    "option12": "12 h",
+    "example24": "21:00",
+    "example12": "9:00 PM"
+  },
+  "confirm": {
+    "history": {
+      "title": "Effacer ton historique ?",
+      "message": "Les articles que tu as <b>lus</b> ou <b>masqués</b> réapparaissent dans ton fil, sur <b>tous tes appareils</b>. Tes statistiques de lecture et tes points ne changent pas.",
+      "button": "Effacer l’historique"
+    },
+    "deleteProfile": {
+      "title": "Supprimer ce profil ?",
+      "message": "Le profil de <b>{{name}}</b> est supprimé avec ses enregistrés, ses lectures, ses points et ses réglages. <b>Il n’y a pas de retour en arrière.</b>",
+      "button": "Supprimer le profil"
+    },
+    "removePin": {
+      "title": "Retirer le code privé ?",
+      "message": "Le profil de <b>{{name}}</b> s’ouvrira <b>sans code</b> pour tout le foyer. {{name}} pourra choisir un nouveau code dans <i>Ton profil</i>.",
+      "button": "Retirer le code"
+    },
+    "deleteSource": {
+      "title": "Supprimer la source ?",
+      "message": "La source <b>{{name}}</b> est supprimée <b>pour tout le foyer</b> : ses articles quittent le fil de chaque profil. Elle ne reviendra que si quelqu’un l’ajoute à nouveau.",
+      "button": "Supprimer la source"
+    },
+    "hideSource": {
+      "title": "Masquer la source ?",
+      "message": "Les articles de <b>{{name}}</b> quittent ton fil et tes thèmes, <b>pour ton profil seulement</b>. Tu pourras la réafficher ici.",
+      "button": "Masquer la source"
+    },
+    "hideSources": {
+      "title": "Masquer {{count}} sources ?",
+      "message": "Les articles de ces {{count}} sources quittent ton fil et tes thèmes, <b>pour ton profil seulement</b>. Tu pourras les réafficher ici, une par une.",
+      "button": "Masquer les {{count}} sources"
+    },
+    "clearTexts": {
+      "title": "Libérer de l’espace ?",
+      "message": "Hodi garde sur son serveur une copie des articles déjà ouverts, pour les afficher plus vite. Ces copies sont effacées <b>pour tout le foyer</b>, sauf celles des articles <b>enregistrés</b>. Un article rouvert se rechargera depuis son site.",
+      "button": "Libérer de l’espace"
+    },
+    "resetSettings": {
+      "title": "Réinitialiser tes réglages ?",
+      "message": "Tes thèmes, tes sources, tes sujets et ton apparence reviennent aux réglages de départ, <b>pour ton profil seulement</b>. Tes enregistrés, tes lectures et tes points ne changent pas.",
+      "button": "Réinitialiser les réglages"
+    },
+    "clearStats": {
+      "title": "Effacer tes statistiques ?",
+      "message": "Tes statistiques de lecture sont effacées sur <b>tous tes appareils</b> et ne se récupèrent pas. Tes points et tes badges du jeu, eux, restent.",
+      "button": "Effacer les statistiques"
+    },
+    "removeKey": {
+      "title": "Retirer la clé de l’IA ?",
+      "message": "Les boutons violets disparaissent <b>pour tout le foyer</b>, jusqu’à ce qu’une nouvelle clé soit ajoutée. Les résumés et les réponses déjà écrits par l’IA restent.",
+      "button": "Retirer la clé"
+    },
+    "resetHousehold": {
+      "title": "Recharger l’IA du foyer ?",
+      "message": "Ce qui a été demandé à l’IA ces dernières 24 heures ne compte plus, <b>pour tous les profils</b> : chacun retrouve ses crédits du jour.",
+      "button": "Recharger"
+    },
+    "resetHouseholdKind": {
+      "title": "Recharger l’IA du foyer ?",
+      "message": "Ce qui a été demandé à l’IA pour <b>{{kind}}</b> ces dernières 24 heures ne compte plus, <b>pour tous les profils</b>.",
+      "button": "Recharger"
+    },
+    "resetProfile": {
+      "title": "Recharger l’IA du profil ?",
+      "message": "<b>{{name}}</b> retrouve tous ses crédits IA du jour. Les crédits du foyer, eux, ne bougent pas.",
+      "button": "Recharger"
+    },
+    "resetProfileKind": {
+      "title": "Recharger l’IA du profil ?",
+      "message": "<b>{{name}}</b> retrouve ses crédits du jour pour <b>{{kind}}</b>. Les crédits du foyer, eux, ne bougent pas.",
+      "button": "Recharger"
+    },
+    "logoutOthers": {
+      "title": "Déconnecter les appareils ?",
+      "message": "Tous les appareils du foyer <b>sauf celui-ci</b> reviennent à l’écran de connexion. Il faudra y retaper le mot de passe du foyer.",
+      "button": "Déconnecter les appareils"
+    },
+    "kinds": {
+      "summary": "les résumés",
+      "question": "les questions",
+      "dailySummary": "les Résumés du jour",
+      "sources": "les suggestions de sources"
+    }
+  },
+  "dialogIntro": {
+    "pinOpen": "<b>{{name}}</b> a un profil privé. Tape son code pour l’ouvrir.",
+    "parentalOpen": "Ce profil adulte est protégé par le <b>code parental</b>. Tape-le pour l’ouvrir.",
+    "shortcuts": "Sur ordinateur, sans quitter le clavier. Appuie sur <b>?</b> n’importe où pour les revoir.",
+    "parentalSet": "Le <b>code parental</b> est demandé pour ouvrir un profil adulte qui n’est pas privé : les jeunes ne peuvent pas y entrer.",
+    "codeChange": "Le nouveau code remplace l’ancien <b>sur tous les appareils</b>.",
+    "parentalRemove": "Les profils adultes s’ouvriront <b>sans code</b> sur tous les appareils, y compris pour les jeunes.",
+    "pinSet": "Un profil privé s’ouvre <b>seulement avec ton code</b>, dans « Qui lit ? » sur chaque appareil.",
+    "pinRemove": "Tout le foyer pourra ouvrir ton profil <b>sans code</b>.",
+    "timeZone": "Il fixe <b>le début de chaque jour</b> : nouveau fil, Résumé du jour, heures calmes et temps d’écran des jeunes.",
+    "country": "Il situe les <b>recherches web de l’IA</b> : « il fera beau demain ? » cherche près de chez toi.",
+    "share": "Le <b>lien d’origine</b>, vers le site qui l’a publié, à envoyer où tu veux.",
+    "addSource": "Colle le <b>lien d’un site</b>, ou choisis un thème pour voir des suggestions. La source arrive dans le fil de <b>tout le foyer</b>.",
+    "replaceSource": "Trouve une autre source pour remplacer <b>{{name}}</b>. Elle est masquée dès que la nouvelle est ajoutée.",
+    "aiTurnOn": "Colle une <b>clé d’API</b> de ton fournisseur. Elle est vérifiée sans dépenser de crédits, puis gardée sur ce serveur.",
+    "aiReplace": "La nouvelle clé remplace l’ancienne <b>pour tout le foyer</b>. Elle est vérifiée sans dépenser de crédits.",
+    "rename": "Le nom du foyer s’affiche <b>sur l’écran de connexion</b> de chaque appareil.",
+    "password": "Le même mot de passe pour <b>tous les profils</b>. Les autres appareils devront se reconnecter, celui-ci reste connecté.",
+    "sourceTopics": "Choisis où ranger <b>{{name}}</b>. Ses articles apparaissent dans <b>chaque thème</b> coché.",
+    "daily": "Le temps de lecture permis chaque jour. Une fois écoulé, l’app se met en pause <b>jusqu’à demain</b>.",
+    "window": "Les heures où l’app s’ouvre. En dehors, elle reste fermée et dit <b>à quelle heure elle rouvre</b>.",
+    "quiet": "Pendant ces heures, <b>aucune notification</b> n’arrive sur ses appareils. L’app reste ouverte.",
+    "explain": "Chaque fois que <b>{{name}}</b> demande à l’IA d’expliquer un article ou un mot. Compté sur les <b>crédits du foyer</b>.",
+    "week": "Son temps à l’écran et ses lectures des 7 derniers jours, <b>jamais les titres</b>.",
+    "topics": "Choisis les thèmes visibles dans son fil. Un thème coupé disparaît <b>avec ses sources</b>, sans rien supprimer : tu peux le rallumer quand tu veux.",
+    "sources": "Le catalogue jeunesse, rangé par thème. Les sources de base sont allumées au départ : garde celles qui lui conviennent. <b>Seules les sources allumées</b> arrivent dans son fil.",
+    "shareTo": "Choisis un ou plusieurs profils du foyer. L’article arrive dans leurs <b>Partages</b>, avec ton mot si tu en écris un.",
+    "ask": "Colle le lien d’un site ou d’une chaîne YouTube. <b>Tes parents</b> reçoivent ta demande : s’ils l’acceptent, elle arrive dans ton fil ou tes Vidéos.",
+    "request": "<b>{{name}}</b> aimerait ajouter cette source à son fil. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, rangée dans le thème ci-dessous.",
+    "requestChannel": "<b>{{name}}</b> aimerait suivre cette chaîne. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, dans ses Vidéos."
+  }
+}

@@ -1,0 +1,172 @@
+/* A video open, from the charter's "Écouter & Regarder" board: the source bar, its title, the player, then
+   what it is about. */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-bottom: 64px;
+}
+
+.panel > :not(.phoneHeader) {
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+/* The player beyond the text's column, across the panel up to 860px. */
+.panel.desktop > .media {
+  max-width: 860px;
+}
+
+.bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  /* The line under it on the sidebar's. */
+  min-height: 68px;
+  padding: 14px 0;
+}
+
+/* The line runs edge to edge of the panel, as every header's: the panel's scroll clips it. */
+.bar::after {
+  content: '';
+  position: absolute;
+  right: -100vw;
+  bottom: -2px;
+  left: -100vw;
+  height: 2px;
+  background: var(--control);
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.placeholder {
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: linear-gradient(160deg, var(--raised), var(--control) 70%);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: 36px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+}
+
+.byline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.channel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date {
+  margin-top: -4px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.summary {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 12;
+  line-clamp: 12;
+}
+
+/* ---- Phone ---- */
+
+/* As under an article: past a line. */
+.reply {
+  padding-top: 20px;
+  border-top: 1px solid var(--divider);
+}
+
+.phone {
+  gap: 22px;
+  padding: 0 var(--gutter) calc(64px + env(safe-area-inset-bottom));
+}
+
+/* Across the screen, square-edged. */
+@media (max-width: 699px) {
+  .phone > .media {
+    width: auto;
+    max-width: none;
+    margin-inline: calc(-1 * var(--gutter));
+  }
+
+  .phone > .media > * {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+}
+
+/* The header across the phone's margins. */
+.phoneHeader {
+  margin: 0 calc(-1 * var(--gutter));
+}
+
+.phone .title {
+  font-size: 28px;
+}
+
+/* Tablets held upright. */
+@media (min-width: 700px) {
+  /* The bar across the page as on every screen; the video and its text in the article's column. */
+  .phone {
+    max-width: none;
+  }
+
+  .phone > :not(.phoneHeader) {
+    width: 100%;
+    max-width: 680px;
+    margin-inline: auto;
+  }
+
+  .phone .title {
+    font-size: 36px;
+  }
+}

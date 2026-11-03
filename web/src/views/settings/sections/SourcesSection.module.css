@@ -1,0 +1,85 @@
+/* The search, then the button that adds a source, as tall as it. */
+.searchLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchLine > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The state's select, then the topics' field. */
+.filters {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: -4px;
+}
+
+/* A group's sources, as Réglages' other lists: rows with a line between them. */
+.list {
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 4px;
+  cursor: pointer;
+}
+
+/* A flex box, not a line: an inline avatar would sit on a text line with room under it for descenders, and
+   look higher than the name and site beside it. */
+.avatar {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* A topic's name, held at the top of its group's card while its sources scroll. Over the card's top padding (12px),
+   so no row shows above it, and thinner once held: the space before it in the list is a margin, which scrolls away. */
+.section > .topicSeparator {
+  top: -12px;
+  margin-top: 12px;
+  padding-top: 14px;
+}
+
+.section:first-child > .topicSeparator {
+  margin-top: 4px;
+}
+
+/* A teen's requests: nothing to switch. */
+.list:not(:has(> .row > .actions)) > .row {
+  cursor: default;
+}
+
+.list > * + * {
+  border-top: 1px solid var(--divider);
+}
+
+.name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A phone has no room for the error's chip: "Erreur" heads its line, in the error's colour. */
+.errorHint {
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.more {
+  position: relative;
+}

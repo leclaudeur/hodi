@@ -1,0 +1,83 @@
+/* "Envoyer à…": the profiles as the settings' rows, a round box at the end, then the two answers. */
+
+.list {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--column);
+}
+
+.list > li + li {
+  border-top: 1px solid var(--divider);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 66px;
+  padding: 10px 16px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--rust);
+  outline-offset: -2px;
+}
+
+/* The ring follows the list's corners on its first and last rows. */
+.list > li:first-child .row {
+  border-radius: 15px 15px 0 0;
+}
+
+.list > li:last-child .row {
+  border-radius: 0 0 15px 15px;
+}
+
+.list > li:only-child .row {
+  border-radius: 15px;
+}
+
+@media (hover: hover) {
+  .row:hover {
+    background: var(--card-hover);
+  }
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.check {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+}
+
+.on {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.empty {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* The paper plane leans up and right in its box: nudged back so it looks centred in the round. */
+.button svg {
+  transform: translate(-1px, 1px);
+}

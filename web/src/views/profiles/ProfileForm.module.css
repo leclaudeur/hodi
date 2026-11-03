@@ -1,0 +1,251 @@
+/* Adding or changing a profile: photo, first name, colour. */
+
+.form {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* The avatar centred above the fields, at every width. */
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.avatarButton {
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.avatarButton:focus-visible {
+  outline: 2px solid var(--rust);
+  outline-offset: 3px;
+}
+
+/* The camera, on the avatar's edge, ringed with the card's colour. */
+.badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--control);
+  box-shadow: 0 0 0 3px var(--card);
+  color: var(--text);
+  transition: background-color 0.15s ease;
+}
+
+.avatarButton:hover .badge {
+  background: var(--control-hover);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.photoHint {
+  line-height: 1.6;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.label {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field input {
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  outline: none;
+  background: var(--control);
+  caret-color: var(--rust);
+  color: var(--text);
+  font-size: 15px;
+}
+
+.field input:focus {
+  border-color: var(--rust-border);
+}
+
+.colors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* A legend takes no part in its fieldset's gap: the same 8px as under "Prénom", less the swatches'
+   2px ring space. */
+.colors > legend {
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+/* A child's avatars: six a row, on its colour's gradient, the one picked ringed as a colour swatch. */
+.avatars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.avatarOption {
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 18%,
+    color-mix(in srgb, var(--topic) 15%, white) 0%,
+    color-mix(in srgb, var(--topic) 90%, white) 105%
+  );
+  cursor: pointer;
+  transition: box-shadow var(--duration) var(--ease);
+}
+
+.avatarOption img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.avatarOption[aria-pressed='true'] {
+  box-shadow:
+    0 0 0 2px var(--card),
+    0 0 0 4px var(--text);
+}
+
+.avatarOption:focus-visible {
+  outline: 2px solid var(--rust);
+  outline-offset: 4px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--divider);
+}
+
+/* In a dialog, as its DialogActions: held at the foot of the body while it scrolls, under an inset line. */
+dialog .actions {
+  position: sticky;
+  bottom: calc(var(--pad) * -1);
+  z-index: 1;
+  margin: 0 calc(var(--pad) * -1) calc(var(--pad) * -1);
+  padding: 16px var(--pad) var(--pad);
+  border-top: 0;
+  background: var(--dialog-surface, var(--card));
+}
+
+dialog .actions::before {
+  position: absolute;
+  top: 0;
+  right: var(--pad);
+  left: var(--pad);
+  border-top: 1px solid var(--divider);
+  content: '';
+}
+
+/* Narrow (a phone, a tablet's settings column): "Supprimer" keeps its icon only, round, so the row stays on
+   one line. */
+@container (max-width: 420px) {
+  .actions .compact {
+    width: var(--button-height);
+    padding: 0;
+  }
+
+  .compactLabel {
+    display: none;
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* In place of the hint when Enfant is chosen for a new profile: that profile comes later. */
+.soon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+.soonAvatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 18%,
+    color-mix(in srgb, var(--topic) 15%, white) 0%,
+    color-mix(in srgb, var(--topic) 90%, white) 105%
+  );
+}
+
+.soonAvatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.soonText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.soonText b {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}

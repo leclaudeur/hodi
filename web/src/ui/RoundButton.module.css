@@ -1,0 +1,140 @@
+.button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--control);
+  color: var(--text-nav);
+  transition:
+    background-color var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+/* :where() keeps this at the variants' weight: a pressed or violet button keeps its own colour on hover. */
+.button:where(:not(:disabled)):hover {
+  color: var(--text);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+@media (hover: hover) {
+  .default:not(:disabled):hover {
+    background: var(--control-hover);
+  }
+}
+
+.size28 {
+  width: 28px;
+  height: 28px;
+}
+
+.card {
+  margin: -4px 0;
+}
+
+.size34 {
+  width: 34px;
+  height: 34px;
+}
+
+.size44 {
+  width: 44px;
+  height: 44px;
+}
+
+/* What deletes: red, as Button's danger look. */
+.danger {
+  border-color: var(--destructive-border);
+  background: var(--destructive);
+  color: var(--destructive-text);
+}
+
+.danger:hover {
+  color: var(--destructive-text);
+}
+
+@media (hover: hover) {
+  .danger:not(:disabled):hover {
+    background: var(--destructive-hover);
+  }
+}
+
+/* A page's main action where a labelled button has no room (Ajouter une source on a phone): Button's primary. */
+.primary {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.primary:hover {
+  color: var(--bg);
+}
+
+@media (hover: hover) {
+  .primary:not(:disabled):hover {
+    background: color-mix(in srgb, var(--text) 86%, var(--bg));
+  }
+}
+
+/* Pressed: a light pill, the icon filled where it can be. */
+.on {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.on:hover {
+  color: var(--bg);
+}
+
+/* Floating over an image or the page (mobile): a light blur, used sparingly for the battery. */
+.glass {
+  border-color: var(--glass-border);
+  background: var(--glass-fill);
+  box-shadow: 0 4px 16px var(--shadow);
+  color: var(--text);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+/* Violet: a click that spends API credits. */
+.ai {
+  border-color: var(--ai-button-border);
+  background: var(--ai-button);
+  color: var(--ai-text);
+}
+
+.ai:hover {
+  color: var(--ai-text);
+}
+
+/* Over a picture: a darker veil so the icon reads on any image. */
+.image {
+  border-color: var(--image-button-border);
+  background: var(--image-veil);
+  color: var(--text);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+.busy {
+  animation: spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .busy {
+    animation-duration: 3s;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,179 @@
+/* The guided tour: over everything, the dialogs included (it goes inside the open one). */
+
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Around the hole: they take the presses, the hole's shadow darkens them. */
+.pane {
+  position: fixed;
+  pointer-events: auto;
+}
+
+.dim {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 9, 0.72);
+  pointer-events: auto;
+}
+
+/* What to press, lit: the rest of the screen dimmed by its shadow, a thin accent edge and a soft glow. From one
+   step to the next it moves at once, no glide. */
+.hole {
+  position: fixed;
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--rust) 80%, transparent),
+    0 0 28px 6px color-mix(in srgb, var(--rust) 28%, transparent),
+    0 0 0 200vmax rgba(8, 8, 9, 0.72);
+  pointer-events: none;
+}
+
+.bubble {
+  /* The dialogs' header tint (ui/Dialog). */
+  --tour-header: color-mix(in srgb, var(--control) 80%, var(--card));
+
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 24px 64px var(--shadow);
+  color: var(--text);
+  pointer-events: auto;
+}
+
+/* Its tip, pointing at what to press. */
+.below::before,
+.above::before {
+  position: absolute;
+  left: var(--tip);
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  content: '';
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.below::before {
+  top: -7px;
+  background: var(--tour-header);
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.above::before {
+  bottom: -7px;
+  border-top: 0;
+  border-left: 0;
+}
+
+/* No target (yet), or the end: in the middle of the screen. */
+.end {
+  top: 50%;
+  left: 50%;
+  width: min(360px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+}
+
+/* Edge to edge, as the dialogs' header: the progress, then the title. */
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 -20px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--divider);
+  border-radius: 15px 15px 0 0;
+  background: var(--tour-header);
+}
+
+.bars {
+  display: flex;
+  gap: 4px;
+}
+
+.bars i {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+
+.bars .done {
+  background: var(--rust);
+}
+
+.count {
+  color: var(--rust-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+/* Under a line that stops at the margins, as the dialogs' answers: "Passer" far left. */
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 22px;
+  padding-block: 16px;
+  border-top: 1px solid var(--divider);
+}
+
+/* The counter beside "Suivant", on the right. */
+.ahead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* A single answer ("C'est parti") on the right. */
+.foot > :only-child {
+  margin-left: auto;
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.text {
+  margin-top: 18px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* The topics to pick: a little wider, the capsules wrapping. */
+.wide {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+  margin-top: 18px;
+}
+
+/* One sentence per line; a long one wraps evenly. */
+.line {
+  display: block;
+  text-wrap: balance;
+}
+
+/* The end: lighter, Sport's list shows through. */
+.soft {
+  background: rgba(8, 8, 9, 0.5);
+}

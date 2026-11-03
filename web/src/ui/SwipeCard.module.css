@@ -1,0 +1,110 @@
+/* A card that slides under the finger, its action showing behind it (see SwipeCard.tsx). */
+
+.swipe {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.layer {
+  position: relative;
+  /* Opaque, to hide the action behind until the card moves. */
+  background: var(--column);
+}
+
+.behind {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gutter);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.save,
+.dismiss {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  transition: color 120ms ease-out;
+}
+
+.swipe[data-side='save'] .behind {
+  background: var(--rust-surface);
+}
+
+.swipe[data-side='save'] .save,
+.swipe[data-side='dismiss'] .dismiss {
+  display: flex;
+}
+
+.swipe[data-side='dismiss'] .behind {
+  justify-content: flex-end;
+  background: var(--control);
+}
+
+.swipe[data-side='save'][data-armed] .save {
+  color: var(--rust-strong);
+}
+
+.swipe[data-side='dismiss'][data-armed] .dismiss {
+  color: var(--text);
+}
+
+/* Where the card was: one line to bring it back, while the list stays open. */
+.undo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 var(--undo-gutter, var(--gutter));
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.undoLabel {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.undoLabel svg {
+  flex-shrink: 0;
+}
+
+.undoTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.undoButton {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 14px;
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .undoButton:hover {
+    background: var(--control-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,162 @@
+/* A card over the blurred page: a tinted header with the title and the cross, then the body, which alone scrolls
+   (from right under the header's line to the dialog's bottom, its padding inside), with the answers
+   (DialogActions) held at its foot under an inset line. Two widths only: compact (little to read) and wide (more
+   to read, so that it does not scroll for nothing). Never taller than 60% of the screen, 80% on a phone. */
+.dialog {
+  --pad: 24px;
+  /* The header's tint: a step lighter than the card, in every theme. */
+  --dialog-header: color-mix(in srgb, var(--control) 80%, var(--card));
+
+  box-sizing: border-box;
+  /* The browser's own cap (100% less 6px and 2em) would make a phone's dialog 6px narrower than its 16px margins. */
+  max-width: none;
+  max-height: 60dvh;
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--dialog-surface, var(--card));
+  box-shadow: 0 24px 64px var(--shadow);
+  color: var(--text);
+}
+
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Covered by the dialog opened from it, it waits under it, as it was; uncovered, it comes back. A dialog opened
+   from inside another one's content takes clicks again: pointer-events would pass down from the covered one. */
+.dialog {
+  pointer-events: auto;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.covered {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Opened from another one: the same card, its content changing, over the page already dimmed. */
+.dialog.stacked[open] {
+  animation: card-in var(--duration) var(--ease);
+}
+
+.dialog.stacked[open]::backdrop {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  animation: none;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.dialog:focus-visible {
+  outline: none;
+}
+
+.dialog::backdrop {
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.compact {
+  width: min(420px, calc(100% - 32px));
+}
+
+.wide {
+  width: min(640px, calc(100% - 32px));
+}
+
+/* Edge to edge, the same height with or without a long title. */
+.header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+  /* 64 above the line: with an odd 63, the 34 and 44 crosses sat half a pixel high, rounded to a whole one. */
+  min-height: 65px;
+  /* The cross as far from the right edge as from the top and the bottom. */
+  padding: 8px 15px 8px var(--pad);
+  border-bottom: 1px solid var(--divider);
+  background: var(--dialog-header);
+}
+
+/* "Retour" before the title, when there is a card to go back to (a dialog under it, or a page inside it). */
+.lead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* The arrow as far from the left edge as the cross from the right one. */
+.withBack {
+  padding-left: 15px;
+}
+
+/* Always one line: a title too long for it ends in an ellipsis rather than doubling the header's height. */
+.title {
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  padding: var(--pad);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* What the dialog is for, 20px over what follows (the body's 14px gap and 6 more). */
+.intro {
+  margin-bottom: 6px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.intro strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* 20px under the header's line. */
+.header + .body {
+  padding-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .dialog {
+    --pad: 16px;
+
+    max-height: 80dvh;
+  }
+
+  .header {
+    padding-right: 10px;
+  }
+
+  .withBack {
+    padding-left: 10px;
+  }
+}

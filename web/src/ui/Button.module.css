@@ -1,0 +1,151 @@
+/* Every button with a label: one height, one type, the same states. */
+
+.button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--button-height);
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 120ms ease,
+    scale 120ms ease;
+}
+
+/* The icon side a little narrower: the label then looks centred. */
+.withIcon {
+  padding: 0 18px 0 14px;
+}
+
+.wide {
+  width: 100%;
+}
+
+.compact {
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+  /* An even line in an even box: a 13px line leaves half a pixel, which Windows rounds up (label too high). */
+  line-height: 14px;
+}
+
+.compact.withIcon {
+  padding: 0 14px 0 11px;
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.button:not(:disabled):active {
+  scale: 0.97;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+
+  .button:not(:disabled):active {
+    scale: none;
+  }
+}
+
+/* ---- Looks ---- */
+
+.neutral {
+  border-color: var(--border);
+  background: var(--control);
+  color: var(--text);
+}
+
+.primary {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.danger {
+  border-color: var(--destructive-border);
+  background: var(--destructive);
+  color: var(--destructive-text);
+}
+
+.ai {
+  border-color: var(--ai-button-border);
+  background: var(--ai-button);
+  color: var(--ai-text);
+}
+
+.glass {
+  border-color: var(--glass-border);
+  background: var(--glass-fill);
+  box-shadow: 0 4px 16px var(--shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+/* A link keeps its look on hover, whatever links do elsewhere. */
+.neutral:hover,
+.glass:hover {
+  color: var(--text);
+}
+
+.primary:hover {
+  color: var(--bg);
+}
+
+.danger:hover {
+  color: var(--destructive-text);
+}
+
+.ai:hover {
+  color: var(--ai-text);
+}
+
+@media (hover: hover) {
+  .neutral:not(:disabled):hover,
+  .glass:not(:disabled):hover {
+    background: var(--control-hover);
+  }
+
+  .primary:not(:disabled):hover {
+    background: color-mix(in srgb, var(--text) 86%, var(--bg));
+  }
+
+  .danger:not(:disabled):hover {
+    background: var(--destructive-hover);
+  }
+
+  .ai:not(:disabled):hover {
+    background: color-mix(in srgb, var(--ai-button) 82%, var(--ai-text));
+  }
+}
+
+.busy {
+  animation: spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .busy {
+    animation-duration: 3s;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

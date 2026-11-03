@@ -1,0 +1,6 @@
+/* Who sent the article, in place of its source: as the source's name, ellipsis included. */
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,15 @@
+.row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px var(--gutter);
+  border-top: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
+  scroll-padding: 0 var(--gutter);
+  scroll-snap-type: x mandatory;
+}
+
+/* Scrolled freely, settling on a whole capsule, as the article sliders. */
+.row > * {
+  scroll-snap-align: start;
+}

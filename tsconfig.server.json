@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["ES2024"],
+    "types": ["node"],
+    // Source files import each other with .ts extensions so tests can run
+    // directly through Node's type stripping; tsc rewrites them to .js.
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "include": ["server/**/*.ts", "shared/**/*.ts", "shared/**/*.json"],
+  "exclude": ["server/test/**"]
+}

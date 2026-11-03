@@ -1,0 +1,65 @@
+# Hodi's household game: points, levels and badges. Change a number here and restart Hodi: the new rules apply from
+# then on, and the points already earned stay as they are.
+# Names are the same in every language (Reporter), or one per language ({ fr: Lecteur, en: Reader }).
+
+points:
+  # An article counts as read at 80 % scrolled and at least 35 % of its estimated reading time; a skimmed one earns nothing.
+  article_read: 10
+  # A video or a podcast episode, once 80 % watched.
+  video_watched: 6
+  # The first article read in a theme on a given day.
+  first_of_theme_today: 5
+  # An article shared with a note (once per article, whoever it went to).
+  share_sent: 5
+  # Each reaction received on a share.
+  reaction_received: 2
+  # A day with at least reading_day_articles articles read.
+  reading_day: 10
+  reading_day_articles: 3
+  # Nothing earns more than this in one day; the weekly challenge's bonus comes on top.
+  daily_cap: 100
+
+# The points needed to reach each level, from 0. Each level costs twice the one before.
+levels:
+  - { name: { fr: Curieux, en: Curious }, points: 0 }
+  - { name: { fr: Lecteur, en: Reader }, points: 100 }
+  - { name: { fr: Habitué, en: Regular }, points: 300 }
+  - { name: Reporter, points: 700 }
+  - { name: { fr: Envoyé spécial, en: Correspondent }, points: 1500 }
+  - { name: { fr: Chroniqueur, en: Columnist }, points: 3100 }
+  - { name: { fr: Éditorialiste, en: Commentator }, points: 6300 }
+  - { name: { fr: Grande plume, en: Star writer }, points: 12700 }
+  - { name: { fr: Directeur, en: Editor }, points: 25500 }
+  - { name: { fr: Légende, en: Legend }, points: 51100 }
+
+# Each badge has three tiers. What a badge counts is set by its id; its name and tiers can change here.
+badges:
+  # Articles read before 7:00.
+  - { id: early-bird, name: { fr: Lève-tôt, en: Up early }, tiers: [50, 250, 1000] }
+  # Articles read after 23:00.
+  - { id: night-owl, name: { fr: Oiseau de nuit, en: Night owl }, tiers: [50, 250, 1000] }
+  # Reading days, in total.
+  - { id: faithful, name: { fr: Fidèle, en: Loyal }, tiers: [30, 100, 365] }
+  # Articles read in the Monde theme.
+  - { id: globetrotter, name: { fr: Globe-trotteur, en: Globetrotter }, tiers: [200, 1000, 3000] }
+  # Articles read in each theme (the theme read least decides).
+  - { id: all-rounder, name: { fr: Touche-à-tout, en: All-rounder }, tiers: [10, 50, 200] }
+  # Articles shared with a note.
+  - { id: postman, name: { fr: Facteur, en: Postman }, tiers: [50, 250, 1000] }
+  # Reactions received.
+  - { id: crowd-pleaser, name: { fr: Coup de cœur, en: Favourite }, tiers: [100, 500, 2000] }
+  # Notifications of followed subjects opened.
+  - { id: sleuth, name: { fr: Fin limier, en: Sleuth }, tiers: [25, 100, 500] }
+  # Articles read, in total.
+  - { id: encyclopedia, name: { fr: Encyclopédie, en: Encyclopedia }, tiers: [1000, 5000, 15000] }
+  # Weekly household challenges won.
+  - { id: team-player, name: { fr: Rédaction soudée, en: Team player }, tiers: [4, 26, 52] }
+
+# The household's common goal, from Monday to Sunday: the articles it read per week over the last weeks, raised.
+weekly_challenge:
+  lookback_weeks: 4
+  raise: 0.1
+  # The goal of a household without enough history yet.
+  minimum: 30
+  # Points for every profile when the goal is reached.
+  bonus: 50

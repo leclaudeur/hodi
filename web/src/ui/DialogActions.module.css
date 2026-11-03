@@ -1,0 +1,29 @@
+/* Under a line that stops at the dialog's margins: "Annuler" far left, the action far right. Held at the foot of
+   the dialog's body while it scrolls, the card's colour behind it from edge to edge. */
+.actions {
+  position: sticky;
+  /* Against the dialog's edge: the sticky area stops at the body's padding, which the line and the buttons
+     already keep under them. */
+  bottom: calc(var(--pad) * -1);
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 6px calc(var(--pad) * -1) calc(var(--pad) * -1);
+  padding: 16px var(--pad) var(--pad);
+  background: var(--dialog-surface, var(--card));
+}
+
+.actions::before {
+  position: absolute;
+  top: 0;
+  right: var(--pad);
+  left: var(--pad);
+  border-top: 1px solid var(--divider);
+  content: '';
+}
+
+/* A single answer ("Compris") on the right too. */
+.actions > :only-child {
+  margin-left: auto;
+}

@@ -1,0 +1,81 @@
+# ==========================================
+# CI: typecheck, lint, format and tests on every pull request and on main.
+# ==========================================
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  # The key journeys in Chromium, on a fresh install whose news sites are e2e/server.ts's own pages.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # Test coverage, sent to Codecov for the README's badge: on the public repository only, where the token is.
+  coverage:
+    if: github.repository == 'leclaudeur/hodi'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run test:coverage
+      - uses: codecov/codecov-action@v5
+        with:
+          files: coverage-server.lcov
+          flags: server
+          token: ${{ secrets.CODECOV_TOKEN }}
+          # A Codecov outage never fails the checks.
+          fail_ci_if_error: false
+
+  compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker compose config --quiet
+      # The licence travels with every commit: it must stay, word for word, the AGPL-3.0 text.
+      - run: echo "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee  LICENSE" | sha256sum --check

@@ -1,0 +1,80 @@
+/* A toast, from the charter's cards: the card's surface, a 16px corner, the UI font. */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 12px 32px var(--shadow);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--control);
+  color: var(--text-2);
+}
+
+.success .icon {
+  background: color-mix(in srgb, var(--topic-science) 16%, transparent);
+  color: var(--topic-science);
+}
+
+.error .icon {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger);
+}
+
+.warning .icon {
+  background: var(--rust-surface);
+  color: var(--rust-text);
+}
+
+.content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.title {
+  text-wrap: pretty;
+}
+
+/* Pills, as every clickable thing. */
+.action,
+.cancel {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  line-height: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.action {
+  order: 3;
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.cancel {
+  order: 2;
+  background: transparent;
+  color: var(--text-2);
+}

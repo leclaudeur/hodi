@@ -1,0 +1,11 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Side by side and as wide as each other, the row's whole width. */
+.actions > * {
+  flex: 1 1 0;
+  min-width: max-content;
+}

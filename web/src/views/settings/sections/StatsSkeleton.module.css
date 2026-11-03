@@ -1,0 +1,16 @@
+/* The stats page's gaps, its sections being direct children of SectionPage there. */
+.skeleton {
+  display: contents;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 196px;
+  padding-top: 16px;
+}
+
+.bar {
+  flex: 1;
+}

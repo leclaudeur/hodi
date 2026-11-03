@@ -1,0 +1,28 @@
+/* "Hodi cherche…", "Ce code n'est pas le bon.": an icon, then the text, blue or red. */
+.status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* On the first line's middle. */
+.mark {
+  display: flex;
+  flex-shrink: 0;
+  height: 19.5px;
+  align-items: center;
+}
+
+.info {
+  color: var(--info-text);
+}
+
+.info .mark {
+  color: var(--info-icon);
+}
+
+.error {
+  color: var(--danger);
+}

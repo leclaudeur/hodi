@@ -1,0 +1,16 @@
+.label {
+  flex: 1;
+  margin: 0;
+  font-weight: 400;
+}
+
+.keys {
+  flex-shrink: 0;
+  order: 2;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

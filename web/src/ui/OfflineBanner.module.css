@@ -1,0 +1,89 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--warning);
+}
+
+.text {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.retry {
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Computer: a toast where the others show, bottom right, as long as the network is gone. */
+.desktop {
+  position: fixed;
+  z-index: 30;
+  right: 24px;
+  bottom: 24px;
+  width: 400px;
+  min-height: 52px;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 12px 32px var(--shadow);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* The toasts' icon, in the warning's colours. */
+.desktop .icon {
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--warning) 16%, transparent);
+}
+
+.desktop .text {
+  display: flex;
+  flex-direction: column;
+}
+
+.since {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.desktop .retry {
+  height: 32px;
+  font-size: 13px;
+  line-height: 14px;
+  font-weight: 500;
+  background: var(--text);
+  color: var(--bg);
+}
+
+/* Phone: a warm band at the top of the page. */
+.phone {
+  margin: calc(12px + env(safe-area-inset-top)) 16px 0;
+  padding: 8px 8px 8px 14px;
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--warning) 12%, var(--bg));
+  color: var(--text);
+}
+
+.phone .retry {
+  background: var(--warning);
+  color: var(--bg);
+}

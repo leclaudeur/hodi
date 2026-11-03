@@ -1,0 +1,56 @@
+.field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  /* As tall as the button beside it. */
+  height: var(--button-height);
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text-3);
+}
+
+.field:focus-within {
+  border-color: var(--rust-border);
+}
+
+.field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.field input::placeholder {
+  color: var(--text-3);
+}
+
+/* The cross sits in the pill's end, as on the search page; the browser's own goes. */
+.clearable {
+  padding-right: 8px;
+}
+
+.clearable input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.clear {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--raised);
+  color: var(--text);
+}

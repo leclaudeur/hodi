@@ -1,0 +1,90 @@
+.column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  height: calc(100dvh - var(--titlebar-height));
+  flex-shrink: 0;
+  border-right: 1px solid var(--divider);
+  background: var(--column);
+}
+
+.scroll {
+  flex-grow: 1;
+  min-height: 0;
+  padding: 0 12px;
+}
+
+/* At least as tall as the column under the header: an empty state is centred in it without overflowing. */
+.content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  /* The title on the sidebar logo's baseline (34px Bebas, 20px from the top), the line under it on the
+     sidebar's. */
+  padding: 27px 22px 22px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.header > :not(.title, .meta, [data-help]) {
+  align-self: center;
+}
+
+.meta {
+  margin-left: auto;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.line {
+  flex-shrink: 0;
+  height: 2px;
+  background: var(--control);
+}
+
+.pinned {
+  flex-shrink: 0;
+}
+
+/* The foot (73px) and its fade (56px) above it: at the end the last row sits clear of both. */
+.spacer {
+  height: 132px;
+}
+
+.footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--divider);
+  background: var(--column);
+}
+
+/* The list fades out above it rather than being cut by its line. The spacer at the list's end lies under the
+   fade, so the last row still shows whole. */
+.footer::before {
+  position: absolute;
+  right: 0;
+  /* Above its line, which stays drawn. */
+  bottom: calc(100% + 1px);
+  left: 0;
+  height: 56px;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--column) 80%, transparent));
+  content: '';
+  pointer-events: none;
+}

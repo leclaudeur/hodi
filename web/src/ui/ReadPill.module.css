@@ -1,0 +1,55 @@
+.pill {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pill:hover {
+  color: var(--bg);
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px 0 8px;
+  border: 1px solid var(--on-text-border);
+  border-radius: var(--radius-pill);
+  color: var(--on-text-2);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.size34 {
+  height: 34px;
+  padding: 0 5px 0 16px;
+  font-size: 13px;
+  line-height: 14px;
+}
+
+.size34 .chip {
+  height: 24px;
+  font-size: 10px;
+}
+
+.size44 {
+  height: 44px;
+  padding: 0 8px 0 18px;
+  font-size: 14px;
+}
+
+.size44 .chip {
+  height: 28px;
+  font-size: 11px;
+}
+
+/* Without a reading time, the pill keeps even sides. */
+.pill:not(:has(.chip)) {
+  padding-right: 16px;
+}

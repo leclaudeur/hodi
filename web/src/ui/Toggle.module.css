@@ -1,0 +1,41 @@
+.toggle {
+  position: relative;
+  flex-shrink: 0;
+  /* As tall as the 34px rounds and compact buttons beside it. */
+  width: 56px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  transition:
+    background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  transition:
+    transform var(--duration) var(--ease),
+    background-color var(--duration) var(--ease);
+}
+
+.toggle[aria-checked='true'] {
+  border-color: var(--text);
+  background: var(--text);
+}
+
+.toggle[aria-checked='true'] .knob {
+  background: var(--bg);
+  transform: translateX(22px);
+}
+
+.toggle:disabled {
+  opacity: 0.4;
+}

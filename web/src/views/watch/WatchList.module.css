@@ -1,0 +1,28 @@
+.filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-padding: 0 12px;
+  scroll-snap-type: x mandatory;
+}
+
+/* Scrolled freely, settling on a whole capsule, as the article sliders. */
+.filters > * {
+  scroll-snap-align: start;
+}
+
+/* On a computer, held under the header between two lines, as the search's filters. */
+.desktop .filters {
+  padding: 18px 12px 16px;
+  border-bottom: 2px solid var(--control);
+}
+
+/* Phone and tablets (the phone's screens, by layout rather than width: a tablet held across shows
+   them in a panel): the chips between two lines across the screen, as a topic's filter row. */
+.phone .filters {
+  margin: 0;
+  padding: 14px var(--gutter);
+  border-top: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
+  scroll-padding: 0 var(--gutter);
+}

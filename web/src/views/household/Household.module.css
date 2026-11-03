@@ -1,0 +1,65 @@
+/* The household's fields, the same in the first-run screens and in Réglages: as the profile form's. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fieldLabel {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fieldRow {
+  display: flex;
+  gap: 10px;
+}
+
+.fieldRow > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.keyField {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.keysLink {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 13px;
+  /* Clear of the descenders, as the links in the reader. */
+  text-underline-offset: 4px;
+}
+
+@media (hover: hover) {
+  .keysLink:hover {
+    color: var(--link-hover);
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 600px) {
+  .fieldRow {
+    flex-direction: column;
+  }
+
+  /* Stacked, the field keeps its own height instead of sharing the row's. */
+  .fieldRow > :first-child {
+    flex: none;
+  }
+}

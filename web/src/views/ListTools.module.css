@@ -1,0 +1,38 @@
+/* As the filter rows: held under the header on a computer, above the list on a phone. */
+.desktop {
+  border-bottom: 2px solid var(--control);
+}
+
+.phone {
+  border-top: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
+}
+
+.field {
+  padding: 18px 12px 16px;
+}
+
+.phone .field {
+  padding: 14px var(--gutter);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-top: -4px;
+  padding: 0 12px 16px;
+  scroll-padding: 0 12px;
+  scroll-snap-type: x mandatory;
+}
+
+.phone .filters {
+  margin-top: 0;
+  padding: 0 var(--gutter) 14px;
+  scroll-padding: 0 var(--gutter);
+}
+
+/* Scrolled freely, settling on a whole filter, as the article sliders. */
+.filters > * {
+  scroll-snap-align: start;
+}

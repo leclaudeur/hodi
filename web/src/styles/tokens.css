@@ -1,0 +1,627 @@
+/* Hodi colours, from the charter ("Fondations"). Dark by default; light is the beige theme.
+   The reader's choice (Réglages > Apparence: Clair, Sombre, Poudré) sets data-theme on <html>; without one (a
+   profile that never chose), the system's light or dark applies. */
+
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  /* Page background. */
+  --bg: #0f0f10;
+  /* Columns and the mobile page. */
+  --column: #131314;
+  /* Cards, the active row. */
+  --card: #161617;
+  /* Buttons, inputs, pills. */
+  --control: #1d1d1f;
+  --control-hover: #1f1f21;
+  /* A hovered card in a list: a clear step above the column. */
+  --card-hover: #1c1c1e;
+  --raised: #2a2a2d;
+  /* The icon tile of empty and error states. */
+  --tile: #1a1a1c;
+  /* Something failed. */
+  --danger: #c66a5f;
+  /* Destructive actions ("Vider", "Effacer"): a red border on a darker red, as the AI buttons in violet. */
+  --destructive: #3a1c18;
+  --destructive-hover: #4a241f;
+  --destructive-border: #c66a5f;
+  --destructive-text: #ffd8d1;
+  /* Accepted: the same build in green (a teen's answered request). */
+  --approve: #16291c;
+  --approve-border: #5f9c6c;
+  --approve-text: #cdeccf;
+  --warning: #d4a64a;
+  /* The game's badge tiers. */
+  --bronze: #a87c5a;
+  --bronze-surface: #261e18;
+  --silver: #9ba2ab;
+  --silver-surface: #212327;
+  --gold: #b99a5c;
+  --gold-surface: #26211a;
+  /* How much a badge card is lit by its tier: little on a dark page, where colour stands out. */
+  --tier-glow: 10%;
+  --tier-line: 55%;
+  /* The one border of every control. */
+  --border: #2e2e31;
+  /* Lines between sections. */
+  --divider: #262628;
+  --border-strong: #3a3a3e;
+  --text: #f2f2f3;
+  --text-strong: #dadadd;
+  --text-nav: #c8c8cc;
+  --text-2: #a1a1a6;
+  --text-3: #8a8a90;
+  --text-faint: #5a5a5f;
+  /* A chip inside a light pill ("Lire 7 MIN"). */
+  --on-text-border: #b8b8bd;
+  --on-text-2: #46464b;
+  /* The brand: logo dot, active tab, counters, reading progress. */
+  --rust: #c8693a;
+  --link-hover: #e08a5a;
+  --rust-text: #f0a174;
+  --rust-strong: #f5b48c;
+  --rust-surface: #2a1a12;
+  --rust-surface-2: #3a2416;
+  --rust-border: #7a4426;
+  /* What a chosen accent leans towards for its text shades (see the end of this file). */
+  --accent-ink: #ffffff;
+  /* On a profile's or a topic's colour (a sparkle in its pin): white in every theme. */
+  --on-topic: #ffffff;
+  /* Violet: a click that spends API credits. */
+  --ai: #a08cff;
+  --ai-surface: #1e1933;
+  --ai-border: #4b3f8f;
+  --ai-button: #2f2655;
+  --ai-button-border: #6e5dd0;
+  --ai-text: #e4ddff;
+  /* Ink on the violet border colour, such as the chosen card's check. */
+  --ai-on-border: #e4ddff;
+  --ai-text-2: #c9beff;
+  --ai-icon: #4a3d8f;
+  --ai-input: #15121f;
+  --ai-text-3: #8f86b8;
+  --ai-answer: #dad4fa;
+  /* Blue: information, the notes that explain how a screen works. */
+  --info-surface: #131b23;
+  --info-border: #2b4357;
+  --info-mark: #1b2a37;
+  --info-icon: #8db8d8;
+  --info-text: #b9cddd;
+  /* Floating buttons over images. */
+  --glass: rgba(29, 29, 31, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --shadow: rgba(0, 0, 0, 0.22);
+  --scrim: rgba(15, 15, 16, 0.55);
+  --image-button-border: rgba(255, 255, 255, 0.12);
+  --topic-belgique: #c4a050;
+  --topic-belgique-border: #4c4027;
+  --topic-belgique-surface: #232019;
+  --topic-monde: #6094ba;
+  --topic-monde-border: #2c3c49;
+  --topic-monde-surface: #1a1f23;
+  --topic-tech: #4fa3a1;
+  --topic-tech-border: #264141;
+  --topic-tech-surface: #182021;
+  --topic-science: #72a572;
+  --topic-science-border: #314232;
+  --topic-science-surface: #1c201c;
+  --topic-films-series: #bf7e98;
+  --topic-films-series-border: #4a353e;
+  --topic-films-series-surface: #221d20;
+  --topic-jeux-video: #c66a5f;
+  --topic-jeux-video-border: #4c2f2c;
+  --topic-jeux-video-surface: #231b1b;
+  --topic-ia: #a0b060;
+  --topic-ia-border: #40452c;
+  --topic-ia-surface: #20211b;
+  --topic-broadcast: #8a90b4;
+  --topic-broadcast-border: #393b47;
+  --topic-broadcast-surface: #1e1e22;
+  --topic-lifestyle: #b07aaa;
+  --topic-lifestyle-border: #443442;
+  --topic-lifestyle-surface: #221e22;
+  --topic-auto-moto: #8f9db0;
+  --topic-auto-moto-border: #3a3e44;
+  --topic-auto-moto-surface: #202122;
+  --topic-sport: #d48a4e;
+  --topic-sport-border: #4f3927;
+  --topic-sport-surface: #251f1a;
+  --topic-argent-conso: #b9a64e;
+  --topic-argent-conso-border: #474127;
+  --topic-argent-conso-surface: #23221a;
+  --topic-sante: #5fb39b;
+  --topic-sante-border: #2c453e;
+  --topic-sante-surface: #1c2321;
+  --topic-cuisine: #cf9a66;
+  --topic-cuisine-border: #4e3e2e;
+  --topic-cuisine-surface: #25211c;
+  --topic-voyage: #5ea6d6;
+  --topic-voyage-border: #2c4150;
+  --topic-voyage-surface: #1c2225;
+  --topic-musique: #a283d4;
+  --topic-musique-border: #40374f;
+  --topic-musique-surface: #211f25;
+  --topic-culture: #c2788a;
+  --topic-culture-border: #4a3339;
+  --topic-culture-surface: #241e1f;
+  --topic-maison-deco: #ad9878;
+  --topic-maison-deco-border: #433d33;
+  --topic-maison-deco-surface: #22201e;
+  --topic-famille: #d2b25c;
+  --topic-famille-border: #4e452b;
+  --topic-famille-surface: #25221c;
+  --topic-mode-beaute: #d48cb6;
+  --topic-mode-beaute-border: #4f3946;
+  --topic-mode-beaute-surface: #251f23;
+  --topic-climat: #78ad66;
+  --topic-climat-border: #33432e;
+  --topic-climat-surface: #1e221c;
+  --topic-animaux: #a98466;
+  --topic-animaux-border: #42372e;
+  --topic-animaux-surface: #221f1c;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #fbf8f2;
+  --column: #f3eee4;
+  --card: #fbf8f2;
+  --control: #ece5d8;
+  --control-hover: #e8e0d2;
+  --card-hover: #ebe4d6;
+  --raised: #e3dacb;
+  --tile: #efe9dd;
+  --danger: #884d43;
+  --destructive: #f6e0db;
+  --destructive-hover: #efd0c9;
+  --destructive-border: #b4574a;
+  --destructive-text: #7a2c22;
+  --approve: #dcefdc;
+  --approve-border: #4f8a5c;
+  --approve-text: #23562f;
+  --warning: #9a7020;
+  /* The game's badge tiers. */
+  --bronze: #9a6235;
+  --bronze-surface: #f3e6da;
+  --silver: #66707c;
+  --silver-surface: #e9ebee;
+  --gold: #94701c;
+  --gold-surface: #f6ecd2;
+  --tier-glow: 22%;
+  --tier-line: 100%;
+  --border: #d8cdbb;
+  --divider: #e3dacb;
+  --border-strong: #cbbfac;
+  --text: #2b211a;
+  --text-strong: #3a2f26;
+  --text-nav: #54473c;
+  --text-2: #6e5f52;
+  --text-3: #85776a;
+  --text-faint: #ada08f;
+  --on-text-border: #b9ac99;
+  --on-text-2: #cdbfaa;
+  --rust: #c8693a;
+  --link-hover: #a9512a;
+  --rust-text: #9e4b23;
+  --rust-strong: #8a3f1c;
+  --rust-surface: #f8eadf;
+  --rust-surface-2: #f5e1d2;
+  --rust-border: #e2b597;
+  --accent-ink: #2b211a;
+  --ai: #a08cff;
+  --ai-surface: #f3effa;
+  --ai-border: #d2c8ee;
+  --ai-button: #e7e0f7;
+  --ai-button-border: #8676d6;
+  --ai-text: #3e3180;
+  --ai-on-border: #ffffff;
+  --ai-text-2: #5d50a8;
+  --ai-icon: #dcd3f4;
+  --ai-input: #fdfcff;
+  --ai-text-3: #7a70a8;
+  --ai-answer: #4a3f8a;
+  --info-surface: #ecf1f3;
+  --info-border: #c3d3de;
+  --info-mark: #dbe6ed;
+  --info-icon: #3f6d90;
+  --info-text: #3e5568;
+  --glass: rgba(251, 248, 242, 0.8);
+  --glass-border: rgba(43, 33, 26, 0.1);
+  --shadow: rgba(43, 33, 26, 0.08);
+  --scrim: rgba(251, 248, 242, 0.75);
+  --image-button-border: rgba(255, 255, 255, 0.5);
+  --topic-belgique: #876d3a;
+  --topic-belgique-border: #decba1;
+  --topic-belgique-surface: #f4eddf;
+  --topic-monde: #4b667a;
+  --topic-monde-border: #b1c6d1;
+  --topic-monde-surface: #e8eceb;
+  --topic-tech: #416f6b;
+  --topic-tech-border: #a9ccc6;
+  --topic-tech-surface: #e6eee8;
+  --topic-science: #56704f;
+  --topic-science-border: #b9cdb1;
+  --topic-science-surface: #ebeee3;
+  --topic-films-series: #845966;
+  --topic-films-series-border: #dcbcc2;
+  --topic-films-series-surface: #f4e9e7;
+  --topic-jeux-video: #884d43;
+  --topic-jeux-video-border: #dfb3a8;
+  --topic-jeux-video-surface: #f5e7e0;
+  --topic-ia: #717744;
+  --topic-ia-border: #ced2a9;
+  --topic-ia-surface: #f0efe0;
+  --topic-broadcast: #646476;
+  --topic-broadcast-border: #c4c4ce;
+  --topic-broadcast-surface: #edeceb;
+  --topic-lifestyle: #745170;
+  --topic-lifestyle-border: #d6cacf;
+  --topic-lifestyle-surface: #ede8e5;
+  --topic-auto-moto: #5e6874;
+  --topic-auto-moto-border: #d0d0d0;
+  --topic-auto-moto-surface: #ebe9e5;
+  --topic-sport: #8c5b33;
+  --topic-sport-border: #dbcdbf;
+  --topic-sport-surface: #efe8e1;
+  --topic-argent-conso: #7a6e33;
+  --topic-argent-conso-border: #d7d2bf;
+  --topic-argent-conso-surface: #edeae1;
+  --topic-sante: #3f7666;
+  --topic-sante-border: #c8d4cc;
+  --topic-sante-surface: #e9eae5;
+  --topic-cuisine: #896643;
+  --topic-cuisine-border: #dbd0c3;
+  --topic-cuisine-surface: #eee9e2;
+  --topic-voyage: #3e6e8d;
+  --topic-voyage-border: #c8d2d6;
+  --topic-voyage-surface: #e9eae7;
+  --topic-musique: #6b568c;
+  --topic-musique-border: #d3ccd5;
+  --topic-musique-surface: #ece8e7;
+  --topic-culture: #804f5b;
+  --topic-culture-border: #d9cac9;
+  --topic-culture-surface: #eee8e4;
+  --topic-maison-deco: #72644f;
+  --topic-maison-deco-border: #d5cfc6;
+  --topic-maison-deco-surface: #ede9e3;
+  --topic-famille: #8b753d;
+  --topic-famille-border: #dbd4c2;
+  --topic-famille-surface: #eeeae2;
+  --topic-mode-beaute: #8c5c78;
+  --topic-mode-beaute-border: #dbcdd1;
+  --topic-mode-beaute-surface: #efe8e6;
+  --topic-climat: #4f7243;
+  --topic-climat-border: #ccd3c3;
+  --topic-climat-surface: #eaeae2;
+  --topic-animaux: #705743;
+  --topic-animaux-border: #d4ccc3;
+  --topic-animaux-surface: #ede8e2;
+}
+
+/* Poudré: the dark theme in dusty pink, its greys warmed to rose and its accent a powder pink. */
+:root[data-theme='poudre'] {
+  color-scheme: dark;
+  --bg: #140e11;
+  --column: #191215;
+  --card: #1e161a;
+  --control: #281d22;
+  --control-hover: #2c2026;
+  --card-hover: #261b20;
+  --raised: #3a2930;
+  --tile: #22181c;
+  --border: #3d2c33;
+  --divider: #33252b;
+  --border-strong: #4b3740;
+  --text: #f8eef1;
+  --text-strong: #ebdce1;
+  --text-nav: #dcc8cf;
+  --text-2: #bba4ad;
+  --text-3: #a08991;
+  --text-faint: #6c575f;
+  --on-text-border: #cbb4bd;
+  --on-text-2: #56434b;
+  --rust: #d98fa6;
+  --link-hover: #e7a9bb;
+  --rust-text: #f2bccb;
+  --rust-strong: #f7ccd8;
+  --rust-surface: #2e1b22;
+  --rust-surface-2: #3e2430;
+  --rust-border: #85505f;
+  --glass: rgba(40, 29, 34, 0.72);
+  --glass-border: rgba(255, 228, 236, 0.08);
+  --shadow: rgba(0, 0, 0, 0.28);
+  --scrim: rgba(20, 14, 17, 0.55);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --bg: #fbf8f2;
+    --column: #f3eee4;
+    --card: #fbf8f2;
+    --control: #ece5d8;
+    --control-hover: #e8e0d2;
+    --card-hover: #ebe4d6;
+    --raised: #e3dacb;
+    --tile: #efe9dd;
+    --danger: #884d43;
+    --destructive: #f6e0db;
+    --destructive-hover: #efd0c9;
+    --destructive-border: #b4574a;
+    --destructive-text: #7a2c22;
+    --approve: #dcefdc;
+    --approve-border: #4f8a5c;
+    --approve-text: #23562f;
+    --warning: #9a7020;
+    --bronze: #9a6235;
+    --bronze-surface: #f3e6da;
+    --silver: #66707c;
+    --silver-surface: #e9ebee;
+    --gold: #94701c;
+    --gold-surface: #f6ecd2;
+    --tier-glow: 22%;
+    --tier-line: 100%;
+    --border: #d8cdbb;
+    --divider: #e3dacb;
+    --border-strong: #cbbfac;
+    --text: #2b211a;
+    --text-strong: #3a2f26;
+    --text-nav: #54473c;
+    --text-2: #6e5f52;
+    --text-3: #85776a;
+    --text-faint: #ada08f;
+    --on-text-border: #b9ac99;
+    --on-text-2: #cdbfaa;
+    --rust: #c8693a;
+    --link-hover: #a9512a;
+    --rust-text: #9e4b23;
+    --rust-strong: #8a3f1c;
+    --rust-surface: #f8eadf;
+    --rust-surface-2: #f5e1d2;
+    --rust-border: #e2b597;
+    --accent-ink: #2b211a;
+    --ai: #a08cff;
+    --ai-surface: #f3effa;
+    --ai-border: #d2c8ee;
+    --ai-button: #e7e0f7;
+    --ai-button-border: #8676d6;
+    --ai-text: #3e3180;
+    --ai-on-border: #ffffff;
+    --ai-text-2: #5d50a8;
+    --ai-icon: #dcd3f4;
+    --ai-input: #fdfcff;
+    --ai-text-3: #7a70a8;
+    --ai-answer: #4a3f8a;
+    --info-surface: #ecf1f3;
+    --info-border: #c3d3de;
+    --info-mark: #dbe6ed;
+    --info-icon: #3f6d90;
+    --info-text: #3e5568;
+    --glass: rgba(251, 248, 242, 0.8);
+    --glass-border: rgba(43, 33, 26, 0.1);
+    --shadow: rgba(43, 33, 26, 0.08);
+    --scrim: rgba(251, 248, 242, 0.75);
+    --image-button-border: rgba(255, 255, 255, 0.5);
+    --topic-belgique: #876d3a;
+    --topic-belgique-border: #decba1;
+    --topic-belgique-surface: #f4eddf;
+    --topic-monde: #4b667a;
+    --topic-monde-border: #b1c6d1;
+    --topic-monde-surface: #e8eceb;
+    --topic-tech: #416f6b;
+    --topic-tech-border: #a9ccc6;
+    --topic-tech-surface: #e6eee8;
+    --topic-science: #56704f;
+    --topic-science-border: #b9cdb1;
+    --topic-science-surface: #ebeee3;
+    --topic-films-series: #845966;
+    --topic-films-series-border: #dcbcc2;
+    --topic-films-series-surface: #f4e9e7;
+    --topic-jeux-video: #884d43;
+    --topic-jeux-video-border: #dfb3a8;
+    --topic-jeux-video-surface: #f5e7e0;
+    --topic-ia: #717744;
+    --topic-ia-border: #ced2a9;
+    --topic-ia-surface: #f0efe0;
+    --topic-broadcast: #646476;
+    --topic-broadcast-border: #c4c4ce;
+    --topic-broadcast-surface: #edeceb;
+    --topic-lifestyle: #745170;
+    --topic-lifestyle-border: #d6cacf;
+    --topic-lifestyle-surface: #ede8e5;
+    --topic-auto-moto: #5e6874;
+    --topic-auto-moto-border: #d0d0d0;
+    --topic-auto-moto-surface: #ebe9e5;
+    --topic-sport: #8c5b33;
+    --topic-sport-border: #dbcdbf;
+    --topic-sport-surface: #efe8e1;
+    --topic-argent-conso: #7a6e33;
+    --topic-argent-conso-border: #d7d2bf;
+    --topic-argent-conso-surface: #edeae1;
+    --topic-sante: #3f7666;
+    --topic-sante-border: #c8d4cc;
+    --topic-sante-surface: #e9eae5;
+    --topic-cuisine: #896643;
+    --topic-cuisine-border: #dbd0c3;
+    --topic-cuisine-surface: #eee9e2;
+    --topic-voyage: #3e6e8d;
+    --topic-voyage-border: #c8d2d6;
+    --topic-voyage-surface: #e9eae7;
+    --topic-musique: #6b568c;
+    --topic-musique-border: #d3ccd5;
+    --topic-musique-surface: #ece8e7;
+    --topic-culture: #804f5b;
+    --topic-culture-border: #d9cac9;
+    --topic-culture-surface: #eee8e4;
+    --topic-maison-deco: #72644f;
+    --topic-maison-deco-border: #d5cfc6;
+    --topic-maison-deco-surface: #ede9e3;
+    --topic-famille: #8b753d;
+    --topic-famille-border: #dbd4c2;
+    --topic-famille-surface: #eeeae2;
+    --topic-mode-beaute: #8c5c78;
+    --topic-mode-beaute-border: #dbcdd1;
+    --topic-mode-beaute-surface: #efe8e6;
+    --topic-climat: #4f7243;
+    --topic-climat-border: #ccd3c3;
+    --topic-climat-surface: #eaeae2;
+    --topic-animaux: #705743;
+    --topic-animaux-border: #d4ccc3;
+    --topic-animaux-surface: #ede8e2;
+  }
+}
+
+/* Each topic: its colour, a dimmed border and a very dark surface (capsules, sidebar squares). */
+[data-topic='belgique'] {
+  --topic: var(--topic-belgique);
+  --topic-border: var(--topic-belgique-border);
+  --topic-surface: var(--topic-belgique-surface);
+}
+[data-topic='monde'] {
+  --topic: var(--topic-monde);
+  --topic-border: var(--topic-monde-border);
+  --topic-surface: var(--topic-monde-surface);
+}
+[data-topic='tech'] {
+  --topic: var(--topic-tech);
+  --topic-border: var(--topic-tech-border);
+  --topic-surface: var(--topic-tech-surface);
+}
+[data-topic='science'] {
+  --topic: var(--topic-science);
+  --topic-border: var(--topic-science-border);
+  --topic-surface: var(--topic-science-surface);
+}
+[data-topic='films-series'] {
+  --topic: var(--topic-films-series);
+  --topic-border: var(--topic-films-series-border);
+  --topic-surface: var(--topic-films-series-surface);
+}
+[data-topic='jeux-video'] {
+  --topic: var(--topic-jeux-video);
+  --topic-border: var(--topic-jeux-video-border);
+  --topic-surface: var(--topic-jeux-video-surface);
+}
+[data-topic='ia'] {
+  --topic: var(--topic-ia);
+  --topic-border: var(--topic-ia-border);
+  --topic-surface: var(--topic-ia-surface);
+}
+[data-topic='broadcast'] {
+  --topic: var(--topic-broadcast);
+  --topic-border: var(--topic-broadcast-border);
+  --topic-surface: var(--topic-broadcast-surface);
+}
+[data-topic='lifestyle'] {
+  --topic: var(--topic-lifestyle);
+  --topic-border: var(--topic-lifestyle-border);
+  --topic-surface: var(--topic-lifestyle-surface);
+}
+[data-topic='auto-moto'] {
+  --topic: var(--topic-auto-moto);
+  --topic-border: var(--topic-auto-moto-border);
+  --topic-surface: var(--topic-auto-moto-surface);
+}
+[data-topic='sport'] {
+  --topic: var(--topic-sport);
+  --topic-border: var(--topic-sport-border);
+  --topic-surface: var(--topic-sport-surface);
+}
+[data-topic='argent-conso'] {
+  --topic: var(--topic-argent-conso);
+  --topic-border: var(--topic-argent-conso-border);
+  --topic-surface: var(--topic-argent-conso-surface);
+}
+[data-topic='sante'] {
+  --topic: var(--topic-sante);
+  --topic-border: var(--topic-sante-border);
+  --topic-surface: var(--topic-sante-surface);
+}
+[data-topic='cuisine'] {
+  --topic: var(--topic-cuisine);
+  --topic-border: var(--topic-cuisine-border);
+  --topic-surface: var(--topic-cuisine-surface);
+}
+[data-topic='voyage'] {
+  --topic: var(--topic-voyage);
+  --topic-border: var(--topic-voyage-border);
+  --topic-surface: var(--topic-voyage-surface);
+}
+[data-topic='musique'] {
+  --topic: var(--topic-musique);
+  --topic-border: var(--topic-musique-border);
+  --topic-surface: var(--topic-musique-surface);
+}
+[data-topic='culture'] {
+  --topic: var(--topic-culture);
+  --topic-border: var(--topic-culture-border);
+  --topic-surface: var(--topic-culture-surface);
+}
+[data-topic='maison-deco'] {
+  --topic: var(--topic-maison-deco);
+  --topic-border: var(--topic-maison-deco-border);
+  --topic-surface: var(--topic-maison-deco-surface);
+}
+[data-topic='famille'] {
+  --topic: var(--topic-famille);
+  --topic-border: var(--topic-famille-border);
+  --topic-surface: var(--topic-famille-surface);
+}
+[data-topic='mode-beaute'] {
+  --topic: var(--topic-mode-beaute);
+  --topic-border: var(--topic-mode-beaute-border);
+  --topic-surface: var(--topic-mode-beaute-surface);
+}
+[data-topic='climat'] {
+  --topic: var(--topic-climat);
+  --topic-border: var(--topic-climat-border);
+  --topic-surface: var(--topic-climat-surface);
+}
+[data-topic='animaux'] {
+  --topic: var(--topic-animaux);
+  --topic-border: var(--topic-animaux-border);
+  --topic-surface: var(--topic-animaux-surface);
+}
+
+/* Réglages > Couleur d’accent: one of the profile colours instead of the theme's own (rust, or Poudré's pink)
+   wherever the brand shows (logo dot, active tab, counters, progress), its shades mixed from it. */
+:root[data-accent='belgique'] {
+  --accent: var(--topic-belgique);
+}
+:root[data-accent='monde'] {
+  --accent: var(--topic-monde);
+}
+:root[data-accent='tech'] {
+  --accent: var(--topic-tech);
+}
+:root[data-accent='science'] {
+  --accent: var(--topic-science);
+}
+:root[data-accent='films-series'] {
+  --accent: var(--topic-films-series);
+}
+:root[data-accent='jeux-video'] {
+  --accent: var(--topic-jeux-video);
+}
+:root[data-accent='ia'] {
+  --accent: var(--topic-ia);
+}
+:root[data-accent='broadcast'] {
+  --accent: var(--topic-broadcast);
+}
+:root[data-accent='sport'] {
+  --accent: var(--topic-sport);
+}
+:root[data-accent='musique'] {
+  --accent: var(--topic-musique);
+}
+
+:root[data-accent] {
+  --rust: var(--accent);
+  --link-hover: color-mix(in oklab, var(--accent) 80%, var(--accent-ink));
+  --rust-text: color-mix(in oklab, var(--accent) 70%, var(--accent-ink));
+  --rust-strong: color-mix(in oklab, var(--accent) 56%, var(--accent-ink));
+  --rust-surface: color-mix(in oklab, var(--accent) 14%, var(--bg));
+  --rust-surface-2: color-mix(in oklab, var(--accent) 22%, var(--bg));
+  --rust-border: color-mix(in oklab, var(--accent) 55%, var(--bg));
+}

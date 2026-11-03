@@ -1,0 +1,110 @@
+.header {
+  z-index: 3;
+}
+
+/* A band of the page's colour, for the page to run under. */
+.sticky {
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--column) var(--header-opacity), transparent);
+  -webkit-backdrop-filter: var(--header-blur);
+  backdrop-filter: var(--header-blur);
+  /* Over a picture, the band fades in once the picture has gone under it. */
+  transition:
+    background-color 240ms ease,
+    -webkit-backdrop-filter 240ms ease,
+    backdrop-filter 240ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky {
+    transition: none;
+  }
+}
+
+/* Over an article's picture, fixed so the picture runs up under the status bar. */
+.overPicture {
+  position: fixed;
+  right: 0;
+  left: 0;
+}
+
+/* The picture still under it: its glass buttons only. */
+.clear {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+
+.clear .row > * {
+  pointer-events: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* The title in a 44px band, the round buttons' height, clear of the status bar's blur. */
+  min-height: calc(var(--header-top) + 58px);
+  padding: var(--header-top) var(--gutter) 14px;
+}
+
+.title {
+  flex-shrink: 0;
+  /* Pushes the buttons to the right. */
+  margin-right: auto;
+  padding-top: 4px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.titleGroup {
+  display: flex;
+  flex-shrink: 0;
+  /* The "?" on the title's baseline. */
+  align-items: baseline;
+  gap: 10px;
+  margin-right: auto;
+}
+
+.titleGroup .title {
+  margin-right: 0;
+}
+
+/* The "?" drops by the title's own 4px, so it centres on the letters rather than on their box. */
+.titleGroup > :not(.title) {
+  margin-top: 4px;
+}
+
+.logo {
+  /* As the front page's title (see .title). */
+  padding-top: 4px;
+  color: inherit;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.space {
+  flex-grow: 1;
+}
+
+/* On the right, over two lines if it must, never under the title. */
+.meta {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: right;
+  line-height: 1.4;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+/* The same 2px line as the reading progress' track, so an article's header and a page's match. */
+.line {
+  height: 2px;
+  background: var(--control);
+}

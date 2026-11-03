@@ -1,0 +1,78 @@
+name: hodi
+
+# Cap container logs so they never fill the server disk.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+services:
+  # ==========================================
+  # App
+  # Node.js server for the API and the web app.
+  # Published on 127.0.0.1:3000 by default: put a reverse proxy
+  # (Caddy, Nginx...) in front for HTTPS. Machine-specific changes go in
+  # compose.override.yml, which Compose reads on its own and Git ignores.
+  # ==========================================
+  app:
+    build:
+      context: .
+    image: hodi-app:local
+    container_name: hodi-app
+
+    # Only on this machine by default (HODI_BIND=127.0.0.1). HODI_BIND=0.0.0.0 opens it
+    # to the network: do that only behind a firewall or a reverse proxy with HTTPS.
+    ports:
+      - '${HODI_BIND:-127.0.0.1}:${HODI_PORT:-3000}:3000'
+
+    # Nothing else to set: the password, the region and the AI are chosen in the browser on the first visit.
+    environment:
+      NODE_ENV: production
+      HOST: '0.0.0.0'
+      PORT: '3000'
+
+    # Feed list, editable on the server: `docker compose restart app` applies it.
+    # The database and its daily backups live in the hodi-data volume.
+    volumes:
+      - ./sources.yml:/app/sources.yml:ro
+      # The household game's rules: edit, then restart.
+      - ./gamification.yml:/app/gamification.yml:ro
+      - hodi-data:/app/data
+
+    # The app writes only to its data volume.
+    read_only: true
+    tmpfs:
+      - /tmp
+
+    # Least privilege: no Linux capabilities, no privilege escalation.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+    # Keep the app light, even on a small machine.
+    mem_limit: 256m
+    pids_limit: 128
+
+    # Verify the Node.js server health endpoint.
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --tries=1
+        - --spider
+        - http://127.0.0.1:3000/health
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    logging: *logging
+
+    restart: unless-stopped
+
+volumes:
+  # SQLite database, its 7 daily backups and the keys made on the first start (a few hundred MB at most).
+  hodi-data:

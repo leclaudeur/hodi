@@ -1,0 +1,1747 @@
+{
+  "common": {
+    "back": "Back",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "gotIt": "Got it",
+    "retry": "Try again",
+    "none": "None",
+    "tryAgainSoon": "Try again in a moment.",
+    "tooManyAttempts": "Too many attempts. Try again in {{minutes}} min.",
+    "unreachable": "Hodi can’t be reached right now.",
+    "help": "Help: {{title}}",
+    "licence": "Free software (AGPL-3.0)",
+    "noResult": "No results.",
+    "loading": "Loading…",
+    "serverDown": "The server isn’t answering right now.",
+    "saving": "Saving…"
+  },
+  "language": {
+    "label": "Language",
+    "profileHint": "The interface’s; articles stay in their own",
+    "householdLabel": "Home language",
+    "householdHint": "For the sign-in screen and the profiles that haven’t picked one",
+    "in": {
+      "fr": "In French",
+      "en": "In English"
+    }
+  },
+  "app": {
+    "unreachableTitle": "Hodi can’t be reached",
+    "unreachableText": "The server isn’t answering right now."
+  },
+  "login": {
+    "tagline": "Your news, just for you.",
+    "password": "Password",
+    "wrongPassword": "Wrong password, try again.",
+    "failed": "Something went wrong. Try again in a moment.",
+    "signingIn": "Opening…",
+    "enter": "Enter"
+  },
+  "password": {
+    "show": "Show password",
+    "hide": "Hide password",
+    "levels": {
+      "tooShort": "Too short",
+      "weak": "Weak",
+      "fair": "Fair",
+      "strong": "Strong",
+      "excellent": "Excellent"
+    },
+    "minimum": "{{count}} characters minimum.",
+    "missing_one": "{{count}} more character.",
+    "missing_other": "{{count}} more characters.",
+    "another": "Add a word to reach {{level}}.",
+    "perfect": "Perfect.",
+    "tips": {
+      "keyboard": "Avoid keyboard runs (qwerty, 1234).",
+      "repeat": "Avoid repeats and runs (aaa, abc).",
+      "dates": "Avoid dates and years, easy to guess.",
+      "common": "This password is too common: pick another.",
+      "word": "A single word or name is easy to guess: add more."
+    },
+    "gauge": "Password strength"
+  },
+  "aiKey": {
+    "ok": "Key checked: the AI is ready.",
+    "invalid": "This key is refused. Check that it’s complete and still active.",
+    "unreachable": "The provider isn’t answering. Try again in a moment.",
+    "failed": "The check failed. Try again in a moment.",
+    "label": "{{provider}} API key",
+    "check": "Check",
+    "console": "Create a key in the {{provider}} console"
+  },
+  "regions": {
+    "timeZone": "Time zone",
+    "searchTimeZone": "Search for a time zone",
+    "timeZonePlaceholder": "A city: Paris, Tokyo…",
+    "country": "Country",
+    "searchCountry": "Find a country",
+    "countryPlaceholder": "Belgium, Canada…",
+    "noCountry": "None in particular"
+  },
+  "profileForm": {
+    "colors": {
+      "belgique": "Gold",
+      "monde": "Blue",
+      "tech": "Turquoise",
+      "science": "Sage",
+      "films-series": "Pink",
+      "jeux-video": "Coral",
+      "ia": "Olive",
+      "broadcast": "Lilac",
+      "sport": "Orange",
+      "musique": "Violet"
+    },
+    "photoTooBig": "This photo is over 20 MB. Pick a lighter one.",
+    "photoUnreadable": "This image can’t be read. Try another photo.",
+    "saveFailed": "The profile couldn’t be saved. Try again in a moment.",
+    "changePhoto": "Change the photo",
+    "addPhoto": "Add a photo",
+    "photoMax": "20 MB max",
+    "removePhoto": "Remove the photo",
+    "name": "Name",
+    "namePlaceholder": "E.g. Al",
+    "color": "Colour",
+    "security": "Security",
+    "private": "Private",
+    "privateHint": "Its code is asked before it opens",
+    "removePin": "Remove the code",
+    "deleteProfile": "Delete the profile",
+    "delete": "Delete",
+    "create": "Create profile",
+    "type": "Type",
+    "kinds": {
+      "adult": "Adult",
+      "teen": "Teen",
+      "child": "Child"
+    },
+    "kindHints": {
+      "adult": "The whole app. Also manages the young profiles.",
+      "teen": "The same app, sources and time set by their parents.",
+      "child": "A simple app, with their parents’ sources."
+    },
+    "avatar": "Avatar",
+    "avatars": {
+      "fox": "Fox",
+      "pirate": "Pirate",
+      "astronaut": "Astronaut",
+      "robot": "Robot",
+      "dragon": "Dragon",
+      "panda": "Panda",
+      "owl": "Owl",
+      "kitten": "Kitten",
+      "trex": "T. rex",
+      "koala": "Koala",
+      "reporter": "Reporter",
+      "scientist": "Scientist"
+    },
+    "childSoon": {
+      "title": "Soon, an app just for them",
+      "text": "The Child profile is on its way. Until then, choose Teen or Adult."
+    }
+  },
+  "setup": {
+    "step": "Step {{step}} of {{total}}",
+    "codeWrong": "This code doesn’t match.",
+    "restarted": "Hodi restarted: enter the new code from its log.",
+    "codeCheckFailed": "The code couldn’t be checked. Try again in a moment.",
+    "setupFailed": "The setup didn’t go through. Try again in a moment.",
+    "start": {
+      "title": "Welcome to Hodi",
+      "intro": "Your news, on your own server. Four steps and you’re set: the household, your profile, the AI if you want, then your region.",
+      "codeHelpTitle": "The setup code",
+      "codeHelpWhy": "This server can be reached from the Internet: so that nobody sets it up in your place, Hodi asks for the 6-digit code written in its log when it starts. Each restart draws a new one: take the latest.",
+      "codeHelpServer": "On the server:",
+      "codeHelpLocal": "From the server’s computer or your home network, no code is asked.",
+      "code": "Setup code",
+      "button": "Start"
+    },
+    "household": {
+      "title": "Your household",
+      "intro": "Up to 5 profiles share this password, each with its own reading.",
+      "helpTitle": "One home, one password",
+      "help": "Each device asks for it once, then keeps it for 90 days. 8 characters minimum: the longer it is and the more it mixes capitals, digits and symbols, the stronger it is. You can change the name and the password in Settings › Household.",
+      "name": "Household",
+      "namePlaceholder": "E.g. The Smiths",
+      "password": "Password",
+      "confirm": "Confirm the password",
+      "mismatch": "The two passwords aren’t the same.",
+      "typeAgain": "The password is never kept on the device: type it again to pick up where you left off."
+    },
+    "profile": {
+      "title": "And who are you?",
+      "intro": "Your profile is the household admin: it runs sources, the AI and other profiles."
+    },
+    "ai": {
+      "title": "AI, if you like",
+      "intro": "Summarise an article, ask it questions, the Daily summary: with your own key, paid per use. Without AI, all else works the same.",
+      "helpTitle": "Nothing without a click",
+      "help": "Each purple button is a call paid from your credits, never automatic. Set a monthly spending limit in the provider’s console. You can add, change or remove the key in Settings › AI and credits.",
+      "label": "AI",
+      "providerHint": "With your API key, billed as you go",
+      "none": "No AI",
+      "noneHint": "The purple buttons stay hidden",
+      "countryHint": "Places its web searches: “sunny tomorrow?”"
+    },
+    "done": {
+      "title": "All set",
+      "intro": "We guessed your region from this browser. Correct it if needed, then enter Hodi.",
+      "household": "Home",
+      "admin": "{{household}} · {{profile}}, admin",
+      "ai": "AI",
+      "keyChecked": "{{provider}} · key checked",
+      "enter": "Enter Hodi"
+    }
+  },
+  "nav": {
+    "label": "Navigation",
+    "main": "Main navigation",
+    "home": "Hodi, Feed",
+    "backHome": "Back home",
+    "search": "Search",
+    "topics": "Topics",
+    "newReaction": "New reaction",
+    "newReactionOn": "{{label}}, new reaction {{reaction}}",
+    "savedCount_one": "{{label}}, {{count}} article",
+    "savedCount_other": "{{label}}, {{count}} articles",
+    "newCount_one": "{{label}}, {{count}} new",
+    "newCount_other": "{{label}}, {{count}} new",
+    "today": "Feed",
+    "saved": "Saved",
+    "followed": "Followed",
+    "shares": "Shared",
+    "watch": "Videos",
+    "history": "History",
+    "settings": "Settings",
+    "backToFeed": "To the feed",
+    "backToSettings": "Back to settings"
+  },
+  "profiles": {
+    "pending": "Changes made offline haven’t been sent yet. Reconnect before switching profiles.",
+    "wrongPin": "That code isn’t right.",
+    "openFailed": "This profile can’t be opened right now.",
+    "pin": "PIN code",
+    "switch": "Switch profile",
+    "switchFrom": "{{name}}, switch profile",
+    "private": "Private",
+    "create": "New profile",
+    "new": "New profile",
+    "added": "{{name}} added",
+    "yours": "{{name}} (you)",
+    "of": "{{name}}’s profile",
+    "loadFailed": "The profiles couldn’t be loaded. Reload the page in a moment.",
+    "who": "Who’s in?",
+    "locked": "Protected by a code",
+    "add": "Add",
+    "manage": "Manage profiles",
+    "parentalPin": "Parental code",
+    "admin": "Admin"
+  },
+  "limits": {
+    "fiveMinutes": "Only 5 minutes of reading left today",
+    "byeChild": "See you tomorrow, {{name}}!",
+    "byeTeen": "See you tomorrow, {{name}}",
+    "laterChild": "See you later, {{name}}!",
+    "laterTeen": "See you later, {{name}}",
+    "timeUp": "Your reading time is over for today. You can read again tomorrow at {{time}}.",
+    "after": "Time for a break. You can read again tomorrow at {{time}}.",
+    "before": "You can read from {{time}}.",
+    "switch": "Switch profile",
+    "timeUpTomorrow": "Your reading time is over for today. You can read again tomorrow.",
+    "meHint": "Name, photo, today’s time",
+    "meIntro": "Your name, your photo and today’s reading time.",
+    "today": "Today",
+    "readingTime": "Screen time left",
+    "readingHint": "{{time}} / day · set by your parents",
+    "left": "Time left today: {{time}}",
+    "quietHint": "Set by your parents",
+    "quietNone": "None"
+  },
+  "young": {
+    "manage": "Manage",
+    "manageLabel": "Manage {{name}}",
+    "edit": "Edit",
+    "perDay": "{{time}} a day",
+    "noLimit": "Unlimited time",
+    "hm": "{{h}} h {{m}}",
+    "range": "{{start}} – {{end}}",
+    "notFound": "This profile no longer exists.",
+    "loadFailed": "Its settings could not be loaded. Try again in a moment.",
+    "saveFailed": "That could not be saved. Try again in a moment.",
+    "saved": "Saved",
+    "reading": "Reading",
+    "sources": "Sources",
+    "sourcesHint": "{{sources}} in {{topics}}",
+    "sourcesNone": "No sources yet",
+    "topicCount_one": "{{count}} theme",
+    "topicCount_other": "{{count}} themes",
+    "sourcesTitle": "Profile sources",
+    "sourceToggle": "{{name}} for {{profile}}",
+    "topics": "Themes",
+    "topicsHint": "The ones {{name}} sees in their feed",
+    "visible_one": "{{count}} shown",
+    "visible_other": "{{count}} shown",
+    "topicsTitle": "Profile topics",
+    "time": "Time",
+    "daily": "Time per day",
+    "dailyHint": "Once it is used up, the app pauses until tomorrow",
+    "dailyTitle": "Screen time",
+    "dailyToggle": "Limit the time",
+    "dailyToggleHint": "Counted only while the app is on screen",
+    "less": "Less",
+    "more": "More",
+    "noLimitShort": "Unlimited",
+    "window": "Hours",
+    "windowHint": "{{name}} can read only between these hours",
+    "windowAll": "All day",
+    "windowToggle": "Limit the hours",
+    "windowToggleHint": "Outside them, the app says when it opens again",
+    "windowWrong": "The end time must come after the start time.",
+    "start": "Start",
+    "end": "End",
+    "quiet": "Do not disturb",
+    "quietHint": "No notifications during these hours",
+    "quietNone": "Never",
+    "quietToggle": "Do not disturb",
+    "quietToggleHint": "For example {{start}} to {{end}}",
+    "ai": "AI",
+    "explain": "AI explanations a day",
+    "explainHint": "When {{name}} asks the AI to explain an article or a word",
+    "explainTitle": "AI explanations a day",
+    "explainNone": "None",
+    "followUp": "Follow-up",
+    "week": "Their week",
+    "weekHint": "{{time}} · {{articles}}",
+    "weekNone": "Nothing read this week",
+    "weekTitle": "Weekly summary",
+    "weekTime": "On screen",
+    "weekThemes": "Their themes",
+    "weekThemesNone": "No theme read yet this week",
+    "see": "See",
+    "profile": "Profile",
+    "delete": "Delete the profile",
+    "deleteHint": "Their reading, stats and badges are erased",
+    "deleteButton": "Delete",
+    "editTitle": "Edit {{name}}",
+    "profileSaved": "Profile saved",
+    "deleted": "{{name}} deleted",
+    "deleteFailed": "Deleting failed. Try again in a moment.",
+    "backToProfiles": "Back to the profiles",
+    "perDayCount": "{{count}} / day",
+    "channels": "YouTube channels"
+  },
+  "family": {
+    "title": "Family",
+    "parentalCode": "Parental code",
+    "parentalHint": "Asked to open an adult profile that isn’t private",
+    "parentalNone": "None: adult profiles open without a code",
+    "set": "Set",
+    "change": "Change",
+    "setTitle": "Set the parental code",
+    "changeTitle": "Change the parental code",
+    "current": "Current code",
+    "new": "New code (4 digits)",
+    "again": "Once more",
+    "mismatch": "The two codes don’t match.",
+    "wrong": "The current code isn’t right.",
+    "failed": "The code couldn’t be saved. Try again in a moment.",
+    "saved": "Parental code saved",
+    "code": "Code",
+    "removeTitle": "Remove the parental code",
+    "remove": "Remove code",
+    "removed": "Parental code removed"
+  },
+  "requests": {
+    "push": "{{name}} asks for {{source}}",
+    "ask": "Ask for a source",
+    "link": "Link to the site or channel",
+    "placeholder": "E.g. theverge.com",
+    "send": "Ask",
+    "sent": "Request sent",
+    "mine": "My requests",
+    "pending": "Pending",
+    "pendingLabel": "Waiting for your parents",
+    "byParents": "Added by your parents",
+    "count_one": "{{count}} request",
+    "count_other": "{{count}} requests",
+    "errors": {
+      "invalid": "This is not a link. Paste a site’s address.",
+      "blocked": "This address is not public.",
+      "none": "No feed found at this address. Try the site’s home page.",
+      "empty": "This feed is empty for now.",
+      "failed": "The site does not answer. Try again in a moment.",
+      "reddit": "Reddit can no longer be followed: it is closing its feeds.",
+      "channel": "Podcasts can’t be asked for: only sites and YouTube channels.",
+      "following": "You already read this source.",
+      "pending": "You already asked for this source.",
+      "full": "Already 3 waiting: wait for your parents.",
+      "other": "The request could not be sent. Try again in a moment."
+    },
+    "title": "Requests",
+    "waiting_one": "{{count}} waiting",
+    "waiting_other": "{{count}} waiting",
+    "asks": "{{name}} asks for {{source}}",
+    "dialogTitle": "Source request",
+    "topic": "Theme",
+    "accept": "Accept",
+    "refuse": "Refuse",
+    "accepted": "{{source}} added for {{name}}",
+    "refused": "Request refused",
+    "answerFailed": "The answer could not be sent. Try again in a moment.",
+    "gone": "This request was already answered.",
+    "fiche": "Requests",
+    "ficheNone": "None waiting",
+    "see": "See",
+    "changeTopic": "Change",
+    "asksRow": "<b>{{name}}</b> asks for a source",
+    "answerAccepted": "<b>Your parents</b> said yes",
+    "answerRefused": "<b>Your parents</b> said no",
+    "answers": "Answered requests",
+    "waitingTitle": "Pending requests",
+    "more_one": "See the other one",
+    "more_other": "See {{count}} more",
+    "asksChannelRow": "<b>{{name}}</b> asks for a channel",
+    "intro": "Your parents choose your sources. You can hide the ones you don’t care about, and ask for a new one: it comes into your feed if they accept it."
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "intro": "On a computer, Hodi works from the keyboard: move from one article to the next, change topic, save, hide or search. Press ? anywhere to see this list again.",
+    "aiNote": "R shows the summary button; it never starts the AI on its own.",
+    "escape": "Esc",
+    "groups": {
+      "navigate": "Navigate",
+      "article": "Article"
+    },
+    "next": "Next article",
+    "previous": "Previous article",
+    "open": "Open",
+    "previousTopic": "Previous topic",
+    "nextTopic": "Next topic",
+    "search": "Search",
+    "save": "Save",
+    "hide": "Hide the article",
+    "summary": "AI recap",
+    "nextArticle": "Next article",
+    "back": "Back to the list",
+    "help": "This help",
+    "close": "Close"
+  },
+  "tour": {
+    "skip": "Skip",
+    "adding": "Adding your sources",
+    "profile": {
+      "title": "My profile",
+      "points": "Every article you read earns you points.",
+      "open": "Open your profile to see your rank.",
+      "via": "Open your profile from the feed."
+    },
+    "level": {
+      "title": "Ranks and badges",
+      "grades": "Read to rank up, all the way to Legend.",
+      "badges": "Your badges go from bronze to gold.",
+      "wear": "Tap a badge you’ve earned to wear it."
+    },
+    "welcome": {
+      "title": "Welcome to Hodi",
+      "ask": "What are you into?",
+      "pick": "Pick one or more topics."
+    },
+    "first": {
+      "title": "Your first source",
+      "together": "Let’s add one together, for {{topic}}.",
+      "settings": "Start by opening the settings."
+    },
+    "sources": {
+      "title": "Sources",
+      "what": "The sites and channels Hodi reads for you.",
+      "open": "Open “Sources”."
+    },
+    "add": {
+      "title": "Add a source",
+      "how": "By its link or from our suggestions.",
+      "press": "Tap here to add one."
+    },
+    "byTopic": {
+      "title": "By topic",
+      "noLink": "No link at hand?",
+      "offers": "Hodi suggests sites by topic.",
+      "pick": "Pick “By topic”."
+    },
+    "topic": {
+      "suggestions": "Each topic has its suggestions.",
+      "pick": "Pick “{{topic}}”."
+    },
+    "site": {
+      "title": "Pick a site",
+      "feed": "Hodi finds its feed on its own.",
+      "add": "Add the one you like."
+    },
+    "direction": {
+      "title": "Off to {{topic}}",
+      "filed": "Your source is now in {{topic}}.",
+      "open": "Open this topic to read its articles.",
+      "via": "Open this topic from the feed."
+    },
+    "end": {
+      "title": "All set!",
+      "here": "Here is {{topic}}, with your new source.",
+      "others": "Your other topics are in the feed too.",
+      "feed": "It shows up in the feed too.",
+      "enjoy": "Enjoy Hodi.",
+      "go": "Let’s go"
+    },
+    "next": "Next",
+    "teen": {
+      "welcome": {
+        "title": "Welcome to Hodi",
+        "yours": "Your own paper, with the news you care about.",
+        "how": "Here’s how it works."
+      },
+      "feed": {
+        "title": "Your feed",
+        "chosen": "Here, the news picked with your parents.",
+        "open": "Tap an article to open it."
+      },
+      "ask": {
+        "title": "Ask for a source",
+        "missing": "Missing a site? You can ask for it.",
+        "settings": "Tap Settings.",
+        "sources": "Then Sources.",
+        "paste": "Paste the link of a site you like here.",
+        "parents": "Your parents get your request and decide.",
+        "requests": "Open My requests.",
+        "press": "Tap Ask for a source."
+      },
+      "end": {
+        "title": "Let's go!",
+        "enjoy": "Happy reading.",
+        "go": "Let's go"
+      }
+    }
+  },
+  "offline": {
+    "title": "Offline",
+    "withUnread_one": "Offline · {{count}} article to read",
+    "withUnread_other": "Offline · {{count}} articles to read",
+    "since": "Last updated at {{time}}"
+  },
+  "card": {
+    "save": "Save",
+    "unsave": "Remove",
+    "hide": "Hide",
+    "undoLabel": "{{label}}:",
+    "ofReading": "of reading",
+    "alsoOn_one": "Also on {{count}} source",
+    "alsoOn_other": "Also on {{count}} sources",
+    "offline": "Offline ready",
+    "onSite": "On the site",
+    "hideKind": {
+      "article": "Hide the article",
+      "video": "Hide the video",
+      "podcast": "Hide the episode"
+    },
+    "saved": "Added to Saved",
+    "unsaved": "Removed from Saved"
+  },
+  "notFound": {
+    "title": "This page doesn’t exist",
+    "text": "The link may be broken, or the article left the feed after 3 days.",
+    "error": "ERROR 404"
+  },
+  "time": {
+    "minutes_one": "{{count}} MIN",
+    "minutes_other": "{{count}} MIN",
+    "hours_one": "{{count}} H",
+    "hours_other": "{{count}} H",
+    "days_one": "{{count}} D",
+    "days_other": "{{count}} D",
+    "day": "{{weekday}} {{numbers}}",
+    "today": "Today",
+    "yesterday": "Yesterday · {{day}}"
+  },
+  "count": {
+    "article_one": "{{count}} article",
+    "article_other": "{{count}} articles",
+    "video_one": "{{count}} video",
+    "video_other": "{{count}} videos",
+    "episode_one": "{{count}} episode",
+    "episode_other": "{{count}} episodes",
+    "day_one": "{{count}} day",
+    "day_other": "{{count}} days",
+    "item_one": "{{count}} item",
+    "item_other": "{{count}} items",
+    "source_one": "{{count}} source",
+    "source_other": "{{count}} sources",
+    "read_one": "{{count}} read",
+    "read_other": "{{count}} read",
+    "view_one": "{{count}} seen",
+    "view_other": "{{count}} seen",
+    "subject_one": "{{count}} subject",
+    "subject_other": "{{count}} subjects",
+    "search_one": "{{count}} search",
+    "search_other": "{{count}} searches",
+    "result_one": "{{count}} result",
+    "result_other": "{{count}} results",
+    "word_one": "{{count}} word",
+    "word_other": "{{count}} words",
+    "profile_one": "{{count}} profile",
+    "profile_other": "{{count}} profiles"
+  },
+  "state": {
+    "read": {
+      "article": "Read",
+      "video": "Seen",
+      "podcast": "Heard"
+    },
+    "hidden": {
+      "article": "Hidden",
+      "video": "Hidden",
+      "podcast": "Hidden"
+    },
+    "undo": {
+      "article": "Article hidden",
+      "video": "Video hidden",
+      "podcast": "Episode hidden"
+    }
+  },
+  "pull": {
+    "refreshing": "Refreshing…",
+    "release": "Release to refresh",
+    "pull": "Pull to refresh",
+    "updated": "Updated {{age}}"
+  },
+  "feed": {
+    "loadDay": "Load {{day}}",
+    "loadFailed": "Couldn’t load the feed",
+    "loadTopicFailed": "Couldn’t load {{topic}}",
+    "savedOffline": "Your saved articles work offline.",
+    "savedOfflineLabel": "Saved, available offline",
+    "allRead": "All read",
+    "nothingNew": "Nothing new",
+    "allReadText": "Your settings hide read articles.",
+    "nothingNewDesktop": "The previous days are below.",
+    "nothingNewPhone": "Pull down to refresh.",
+    "nothingInTopic": "Nothing in this topic for now.",
+    "all": "ALL",
+    "allTopics": "All",
+    "allOf_one": "All {{topic}}, {{count}} article",
+    "allOf_other": "All {{topic}}, {{count}} articles",
+    "title": "Feed",
+    "topicsFailed": "Couldn’t load the topics"
+  },
+  "lists": {
+    "filter": "Filter by topic",
+    "nothingFor": "Nothing for “{{query}}”",
+    "nothingHere": "Empty"
+  },
+  "resume": {
+    "title": "Pick up",
+    "left_one": "{{count}} min left",
+    "left_other": "{{count}} min left",
+    "remove": "Remove from Pick up"
+  },
+  "saved": {
+    "empty": "Nothing saved",
+    "emptyText": "Keep an article with its bookmark.",
+    "noMatch": "No saved article matches.",
+    "search": "Search your saved articles"
+  },
+  "history": {
+    "unread": {
+      "article": "Mark as unread",
+      "video": "Mark as unwatched",
+      "podcast": "Mark as not listened"
+    },
+    "cleared": "History cleared",
+    "clear": "Clear history",
+    "loadFailed": "Couldn’t load the history",
+    "empty": "Nothing read or seen in 7 days",
+    "emptyText": "What you read and watch lands here.",
+    "noMatch": "Nothing read or watched matches.",
+    "search": "Search your history"
+  },
+  "help": {
+    "feed": {
+      "title": "Feed",
+      "desktop": [
+        "The last 3 days of articles from your topics, newest first. At the top, the Daily summary and the Headlines: today’s stories, to browse like stories.",
+        "“Pick up” keeps the articles you started; the cross removes them. A read article fades; hover a card to hide it. Press <b>?</b> for keyboard shortcuts."
+      ],
+      "phone": [
+        "One row per topic with today’s articles. At the top, the Daily summary and the Headlines, to browse like stories.",
+        "Pull down to refresh. Swipe left or right to go from one topic to the next. In a topic, swipe a card right to save it, left to hide it."
+      ]
+    },
+    "followed": {
+      "title": "Followed",
+      "desktop": [
+        "Articles from every topic about the subjects you follow, newest first. An article about two subjects shows under both. Add or remove subjects in Settings › Followed subjects."
+      ],
+      "phone": [
+        "Articles from every topic about the subjects you follow, newest first. Swipe a card right to save it, left to hide it. Manage your subjects in Settings › Followed subjects."
+      ]
+    },
+    "shares": {
+      "title": "Shared",
+      "desktop": [
+        "What other profiles of the household sent you with “For…”, for 7 days. A read or hidden article goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
+      ],
+      "phone": [
+        "What other profiles of the household sent you with “For…”, for 7 days. A read article, or one swiped left, goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
+      ]
+    },
+    "videos": {
+      "title": "Videos",
+      "desktop": [
+        "Videos and episodes from the channels you follow, one week at a time, without Shorts. They play here, beside the list. A video watched to the end leaves the list; once started, it waits for you in “Pick up” on the feed. Add channels in Settings › Sources."
+      ],
+      "phone": [
+        "Videos and episodes from the channels you follow, one week at a time, without Shorts. A video watched to the end leaves the list; once started, it waits for you in “Pick up” on the home screen. Add channels in Settings › Sources."
+      ]
+    }
+  },
+  "pane": {
+    "article": "Pick an article",
+    "articleText": "It opens here, beside the list.",
+    "video": "Pick a video",
+    "videoText": "It plays here, inside Hodi.",
+    "keys": "↑ ↓ to move · Enter to open",
+    "result": "Pick a result",
+    "resultText": "It opens here, beside the results."
+  },
+  "reader": {
+    "alsoCovered": "Also covered by",
+    "next": "Next article",
+    "loadFailed": "Couldn’t load the article",
+    "openOn": "Open on {{site}}",
+    "by": "by {{author}}",
+    "sourceDown": "{{source}} isn’t answering right now",
+    "notInHodi": "{{source}} can’t be read in Hodi",
+    "readOn": "Read on {{source}}",
+    "attribution": "Article from <b>{{source}}</b>, laid out by Hodi to read without ads. The text isn’t rewritten, and the comments stay on the site.",
+    "readOriginal": "Read the original",
+    "externalText": "Summary from the feed. The full article opens on the site.",
+    "embed": {
+      "seeOn": "See on {{network}}",
+      "watchOn": "Watch on {{network}}",
+      "quote": "Quote"
+    }
+  },
+  "speech": {
+    "pause": "Pause reading",
+    "resume": "Resume reading",
+    "preparing": "Preparing the voice… (tap to cancel)",
+    "listenArticle": "Listen to article",
+    "stopLabel": "Stop reading",
+    "player": "Read aloud",
+    "preparingShort": "Preparing…",
+    "pauseShort": "Pause",
+    "resumeShort": "Resume",
+    "stop": "Stop"
+  },
+  "summary": {
+    "summarizeArticle": "Article summary",
+    "capped": "No more summaries today: the daily limit is reached.",
+    "offer": "The article’s gist.",
+    "summarize": "Sum up",
+    "title": "The gist",
+    "writing": "Summarizing…",
+    "note": "Written by AI · may contain mistakes",
+    "errors": {
+      "limited": "The daily summary limit is reached. Try again tomorrow.",
+      "refused": "The AI couldn’t sum up this article.",
+      "unreadable": "This article can’t be summarized.",
+      "unknown": "This article has left the feeds.",
+      "unavailable": "AI summaries aren’t turned on on the server.",
+      "failed": "The summary couldn’t be written."
+    }
+  },
+  "questions": {
+    "ask": "Ask a question",
+    "sources": "Sources",
+    "answering": "Answering…",
+    "capped": "No more questions today: limit reached",
+    "placeholder": "A question about this article?",
+    "yours": "Question",
+    "send": "Send the question",
+    "errors": {
+      "limited": "The daily question limit is reached. Try again tomorrow.",
+      "refused": "The AI couldn’t answer this question.",
+      "unreadable": "This article can’t be analysed.",
+      "unknown": "This article has left the feeds.",
+      "unavailable": "AI questions aren’t turned on on the server.",
+      "noAnswer": "No answer for now. Try again."
+    }
+  },
+  "shareMenu": {
+    "share": "Share",
+    "copyPrompt": "Copy the link:",
+    "copied": "Done",
+    "copy": "Copy link",
+    "email": "Email",
+    "heading": {
+      "article": "Share the article",
+      "video": "Share the video",
+      "podcast": "Share the episode"
+    }
+  },
+  "shareTo": {
+    "sent": "Sent to {{names}}",
+    "failed": "The article couldn’t be sent.",
+    "label": "Send to a household profile",
+    "title": "Send to…",
+    "nobody": "Nobody else in the household receives shares yet.",
+    "noteLabel": "A note with it",
+    "notePlaceholder": "Add a word…",
+    "send": "Send"
+  },
+  "share": {
+    "sentBy": "Sent by {{name}}",
+    "sentYouArticle": "<b>{{name}}</b> sent you this article",
+    "sentYouVideo": "<b>{{name}}</b> sent you this video",
+    "opinionFor": "Your take for {{name}}",
+    "opinion": "Your take for <b>{{name}}</b>?",
+    "reactFor": "React for {{name}}"
+  },
+  "videos": {
+    "loadFailed": "Couldn’t load the videos",
+    "empty": "Nothing this week",
+    "emptyText": "The previous weeks are below.",
+    "previousWeek": "Previous week",
+    "loadPreviousWeek": "Load the previous week",
+    "gone": "This video is gone",
+    "goneText": "It’s older than 60 days, or its channel is no longer one of your sources.",
+    "openYouTube": "Open on YouTube",
+    "openSite": "Open the site",
+    "backToList": "Back to the list",
+    "play": "Play",
+    "resume": "Resume",
+    "replay": "Replay"
+  },
+  "dailySummary": {
+    "bubble": "Summary",
+    "errors": {
+      "failed": "The Daily summary couldn’t be written.",
+      "refused": "The AI refused to write the Daily summary.",
+      "limited": "Enough Daily summaries for today: try again tomorrow."
+    },
+    "yesterdayAt": "YESTERDAY {{time}}",
+    "writingShort": "Writing…",
+    "regenerate": "Redo",
+    "writeNew": "Write a new summary (1 call)",
+    "capped": "No more Daily summary today: the daily limit is reached",
+    "upToDate": "Already up to date: a new summary is possible at {{time}}",
+    "listen": "Listen to the summary",
+    "writing": "The AI is writing…",
+    "none": "No Daily summary",
+    "unavailable": "AI features aren’t turned on on the server.",
+    "pitch": "The day’s essentials, in 3 minutes",
+    "nothingLost": "Nothing was lost: try again in a moment.",
+    "pitchText": "One paragraph per story, by topic, written by the AI from the headlines. 1 click = 1 call.",
+    "generate": "Write the Daily summary",
+    "meta": "BY AI · {{time}} · {{minutes}} MIN",
+    "articles": "The articles",
+    "name": "Daily summary",
+    "of": "Daily summary: {{topic}}",
+    "bubbleWriting": "Daily summary, being written",
+    "bubbleSeen": "Daily summary, seen"
+  },
+  "stories": {
+    "headlines": "Top news",
+    "previous": "Previous",
+    "next": "Next",
+    "of": "Headlines: {{topic}}",
+    "bubbleSeen": "Top news: {{topic}}, seen",
+    "published": "POSTED {{age}}",
+    "read": "Read",
+    "site": "SITE"
+  },
+  "followed": {
+    "filter": "Filter by subject",
+    "none": "Nothing followed",
+    "add": "Add a subject",
+    "noneText": "Follow a subject to see its articles here",
+    "loadFailed": "Couldn’t load your subjects",
+    "nothingNew": "Nothing on this subject in three days."
+  },
+  "shares": {
+    "filter": "Filter by profile",
+    "loadFailed": "Couldn’t load your shares",
+    "empty": "Nothing yet",
+    "emptyText": "What the household sends lands here.",
+    "reactions": "Reactions to your shares",
+    "reacted": "<b>{{name}}</b> reacted {{reaction}}",
+    "dismiss": "Dismiss"
+  },
+  "search": {
+    "title": "Search",
+    "close": "Close search",
+    "placeholder": "Subject, source…",
+    "clear": "Clear",
+    "recent": "Recent",
+    "forget": "Forget “{{query}}”",
+    "trends": "Trending",
+    "filter": "Filter the results",
+    "failed": "Search isn’t answering. Try again in a moment.",
+    "searching": "Searching…",
+    "more": "more on the way",
+    "following": "Following",
+    "follow": "Follow subject",
+    "nothing": "Nothing for “{{query}}” in the last three days.",
+    "nothingText": "Try another word, or follow this subject to be told."
+  },
+  "stats": {
+    "yours": "Your stats",
+    "title": "Statistics",
+    "articles": "Articles",
+    "favourites": "Faves",
+    "topTopics": "Most read topics",
+    "topSources": "Favourite sources",
+    "nothing": "None {{period}}.",
+    "period": {
+      "week": "this week",
+      "month": "in 30 days",
+      "label": "Period"
+    },
+    "split": {
+      "started": "Started",
+      "article": {
+        "title": "Read or skimmed",
+        "intro_one": "{{count}} article opened {{period}}, {{percent}}% read",
+        "intro_other": "{{count}} articles opened {{period}}, {{percent}}% read",
+        "read": "Read",
+        "skimmed": "Skimmed"
+      },
+      "video": {
+        "title": "Watched/skimmed",
+        "intro_one": "{{count}} video opened {{period}}, {{percent}}% seen",
+        "intro_other": "{{count}} videos opened {{period}}, {{percent}}% watched",
+        "read": "Seen",
+        "skimmed": "Skimmed"
+      }
+    },
+    "chart": {
+      "article": "Articles read per day",
+      "video": "Videos seen per day",
+      "same": "as many as the period before",
+      "versus": "compared with the period before",
+      "average": "Avg. {{value}}"
+    },
+    "tiles": {
+      "readingTime": "reading",
+      "watchTime": "watching",
+      "streak_one": "day in a row",
+      "streak_other": "days in a row",
+      "article": {
+        "read_one": "read",
+        "read_other": "read",
+        "skimmed_one": "skimmed",
+        "skimmed_other": "skimmed"
+      },
+      "video": {
+        "read_one": "seen",
+        "read_other": "seen",
+        "skimmed_one": "skimmed",
+        "skimmed_other": "skimmed"
+      }
+    },
+    "loading": "Loading the stats",
+    "intro": "What you read, on all your devices. An article is read once you scrolled through 80% of it and spent at least a third of its reading time on it; a video, once 80% watched. Past 15%, it stays in progress and waits for you in “Pick up”; below that, it was skimmed."
+  },
+  "game": {
+    "yourHousehold": "Your household",
+    "tiers": {
+      "1": "Bronze",
+      "2": "Silver",
+      "3": "Gold",
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold"
+    },
+    "yourProfile": "My profile",
+    "profile": "Profile",
+    "loadFailed": "The profile couldn’t be loaded. Try again in a moment.",
+    "wearFailed": "The badge couldn’t be changed. Try again in a moment.",
+    "level": "Lvl {{level}}",
+    "pts": "pts",
+    "badgeWorn": "{{name}}, {{tier}}, worn",
+    "badgeWear": "{{name}}, {{tier}}, wear it",
+    "badgeLocked": "{{name}}, to earn",
+    "household": "Household",
+    "thisWeek": "This week",
+    "challenge": "Shared goal",
+    "challengeReached": "Challenge met: {{read}} of {{goal}} articles read, bravo!",
+    "challengeAlone_one": "{{count}} article read out of {{goal}}, by Sunday",
+    "challengeAlone_other": "{{count}} articles read out of {{goal}}, by Sunday",
+    "challengeTogether_one": "{{count}} of {{goal}} articles read by you {{profiles}}, by Sunday",
+    "challengeTogether_other": "{{count}} of {{goal}} articles read by you {{profiles}}, by Sunday",
+    "rankLabel_one": "{{rank}}. {{name}}, {{grade}}, {{count}} point",
+    "rankLabel_other": "{{rank}}. {{name}}, {{grade}}, {{count}} points",
+    "back": "Back",
+    "stars_other": "{{count}} stars out of 3",
+    "badgesHint": "Challenges apart from the level, in three tiers",
+    "wear": "Wear this badge",
+    "unwear": "Stop wearing it",
+    "worn": "Worn",
+    "open": "See {{name}}",
+    "stars_one": "{{count}} star out of 3",
+    "badges": {
+      "early-bird": {
+        "rule": "Read before 7 am",
+        "text": "Articles you read before 7 in the morning.",
+        "unit_one": "read",
+        "unit_other": "reads"
+      },
+      "night-owl": {
+        "rule": "Read after 11 pm",
+        "text": "Articles you read after 11 at night.",
+        "unit_one": "read",
+        "unit_other": "reads"
+      },
+      "faithful": {
+        "rule": "Reading days",
+        "text": "The days you read, since your first one.",
+        "unit_one": "day",
+        "unit_other": "days"
+      },
+      "globetrotter": {
+        "rule": "Read in World",
+        "text": "Articles you read in the World theme.",
+        "unit_one": "read",
+        "unit_other": "reads"
+      },
+      "all-rounder": {
+        "rule": "In every theme",
+        "text": "Articles read in each of your themes. The theme you read least is the one that counts.",
+        "unit_one": "per theme",
+        "unit_other": "per theme"
+      },
+      "postman": {
+        "rule": "Shared with a note",
+        "text": "Articles you send to someone in the household with a note.",
+        "unit_one": "share",
+        "unit_other": "shares"
+      },
+      "crowd-pleaser": {
+        "rule": "Reactions received",
+        "text": "Reactions received on the articles you shared.",
+        "unit_one": "reaction",
+        "unit_other": "reactions"
+      },
+      "sleuth": {
+        "rule": "Alerts opened",
+        "text": "Notifications about the subjects you follow that you open.",
+        "unit_one": "alert",
+        "unit_other": "alerts"
+      },
+      "encyclopedia": {
+        "rule": "Articles read",
+        "text": "Every article you read, whatever the theme.",
+        "unit_one": "read",
+        "unit_other": "reads"
+      },
+      "team-player": {
+        "rule": "Household challenges",
+        "text": "The weekly challenges the household completes together.",
+        "unit_one": "challenge",
+        "unit_other": "challenges"
+      }
+    },
+    "newGrade": "New rank",
+    "newBadge": "New badge",
+    "levelN": "Level {{level}}",
+    "gradeText": "You're now <b>{{name}}</b>. Next up, <b>{{next}}</b>, in {{points}} pts.",
+    "gradeTop": "You reach <b>{{name}}</b>, the top rank.",
+    "next": "Next",
+    "great": "Great!",
+    "wearIt": "Wear it"
+  },
+  "sync": {
+    "offline": "Offline: your changes will be sent when you’re back online.",
+    "refused": "A change couldn’t be saved on the server."
+  },
+  "toast": {
+    "saved": "Setting saved"
+  },
+  "settings": {
+    "logout": "Sign out",
+    "groups": {
+      "reading": "Reading",
+      "subjects": "Subjects",
+      "you": "You",
+      "household": "Household",
+      "device": "This device",
+      "about": "Hodi"
+    },
+    "nav": {
+      "reading": "Reading and display",
+      "themes": "Topics",
+      "sources": "Sources",
+      "followed": "Followed",
+      "muted": "Muted subjects",
+      "me": "My profile",
+      "stats": "Statistics",
+      "sharing": "Sharing",
+      "household": "Household",
+      "profiles": "Profiles",
+      "ai": "AI & credits",
+      "notifications": "Notifications",
+      "account": "Data",
+      "shortcuts": "Keyboard shortcuts",
+      "about": "About"
+    },
+    "hints": {
+      "reading": "Appearance, text size",
+      "themes": "Order, visibility",
+      "sources": "Feed status",
+      "failing": "{{count}} failing",
+      "none": "None",
+      "me": "Name, photo, code",
+      "stats": "Reading and videos",
+      "on": "On",
+      "off": "Off",
+      "household": "Name, password, region",
+      "callsLeft_one": "{{count}} call left today",
+      "callsLeft_other": "{{count}} calls left today",
+      "aiOff": "Off",
+      "ai": "Today’s calls",
+      "onPlural": "On",
+      "offPlural": "Off",
+      "account": "Storage, offline",
+      "shortcuts": "Press ?",
+      "about": "Version, source code, credits"
+    },
+    "titles": {
+      "reading": "Reading",
+      "themes": "Topics",
+      "sources": "Sources",
+      "followed": "Followed",
+      "muted": "Muted subjects",
+      "notifications": "Notifications",
+      "me": "My profile",
+      "stats": "Statistics",
+      "ai": "AI & credits",
+      "household": "Household",
+      "profiles": "Profiles",
+      "sharing": "Sharing",
+      "account": "Data",
+      "shortcuts": "Shortcuts",
+      "about": "About"
+    },
+    "themes": {
+      "intro": "The sections of your feed, in the menu’s order. Drag them to change that order. A hidden topic leaves your feed and the menu, but stays visible to the other profiles. A topic with no source doesn’t show.",
+      "move": "Move {{name}} (up and down arrows)",
+      "hidden": "hidden",
+      "show": "Show {{name}}"
+    },
+    "reading": {
+      "intro": "Hodi’s language, its colours and the size of the articles’ text. These settings are yours alone and follow you on all your devices. Hiding what you’ve read keeps your feed short: everything stays in search, the stats and History.",
+      "appearance": "Theme",
+      "appearanceHint": "Poudré: the dark theme, in pink",
+      "themes": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark",
+        "poudre": "Poudré"
+      },
+      "accent": "Accent colour",
+      "accentHint": "Logo, active tab, counters, progress",
+      "accents": {
+        "auto": "Rust (the theme’s)",
+        "autoPoudre": "Powder pink (the theme’s)",
+        "rose": "Pink",
+        "corail": "Coral",
+        "ocre": "Gold",
+        "vert": "Sage",
+        "turquoise": "Turquoise",
+        "bleu": "Blue",
+        "lavande": "Lilac"
+      },
+      "textSize": "Text size",
+      "textSizeHint": "Applies to the text of articles",
+      "sizes": ["Very small", "Normal", "Large", "Very large", "Huge"],
+      "hideRead": "Hide read articles and watched videos",
+      "hideReadHint": "They stay in searches, stats and history",
+      "history": "History",
+      "historyHint": "Articles read and videos seen in the last 7 days"
+    },
+    "followed": {
+      "intro": "A word or a phrase. Articles and videos about it get a star and go to Followed. With its alert, a subject sends you a notification when a new article mentions it, at most one every 3 hours.",
+      "placeholder": "Add a subject, e.g. “Silksong”",
+      "field": "Subject to add",
+      "add": "Follow",
+      "emptyTitle": "Nothing followed",
+      "emptyHint": "Add a word above: its articles will go to Followed.",
+      "searching": "Searching…",
+      "nothingThisWeek": "Nothing this week",
+      "thisWeek": "{{count}} this week",
+      "alert": "Alert",
+      "alertFor": "Alert for “{{word}}”",
+      "unfollow": "Stop following “{{word}}”",
+      "pausedTitle": "Alerts paused",
+      "paused": "Alerts need notifications turned on on this device: <link>Notifications</link>."
+    },
+    "muted": {
+      "intro": "Articles and videos whose title or summary contains one of these words disappear from the feed, the stories and Videos, but stay in search. “foot” also hides “football”.",
+      "placeholder": "Add a word, e.g. “Kardashian”",
+      "field": "Word to hide",
+      "add": "Hide",
+      "emptyTitle": "No hidden subjects",
+      "emptyHint": "Add a word above: its articles will leave your feed.",
+      "hiddenToday_zero": "No article hidden today",
+      "hiddenToday_one": "{{count}} article hidden today",
+      "hiddenToday_other": "{{count}} articles hidden today",
+      "unmute": "Stop hiding “{{word}}”"
+    },
+    "sharing": {
+      "intro": "Send articles to the household’s other profiles, and receive theirs. In the reader, “For…” sends the article to a profile, with a note if you like. What others send you arrives in Shares, never in the feed.",
+      "toggle": "Share at home",
+      "onHint": "You send and receive articles",
+      "offHint": "Nothing sent or received, Shares hidden",
+      "receiveFrom": "Get from",
+      "mutedHint": "You no longer get theirs",
+      "receivingHint": "You get their articles",
+      "receive": "Receive shares from {{name}}"
+    },
+    "account": {
+      "browser": "Browser",
+      "intro": "What this device keeps from Hodi, and for how long. You stay signed in for 90 days, then the password is asked again. The text of articles you haven’t read yet is kept here, to read them offline.",
+      "sessionHint": "Signed in for 90 days, then the password is asked again",
+      "thisDevice": "This device",
+      "offline": "Offline",
+      "offlineReading": "Offline reading",
+      "ready_one": "{{count}} here",
+      "ready_other": "{{count}} here",
+      "offlineHint": "The text of the feed’s unread articles, kept while the app is open"
+    },
+    "roles": {
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "edit": "Edit",
+    "editName": "Edit {{name}}",
+    "editProfileTitle": "Edit profile",
+    "profileSaved": "Profile saved",
+    "me": {
+      "intro": "What’s only yours: your name, your photo and your code, which makes your profile private. You can also replay the guided tour, or reset your settings and your stats, without touching the other profiles.",
+      "help": "Help",
+      "tour": "Guided tour",
+      "tourHint": "Add a source step by step, like on the first day",
+      "replay": "Replay",
+      "reset": "Reset",
+      "resetSettingsHint": "Topics, sources, subjects, look: all back to default",
+      "resetSettingsTitle": "Reset your settings?",
+      "resetSettingsMessage": "Topics, sources, subjects and look go back to default.",
+      "resetAction": "Reset",
+      "resetSettingsDone": "Settings reset",
+      "clearStats": "Reading stats",
+      "clearStatsHint": "Cleared on all your devices",
+      "clearStatsTitle": "Clear your reading stats?",
+      "clearStatsMessage": "Your reads are cleared on all your devices. This cannot be undone.",
+      "clearAction": "Clear",
+      "clearStatsDone": "Stats cleared",
+      "tourHintTeen": "Your feed and asking for a source, step by step"
+    },
+    "profiles": {
+      "intro": "Up to {{max}} readers on this account, each with their own saved articles, reads, stats and settings. The admin adds and deletes profiles, the others change their own. A profile can become private with a code, in Your profile.",
+      "deleteTitle": "Delete {{name}}?",
+      "deleteMessage": "Their saved articles, reads and settings are deleted too. This cannot be undone.",
+      "deleted": "{{name}} deleted",
+      "deleteFailed": "The deletion failed. Try again in a moment.",
+      "active": "Open",
+      "add": "Add a profile",
+      "resetPinTitle": "Remove {{name}}’s code?",
+      "resetPinMessage": "Their profile becomes public again. They can choose a new code in Your profile.",
+      "pinRemoved": "{{name}}’s code removed",
+      "pinRemoveFailed": "The code could not be removed. Try again in a moment."
+    },
+    "notifications": {
+      "errors": {
+        "denied": "Notifications are blocked for Hodi. Allow them in the device’s settings, then try again.",
+        "unavailable": "Notifications are not turned on on the server yet.",
+        "brave": "Brave blocks notifications by default. In brave://settings/privacy, turn on “Use Google services for push messaging”, restart Brave and try again.",
+        "failed": "Turning them on did not work. Try again in a moment."
+      },
+      "disabled": "Notifications turned off",
+      "enabled": "Notifications on",
+      "unsupportedTitle": "Not available in this browser",
+      "unsupported": "On iPhone, add Hodi to the home screen (iOS 16.4 or later) and open it there.",
+      "onHere": "On for this device",
+      "offHere": "Off for this device",
+      "perDevice": "Each device is turned on separately.",
+      "toggle": "Notifications on this device",
+      "intro": "Hodi can tell you about a new article on a followed subject with an alert, an article someone sends you, or a reaction to what you shared. Each device is turned on separately, nothing is sent without your OK, and nothing arrives during your quiet hours.",
+      "test": "Test notification",
+      "testHint": "To check that they arrive.",
+      "testAction": "Test",
+      "triggers": "What sends a notification",
+      "noSubject": "You follow no subject yet.",
+      "subjects": "A new article on a subject with an alert: {{alerts}} of {{total}}. One per subject every 3 hours, 12 a day at most.",
+      "shares": "Shared articles",
+      "sharesHint": "When someone in the household sends you an article or video with “For…”.",
+      "reactions": "Reactions to your shares",
+      "reactionsHint": "When someone reacts with an emoji to an article you sent them.",
+      "badge": "Badge on the icon",
+      "badgeHint": "The number of new articles. Back to zero when you open Followed.",
+      "silence": "Quiet",
+      "dnd": "Do not disturb",
+      "dndHint": "No notification during these hours.",
+      "hours": "Time range",
+      "start": "Quiet from",
+      "end": "Quiet until",
+      "testBody": "Notifications reach this device."
+    },
+    "data": {
+      "kb": "{{value}} kB",
+      "mb": "{{value}} MB",
+      "clearedFreed": "Texts cleared ({{size}} freed)",
+      "cleared": "Cleared",
+      "clearFailed": "The texts could not be cleared. Try again in a moment.",
+      "server": "Server",
+      "database": "Database",
+      "articles_one": "{{total}} article, {{texts}} with its text",
+      "articles_other": "{{total}} articles, {{texts}} with their text",
+      "databaseHint": "Articles, settings, reads and AI summaries",
+      "texts": "Article text",
+      "textsHint": "Kept to read again outside the feeds; after that, title and link remain",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "kept": "Kept texts",
+      "keptHint": "Except Saved ones; an article opened again is re-read from its site",
+      "clearTitle": "Clear the texts?",
+      "clearMessage": "Article texts kept on the server are deleted. Saved articles keep theirs.",
+      "clear": "Clear",
+      "clearing": "Clearing…",
+      "backups": "Backups",
+      "backupsHint": "A copy of the database every night, the last 7 kept",
+      "backupsCount_one": "A copy of the database every night, the last 7 kept ({{count}} so far)",
+      "backupsCount_other": "A copy of the database every night, the last 7 kept ({{count}} so far)",
+      "sevenKept": "7 kept"
+    },
+    "household": {
+      "renameTitle": "Rename household",
+      "renameFailed": "The name could not be saved. Try again in a moment.",
+      "wrongPassword": "The current password is wrong.",
+      "passwordFailed": "The password could not be changed. Try again in a moment.",
+      "passwordTitle": "Change the password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "signedOut": "Other devices signed out",
+      "signOutFailed": "The other devices could not be signed out. Try again in a moment.",
+      "intro": "What holds for the whole install, and only the admin sees: the password, the sources and the AI all profiles share. The time zone sets when the day changes for the feed, the Daily summary and quiet hours; the country helps the AI place your questions.",
+      "loadFailed": "The household’s settings could not be read. Try again in a moment.",
+      "heading": "Household",
+      "name": "Name",
+      "nameHint": "“{{name}}” · shown on the sign-in screen",
+      "rename": "Rename",
+      "passwordChanged": "The same for all profiles · changed on {{date}}",
+      "passwordHint": "The same for all profiles",
+      "otherDevices": "Other devices",
+      "otherDevicesHint": "They’ll have to retype the password",
+      "signOutTitle": "Sign out the other devices?",
+      "signOutMessage": "Every device in the household except this one goes back to the sign-in screen.",
+      "signOut": "Sign out",
+      "region": "Region",
+      "timeZone": "Time zone",
+      "timeZoneHint": "New day, Daily summary, quiet hours · {{offset}}",
+      "regionFailed": "The region could not be saved. Try again in a moment.",
+      "game": "Game",
+      "gameToggle": "Levels and badges",
+      "gameHint": "Points for every read, a challenge and a ranking each week",
+      "gameOn": "Game on",
+      "gameOff": "Game off",
+      "gameFailed": "The game could not be changed. Try again in a moment."
+    },
+    "proposals": {
+      "errors": {
+        "limit": "The household has hit its source limit.",
+        "followed": "Source already followed.",
+        "none": "This site has no readable feed now. Try another source.",
+        "failed": "The site isn’t answering. Try again in a moment."
+      },
+      "trying": "Hodi looks for the site’s feed and tries 3 articles.",
+      "inLanguage": {
+        "fr": "In French",
+        "en": "In English"
+      }
+    },
+    "addSource": {
+      "replace": "Replace {{name}}",
+      "replaceTitle": "Replace the source",
+      "title": "Add a source",
+      "how": "How to add",
+      "byLink": "With a link",
+      "forTopic": "For a topic",
+      "pickTopic": "Pick a topic",
+      "changeTopic": "Change topic"
+    },
+    "about": {
+      "intro": "Hodi is free software, under the AGPL-3.0 licence: its code is open to all, and anyone can install it at home. Here, this install’s version and the credits of those who made it possible.",
+      "app": "Hodi",
+      "version": "Version",
+      "versionHint": "The number of this install",
+      "licence": "Licence",
+      "licenceHint": "Free software, AGPL-3.0 licence",
+      "source": "Source code",
+      "credits": "Credits",
+      "people": {
+        "antho": {
+          "name": "Antho",
+          "role": "Idea, design and project lead"
+        },
+        "claude": {
+          "name": "Claude, by Anthropic",
+          "role": "The AI that wrote the code with Antho"
+        },
+        "gptImage": {
+          "name": "GPT Image, by OpenAI",
+          "role": "The Child profiles’ avatars"
+        },
+        "lucide": {
+          "name": "Lucide",
+          "role": "The icons, ISC licence"
+        },
+        "fonts": {
+          "name": "Bebas Neue, Archivo and Geist",
+          "role": "The fonts, SIL OFL licence"
+        }
+      }
+    }
+  },
+  "pin": {
+    "wrongCurrent": "The current code is wrong.",
+    "tooMany": "Too many attempts. Try again in a few minutes.",
+    "saveFailed": "The code could not be saved. Try again in a moment.",
+    "nowPrivate": "Now private",
+    "nowPublic": "Now public",
+    "changed": "PIN changed",
+    "setTitle": "Make profile private",
+    "removeTitle": "Make your profile public",
+    "changeTitle": "Change the code",
+    "lockedHint": "Your code is asked in “Who’s reading?” before your profile opens",
+    "openHint": "Anyone in the household can open your profile",
+    "digits": "4 digits",
+    "change": "Change",
+    "yourCurrent": "Current code",
+    "current": "Old code",
+    "yours": "Your code (4 digits)",
+    "new": "New code (4 digits)",
+    "again": "Once more",
+    "mismatch": "The two codes are not the same.",
+    "makePrivate": "Make private",
+    "makePublic": "Make public"
+  },
+  "addSource": {
+    "videos": "Its videos go to Videos.",
+    "readable_one": "{{count}} of {{tried}} articles opens in Hodi.",
+    "readable_other": "{{count}} of {{tried}} articles open in Hodi.",
+    "notReadable": "Its articles don’t open in Hodi: their summary shows, with a link to the site.",
+    "seeSite": "See {{name}}’s site",
+    "added": "Added",
+    "removeTopic": "Remove {{name}}",
+    "anotherTopic": "Another topic?",
+    "typeTopic": "Type a topic, e.g. “Sport”",
+    "errors": {
+      "invalid": "Not a link. Paste the address of a site, a feed or a YouTube channel.",
+      "blocked": "This address isn’t public: Hodi won’t fetch it.",
+      "none": "No feed found at this address. Try the site’s home page or its RSS feed address.",
+      "empty": "This feed is empty for now.",
+      "failed": "The site isn’t answering. Try again in a moment.",
+      "reddit": "Hodi dropped Reddit: its feeds are closing.",
+      "limit": "The household has hit its source limit. Remove one to add another.",
+      "followed": "Source already followed.",
+      "bad_section": "Pick another topic for this source."
+    },
+    "origins": {
+      "feed": "Feed",
+      "youtube": "YouTube"
+    },
+    "placeholder": "Link to a site, an RSS feed, a YouTube channel…",
+    "field": "Link of the source to add",
+    "searching": "Search…",
+    "search": "Find",
+    "trying": "Hodi looks for the feed and tries three articles. It takes a few seconds.",
+    "followedAs": "Already followed as “{{name}}”.",
+    "whichTopics": "In which topics?",
+    "whichSection": "In which Videos section?",
+    "topics": "Source topics",
+    "count": "{{added}} / {{limit}} home sources",
+    "adding": "Adding"
+  },
+  "suggest": {
+    "add": {
+      "limit": "The household has hit its source limit.",
+      "followed": "Followed.",
+      "failed": "The source could not be added. Try again in a moment."
+    },
+    "capped": "No more suggestions today: the daily limit is reached.",
+    "offer": "Sources for {{topic}}, found by the AI.",
+    "pickTopic": "Pick a topic, the AI suggests sources.",
+    "button": "Suggest",
+    "loading": "The AI suggests sites, then Hodi finds their feed and tries their articles.",
+    "errors": {
+      "unavailable": "AI isn’t turned on on this server.",
+      "not_found": "This topic is gone.",
+      "limited": "No more suggestions today: the daily limit is reached. Come back tomorrow.",
+      "refused": "The AI couldn’t suggest sources for this topic.",
+      "failed": "The suggestions could not be made. Try again in a moment."
+    },
+    "noFeed": "None of the sites has a readable feed. Try again later.",
+    "last": "Last article: {{title}}"
+  },
+  "sources": {
+    "deleteMessage": "It goes for the whole household and won’t come back by itself.",
+    "deleted": "{{name}} deleted",
+    "deleteFailed": "The source could not be deleted. Try again in a moment.",
+    "hideLowTitle_one": "Hide the little-read source?",
+    "hideLowTitle_other": "Hide the {{count}} little-read sources?",
+    "hideOneTitle": "Hide {{name}}?",
+    "hideLowMessage": "Their articles leave this profile’s feed and topics. You can show them again here one by one.",
+    "hideAll": "Hide all",
+    "hidden_one": "Source hidden",
+    "hidden_other": "{{count}} sources hidden",
+    "replaced": "Source added, {{name}} hidden",
+    "added": "Source added",
+    "topicsSaved": "Topics saved",
+    "topicsFailed": "The topics could not be saved. Try again in a moment.",
+    "kinds": {
+      "article": "Articles",
+      "video": "Videos",
+      "podcast": "Podcasts"
+    },
+    "groups": {
+      "mine": "My sources",
+      "channels": "My channels",
+      "household": "Added by the home",
+      "base": "Base sources"
+    },
+    "status": {
+      "error": "Error"
+    },
+    "deletedProfile": "a deleted profile",
+    "errorTitle": "Error: {{error}}",
+    "by": "By {{name}}",
+    "changeTopicsOf": "Change {{name}}’s topics",
+    "changeTopics": "Change topics",
+    "seeSite": "See the site",
+    "deleteFor": "Delete {{name}} for the whole home",
+    "intro": "The sites and channels that fill your feed, checked every 15 minutes. A source you add joins the whole household’s list, hidden for the other profiles: each shows it if they want. Base sources can be hidden but not deleted.",
+    "search": "Search a source or a topic",
+    "searchLabel": "Search a source",
+    "filter": "Filter sources",
+    "filters": {
+      "all": "All",
+      "low": "Little read",
+      "error": "Failing",
+      "hidden": "Hidden"
+    },
+    "filterTopic": "Filter by topic",
+    "allTopics": "All topics",
+    "loadFailed": "The sources could not be loaded. Try again in a moment.",
+    "noMatch": "No source matches.",
+    "topicsOf": "{{name}}’s topics",
+    "groupIntros": {
+      "mine": "The sites you added. Only you, and the admin, can change their topics or delete them.",
+      "channels": "The YouTube channels and podcasts you follow. They arrive in Videos, never in the feed.",
+      "household": "Added by the other profiles. They stay hidden for you until you show them.",
+      "parents": "The sources your parents chose for you. Hide the ones you don’t care about.",
+      "base": "Chosen with Hodi for a good start. You can hide them, not delete them.",
+      "requests": "The sources you asked for. They come into your feed when your parents accept them."
+    },
+    "moreFor": "Actions for {{name}}",
+    "replace": "Replace with another",
+    "delete": "Delete the source",
+    "filterValue": "Filter sources: {{value}}"
+  },
+  "ai": {
+    "kinds": {
+      "summary": "Article summaries",
+      "question": "Article questions",
+      "dailySummary": "Daily summary",
+      "sources": "Source suggestions"
+    },
+    "resetKindLabel": "Reset: {{kind}}",
+    "replaceKey": "Replace the key",
+    "turnOn": "Turn on AI",
+    "keyFailed": "The key could not be saved. Try again in a moment.",
+    "countryFailed": "The country could not be saved. Try again in a moment.",
+    "on": "AI on",
+    "removed": "AI removed",
+    "removeTitle": "Remove the key?",
+    "removeMessage": "Violet buttons disappear for the whole household. What the AI already wrote stays.",
+    "remove": "Remove",
+    "removeFailed": "The key could not be removed. Try again in a moment.",
+    "provider": "Provider",
+    "model": "Model {{model}}",
+    "key": "API key",
+    "replace": "Replace",
+    "countryHint": "Places the AI’s web searches: “sunny tomorrow?”",
+    "off": "AI not on",
+    "offAdmin": "Add an API key for summaries, questions and the Daily summary.",
+    "addKey": "Add a key",
+    "resetDone": "Reset",
+    "resetFailed": "The reset failed. Try again in a moment.",
+    "resetHousehold": {
+      "summary": "Reset the household’s summaries?",
+      "question": "Reset the household’s questions?",
+      "dailySummary": "Reset the household’s Daily summaries?",
+      "sources": "Reset the household’s source suggestions?"
+    },
+    "resetHouseholdAll": "Reset all for the household?",
+    "resetHouseholdMessage": "Calls from the last 24 hours no longer count, for any profile.",
+    "resetProfile": {
+      "summary": "Reset {{name}}’s summaries?",
+      "question": "Reset {{name}}’s questions?",
+      "dailySummary": "Reset {{name}}’s Daily summaries?",
+      "sources": "Reset {{name}}’s source suggestions?"
+    },
+    "resetProfileAll": "Reset everything for {{name}}?",
+    "resetProfileMessage": "{{name}} gets their credits back. The household total doesn’t change.",
+    "intro": "Each violet button is one AI call, paid on the household’s credits: nothing is sent without a click. The household cap is split evenly between profiles and counts over a rolling 24 hours. Cap reached, the AI buttons turn off.",
+    "loadFailed": "Today’s calls could not be read. Try again in a moment.",
+    "offMember": "The admin can turn it on here with an API key.",
+    "householdDay": "All household · 24 hours",
+    "profilesDay": "Per profile · 24 hours",
+    "yoursOf": "Your calls · {{name}} · 24 hours",
+    "yours": "Your calls · 24 hours",
+    "introAdmin": "Resetting a profile gives back its credits without lowering the household total."
+  },
+  "push": {
+    "someone": "Someone at home",
+    "shared": {
+      "article": "{{name}} sent you an article",
+      "video": "{{name}} sent you a video",
+      "podcast": "{{name}} sent you an episode"
+    },
+    "note": "“{{note}}” · {{title}}",
+    "reacted": "{{name}} reacted {{reaction}}"
+  },
+  "passwordChange": {
+    "confirm": "Confirm the new password"
+  },
+  "hourCycle": {
+    "label": "Time format",
+    "hint": "For every profile: settings, notifications, times",
+    "option24": "24 h",
+    "option12": "12 h",
+    "example24": "21:00",
+    "example12": "9:00 PM"
+  },
+  "confirm": {
+    "history": {
+      "title": "Clear your history?",
+      "message": "Articles you <b>read</b> or <b>hid</b> come back to your feed, on <b>all your devices</b>. Your reading stats and points don’t change.",
+      "button": "Clear history"
+    },
+    "deleteProfile": {
+      "title": "Delete this profile?",
+      "message": "<b>{{name}}</b>’s profile is deleted with its saved articles, reading history, points and settings. <b>This can’t be undone.</b>",
+      "button": "Delete profile"
+    },
+    "removePin": {
+      "title": "Remove private code?",
+      "message": "<b>{{name}}</b>’s profile will open <b>without a code</b> for the whole household. {{name}} can choose a new code in <i>My profile</i>.",
+      "button": "Remove code"
+    },
+    "deleteSource": {
+      "title": "Delete the source?",
+      "message": "The source <b>{{name}}</b> is deleted <b>for the whole household</b>: its articles leave every profile’s feed. It only comes back if someone adds it again.",
+      "button": "Delete source"
+    },
+    "hideSource": {
+      "title": "Hide the source?",
+      "message": "Articles from <b>{{name}}</b> leave your feed and topics, <b>for your profile only</b>. You can show it again here.",
+      "button": "Hide source"
+    },
+    "hideSources": {
+      "title": "Hide {{count}} sources?",
+      "message": "Articles from these {{count}} sources leave your feed and topics, <b>for your profile only</b>. You can show them again here, one by one.",
+      "button": "Hide {{count}} sources"
+    },
+    "clearTexts": {
+      "title": "Free up space?",
+      "message": "On its server, Hodi keeps a copy of the articles already opened, to show them faster. These copies are deleted <b>for the whole household</b>, except those of <b>saved</b> articles. An article opened again reloads from its site.",
+      "button": "Free up space"
+    },
+    "resetSettings": {
+      "title": "Reset your settings?",
+      "message": "Your topics, sources, subjects and appearance go back to the defaults, <b>for your profile only</b>. Your saved articles, reading history and points don’t change.",
+      "button": "Reset settings"
+    },
+    "clearStats": {
+      "title": "Clear your stats?",
+      "message": "Your reading stats are deleted on <b>all your devices</b> and can’t be recovered. Your game points and badges stay.",
+      "button": "Clear stats"
+    },
+    "removeKey": {
+      "title": "Remove the AI key?",
+      "message": "The purple buttons disappear <b>for the whole household</b> until a new key is added. Summaries and answers the AI already wrote stay.",
+      "button": "Remove key"
+    },
+    "resetHousehold": {
+      "title": "Refill everyone’s AI?",
+      "message": "What was asked of the AI in the last 24 hours no longer counts, <b>for every profile</b>: everyone gets today’s credits back.",
+      "button": "Refill"
+    },
+    "resetHouseholdKind": {
+      "title": "Refill everyone’s AI?",
+      "message": "What was asked of the AI for <b>{{kind}}</b> in the last 24 hours no longer counts, <b>for every profile</b>.",
+      "button": "Refill"
+    },
+    "resetProfile": {
+      "title": "Refill the profile’s AI?",
+      "message": "<b>{{name}}</b> gets all of today’s AI credits back. The household’s credits don’t move.",
+      "button": "Refill"
+    },
+    "resetProfileKind": {
+      "title": "Refill the profile’s AI?",
+      "message": "<b>{{name}}</b> gets today’s credits for <b>{{kind}}</b> back. The household’s credits don’t move.",
+      "button": "Refill"
+    },
+    "logoutOthers": {
+      "title": "Log out devices?",
+      "message": "Every household device <b>except this one</b> goes back to the login screen. They’ll need the household password again.",
+      "button": "Log out devices"
+    },
+    "kinds": {
+      "summary": "summaries",
+      "question": "questions",
+      "dailySummary": "Daily summaries",
+      "sources": "source suggestions"
+    }
+  },
+  "dialogIntro": {
+    "pinOpen": "<b>{{name}}</b>’s profile is private. Type its code to open it.",
+    "parentalOpen": "This adult profile is protected by the <b>parental code</b>. Type it to open it.",
+    "shortcuts": "On a computer, without leaving the keyboard. Press <b>?</b> anywhere to see them again.",
+    "parentalSet": "The <b>parental code</b> is asked to open an adult profile that isn’t private: young readers can’t get in.",
+    "codeChange": "The new code replaces the old one <b>on every device</b>.",
+    "parentalRemove": "Adult profiles will open <b>without a code</b> on every device, young readers included.",
+    "pinSet": "A private profile opens <b>only with your code</b>, in “Who’s reading?” on every device.",
+    "pinRemove": "Anyone at home opens your profile <b>with no code</b>.",
+    "timeZone": "It sets <b>when each day starts</b>: new feed, daily summary, quiet hours and young readers’ screen time.",
+    "country": "It places the <b>AI’s web searches</b>: “will it rain tomorrow?” looks near you.",
+    "share": "The <b>original link</b>, to the publisher’s site, to send anywhere.",
+    "addSource": "Paste a <b>site’s link</b>, or pick a theme to see suggestions. The source reaches <b>the whole household</b>’s feed.",
+    "replaceSource": "Find another source to replace <b>{{name}}</b>. It’s hidden once the new one is added.",
+    "aiTurnOn": "Paste an <b>API key</b> from your provider. It’s checked without spending credits, then kept on this server.",
+    "aiReplace": "The new key replaces the old one <b>for the whole household</b>. It’s checked without spending credits.",
+    "rename": "The household’s name shows <b>on the sign-in screen</b> of every device.",
+    "password": "One password for <b>every profile</b>. Other devices will have to sign in again, this one stays signed in.",
+    "sourceTopics": "Choose where to file <b>{{name}}</b>. Its articles show up in <b>each theme</b> ticked.",
+    "daily": "The reading time allowed each day. Once it’s used up, the app pauses <b>until tomorrow</b>.",
+    "window": "The hours when the app opens. Outside them it stays shut and says <b>when it reopens</b>.",
+    "quiet": "During these hours <b>no notification</b> reaches their devices. The app stays open.",
+    "explain": "Each time <b>{{name}}</b> asks the AI to explain an article or a word. Counted on the <b>household’s credits</b>.",
+    "week": "Their screen time and reading over the last 7 days, <b>never the titles</b>.",
+    "topics": "Pick the themes shown in their feed. A theme turned off leaves <b>with its sources</b>, nothing is deleted: turn it back on any time.",
+    "sources": "The kids’ catalogue, by theme. Base sources start on: keep the ones that suit them. <b>Only sources that are on</b> reach their feed.",
+    "shareTo": "Pick one or more profiles of the household. The article lands in their <b>Shares</b>, with your note if you write one.",
+    "ask": "Paste the link of a site or a YouTube channel. <b>Your parents</b> get your request: if they accept, it reaches your feed or Videos.",
+    "request": "<b>{{name}}</b> would like this source in their feed. Accepted, it shows up <b>for {{name}} only</b>, filed in the theme below.",
+    "requestChannel": "<b>{{name}}</b> would like to follow this channel. Accepted, it shows up <b>for {{name}} only</b>, in their Videos."
+  }
+}

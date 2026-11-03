@@ -1,0 +1,85 @@
+/* At the sidebar's foot, beside the settings' round button: a selector as tall as it, its menu opening upwards. */
+.switcher {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.selector {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: var(--button-height);
+  padding: 0 14px 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.waiting {
+  cursor: default;
+}
+
+.selector[aria-expanded='true'] {
+  background: var(--card);
+}
+
+@media (hover: hover) {
+  .selector:hover {
+    background: var(--control-hover);
+  }
+
+  .selector.waiting:hover {
+    background: var(--control);
+  }
+}
+
+.name {
+  flex: 1;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevrons {
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+/* The footer's whole row, over the settings' round button too (44 and the 8 between). */
+.menu {
+  right: -52px;
+}
+
+.lock {
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+.plus {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px dashed var(--border);
+  border-radius: 50%;
+}
+
+.pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}

@@ -1,0 +1,12 @@
+/* In the shared dialog (Dialog.tsx): under the question, what it does, then the two answers (DialogActions). */
+
+.message {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.message strong {
+  color: var(--text);
+  font-weight: 600;
+}

@@ -1,0 +1,47 @@
+/* Computers: the sidebar, the list and the main panel, each scrolling on its own. */
+.desktop {
+  display: flex;
+  height: calc(100dvh - var(--titlebar-height));
+  overflow: hidden;
+  background: var(--column);
+}
+
+.main {
+  display: flex;
+  flex-grow: 1;
+  min-width: 0;
+  padding: 10px;
+}
+
+.panel {
+  flex-grow: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 0 clamp(20px, 3vw, 40px);
+  border: 1px solid var(--divider);
+  border-radius: 18px;
+  background: var(--card);
+}
+
+/* Tablets held across: the sidebar, then one panel framed as the desktop's, showing the phone's
+   screens on the card's colour (their own background is the column's) or the desktop reader. */
+.tabletPanel {
+  --column: var(--card);
+  /* The screens fill the panel, not the window; their floating pills centre on it, with no navigation under. */
+  --screen-height: 0;
+  --screen-left: 250px;
+  --screen-footer-bottom: 24px;
+  padding: 0;
+}
+
+.readerFrame {
+  padding: 0 var(--gutter);
+}
+
+/* Phones: the page scrolls, the navigation floats over it. */
+.phone {
+  min-height: 100dvh;
+  background: var(--column);
+}
+
+/* The pages without their own design yet. */
