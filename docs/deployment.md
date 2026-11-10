@@ -5,7 +5,7 @@ Hodi runs as one Docker Compose project, on a computer or a server (VPS). You ne
 ## 1. Install and start
 
 ```bash
-git clone https://github.com/Anthodpnt/hodi-app.git hodi
+git clone https://github.com/leclaudeur/hodi.git hodi
 cd hodi
 docker compose up -d
 docker compose ps

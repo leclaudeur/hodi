@@ -13,9 +13,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Anthodpnt/hodi-app/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Anthodpnt/hodi-app/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://github.com/Anthodpnt/hodi-app/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/Anthodpnt/hodi-app?include_prereleases&sort=semver"></a>
-  <a href="https://codecov.io/gh/Anthodpnt/hodi-app"><img alt="Server test coverage" src="https://codecov.io/gh/Anthodpnt/hodi-app/branch/main/graph/badge.svg?flag=server"></a>
+  <a href="https://github.com/leclaudeur/hodi/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/leclaudeur/hodi/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/leclaudeur/hodi/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/leclaudeur/hodi?include_prereleases&sort=semver"></a>
+  <a href="https://codecov.io/gh/leclaudeur/hodi"><img alt="Server test coverage" src="https://codecov.io/gh/leclaudeur/hodi/branch/main/graph/badge.svg?flag=server"></a>
   <a href="LICENSE"><img alt="Licence: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue"></a>
   <img alt="Node.js 24 or later" src="https://img.shields.io/badge/node-%E2%89%A524-339933?logo=nodedotjs&logoColor=white">
   <img alt="Runs with Docker Compose" src="https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white">
@@ -78,7 +78,7 @@ small VPS.
 1. Get the code
 
    ```bash
-   git clone https://github.com/Anthodpnt/hodi-app.git hodi
+   git clone https://github.com/leclaudeur/hodi.git hodi
    cd hodi
    ```
 
