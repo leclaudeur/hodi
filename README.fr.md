@@ -136,7 +136,7 @@ Merci de prendre le temps d’améliorer Hodi !
 
 ## Licence
 
-Copyright © 2026 Anthony Du Pont et les contributeurs de Hodi.
+Copyright © 2026 Le Claudeur et les contributeurs de Hodi.
 
 Hodi est un logiciel libre sous licence [GNU AGPL-3.0](LICENSE) : tu peux l’**utiliser, le modifier et le partager**
 librement, à condition de publier le code source d’une version modifiée que tu fais tourner pour d’autres personnes.

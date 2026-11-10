@@ -165,7 +165,7 @@
       "helpTitle": "Un foyer, un mot de passe",
       "help": "Chaque appareil le demande une fois, puis le garde 90 jours. 8 caractères minimum : plus il est long et mélange majuscules, chiffres et symboles, plus il est solide. Tu pourras changer le nom et le mot de passe dans Réglages › Foyer.",
       "name": "Nom du foyer",
-      "namePlaceholder": "Ex. La maison Du Pont",
+      "namePlaceholder": "Ex. La maison Martin",
       "password": "Mot de passe",
       "confirm": "Confirme le mot de passe",
       "mismatch": "Les deux mots de passe ne sont pas identiques.",

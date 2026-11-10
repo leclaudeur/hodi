@@ -2,7 +2,7 @@
 
 The code of Hodi is free software under the [GNU AGPL-3.0](LICENSE): you may use, change and share it, as that licence
 says. The licence covers the code, not the name or the logo. The name “Hodi” and the Hodi logo (the “hod!” wordmark and
-its icons in `web/public/` and `docs/assets/`) belong to Anthony Du Pont, the project’s author. This note says how you
+its icons in `web/public/` and `docs/assets/`) belong to Le Claudeur, the project’s author. This note says how you
 may use them.
 
 ## What you may do without asking

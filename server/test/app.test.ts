@@ -1194,7 +1194,7 @@ describe('profiles', () => {
   it('renames, refuses bad names and colours, and never deletes the admin', async () => {
     assert.equal((await call('POST', '/profiles', { body: { name: '', color: 'science' } })).status, 400)
     assert.equal((await call('POST', '/profiles', { body: { name: 'Sam', color: 'rose' } })).status, 400)
-    assert.equal((await call('PATCH', '/profiles/1', { body: { name: 'Anthony' } })).status, 200)
+    assert.equal((await call('PATCH', '/profiles/1', { body: { name: 'Alexandre' } })).status, 200)
     assert.equal((await call('PATCH', '/profiles/999', { body: { name: 'X' } })).status, 404)
 
     const { profiles } = (await (await call('GET', '/profiles')).json()) as {
