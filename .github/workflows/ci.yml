@@ -52,7 +52,7 @@ jobs:
 
   # Test coverage, sent to Codecov for the README's badge: on the public repository only, where the token is.
   coverage:
-    if: github.repository == 'Anthodpnt/hodi-app'
+    if: github.repository == 'leclaudeur/hodi'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
