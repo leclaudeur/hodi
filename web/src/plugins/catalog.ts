@@ -1,3 +1,5 @@
+import gt from 'semver/functions/gt'
+import valid from 'semver/functions/valid'
 import type { PluginTranslations } from './plugin-texts.ts'
 
 // A plugin of Hodi's plugin registry (server/plugins/catalog.ts), as Serveur › Plugins lists it.
@@ -10,15 +12,11 @@ export interface CatalogPlugin {
   repo: string
 }
 
-// « 1.10.0 » comes after « 1.9.2 »: numbers compare one by one, a missing one counts as 0.
+// « 1.10.0 » comes after « 1.9.2 », and « 1.0.0 » after « 1.0.0-beta.2 »: semver's order. A version semver cannot
+// read is never newer.
 export const newerVersion = (candidate: string, current: string) => {
-  const parts = (version: string) => (version.split('-')[0] ?? '').split('.').map(Number)
-  const [a, b] = [parts(candidate), parts(current)]
-  for (let index = 0; index < Math.max(a.length, b.length); index++) {
-    const [x, y] = [a[index] ?? 0, b[index] ?? 0]
-    if (x !== y) return x > y
-  }
-  return false
+  const [a, b] = [valid(candidate), valid(current)]
+  return a != null && b != null && gt(a, b)
 }
 
 interface Installed {

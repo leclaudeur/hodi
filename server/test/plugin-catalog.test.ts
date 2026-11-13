@@ -81,10 +81,16 @@ after(async () => {
 })
 
 describe("Hodi's plugin registry", () => {
-  it('lists only the entries Hodi can install, and reads the index again after ten minutes', async () => {
+  it('lists only the entries Hodi can install, pre-releases included, and reads the index again after ten minutes', async () => {
     let time = 0
     const outside = fakeOutside([
       entry(),
+      entry({
+        id: 'beta',
+        version: '1.0.0-beta.1',
+        url: `${REPO}/releases/download/v1.0.0-beta.1/beta-1.0.0-beta.1.hodi-plugin`
+      }),
+      entry({ id: 'no-version', version: 'latest' }),
       entry({ id: 'old', api: PLUGIN_API - 1 }),
       entry({ id: 'elsewhere', url: 'https://example.com/hello.hodi-plugin' }),
       entry({ id: 'other-repo', url: 'https://github.com/x/y/releases/download/v0.2.0/y.hodi-plugin' }),
@@ -96,7 +102,7 @@ describe("Hodi's plugin registry", () => {
     const listed = await catalog.list()
     assert.deepEqual(
       listed.map(plugin => plugin.id),
-      ['hello']
+      ['hello', 'beta']
     )
     assert.deepEqual(listed[0]?.translations, { en: { name: 'Hello', description: 'Says hello.' } })
 

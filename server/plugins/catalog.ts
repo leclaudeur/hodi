@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { FetchBytes, FetchText } from '../news/fetch-text.ts'
-import { PLUGIN_API } from './manifest.ts'
+import { PLUGIN_API, VERSION } from './manifest.ts'
 import type { ManifestTranslations } from './manifest-texts.ts'
 import { MAX_PACKAGE_BYTES } from './package.ts'
 
@@ -54,8 +54,7 @@ const entryOf = (raw: unknown): CatalogEntry | null => {
   const entry = raw as Record<string, unknown>
   const { id, name, description, repo, version, url, sha256, api } = entry
   if (api !== PLUGIN_API || typeof id !== 'string' || !/^[a-z][a-z0-9-]{0,39}$/.test(id)) return null
-  if (!text(name, 60) || !text(description, 280) || typeof version !== 'string' || !/^\d+\.\d+\.\d+$/.test(version))
-    return null
+  if (!text(name, 60) || !text(description, 280) || typeof version !== 'string' || !VERSION.test(version)) return null
   if (typeof repo !== 'string' || !/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+$/.test(repo)) return null
   if (
     typeof url !== 'string' ||

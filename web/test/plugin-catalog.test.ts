@@ -19,6 +19,14 @@ describe("Hodi's plugin registry in Serveur › Plugins", () => {
     expect(newerVersion('1.0', '1.0.0')).toBe(false)
   })
 
+  it('puts a pre-release before its version, and orders the pre-releases', () => {
+    expect(newerVersion('1.0.0', '1.0.0-beta.1')).toBe(true)
+    expect(newerVersion('1.0.0-beta.2', '1.0.0-beta.1')).toBe(true)
+    expect(newerVersion('1.0.0-beta.10', '1.0.0-beta.9')).toBe(true)
+    expect(newerVersion('1.0.0-beta.1', '0.2.2')).toBe(true)
+    expect(newerVersion('1.0.0-beta.1', '1.0.0')).toBe(false)
+  })
+
   it('offers the plugins the server does not have, and the newer version of one it has', () => {
     const catalog = [listed('diagnostic', '0.2.2'), listed('voice', '0.3.0')]
     expect(availableOf(catalog, [{ id: 'diagnostic', version: '0.2.1' }]).map(plugin => plugin.id)).toEqual(['voice'])

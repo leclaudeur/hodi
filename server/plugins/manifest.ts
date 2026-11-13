@@ -91,7 +91,7 @@ const ID = /^[a-z][a-z0-9-]{1,31}$/
 // Paths of Serveur › Plugins' own routes, beside the plugins' ones.
 const RESERVED_IDS = ['packages', 'dev-mode']
 const KEY = /^[a-zA-Z][a-zA-Z0-9]{0,31}$/
-const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/
+export const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/
 const MAX_SETTINGS = 32
 const MAX_TEXT = 2000
 const HOST = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/
