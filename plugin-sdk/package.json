@@ -1,6 +1,6 @@
 {
   "name": "@hodi-app/plugin-sdk",
-  "version": "0.6.1",
+  "version": "1.0.0-beta.1",
   "description": "Build and type plugins for Hodi, the self-hosted news reader for a household.",
   "license": "AGPL-3.0-only",
   "repository": {

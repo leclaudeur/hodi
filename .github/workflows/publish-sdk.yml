@@ -48,6 +48,13 @@ jobs:
       - run: npm run test:server
       # Trusted publishing needs npm 11.5.1 or later, newer than some Node 24 releases bring.
       - run: npm install -g npm@^11.5.1 && npm --version
-      # prepublishOnly builds the package first.
-      - run: npm publish --access public
+      # prepublishOnly builds the package first. A pre-release such as 1.0.0-beta.1 goes out under its own npm tag (beta),
+      # so `npm install` keeps giving the last stable version until 1.0.0.
+      - name: Publish
         working-directory: plugin-sdk
+        run: |
+          version=$(node -p "require('./package.json').version")
+          case "$version" in
+            *-*) npm publish --access public --tag "$(echo "${version#*-}" | cut -d. -f1)" ;;
+            *) npm publish --access public ;;
+          esac

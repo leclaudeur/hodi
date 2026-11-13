@@ -10,6 +10,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+## [1.0.0-beta.1] - 2026-11-14
+
+The API of Hodi 1.0, frozen until 1.0.0: the same as 0.6.1, so a plugin built for 0.6.1 keeps working. It comes out
+with Hodi 1.0.0-beta.1, under npm's `beta` tag: `npm install @hodi-app/plugin-sdk@beta`.
+
 ## [0.6.1] - 2026-11-12
 
 Public pages for the plugins that draw the signed-out screens. A plugin built for 0.6.0 keeps working.
@@ -223,6 +228,7 @@ was never published: its changes are in this one.
 - `hodi-plugin build`, the types of the server part and of `hodi:sdk`, and signing with `--key`.
 
 [unreleased]: https://www.npmjs.com/package/@hodi-app/plugin-sdk?activeTab=versions
+[1.0.0-beta.1]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.1
 [0.6.1]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/0.6.1
 [0.6.0]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/0.6.0
 [0.5.3]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/0.5.3

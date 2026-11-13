@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.1] - 2026-11-14
+
+The first beta of Hodi 1.0: accounts for everyone, the Serveur space, plugins and their SDK, Hodi's plugin list, and
+a ready-made image for servers without a shell. The plugin API is frozen until 1.0.
+
 ### Added
 
 - **Install without a shell.** Each version is published as the image `ghcr.io/leclaudeur/hodi`, for Intel or AMD and
@@ -244,5 +249,6 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 The first public version: RSS feeds by theme, a reader view, videos, up to five profiles, optional AI features, one
 Docker container, and a setup in the browser.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v0.1.0-alpha...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.1...HEAD
+[1.0.0-beta.1]: https://github.com/leclaudeur/hodi/compare/v0.1.0-alpha...v1.0.0-beta.1
 [0.1.0-alpha]: https://github.com/leclaudeur/hodi/commits/v0.1.0-alpha
