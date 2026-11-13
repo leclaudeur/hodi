@@ -60,8 +60,6 @@ const current = () => {
   return entries
 }
 
-export const getSaved = current
-
 export const useSaved = () => useSyncExternalStore(subscribeUserState, current)
 
 export const findSaved = (id: string) => current().find(entry => entry.item.id === id)

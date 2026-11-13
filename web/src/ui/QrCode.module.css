@@ -1,0 +1,7 @@
+.code {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--qr-paper);
+  fill: var(--qr-ink);
+}

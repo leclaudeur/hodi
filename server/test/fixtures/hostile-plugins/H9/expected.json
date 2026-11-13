@@ -1,0 +1,24 @@
+{
+  "case": "H9",
+  "title": "Five memory bombs at once stay inside the global budget",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/grow",
+      "expect": {
+        "withinMs": 8000,
+        "statusIn": [
+          500,
+          503
+        ]
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "instances": 5,
+  "note": "Install this plugin five times under ids hostile-h9-a … hostile-h9-e and call the five routes at once. The container is never killed: process RSS stays under the global plugin budget plus Hodi own use; plugins over the budget are refused at start or killed."
+}

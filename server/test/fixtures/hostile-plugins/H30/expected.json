@@ -1,0 +1,24 @@
+{
+  "case": "H30",
+  "title": "No network primitive inside the sandbox",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/net",
+      "expect": {
+        "status": 200,
+        "body": {
+          "fetch": "undefined",
+          "XMLHttpRequest": "undefined",
+          "WebSocket": "undefined",
+          "EventSource": "undefined"
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

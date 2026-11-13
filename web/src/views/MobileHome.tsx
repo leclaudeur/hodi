@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowRight, Inbox, RefreshCw } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import PageHelp from '../ui/PageHelp.tsx'
@@ -16,8 +16,6 @@ import { isRead, markRead, useReadState } from '../lib/read-state.ts'
 import { rememberList } from '../lib/reading-list.ts'
 import { topicHref } from '../lib/use-hash-route.ts'
 import ArticleCard from '../ui/ArticleCard.tsx'
-import Button from '../ui/Button.tsx'
-import EmptyState from '../ui/EmptyState.tsx'
 import Logo from '../ui/Logo.tsx'
 import PhoneHeader from '../ui/PhoneHeader.tsx'
 import ProfileButton from '../ui/ProfileButton.tsx'
@@ -26,7 +24,7 @@ import { Bar, SlideSkeleton } from '../ui/Skeleton.tsx'
 import TopicIcon from '../ui/TopicIcon.tsx'
 import MobileFilterRow from './MobileFilterRow.tsx'
 import styles from './MobileHome.module.css'
-import OfflineSaved from './OfflineSaved.tsx'
+import { FeedEmpty, PhoneFeedFailed } from './FeedStates.tsx'
 import ResumePile from './ResumePile.tsx'
 import StoriesRow from './StoriesRow.tsx'
 import { useFeedView } from './use-feed-view.ts'
@@ -129,6 +127,30 @@ interface MobileHomeProps {
   onUnauthorized: () => void
 }
 
+interface Slider {
+  topic: TopicSummary
+  items: SearchItem[]
+}
+
+// Under the topics: the articles to resume, then a slider per topic; null sliders while they load.
+const HomeBody = ({ feed, sliders }: { feed: ReturnType<typeof useFeedView>; sliders: Slider[] | null }) => {
+  const { t } = useTranslation()
+  if (feed.failed) return <PhoneFeedFailed title={t('feed.loadFailed')} onRetry={feed.refresh} />
+  if (feed.waiting || sliders === null) return <SlidersSkeleton />
+  return (
+    <>
+      <ResumePile layout="phone" />
+      {sliders.map((slider, index) => (
+        <div key={slider.topic.id} className="appear">
+          {index > 0 && <div className={styles.divider} aria-hidden="true" />}
+          <TopicSlider topic={slider.topic} items={slider.items} first={index < PRIORITY_SLIDERS} />
+        </div>
+      ))}
+      {sliders.length === 0 && <FeedEmpty allHidden={feed.allHidden} nothing={t('feed.nothingNewPhone')} />}
+    </>
+  )
+}
+
 // The phone's home ("Tout"): the stories, the topics, the daily summary, then today's articles of each topic.
 const MobileHome = ({ topics, onUnauthorized }: MobileHomeProps) => {
   const { t } = useTranslation()
@@ -173,41 +195,7 @@ const MobileHome = ({ topics, onUnauthorized }: MobileHomeProps) => {
         <>
           {sections && !feed.failed && <StoriesRow sections={sections} layout="phone" />}
           <MobileFilterRow topics={topics ?? []} selected={null} />
-          {feed.failed ? (
-            <>
-              <EmptyState
-                compact
-                tone="danger"
-                icon={<AlertCircle size={28} />}
-                title={t('feed.loadFailed')}
-                actions={
-                  <Button look="primary" onClick={feed.refresh} icon={RefreshCw}>
-                    {t('common.retry')}
-                  </Button>
-                }
-              >
-                {t('feed.savedOffline')}
-              </EmptyState>
-              <OfflineSaved />
-            </>
-          ) : feed.waiting || topics === null || !resumeReady ? (
-            <SlidersSkeleton />
-          ) : (
-            <>
-              <ResumePile layout="phone" />
-              {byTopic.map((slider, index) => (
-                <div key={slider.topic.id} className="appear">
-                  {index > 0 && <div className={styles.divider} aria-hidden="true" />}
-                  <TopicSlider topic={slider.topic} items={slider.items} first={index < PRIORITY_SLIDERS} />
-                </div>
-              ))}
-              {byTopic.length === 0 && (
-                <EmptyState icon={<Inbox size={28} />} title={t(feed.allHidden ? 'feed.allRead' : 'feed.nothingNew')}>
-                  {t(feed.allHidden ? 'feed.allReadText' : 'feed.nothingNewPhone')}
-                </EmptyState>
-              )}
-            </>
-          )}
+          <HomeBody feed={feed} sliders={topics === null || !resumeReady ? null : byTopic} />
         </>
       )}
     </div>

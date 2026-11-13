@@ -1,0 +1,19 @@
+{
+  "case": "H27",
+  "title": "A __proto__ key in a response pollutes nothing",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/proto",
+      "expect": {
+        "status": 200
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "afterInCore": "({}).admin === undefined and ({}).isAdmin === undefined in the test process; a profile that is not admin still gets 403 on an admin route afterwards."
+}

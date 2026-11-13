@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { LoginThrottle } from '../auth/login-throttle.ts'
+import { LoginThrottle, clientKey } from '../auth/login-throttle.ts'
 
 describe('login throttle', () => {
   it('blocks after the maximum number of failures', () => {
@@ -41,5 +41,24 @@ describe('login throttle', () => {
 
     assert.deepEqual(throttle.check(5_000, 'e'), { allowed: false, retryAfterSeconds: 55 })
     assert.equal(throttle.check(60_000, 'e').allowed, true)
+  })
+
+  // One IPv6 connection holds a whole /64: each of its addresses getting ten tries would be no limit at all.
+  it('counts an IPv6 client by its /64', () => {
+    const throttle = new LoginThrottle(2, 60_000)
+
+    throttle.recordFailure(0, '2001:db8:1:2::1')
+    throttle.recordFailure(1_000, '2001:db8:1:2:ffff:ffff:ffff:ffff')
+
+    assert.equal(throttle.check(2_000, '2001:db8:1:2:abcd::9').allowed, false)
+    assert.deepEqual(throttle.check(2_000, '2001:db8:1:3::1'), { allowed: true })
+  })
+
+  it('names a client by its /64, an IPv4 address mapped in IPv6 by itself', () => {
+    assert.equal(clientKey('2001:db8:1:2::1'), clientKey('2001:0db8:0001:0002:0000:0000:0000:0042'))
+    assert.notEqual(clientKey('2001:db8:1:2::1'), clientKey('2001:db8:1:3::1'))
+    assert.equal(clientKey('::ffff:203.0.113.7'), '203.0.113.7')
+    assert.equal(clientKey('203.0.113.7'), '203.0.113.7')
+    assert.equal(clientKey(''), '')
   })
 })

@@ -30,8 +30,9 @@
   gap: 16px;
   max-width: 640px;
   margin: 0 auto;
-  /* The line under it on the sidebar's. */
-  padding: 16px 0;
+  /* The line under it on the sidebar's and the list's (79px from the top): the panel starts 11px down, so 17px above
+     and under the 34px buttons, then the 2px line. */
+  padding: 17px 0;
 }
 
 /* Tablets held across: the bar across the panel, its line edge to edge, as a video's (see WatchPanel). */
@@ -628,6 +629,14 @@
   }
 }
 
+/* "Lire l'original" and what plugins add beside it. */
+.attributionLinks {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
 /* As "Les articles" in Résumé du jour, in neutral: purple is for the AI. */
 .seeOn {
   display: flex;
@@ -637,10 +646,14 @@
   max-width: 100%;
   flex-shrink: 0;
   height: 28px;
-  padding: 0 12px;
+  /* Geist Mono's capitals sit low in their line: one pixel less under them puts them in the middle of the pill. */
+  padding: 0 12px 1px;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
+  /* Also a button, for plugins' actions (ReaderButton). */
+  background: transparent;
   color: var(--text-2);
+  cursor: pointer;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -651,8 +664,15 @@
     color var(--duration) var(--ease);
 }
 
+.seeOnDone {
+  border-color: var(--text-3);
+  color: var(--text);
+}
+
 .seeOn > svg {
   flex-shrink: 0;
+  /* Level with the capitals beside it rather than with their line box. */
+  translate: 0 1px;
 }
 
 @media (hover: hover) {

@@ -1,0 +1,53 @@
+# ==========================================
+# Publishes the npm package @hodi-app/plugin-sdk (plugin-sdk/) when a tag sdk-v<version> is pushed, so nobody publishes
+# from their own computer. npm trusts this workflow through trusted publishing (OIDC): no token to keep. The package's
+# settings on npmjs.com name this repository and this file, publish-sdk.yml.
+# ==========================================
+name: Publish plugin SDK
+
+on:
+  push:
+    tags: ['sdk-v*']
+
+permissions:
+  contents: read
+  # The short-lived identity npm checks for trusted publishing.
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # npm's trusted publisher names this environment, which only sdk-v* tags may use: a run outside it cannot publish.
+    environment: release
+    steps:
+      # Only a tag the maintainer pushed goes out: write access alone (a token, an app) must not publish the SDK.
+      - name: Tag pushed by the maintainer
+        run: |
+          if [ "$GITHUB_ACTOR" != "leclaudeur" ] || [ "$GITHUB_TRIGGERING_ACTOR" != "leclaudeur" ]; then
+            echo "Only leclaudeur's tags are published (pushed by $GITHUB_ACTOR, run by $GITHUB_TRIGGERING_ACTOR)" >&2
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      # No package's install script runs in the job that can publish.
+      - run: npm ci --ignore-scripts
+      # The tag says which version goes out: sdk-v0.2.0 publishes only if plugin-sdk/package.json says 0.2.0.
+      - name: Tag matches the package version
+        run: |
+          version=$(node -p "require('./plugin-sdk/package.json').version")
+          if [ "sdk-v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match plugin-sdk/package.json version $version" >&2
+            exit 1
+          fi
+      - run: npm run typecheck
+      - run: npm run test:server
+      # Trusted publishing needs npm 11.5.1 or later, newer than some Node 24 releases bring.
+      - run: npm install -g npm@^11.5.1 && npm --version
+      # prepublishOnly builds the package first.
+      - run: npm publish --access public
+        working-directory: plugin-sdk

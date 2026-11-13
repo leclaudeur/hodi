@@ -11,7 +11,7 @@ const DAY = 24 * 60 * 60 * 1000
 
 const catalog = parseCatalog(`
 topics:
-  - id: monde
+  - id: world
     label: Monde
     sources:
       - id: alpha
@@ -81,5 +81,42 @@ describe('SourceIcons', () => {
 
     const down = icons({ 'https://alpha.example/': new Error('ECONNRESET') }, store, NOW + 31 * DAY)
     assert.equal((await down.icons.get('alpha'))?.contentType, 'image/png')
+  })
+})
+
+describe('SourceIcons site names', () => {
+  const named = `<html><head><meta property="og:site_name" content="Alpha Mag">${home.slice(12)}`
+  const watch = () => {
+    const found: [string, string][] = []
+    return {
+      found,
+      siteName: { wanted: () => true, found: (source: { id: string }, name: string) => found.push([source.id, name]) }
+    }
+  }
+
+  it('hands over the name the home page gives the site while looking for the icon', async () => {
+    const fake = fakeFetch({ 'https://alpha.example/': named, 'https://cdn.alpha.example/touch.png': PNG })
+    const { found, siteName } = watch()
+    const icons = new SourceIcons(catalog, { ...fake, siteName, now: () => NOW, log: () => {} })
+    await icons.get('alpha')
+    await icons.get('alpha')
+    assert.deepEqual(found, [['alpha', 'Alpha Mag']])
+  })
+
+  it('reads the home page once for a name when the icon was kept from before', async () => {
+    const store = new NewsStore(openDatabase(':memory:'))
+    await icons({ 'https://alpha.example/': home, 'https://cdn.alpha.example/touch.png': PNG }, store).icons.get(
+      'alpha'
+    )
+
+    const fake = fakeFetch({ 'https://alpha.example/': named })
+    const { found, siteName } = watch()
+    const later = new SourceIcons(catalog, { ...fake, store, siteName, now: () => NOW + DAY, log: () => {} })
+    assert.equal((await later.get('alpha'))?.contentType, 'image/png')
+    await new Promise(resolve => setImmediate(resolve))
+    await later.get('alpha')
+    await new Promise(resolve => setImmediate(resolve))
+    assert.deepEqual(found, [['alpha', 'Alpha Mag']])
+    assert.equal(fake.calls.length, 1)
   })
 })

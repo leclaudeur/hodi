@@ -1,0 +1,23 @@
+{
+  "case": "H3",
+  "title": "No WebAssembly, SharedArrayBuffer or Atomics inside the sandbox",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/features",
+      "expect": {
+        "status": 200,
+        "body": {
+          "WebAssembly": "undefined",
+          "SharedArrayBuffer": "undefined",
+          "Atomics": "undefined"
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h27",
+  "name": "Hostile H27",
+  "version": "0.0.1",
+  "description": "A __proto__ key in a response pollutes nothing",
+  "api": 2,
+  "audience": "admin"
+}

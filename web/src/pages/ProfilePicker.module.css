@@ -108,6 +108,31 @@
   color: var(--text-3);
 }
 
+/* A tile with no profile behind it (a plugin's « Quel foyer ? »): its icon or initial in a round as big as an avatar. */
+.round {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  background: var(--raised);
+  color: var(--text-2);
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 1;
+}
+
+/* The line under a plugin's title, centred. */
+.intro {
+  max-width: 420px;
+  margin-top: 14px;
+  color: var(--text-3);
+  font-size: 14px;
+  text-align: center;
+}
+
 .name {
   overflow: hidden;
   max-width: 100%;
@@ -117,14 +142,41 @@
   white-space: nowrap;
 }
 
+/* A household's name is longer than a first name, and two households may both start with « Famille »: the whole
+   name shows, on as many lines as it takes, in a wider tile. The round stays the same size, and the tiles line up
+   by their top so the rounds stay on one line. */
+.wideGrid {
+  align-items: flex-start;
+}
+
+.wideTile {
+  width: 140px;
+}
+
+.fullName {
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
+}
+
 .error {
   max-width: 360px;
   margin-top: 28px;
 }
 
-/* A secondary button, a link to the settings. */
-.manage {
+/* The buttons under the tiles: « Gérer les profils » and a plugin's beside it, wrapping on a narrow phone; nothing
+   takes room without one. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
   margin-top: 40px;
+}
+
+.actions:empty {
+  display: none;
 }
 
 .formBox {
@@ -161,6 +213,18 @@
   width: 100%;
   max-width: 320px;
   margin-top: 28px;
+}
+
+.password {
+  width: 100%;
+}
+
+/* Side by side, the same height: back on the left, open on the right, as in a dialog's footer. */
+.unlockActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
 }
 
 .pill {
@@ -204,4 +268,20 @@
   .formBox {
     padding: 20px;
   }
+}
+
+/* The plugins' ways in, for a profile whose account has no password of its own. */
+.ways {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.ways:empty {
+  display: none;
+}
+
+.single {
+  grid-template-columns: 1fr;
 }

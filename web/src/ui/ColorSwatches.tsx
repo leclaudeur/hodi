@@ -6,7 +6,7 @@ interface ColorSwatchesProps<T extends string> {
   // Read out for the group.
   label: string
   value: T
-  // color: any CSS colour, usually a token ("var(--topic-monde)").
+  // color: any CSS colour, usually a token ("var(--topic-world)").
   options: { value: T; name: string; color: string }[]
   onChange: (value: T) => void
   // Always one row across the width: the rounds spread out, and shrink on a narrow screen.

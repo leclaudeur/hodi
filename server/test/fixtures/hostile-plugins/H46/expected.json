@@ -1,0 +1,22 @@
+{
+  "case": "H46",
+  "title": "An upload over its route limit never reaches the sandbox",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/reached",
+      "expect": {
+        "status": 200,
+        "body": {
+          "reached": 0
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "drive": "Coded in plugin-hostile.test.ts: 6 000 000 bytes to PUT /capture, 20 MB sent chunked with no Content-Length to PUT /capture, and 11 MB to PUT /big (maxBody 50 000 000) all get 413; then GET /reached answers 0. A false Content-Length frames the body at that length (HTTP), so the bytes past it never belong to the request."
+}

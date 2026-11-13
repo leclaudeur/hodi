@@ -1,0 +1,25 @@
+{
+  "id": "hostile-h34",
+  "name": "Hostile H34",
+  "version": "0.0.1",
+  "description": "checkSignIn that refuses, throws or loops",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "signIn": true
+  },
+  "settings": [
+    {
+      "key": "mode",
+      "type": "choice",
+      "default": "pass",
+      "options": [
+        "pass",
+        "refuse",
+        "throw",
+        "loop",
+        "html"
+      ]
+    }
+  ]
+}

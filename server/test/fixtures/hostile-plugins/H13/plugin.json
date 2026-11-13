@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h13",
+  "name": "Hostile H13",
+  "version": "0.0.1",
+  "description": "A plugin that crashes on start is disabled after three deaths",
+  "api": 2,
+  "audience": "admin"
+}

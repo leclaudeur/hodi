@@ -28,6 +28,37 @@ interface PhoneHeaderProps {
   className?: string
 }
 
+// The logo, a link when given its address.
+const LogoMark = ({ logo }: { logo: boolean | string }) => {
+  const { t } = useTranslation()
+  if (typeof logo === 'string') {
+    return (
+      <a className={styles.logo} href={logo} aria-label={t('nav.home')}>
+        <Logo />
+      </a>
+    )
+  }
+  if (!logo) return null
+  return (
+    <span className={styles.logo}>
+      <Logo />
+    </span>
+  )
+}
+
+// The page's name, with its "?" right after it; without a name, a space that keeps the buttons on the right.
+const Title = ({ title, help }: { title: ReactNode; help: ReactNode }) => {
+  if (!title) return <span className={styles.space} />
+  const heading = <h1 className={`${styles.title} ${typeof title === 'string' ? 'screen-title' : ''}`}>{title}</h1>
+  if (!help) return heading
+  return (
+    <span className={styles.titleGroup}>
+      {heading}
+      {help}
+    </span>
+  )
+}
+
 // Every header on a phone or an upright tablet: the same band, buttons, margins and line, from the
 // pages' headers to the article's and the video's.
 const PhoneHeader = ({
@@ -43,7 +74,6 @@ const PhoneHeader = ({
   clear = false,
   className
 }: PhoneHeaderProps) => {
-  const { t } = useTranslation()
   const classes = [
     styles.header,
     (sticky || overPicture) && styles.sticky,
@@ -55,27 +85,8 @@ const PhoneHeader = ({
     <header className={classes.filter(Boolean).join(' ')}>
       <div className={styles.row}>
         {back}
-        {typeof logo === 'string' ? (
-          <a className={styles.logo} href={logo} aria-label={t('nav.home')}>
-            <Logo />
-          </a>
-        ) : (
-          logo && (
-            <span className={styles.logo}>
-              <Logo />
-            </span>
-          )
-        )}
-        {title && help ? (
-          <span className={styles.titleGroup}>
-            <h1 className={`${styles.title} ${typeof title === 'string' ? 'screen-title' : ''}`}>{title}</h1>
-            {help}
-          </span>
-        ) : title ? (
-          <h1 className={`${styles.title} ${typeof title === 'string' ? 'screen-title' : ''}`}>{title}</h1>
-        ) : (
-          <span className={styles.space} />
-        )}
+        <LogoMark logo={logo} />
+        <Title title={title} help={help} />
         {meta && <span className={styles.meta}>{meta}</span>}
         {actions}
       </div>

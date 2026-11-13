@@ -1,0 +1,22 @@
+/* The page's middle, on its background, whatever the size. */
+.screen {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+}
+
+/* After 300 ms, the logo rises 12 px as it fades in; its dot starts breathing once it is there. */
+.logo {
+  animation: rise 520ms var(--ease) 300ms both;
+}
+
+.logo circle {
+  animation-delay: 820ms;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}

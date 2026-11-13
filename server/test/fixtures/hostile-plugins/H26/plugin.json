@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h26",
+  "name": "Hostile H26",
+  "version": "0.0.1",
+  "description": "An HTML string is served as JSON, never run",
+  "api": 2,
+  "audience": "admin"
+}

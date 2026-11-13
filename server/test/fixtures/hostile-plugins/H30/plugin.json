@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h30",
+  "name": "Hostile H30",
+  "version": "0.0.1",
+  "description": "No network primitive inside the sandbox",
+  "api": 2,
+  "audience": "admin"
+}

@@ -9,6 +9,7 @@ const PageHelp = ({ page, layout }: { page: HelpPage; layout: 'desktop' | 'phone
   const paragraphs = t(`help.${page}.${layout}`, { returnObjects: true })
   // Trans only marks the <b> in the text already translated: array items have no typed key of their own.
   return paragraphs.map((text, index) => (
+    // eslint-disable-next-line @eslint-react/no-array-index-key -- the paragraphs are fixed text, never reordered
     <p key={index}>
       <Trans defaults={text} components={{ b: <b /> }} />
     </p>

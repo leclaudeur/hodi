@@ -1,0 +1,150 @@
+/* « Validation en deux étapes »: the steps to follow, the QR with its key, then the recovery codes. */
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* The step's number in a small round, as the tour's steps. */
+.number {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--control);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.qrRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.qrWait {
+  width: 136px;
+  height: 136px;
+  border-radius: 12px;
+  background: var(--control);
+}
+
+.key {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.keyLabel {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The key's tile, with its copy button in the corner, as a block of code to copy. */
+.keyRow {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--tile);
+}
+
+/* A bare icon, as the eye of a password field. */
+.copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color var(--duration) var(--ease);
+}
+
+.copy:hover {
+  color: var(--text);
+}
+
+.copy:focus-visible {
+  border-radius: 6px;
+  outline: 2px solid var(--rust-border);
+}
+
+/* Typed by hand when the QR cannot be scanned: large enough to read, broken into groups of four, on as many lines
+   as the card needs, clear of the button. */
+.keyValue {
+  display: block;
+  padding: 8px 42px 8px 10px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: normal;
+  word-spacing: 0.2em;
+  user-select: all;
+}
+
+.codes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--control);
+  list-style: none;
+}
+
+.code {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.keep {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .qrRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

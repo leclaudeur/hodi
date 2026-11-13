@@ -104,6 +104,19 @@ ol {
   list-style: none;
 }
 
+/* A command to type in a terminal, inside a sentence: mono on a small tile, as the full commands to copy, and never
+   cut over two lines. */
+code {
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--tile);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
 img,
 svg,
 video {
@@ -252,6 +265,14 @@ textarea:focus-visible {
   margin-bottom: -1px;
 }
 
+/* Dithering for soft gradients and shadows on dark screens (see ui/PanePlaceholder, ui/Dialog): light and dark
+   specks of a shade or two, which break the bands an 8-bit screen draws in them. */
+:root {
+  --grain:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.05 0 0 0 -0.015'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0 0 0 -0.015'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
 /* A dialog rises a little out of a page that dims, rather than appearing at once. */
 dialog[open] {
   animation: dialog-in 240ms var(--ease);
@@ -283,6 +304,13 @@ dialog[open]::backdrop {
   from {
     opacity: 0;
   }
+}
+
+/* lib/floating's panels in the top layer: the browser's popover box undone, each panel has its own. */
+[popover] {
+  margin: 0;
+  inset: auto;
+  color: inherit;
 }
 
 /* Content taking the place of its skeleton eases in rather than replacing it at once. */

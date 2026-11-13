@@ -209,7 +209,7 @@ dialog .actions::before {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 14px;
+  padding: 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   background: var(--card);

@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h24",
+  "name": "Hostile H24",
+  "version": "0.0.1",
+  "description": "Headers chosen by the plugin are dropped",
+  "api": 2,
+  "audience": "admin"
+}

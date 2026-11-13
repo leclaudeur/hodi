@@ -1,185 +1,165 @@
-import { randomInt } from 'node:crypto'
 import path from 'node:path'
-import webpush, { type PushSubscription } from 'web-push'
 import { createApp } from './app.ts'
 import type { Config } from './config.ts'
-import { openDatabase } from './db/database.ts'
-import { diskUsage, startMaintenance } from './db/maintenance.ts'
-import { HouseholdStore } from './db/household-store.ts'
-import { NewsStore } from './db/news-store.ts'
-import { ProfileStore } from './db/profile-store.ts'
-import { SourceStore, createPauseCheck } from './db/source-store.ts'
-import { UserStore } from './db/user-store.ts'
-import { GameStore } from './db/game-store.ts'
-import { ImageStore } from './db/image-store.ts'
-import { YouthStore } from './db/youth-store.ts'
-import { loadRules } from './game/rules.ts'
-import { loadCatalog } from './news/catalog.ts'
-import { ArticleImages } from './news/article-images.ts'
-import { type FetchBytes, type FetchText, createFetchBytes, createFetchText } from './news/fetch-text.ts'
-import { FollowedAlerts } from './news/followed-alerts.ts'
-import { MAX_TOPIC_LIMIT, NewsService } from './news/news-service.ts'
-import { type FetchVideoDuration, createFetchVideoDuration } from './news/video-durations.ts'
-import { SourceIcons } from './news/source-icons.ts'
-import { type IsPublicUrl, createSourceFinder, isPublicUrl } from './news/source-finder.ts'
-import { aiProvider } from './news/ai-providers.ts'
-import { isLanguage } from '../shared/i18n.ts'
+import type { Database } from './db/database.ts'
+import { type PluginBackup, diskUsage } from './db/maintenance.ts'
+import { drawCode } from './db/sign-in-code-store.ts'
+import { smtpSend } from './mail/mailer.ts'
+import { PluginInstaller } from './plugins/installer.ts'
+import { pluginArticle } from './plugins/articles.ts'
+import { householdHooks } from './plugins/households.ts'
+import type { PluginRegistry } from './plugins/registry.ts'
+import type { PluginAi } from './plugins/ai.ts'
+import { LoginThrottle } from './auth/login-throttle.ts'
+import type { FollowedAlerts } from './news/followed-alerts.ts'
+import type { NewsService } from './news/news-service.ts'
+import type { SourceIcons } from './news/source-icons.ts'
+import { createSourceFinder } from './news/source-finder.ts'
+import type { Outside } from './start/outside.ts'
+import { PluginCatalog } from './plugins/catalog.ts'
+import { openRestoredDatabase } from './start/restore.ts'
+import { type Stores, openStores } from './start/stores.ts'
+import { createIcons, createNews } from './start/news.ts'
+import { createAlerts } from './start/alerts.ts'
+import { replayToPlugins, startPlugins } from './start/plugins.ts'
 
-// Everything Hodi reaches outside the server: the sites it reads and the push services. index.ts gives the real ones;
-// the end-to-end tests give pages of their own (e2e/server.ts).
-export interface Outside {
-  fetchText: FetchText
-  // Looking at a link someone pastes to add a source: a shorter wait.
-  findFetchText: FetchText
-  // Whether a pasted link may be fetched at all: a public https address.
-  isPublicLink: IsPublicUrl
-  fetchBytes: FetchBytes
-  // Article pictures, made smaller: a longer wait.
-  fetchPictures: FetchBytes
-  fetchVideoDuration: FetchVideoDuration
-  sendPush: (target: PushSubscription, payload: unknown, vapid: Config['vapid']) => Promise<void>
+export { type Outside, realOutside } from './start/outside.ts'
+
+interface Running {
+  config: Config
+  db: Database
+  outside: Outside
+  stores: Stores
+  news: NewsService
+  applyHousehold: () => void
+  icons: SourceIcons
+  alerts: FollowedAlerts
+  plugins: PluginRegistry
+  pluginAi: PluginAi
+  pluginsDir: string
+  pluginBackup: PluginBackup
+  pendingRestore: string
+  hooks: ReturnType<typeof householdHooks>
+  throttle: LoginThrottle
+  restart: (reason: string) => void
 }
 
-export const realOutside = (): Outside => ({
-  fetchText: createFetchText(),
-  findFetchText: createFetchText({ timeoutMs: 8000 }),
-  isPublicLink: isPublicUrl,
-  fetchBytes: createFetchBytes(),
-  fetchPictures: createFetchBytes({ timeoutMs: 10_000 }),
-  fetchVideoDuration: createFetchVideoDuration(),
-  sendPush: async (target, payload, vapid) => {
-    await webpush.sendNotification(target, JSON.stringify(payload), {
-      vapidDetails: vapid,
-      // An alert older than a day is no longer news.
-      TTL: 24 * 60 * 60,
-      urgency: 'normal'
-    })
-  }
-})
-
-// Opens the database, starts the background work and serves the app.
-export const startHodi = (config: Config, outside: Outside) => {
-  const db = openDatabase(config.databaseFile)
-  const store = new NewsStore(db)
-  const profiles = new ProfileStore(db)
-  // Each profile's state; the first one's also prunes them all and keeps the devices' push subscriptions.
-  const users = new UserStore(db)
-  const usersOf = (profileId: number) => new UserStore(db, profileId)
-  // Article pictures made smaller, in the data folder beside the database.
-  const images = new ArticleImages({
-    store: new ImageStore(db),
-    fetchBytes: outside.fetchPictures,
-    dir: path.join(path.dirname(config.databaseFile), 'images')
-  })
-  startMaintenance({ db, stores: [store, users, images], backupDir: config.backupDir })
-  const household = new HouseholdStore(db)
-  // The young profiles' days run in the household's time zone.
-  const youth = new YouthStore(db, () => household.get().timeZone ?? config.timeZone)
-  // The database's catalogue, filled once from sources.yml's base sources in the household's language (at setup on a
-  // new install), with the sources profiles added.
-  const sources = new SourceStore(db)
-  const file = loadCatalog(config.sourcesFile)
-  const catalog = sources.load(file, Date.now(), household.isSetUp() ? household.get().language : null)
-  const { fetchText } = outside
-  const news = new NewsService(catalog, {
-    fetchText,
-    fetchVideoDuration: outside.fetchVideoDuration,
-    // A source every profile turned off is not fetched.
-    isPaused: createPauseCheck({
-      hiddenByProfile: () => profiles.list().map(profile => usersOf(profile.id).hiddenSources()),
-      now: Date.now
-    }),
-    profiles: () => profiles.list().map(profile => ({ id: profile.id, admin: profile.role === 'admin' })),
-    // The AI writes in the profile's language, else the household's.
-    languageOf: profileId => {
-      const own = usersOf(profileId).preferences()?.language
-      return isLanguage(own) ? own : household.get().language
-    },
-    householdLanguage: () => household.get().language,
-    store
-  })
-  // The household's time zone and AI (none until a key is given), again whenever the admin changes them.
-  const applyHousehold = () => {
-    const current = household.get()
-    const timeZone = current.timeZone ?? config.timeZone
-    news.setTimeZone(timeZone)
-    const provider = current.ai ? aiProvider(current.ai.provider) : null
-    news.setAi(
-      current.ai && provider
-        ? provider.tools({
-            key: current.ai.key,
-            model: current.ai.model,
-            region: { timeZone, country: current.country }
-          })
-        : null
-    )
-  }
-  applyHousehold()
-  news.setImagePreviews(itemId => images.preview(itemId))
-  news.startBackgroundChecks()
-  images.start()
-  const icons = new SourceIcons(catalog, { fetchText, fetchBytes: outside.fetchBytes, store })
-  // Notifications for followed subjects.
-  const alerts = new FollowedAlerts({
-    listItems: async () => {
-      const topics = await Promise.all(
-        news.catalog.topics.map(topic => news.getTopic(topic.id, MAX_TOPIC_LIMIT, { background: true }))
-      )
-      return topics.flatMap(topic => topic?.items ?? [])
-    },
-    // A young profile's parents decide when it is told anything.
-    mayNotify: (profileId, now) => {
-      const profile = profiles.get(profileId)
-      return !profile || profile.kind === 'adult' || youth.mayNotify(profileId, now)
-    },
-    subscriptions: {
-      list: () => users.listPushSubscriptions(),
-      save: settings => users.savePushSubscription(settings, Date.now()),
-      remove: endpoint => users.removePushSubscription(endpoint)
-    },
-    send: (target, payload) => outside.sendPush(target, payload, config.vapid)
-  })
-  alerts.start()
-
-  // The household game's rules, next to sources.yml; points follow the household's days.
-  const game = new GameStore(
-    db,
-    loadRules(path.resolve('gamification.yml')),
-    () => household.get().timeZone ?? config.timeZone
-  )
-
-  const storage = {
-    usage: () => ({ ...diskUsage(config.databaseFile, config.backupDir), ...store.counts() }),
-    clearTexts: () => store.clearTexts()
-  }
-
-  // A new install waits for its first-run screens. A device away from the server's network (a server on the
-  // internet) is asked for this code, which only whoever can read the server's log knows.
-  const setupCode = String(randomInt(0, 1_000_000)).padStart(6, '0')
-  if (!household.isSetUp()) {
+// A new install waits for its first-run screens. A device away from the server's network (a server on the
+// internet) is asked for this code, which only whoever can read the server's log knows.
+const drawSetupCode = (stores: Stores) => {
+  const setupCode = drawCode()
+  if (!stores.household.isSetUp()) {
     console.log(`Hodi is not set up yet: open it in a browser. Setup code, if asked: ${setupCode}`)
   }
+  return setupCode
+}
 
-  const server = createApp(config, {
+const serve = ({ config, outside, stores, news, plugins, restart, ...running }: Running) => {
+  const { store } = stores
+  return createApp(config, {
+    householdHooks: running.hooks,
     news,
-    alerts,
-    profiles,
-    users: usersOf,
-    icons,
-    images,
-    storage,
-    game,
-    youth,
-    household,
-    setupCode,
-    onHouseholdChange: applyHousehold,
+    accounts: stores.accounts,
+    devices: stores.devices,
+    profileDevices: stores.profileDevices,
+    accountData: stores.accountData,
+    codes: stores.codes,
+    twoFactor: stores.twoFactor,
+    alerts: running.alerts,
+    profiles: stores.profiles,
+    users: stores.usersOf,
+    icons: running.icons,
+    images: stores.images,
+    storage: {
+      usage: () => ({ ...diskUsage(config.databaseFile, config.backupDir), ...store.counts() }),
+      clearTexts: () => store.clearTexts()
+    },
+    game: stores.game,
+    serverStats: stores.serverStats,
+    serverPeople: stores.serverPeople,
+    serverSettings: stores.serverSettings,
+    serverBackups: {
+      db: running.db,
+      dir: config.backupDir,
+      plugins: running.pluginBackup,
+      // Stops cleanly; Docker starts Hodi again (restart: unless-stopped) on the copy.
+      restore: { pending: running.pendingRestore, restart: () => restart('a backup restored') }
+    },
+    throttle: running.throttle,
+    serverMail: { store: stores.mailSettings, send: smtpSend },
+    passwordResets: stores.passwordResets,
+    youth: stores.youth,
+    plugins,
+    pluginAi: running.pluginAi,
+    pluginInstaller: {
+      installer: new PluginInstaller({
+        dir: running.pluginsDir,
+        installedVersion: id => plugins.get(id)?.manifest?.version ?? null
+      }),
+      // Stops cleanly; Docker starts Hodi again (restart: unless-stopped) and it reads the plugins anew.
+      restart: () => restart('a plugin change'),
+      catalog: new PluginCatalog({ fetchText: outside.fetchText, fetchBytes: outside.fetchPackages })
+    },
+    household: stores.household,
+    setupCode: drawSetupCode(stores),
+    onHouseholdChange: running.applyHousehold,
     sources: {
-      store: sources,
+      store: stores.sources,
       find: createSourceFinder({ fetchText: outside.findFetchText, isPublic: outside.isPublicLink }),
-      file
+      file: stores.file
     }
   }).listen(config.port, config.host, () => {
     console.log(`hodi listening on http://${config.host}:${config.port}`)
+  })
+}
+
+// Opens the database, loads the plugins, starts the background work and serves the app.
+export const startHodi = async (config: Config, outside: Outside) => {
+  // « Restaurer » set a copy aside before the restart: it takes the database's place before it opens.
+  const { db, forgetLog, forgottenAgain, pendingRestore, pluginDataDir } = openRestoredDatabase(config)
+  // Each copy holds the plugins' data too. Until the plugins load, their databases are copied as they are: nothing
+  // writes them yet.
+  let loadedPlugins: PluginRegistry | null = null
+  const pluginBackup: PluginBackup = { dataDir: pluginDataDir, snapshots: () => loadedPlugins }
+  const stores = openStores(config, { db, outside, forgetLog, pluginBackup })
+  const { news, applyHousehold } = createNews({
+    config,
+    outside,
+    ...stores,
+    // A plugin's feed, once the plugins are loaded below.
+    plugins: () => loadedPlugins
+  })
+  applyHousehold()
+  news.setImagePreviews(itemId => stores.images.preview(itemId))
+  news.startBackgroundChecks()
+  stores.images.start()
+  const icons = createIcons({ outside, ...stores })
+  // Notifications for followed subjects.
+  const alerts = createAlerts({ config, outside, news, ...stores })
+  alerts.start()
+
+  // The installed plugins, from the data folder: read once, since installing or removing one restarts Hodi.
+  const pluginsDir = path.join(path.dirname(config.databaseFile), 'plugins')
+  // Failed sign-ins, and a plugin's failed password checks, count together for each address.
+  const throttle = new LoginThrottle()
+  // What a plugin's new household needs from the app (its base sources, its profiles' set-up), filled in by createApp.
+  const hooks = householdHooks()
+  const { plugins, pluginAiCalls } = await startPlugins({
+    ...stores,
+    db,
+    dir: pluginsDir,
+    dataDir: pluginDataDir,
+    store: stores.pluginStore,
+    news,
+    alerts,
+    hooks,
+    throttle
+  })
+  loadedPlugins = plugins
+  replayToPlugins(plugins, forgottenAgain)
+  news.setArticleListener(result => {
+    const article = pluginArticle(result)
+    if (article) plugins.tellArticle(article)
   })
 
   const shutdown = (signal: string) => {
@@ -189,6 +169,24 @@ export const startHodi = (config: Config, outside: Outside) => {
       process.exit(0)
     })
   }
+  const server = serve({
+    config,
+    outside,
+    db,
+    stores,
+    news,
+    applyHousehold,
+    icons,
+    alerts,
+    plugins,
+    pluginAi: pluginAiCalls,
+    pluginsDir,
+    pluginBackup,
+    pendingRestore,
+    hooks,
+    throttle,
+    restart: shutdown
+  })
 
   process.on('SIGTERM', () => shutdown('SIGTERM'))
   process.on('SIGINT', () => shutdown('SIGINT'))

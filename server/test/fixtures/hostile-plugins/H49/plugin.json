@@ -1,0 +1,12 @@
+{
+  "id": "hostile-h49",
+  "name": "Hostile H49",
+  "version": "0.0.1",
+  "description": "checkPassword cannot be used to guess passwords or block sign-in",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "accounts": true,
+    "publicRoutes": true
+  }
+}

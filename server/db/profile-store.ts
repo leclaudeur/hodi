@@ -1,4 +1,6 @@
 import { type Database, transaction } from './database.ts'
+import { recordForget, rowKey } from './forget-log.ts'
+import { currentHouseholdId } from './household-scope.ts'
 
 // Netflix-style profiles: one household (the password), up to five readers, each with their own
 // preferences, "Enregistrés", reads, stats and alerts (UserStore, by profile). Articles, their texts and
@@ -13,18 +15,36 @@ export type PhotoType = (typeof PHOTO_TYPES)[number]
 
 // The avatar's colour, without a photo: one of the topics' (see web/src/styles/tokens.css).
 export const PROFILE_COLORS = [
-  'belgique',
-  'monde',
+  'belgium',
+  'world',
   'tech',
   'science',
-  'films-series',
-  'jeux-video',
-  'ia',
+  'film-tv',
+  'gaming',
+  'ai',
   'broadcast',
   'sport',
-  'musique'
+  'music'
 ] as const
 export type ProfileColor = (typeof PROFILE_COLORS)[number]
+// The colours' names when the topics' ids were French, still sent by devices that have not updated yet.
+const OLD_PROFILE_COLORS: Record<string, ProfileColor> = {
+  belgique: 'belgium',
+  monde: 'world',
+  'films-series': 'film-tv',
+  'jeux-video': 'gaming',
+  ia: 'ai',
+  musique: 'music'
+}
+export const OLD_PROFILE_COLOR_NAMES = Object.keys(OLD_PROFILE_COLORS)
+
+// A profile colour, from its name or its name before; null for anything else.
+export const profileColorOf = (value: unknown): ProfileColor | null =>
+  PROFILE_COLORS.includes(value as ProfileColor)
+    ? (value as ProfileColor)
+    : typeof value === 'string' && Object.hasOwn(OLD_PROFILE_COLORS, value)
+      ? (OLD_PROFILE_COLORS[value] ?? null)
+      : null
 
 // adult: a parent, who manages the young profiles. teen and child: young profiles, whose sources, time and AI the
 // parents set; a child reads with a drawn avatar instead of a photo.
@@ -50,12 +70,6 @@ export type ProfileAvatar = (typeof PROFILE_AVATARS)[number]
 
 export const isYoung = (profile: { kind: ProfileKind }) => profile.kind !== 'adult'
 
-// A code is asked before it opens: its own PIN or the Code parental.
-export const isGuarded = (profile: { locked: boolean; parental: boolean }) => profile.locked || profile.parental
-
-// The household of today: profiles live in it until there are several.
-export const DEFAULT_ACCOUNT_ID = 1
-
 // admin: adds, changes and removes every profile, and the household's shared data. member: its own profile.
 export type ProfileRole = 'admin' | 'member'
 
@@ -67,15 +81,12 @@ export interface Profile {
   kind: ProfileKind
   // A child's drawn avatar; null for the others.
   avatar: ProfileAvatar | null
-  // Its own PIN is asked before it opens: a private profile.
-  locked: boolean
-  // The household's Code parental is asked before it opens: an adult without its own PIN, in a household with
-  // young profiles and that code.
-  parental: boolean
   // Changes with the photo, so a browser asks again for the new one.
   photoVersion: number | null
   // Not opened yet since it was added: its first visit, on any device, opens on the guided tour.
   tourPending: boolean
+  // Its person signs in with their own account. An adult without one waits for "Connecter un appareil".
+  hasAccount: boolean
 }
 
 interface ProfileRow {
@@ -85,10 +96,9 @@ interface ProfileRow {
   role: ProfileRole
   kind: ProfileKind
   avatar: ProfileAvatar | null
-  locked: number
-  parental: number
   photo_version: number | null
   tour_pending: number
+  has_account: number
 }
 
 const toProfile = (row: ProfileRow): Profile => ({
@@ -98,10 +108,9 @@ const toProfile = (row: ProfileRow): Profile => ({
   role: row.role,
   kind: row.kind,
   avatar: row.avatar,
-  locked: row.locked === 1,
-  parental: row.parental === 1,
   photoVersion: row.photo_version,
-  tourPending: row.tour_pending === 1
+  tourPending: row.tour_pending === 1,
+  hasAccount: row.has_account === 1
 })
 
 // A name as typed, or null when it is none.
@@ -113,24 +122,35 @@ export const cleanName = (value: unknown) => {
 
 export class ProfileStore {
   readonly #db: Database
-  readonly #account: number
+  readonly #fixed: number | undefined
 
-  constructor(db: Database, accountId = DEFAULT_ACCOUNT_ID) {
+  // Without accountId, the household of the request being served (household-scope.ts).
+  constructor(db: Database, accountId?: number) {
     this.#db = db
-    this.#account = accountId
+    this.#fixed = accountId
+  }
+
+  get #account(): number {
+    return this.#fixed ?? currentHouseholdId()
   }
 
   list(): Profile[] {
     const rows = this.#db
       .prepare(
-        `SELECT p.id, p.name, p.color, p.role, p.kind, p.avatar, p.pin_hash IS NOT NULL AS locked,
-           (p.pin_hash IS NULL AND p.kind = 'adult' AND a.parental_pin_hash IS NOT NULL
-             AND EXISTS (SELECT 1 FROM profiles y WHERE y.account_id = a.id AND y.kind != 'adult')) AS parental,
-           CASE WHEN p.photo IS NULL THEN NULL ELSE p.photo_version END AS photo_version, p.tour_pending
+        `SELECT p.id, p.name, p.color, p.role, p.kind, p.avatar,
+           CASE WHEN p.photo IS NULL THEN NULL ELSE p.photo_version END AS photo_version, p.tour_pending,
+           p.user_id IS NOT NULL AS has_account
          FROM profiles p JOIN accounts a ON a.id = p.account_id WHERE p.account_id = ? ORDER BY p.position, p.id`
       )
       .all(this.#account) as unknown as ProfileRow[]
     return rows.map(toProfile)
+  }
+
+  // The household a profile belongs to, whichever household this store is for; null when it is gone.
+  householdOf(id: number): number | null {
+    const row = this.#db.prepare('SELECT account_id FROM profiles WHERE id = ?').get(id) as
+      { account_id: number } | undefined
+    return row?.account_id ?? null
   }
 
   get(id: number): Profile | null {
@@ -147,7 +167,6 @@ export class ProfileStore {
     return transaction(this.#db, () => {
       const profiles = this.list()
       if (profiles.length >= MAX_PROFILES) return null
-      if (kind !== 'adult') this.#guardAdults(profiles)
       const { lastInsertRowid } = this.#db
         .prepare(
           `INSERT INTO profiles (account_id, name, color, kind, avatar, position, created_at, tour_pending)
@@ -177,11 +196,9 @@ export class ProfileStore {
         ? (change.avatar ?? profile.avatar ?? this.#freeAvatar(this.list().filter(other => other.id !== id)))
         : null
     transaction(this.#db, () => {
-      if (kind !== 'adult') this.#guardAdults(this.list().filter(other => other.id !== id))
       this.#db
         .prepare('UPDATE profiles SET name = ?, color = ?, kind = ?, avatar = ? WHERE id = ?')
         .run(change.name ?? profile.name, change.color ?? profile.color, kind, avatar, id)
-      if (kind !== 'adult' && profile.locked) this.setPin(id, null)
       if (kind === 'child' && profile.photoVersion !== null) {
         this.#db
           .prepare('UPDATE profiles SET photo = NULL, photo_type = NULL, photo_version = NULL WHERE id = ?')
@@ -189,17 +206,6 @@ export class ProfileStore {
       }
     })
     return this.get(id)
-  }
-
-  // The household's first young profile: the Code parental, if there is one, now guards the adults, and the devices
-  // already open on them ask for it.
-  #guardAdults(others: Profile[]) {
-    if (others.some(isYoung)) return
-    this.#db
-      .prepare(
-        'UPDATE accounts SET parental_pin_version = parental_pin_version + 1 WHERE id = ? AND parental_pin_hash IS NOT NULL'
-      )
-      .run(this.#account)
   }
 
   // The first avatar no other profile wears, or the first of all when every one is taken.
@@ -224,46 +230,19 @@ export class ProfileStore {
     return this.get(id)
   }
 
-  // The PIN's hash, and the version a device's choice of the profile is signed with: it changes with the profile's
-  // PIN and with the Code parental, so a new one is asked again on every device. parental: the Code parental's
-  // hash when that is what opens the profile.
-  lock(id: number): { hash: string | null; version: number; parental: string | null } | null {
+  // The version a device's choice of the profile is signed with. It changes with the profile's account signing out
+  // its devices (a new password), so the password is asked again on every device. It holds the profile's creation
+  // time too: SQLite gives a deleted profile's id to the next one, which a device's old choice must not open.
+  lock(id: number): { version: string } | null {
     const row = this.#db
       .prepare(
-        `SELECT p.pin_hash, p.pin_version + a.parental_pin_version AS version, a.parental_pin_hash
-         FROM profiles p JOIN accounts a ON a.id = p.account_id WHERE p.id = ? AND p.account_id = ?`
+        `SELECT p.pin_version + a.parental_pin_version + COALESCE(u.session_generation, 0) AS version,
+           p.created_at AS createdAt
+         FROM profiles p JOIN accounts a ON a.id = p.account_id LEFT JOIN users u ON u.id = p.user_id
+         WHERE p.id = ? AND p.account_id = ?`
       )
-      .get(id, this.#account) as
-      { pin_hash: string | null; version: number; parental_pin_hash: string | null } | undefined
-    if (!row) return null
-    return {
-      hash: row.pin_hash,
-      version: row.version,
-      parental: this.get(id)?.parental ? row.parental_pin_hash : null
-    }
-  }
-
-  // The household's Code parental, which opens its adults; null hash: none any more.
-  setParentalPin(hash: string | null) {
-    this.#db
-      .prepare(
-        'UPDATE accounts SET parental_pin_hash = ?, parental_pin_version = parental_pin_version + 1 WHERE id = ?'
-      )
-      .run(hash, this.#account)
-  }
-
-  // The hash the Code parental is checked against.
-  parentalPin() {
-    const row = this.#db.prepare('SELECT parental_pin_hash FROM accounts WHERE id = ?').get(this.#account) as
-      { parental_pin_hash: string | null } | undefined
-    return row?.parental_pin_hash ?? null
-  }
-
-  // null hash: no PIN any more.
-  setPin(id: number, hash: string | null) {
-    if (!this.get(id)) return null
-    this.#db.prepare('UPDATE profiles SET pin_hash = ?, pin_version = pin_version + 1 WHERE id = ?').run(hash, id)
-    return this.get(id)
+      .get(id, this.#account) as { version: number; createdAt: number } | undefined
+    return row ? { version: `${row.version}.${row.createdAt}` } : null
   }
 
   photo(id: number): { data: Buffer; type: PhotoType } | null {
@@ -273,11 +252,26 @@ export class ProfileStore {
     return row ? { data: Buffer.from(row.photo), type: row.photo_type } : null
   }
 
+  // « Passer le rôle d'admin »: an adult with an account of their own becomes the household's admin, the admin until
+  // now a member. false when that profile cannot be.
+  handOverAdmin(id: number) {
+    const target = this.get(id)
+    if (!target || target.kind !== 'adult' || !target.hasAccount || target.role === 'admin') return false
+    transaction(this.#db, () => {
+      this.#db.prepare("UPDATE profiles SET role = 'member' WHERE account_id = ? AND role = 'admin'").run(this.#account)
+      this.#db.prepare("UPDATE profiles SET role = 'admin' WHERE id = ? AND account_id = ?").run(id, this.#account)
+    })
+    return true
+  }
+
   // Its state goes with it. The admin stays: the household always has a reader who manages it.
   delete(id: number) {
     const profiles = this.list()
     const profile = profiles.find(candidate => candidate.id === id)
     if (profiles.length <= 1 || !profile || profile.role === 'admin') return false
+    // Written down first, outside the database: a backup restored later deletes it again (forget-log.ts).
+    const key = rowKey(this.#db, 'profiles', id)
+    if (key) recordForget({ kind: 'profile', ...key, householdId: this.#account })
     this.#db.prepare('DELETE FROM profiles WHERE id = ?').run(id)
     return true
   }

@@ -1,5 +1,6 @@
 import { Bookmark, SearchX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { groupByDay } from '../lib/day-groups.ts'
 import { useState } from 'react'
 import type { TopicInfo } from '../api.ts'
 import { matchesWords, searchWords } from '../lib/find.ts'
@@ -28,13 +29,11 @@ const SavedScreen = ({ layout, topics, activeId = null }: SavedScreenProps) => {
   const words = searchWords(query)
   const found = entries.filter(entry => matchesWords(entry.item, words))
   const shown = found.filter(entry => passesFilter(entry.item, filter, topics))
-  const groups: DayGroup[] = []
-  for (const { item, savedAt } of shown) {
-    const day = dayOfItem(savedAt)
-    const group = groups.at(-1)
-    if (group?.day === day) group.items.push(item)
-    else groups.push({ day, items: [item] })
-  }
+  const groups: DayGroup[] = groupByDay(
+    shown,
+    entry => dayOfItem(entry.savedAt),
+    entry => entry.item
+  )
 
   const meta = entries.length > 0 ? t('count.article', { count: entries.length }) : undefined
   const content =

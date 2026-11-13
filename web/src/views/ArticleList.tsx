@@ -3,8 +3,11 @@ import type { TopicItem } from '../api.ts'
 import { dayLabel } from '../lib/format.ts'
 import { stateWords } from '../lib/listen.ts'
 import { useReadableOffline } from '../lib/offline.ts'
+import { updatePreferences, usePreferences } from '../lib/preferences.ts'
+import { useMedia } from '../lib/use-media.ts'
 import { dismissArticle, isRead, markRead, useReadState } from '../lib/read-state.ts'
 import { rememberList } from '../lib/reading-list.ts'
+import { useSaved } from '../lib/saved.ts'
 import ArticleCard from '../ui/ArticleCard.tsx'
 import DaySeparator, { type CountUnit } from '../ui/DaySeparator.tsx'
 import SwipeCard, { UndoRow } from '../ui/SwipeCard.tsx'
@@ -74,6 +77,52 @@ const usePendingDismissals = () => {
   return { pending, dismiss, undo }
 }
 
+// Once per profile, on a touch screen, the first card shows what a swipe does, then never again.
+const useSwipeHint = (firstDay: TopicItem[], swipeable: boolean) => {
+  const { swipeHinted } = usePreferences()
+  const touch = useMedia('(pointer: coarse)')
+  const saved = useSaved()
+  // A saved card cannot be put away: the hint goes on the first one that can.
+  return !swipeHinted && touch && swipeable
+    ? firstDay.find(item => !saved.some(entry => entry.item.id === item.id))?.id
+    : undefined
+}
+
+// Each day's cards, each with whether a line goes before it: none next to the open card.
+const rowsOf = (groups: { items: TopicItem[] }[], activeId: string | null): Row[][] =>
+  groups.map(group =>
+    group.items.map((item, index) => {
+      const previous = group.items[index - 1]
+      return { item, line: previous !== undefined && previous.id !== activeId && item.id !== activeId }
+    })
+  )
+
+interface DismissibleProps {
+  item: TopicItem
+  pending: boolean
+  swipeable: boolean
+  hint: boolean
+  onUndo: () => void
+  onDismiss: () => void
+  children: ReactNode
+}
+
+// A card put away shows its undo row; on a phone a card swipes away.
+const Dismissible = ({ item, pending, swipeable, hint, onUndo, onDismiss, children }: DismissibleProps) => {
+  if (pending) return <UndoRow label={stateWords(item).undo} title={item.title} onUndo={onUndo} />
+  if (!swipeable) return children
+  return (
+    <SwipeCard
+      item={item}
+      onDismiss={onDismiss}
+      hint={hint}
+      onHinted={() => updatePreferences({ swipeHinted: true }, { quiet: true })}
+    >
+      {children}
+    </SwipeCard>
+  )
+}
+
 // Articles, grouped by day under sticky separators, with a line between rows (none around the open one).
 const ArticleList = ({
   groups: allGroups,
@@ -94,6 +143,7 @@ const ArticleList = ({
     .map(group => ({ ...group, items: group.items.filter(readable) }))
     .filter(group => group.items.length > 0)
   const { pending, dismiss, undo } = usePendingDismissals()
+  const hintId = useSwipeHint(groups[0]?.items ?? [], dismissible && layout === 'phone')
   const everything = allItems ?? groups.flatMap(group => group.items)
   const open = (item: TopicItem) => {
     markRead(item.id)
@@ -101,18 +151,16 @@ const ArticleList = ({
     onOpen?.(item)
   }
 
-  // Each day's cards, each with whether a line goes before it: none next to the open card.
-  const rows: Row[][] = groups.map(group =>
-    group.items.map((item, index) => {
-      const previous = group.items[index - 1]
-      return { item, line: previous !== undefined && previous.id !== activeId && item.id !== activeId }
-    })
-  )
+  const rows = rowsOf(groups, activeId)
 
   return (
     <div className={`${styles.list} ${styles[layout]} appear`}>
       {groups.map((group, groupIndex) => (
-        <section key={group.day ?? 'all'} aria-label={group.day ? dayLabel(group.day) : undefined}>
+        <section
+          key={group.day ?? 'all'}
+          aria-label={group.day ? dayLabel(group.day) : undefined}
+          data-day={group.day ?? undefined}
+        >
           {group.day && (
             <DaySeparator label={dayLabel(group.day)} count={group.items.length} first={groupIndex === 0} unit={unit} />
           )}
@@ -139,15 +187,16 @@ const ArticleList = ({
               return (
                 <Fragment key={item.id}>
                   {divider}
-                  {pending.includes(item.id) ? (
-                    <UndoRow label={stateWords(item).undo} title={item.title} onUndo={() => undo(item.id)} />
-                  ) : dismissible && layout === 'phone' ? (
-                    <SwipeCard item={item} onDismiss={() => dismiss(item.id)}>
-                      {card}
-                    </SwipeCard>
-                  ) : (
-                    card
-                  )}
+                  <Dismissible
+                    item={item}
+                    pending={pending.includes(item.id)}
+                    swipeable={dismissible && layout === 'phone'}
+                    hint={item.id === hintId}
+                    onUndo={() => undo(item.id)}
+                    onDismiss={() => dismiss(item.id)}
+                  >
+                    {card}
+                  </Dismissible>
                 </Fragment>
               )
             })}

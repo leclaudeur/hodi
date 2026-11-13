@@ -31,6 +31,36 @@ interface QuestionsCardProps {
   onUnauthorized: () => void
 }
 
+// A question asked, then its answer and its sources, the error, or the lines that wait for it.
+const ExchangeView = ({ exchange }: { exchange: Exchange }) => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <p className={styles.question}>{exchange.question}</p>
+      {exchange.answer !== null && <p className={styles.answer}>{exchange.answer}</p>}
+      {exchange.sources.length > 0 && (
+        <ul className={styles.sources} aria-label={t('questions.sources')}>
+          {exchange.sources.map(source => (
+            <li key={source.url}>
+              <a href={source.url} target="_blank" rel="noopener noreferrer" title={source.title}>
+                {hostOf(source.url)} ↗
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+      {exchange.error !== null && <p className={styles.error}>{t(exchange.error)}</p>}
+      {exchange.answer === null && exchange.error === null && (
+        <div className={styles.lines} role="status">
+          <span />
+          <span />
+          <span className="visually-hidden">{t('questions.answering')}</span>
+        </div>
+      )}
+    </>
+  )
+}
+
 // Questions about the article, answered by the AI (which searches the web when the article is not enough).
 // Each question sent is one call; they last for this visit only.
 const QuestionsCard = ({ articleId, onUnauthorized }: QuestionsCardProps) => {
@@ -73,28 +103,9 @@ const QuestionsCard = ({ articleId, onUnauthorized }: QuestionsCardProps) => {
       {exchanges.length > 0 && (
         <ol className={styles.exchanges}>
           {exchanges.map((exchange, index) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- exchanges are only appended, never reordered
             <li key={index}>
-              <p className={styles.question}>{exchange.question}</p>
-              {exchange.answer !== null && <p className={styles.answer}>{exchange.answer}</p>}
-              {exchange.sources.length > 0 && (
-                <ul className={styles.sources} aria-label={t('questions.sources')}>
-                  {exchange.sources.map(source => (
-                    <li key={source.url}>
-                      <a href={source.url} target="_blank" rel="noopener noreferrer" title={source.title}>
-                        {hostOf(source.url)} ↗
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {exchange.error !== null && <p className={styles.error}>{t(exchange.error)}</p>}
-              {exchange.answer === null && exchange.error === null && (
-                <div className={styles.lines} role="status">
-                  <span />
-                  <span />
-                  <span className="visually-hidden">{t('questions.answering')}</span>
-                </div>
-              )}
+              <ExchangeView exchange={exchange} />
             </li>
           ))}
         </ol>

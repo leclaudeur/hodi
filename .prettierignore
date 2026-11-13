@@ -11,3 +11,6 @@ playwright-report/
 
 # Written by `npm run sources:list`: a test compares it with the generator as it is.
 docs/source-list.md
+
+# Hostile plugins kept byte for byte as the security review wrote them.
+server/test/fixtures/hostile-plugins/

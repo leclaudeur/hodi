@@ -1,5 +1,5 @@
 import type { FeedItem } from './feed-parser.ts'
-import type { DayFeed, ListenFeed, SearchResult, TopicFeed } from './news-service.ts'
+import type { DayFeed, ListenFeed, SearchResult, TopicFeed } from './news-types.ts'
 
 // What a young profile may not see, whatever its devices ask: the sources and themes its parents did not turn on
 // (YouthSources.lock). The web app hides them too, but the API is the boundary: a teen can open /api/search in the

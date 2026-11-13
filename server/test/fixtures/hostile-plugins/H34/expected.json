@@ -1,0 +1,20 @@
+{
+  "case": "H34",
+  "title": "checkSignIn that refuses, throws or loops",
+  "setup": "The manifest also declares a choice setting 'mode' (pass, refuse, throw, loop, html). Accounts: server admin, adult in the household. checkSignIn needs permissions.signIn (the hint of \u00ab Connecter des appareils \u00bb says it may refuse a sign-in), so the manifest asks for it rather than households.",
+  "drive": [
+    "mode=refuse: the adult's sign-in is refused (403) with the plugin's message key; the server admin's sign-in succeeds.",
+    "mode=throw: the adult is refused with the core's neutral message (not the plugin's error text); the server admin succeeds.",
+    "mode=loop: the adult is refused within the plugin's time limit + 1 s (withinMs 11000 at the default 10 s); the server admin succeeds at once, without waiting for the plugin.",
+    "mode=html: the key is not a key of the plugin's locales, so the core shows its neutral message; the string never reaches the page as HTML.",
+    "mode=pass: the adult signs in."
+  ],
+  "expect": {
+    "serverAdminNeverWaits": "The server admin's sign-in does not call checkSignIn at all, so a broken plugin can never lock out the person who can remove it."
+  },
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ],
+  "why": "Antho chose fail-closed (2026-11-08 10:53): a failing check refuses, except for the server admin."
+}

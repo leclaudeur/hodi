@@ -1,0 +1,22 @@
+{
+  "case": "H48",
+  "title": "ctx.accounts never returns a secret",
+  "setup": "Server admin antho@example.com, made by the setup the test goes through (it knows the password).",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/scan",
+      "expect": {
+        "status": 200,
+        "body": {
+          "found": []
+        }
+      }
+    }
+  ],
+  "note": "checkPassword returns the account (or true), never anything derived from the hash.",
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ]
+}

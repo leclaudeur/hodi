@@ -1,0 +1,20 @@
+{
+  "case": "H8",
+  "title": "A memory bomb stops at the plugin limit",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/grow",
+      "expect": {
+        "status": 500,
+        "withinMs": 6000
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "rssLimit": "process RSS grows by less than the per-plugin limit plus 16 MiB"
+}

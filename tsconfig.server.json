@@ -12,6 +12,12 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["server/**/*.ts", "shared/**/*.ts", "shared/**/*.json"],
+  "include": [
+    "server/**/*.ts",
+    "shared/**/*.ts",
+    "shared/**/*.json",
+    "plugin-sdk/testing.ts",
+    "plugin-sdk/testing-*.ts"
+  ],
   "exclude": ["server/test/**"]
 }

@@ -66,7 +66,7 @@ const nothing = async () => {
   throw new Error('HTTP 404')
 }
 
-startHodi(
+await startHodi(
   loadConfig({
     ...process.env,
     SOURCES_FILE: path.resolve(import.meta.dirname, 'sources.yml'),
@@ -77,6 +77,7 @@ startHodi(
     findFetchText: fetchText,
     fetchBytes: nothing,
     fetchPictures: nothing,
+    fetchPackages: nothing,
     // The made-up sites, in place of the public addresses only a pasted link may use.
     isPublicLink: async url => url.protocol === 'https:' && url.hostname.endsWith('.example'),
     fetchVideoDuration: async () => null,

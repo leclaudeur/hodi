@@ -182,9 +182,10 @@ export class YouthSources {
     const known = store.findByUrl(source.url)
     let id = known?.id
     if (!id) {
-      // Named as a source the parent added: theirs to remove.
-      id = `p${byId}-${slug(source.name)}`
-      for (let suffix = 2; store.has(id); suffix++) id = `p${byId}-${slug(source.name)}-${suffix}`
+      // Named as a source the parent added: theirs to remove. A feed another household follows keeps its id.
+      const feed = store.feedOf(source.url)
+      id = feed?.id ?? `p${byId}-${slug(source.name)}`
+      for (let suffix = 2; !feed && store.isTaken(id); suffix++) id = `p${byId}-${slug(source.name)}-${suffix}`
       const added = { ...source, id, addedBy: byId }
       if (!news.addSource(added, section, sectionIds)) return false
       store.add(added, section, sectionIds, this.#options.now())

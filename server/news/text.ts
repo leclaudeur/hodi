@@ -61,11 +61,22 @@ export const canonicalLink = (link: string) => {
 
 export const itemId = (canonical: string) => createHash('sha256').update(canonical).digest('base64url').slice(0, 16)
 
+// Every list asks again for the keys of the same titles: each is worked out once.
+const titleKeys = new Map<string, string>()
+const MAX_TITLE_KEYS = 20_000
+
 // Lowercase, no accents or punctuation: catches the same story syndicated under two links.
-export const titleKey = (title: string) =>
-  title
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim()
+export const titleKey = (title: string) => {
+  let key = titleKeys.get(title)
+  if (key === undefined) {
+    if (titleKeys.size >= MAX_TITLE_KEYS) titleKeys.clear()
+    key = title
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .trim()
+    titleKeys.set(title, key)
+  }
+  return key
+}

@@ -34,8 +34,10 @@ interface AddSourceProps {
   onUnauthorized: () => void
 }
 
-// "Ajouter une source": a link pasted, the feed found and tried, a topic picked.
-const AddSource = ({ topics, topicHint = null, onAdded, onUnauthorized }: AddSourceProps) => {
+type Found = Extract<FindSourceResult, { status: 'ok' }>
+
+// The form's state: the link, the site found from it and where it goes.
+const useAddSource = ({ topicHint = null, onAdded, onUnauthorized }: Omit<AddSourceProps, 'topics'>) => {
   const { t } = useTranslation()
   const [link, setLink] = useState('')
   const [searching, setSearching] = useState(false)
@@ -95,17 +97,98 @@ const AddSource = ({ topics, topicHint = null, onAdded, onUnauthorized }: AddSou
     }
   }
 
-  const source = found?.status === 'ok' ? found.source : null
-  const full = found !== null && found.added >= found.limit
+  return { link, setLink, searching, found, sections, targets, setTargets, adding, error, search, add }
+}
+
+type AddSourceState = ReturnType<typeof useAddSource>
+
+// Which topics a found site goes to, or which section of Vidéos a channel, then « Ajouter ».
+const TargetChoice = ({ found, topics, state }: { found: Found; topics: TopicInfo[]; state: AddSourceState }) => {
+  const { t } = useTranslation()
+  const { targets, setTargets, adding } = state
+  const article = found.source.kind === 'article'
+  return (
+    <>
+      <h3 className={styles.label}>{t(article ? 'addSource.whichTopics' : 'addSource.whichSection')}</h3>
+      {article ? (
+        <TopicField topics={topics} selected={targets} onChange={setTargets} label={t('addSource.topics')} />
+      ) : (
+        <div className={addStyles.choices}>
+          {state.sections.map(choice => (
+            <TopicCapsule
+              key={choice.id}
+              topicId={choice.id}
+              label={choice.label}
+              size="filter"
+              selected={targets.includes(choice.id)}
+              // A second click takes the choice back.
+              onClick={() => setTargets(targets.includes(choice.id) ? [] : [choice.id])}
+            />
+          ))}
+        </div>
+      )}
+      <div className={addStyles.actions}>
+        <span className={addStyles.count}>
+          {found.limit === null
+            ? t('addSource.countAll', { count: found.added })
+            : t('addSource.count', { added: found.added, limit: found.limit })}
+        </span>
+        <Button
+          look="primary"
+          icon={Plus}
+          busy={adding}
+          disabled={targets.length === 0}
+          onClick={() => void state.add()}
+        >
+          {t(adding ? 'addSource.adding' : 'profiles.add')}
+        </Button>
+      </div>
+    </>
+  )
+}
+
+// The site found: its name, how it is read, a few of its titles, then where it goes.
+const FoundSource = ({ found, topics, state }: { found: Found; topics: TopicInfo[]; state: AddSourceState }) => {
+  const { t } = useTranslation()
+  const { source } = found
+  const full = found.limit !== null && found.added >= found.limit
+  return (
+    <div className={addStyles.found}>
+      <div className={addStyles.head}>
+        <span className={styles.rowText}>
+          <span className={styles.rowLabel}>{source.name}</span>
+          <span className={styles.rowHint}>{readingLine(source)}</span>
+        </span>
+        <Chip>{t(`addSource.origins.${source.origin}`)}</Chip>
+      </div>
+      <ul className={addStyles.samples}>
+        {source.samples.map(title => (
+          <li key={title}>{title}</li>
+        ))}
+      </ul>
+      {found.followed && (
+        <StatusLine tone="info">{t('addSource.followedAs', { name: found.followed.name })}</StatusLine>
+      )}
+      {!found.followed && full && <StatusLine tone="error">{t(addError('limit'))}</StatusLine>}
+      {!found.followed && !full && <TargetChoice found={found} topics={topics} state={state} />}
+    </div>
+  )
+}
+
+// "Ajouter une source": a link pasted, the feed found and tried, a topic picked.
+const AddSource = ({ topics, ...props }: AddSourceProps) => {
+  const { t } = useTranslation()
+  const state = useAddSource(props)
+  const { link, searching, found } = state
 
   return (
     <div className={addStyles.box}>
-      <form className={styles.fieldRow} onSubmit={search}>
+      <form className={styles.fieldRow} onSubmit={state.search}>
         <TextField
           icon={Link2}
           inputMode="url"
           value={link}
-          onChange={event => setLink(event.target.value)}
+          onChange={event => state.setLink(event.target.value)}
           placeholder={t('addSource.placeholder')}
           aria-label={t('addSource.field')}
           maxLength={500}
@@ -120,67 +203,9 @@ const AddSource = ({ topics, topicHint = null, onAdded, onUnauthorized }: AddSou
 
       {found && found.status !== 'ok' && <StatusLine tone="error">{t(notFound(found.status))}</StatusLine>}
 
-      {source && (
-        <div className={addStyles.found}>
-          <div className={addStyles.head}>
-            <span className={styles.rowText}>
-              <span className={styles.rowLabel}>{source.name}</span>
-              <span className={styles.rowHint}>{readingLine(source)}</span>
-            </span>
-            <Chip>{t(`addSource.origins.${source.origin}`)}</Chip>
-          </div>
-          <ul className={addStyles.samples}>
-            {source.samples.map(title => (
-              <li key={title}>{title}</li>
-            ))}
-          </ul>
+      {found?.status === 'ok' && <FoundSource found={found} topics={topics} state={state} />}
 
-          {found?.followed ? (
-            <StatusLine tone="info">{t('addSource.followedAs', { name: found.followed.name })}</StatusLine>
-          ) : full ? (
-            <StatusLine tone="error">{t(addError('limit'))}</StatusLine>
-          ) : (
-            <>
-              <h3 className={styles.label}>
-                {t(source.kind === 'article' ? 'addSource.whichTopics' : 'addSource.whichSection')}
-              </h3>
-              {source.kind === 'article' ? (
-                <TopicField topics={topics} selected={targets} onChange={setTargets} label={t('addSource.topics')} />
-              ) : (
-                <div className={addStyles.choices}>
-                  {sections.map(choice => (
-                    <TopicCapsule
-                      key={choice.id}
-                      topicId={choice.id}
-                      label={choice.label}
-                      size="filter"
-                      selected={targets.includes(choice.id)}
-                      // A second click takes the choice back.
-                      onClick={() => setTargets(targets.includes(choice.id) ? [] : [choice.id])}
-                    />
-                  ))}
-                </div>
-              )}
-              <div className={addStyles.actions}>
-                <span className={addStyles.count}>
-                  {found ? t('addSource.count', { added: found.added, limit: found.limit }) : ''}
-                </span>
-                <Button
-                  look="primary"
-                  icon={Plus}
-                  busy={adding}
-                  disabled={targets.length === 0}
-                  onClick={() => void add()}
-                >
-                  {t(adding ? 'addSource.adding' : 'profiles.add')}
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {error && <StatusLine tone="error">{error}</StatusLine>}
+      {state.error && <StatusLine tone="error">{state.error}</StatusLine>}
     </div>
   )
 }

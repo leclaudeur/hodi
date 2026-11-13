@@ -8,9 +8,10 @@ interface RoundButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: LucideIcon
   label: string
   variant?: RoundVariant
-  // Three sizes only. 28: where room is short (a card's or a list row's actions). 34: where there is room (a
-  // reader's header, a computer's bars). 44: to the finger, or beside a 44px capsule (Résumé du jour).
-  size?: 28 | 34 | 44
+  // Four sizes only. 28: where room is short (a card's or a list row's actions). 34: where there is room (a
+  // reader's header, a computer's bars). 38: a settings row's action on a phone, as tall as the row's other controls.
+  // 44: to the finger, or beside a 44px capsule (Résumé du jour).
+  size?: 28 | 34 | 38 | 44
   // Filled icon (a saved bookmark).
   filled?: boolean
   // Waiting on the server: the icon turns (pair it with a loader icon).
@@ -39,7 +40,7 @@ const RoundButton = ({
   const classes = [styles.button, styles[variant], styles[`size${size}`], className].join(' ')
   const icon = (
     <Icon
-      size={size === 28 ? 14 : size === 34 ? 16 : 18}
+      size={size === 28 ? 14 : size === 44 ? 18 : 16}
       fill={filled ? 'currentColor' : 'none'}
       className={busy ? styles.busy : undefined}
       aria-hidden="true"

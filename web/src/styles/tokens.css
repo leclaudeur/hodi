@@ -67,6 +67,9 @@
   --accent-ink: #ffffff;
   /* On a profile's or a topic's colour (a sparkle in its pin): white in every theme. */
   --on-topic: #ffffff;
+  /* A QR code: dark squares on white in every theme, as some phone cameras read no other way round. */
+  --qr-ink: #18181b;
+  --qr-paper: #ffffff;
   /* Violet: a click that spends API credits. */
   --ai: #a08cff;
   --ai-surface: #1e1933;
@@ -93,72 +96,81 @@
   --shadow: rgba(0, 0, 0, 0.22);
   --scrim: rgba(15, 15, 16, 0.55);
   --image-button-border: rgba(255, 255, 255, 0.12);
-  --topic-belgique: #c4a050;
-  --topic-belgique-border: #4c4027;
-  --topic-belgique-surface: #232019;
-  --topic-monde: #6094ba;
-  --topic-monde-border: #2c3c49;
-  --topic-monde-surface: #1a1f23;
+  --topic-belgium: #c4a050;
+  --topic-belgium-border: #4c4027;
+  --topic-belgium-surface: #232019;
+  --topic-world: #6094ba;
+  --topic-world-border: #2c3c49;
+  --topic-world-surface: #1a1f23;
   --topic-tech: #4fa3a1;
   --topic-tech-border: #264141;
   --topic-tech-surface: #182021;
   --topic-science: #72a572;
   --topic-science-border: #314232;
   --topic-science-surface: #1c201c;
-  --topic-films-series: #bf7e98;
-  --topic-films-series-border: #4a353e;
-  --topic-films-series-surface: #221d20;
-  --topic-jeux-video: #c66a5f;
-  --topic-jeux-video-border: #4c2f2c;
-  --topic-jeux-video-surface: #231b1b;
-  --topic-ia: #a0b060;
-  --topic-ia-border: #40452c;
-  --topic-ia-surface: #20211b;
+  --topic-film-tv: #bf7e98;
+  --topic-film-tv-border: #4a353e;
+  --topic-film-tv-surface: #221d20;
+  --topic-gaming: #c66a5f;
+  --topic-gaming-border: #4c2f2c;
+  --topic-gaming-surface: #231b1b;
+  --topic-ai: #a0b060;
+  --topic-ai-border: #40452c;
+  --topic-ai-surface: #20211b;
   --topic-broadcast: #8a90b4;
   --topic-broadcast-border: #393b47;
   --topic-broadcast-surface: #1e1e22;
   --topic-lifestyle: #b07aaa;
   --topic-lifestyle-border: #443442;
   --topic-lifestyle-surface: #221e22;
-  --topic-auto-moto: #8f9db0;
-  --topic-auto-moto-border: #3a3e44;
-  --topic-auto-moto-surface: #202122;
+  --topic-motoring: #8f9db0;
+  --topic-motoring-border: #3a3e44;
+  --topic-motoring-surface: #202122;
   --topic-sport: #d48a4e;
   --topic-sport-border: #4f3927;
   --topic-sport-surface: #251f1a;
-  --topic-argent-conso: #b9a64e;
-  --topic-argent-conso-border: #474127;
-  --topic-argent-conso-surface: #23221a;
-  --topic-sante: #5fb39b;
-  --topic-sante-border: #2c453e;
-  --topic-sante-surface: #1c2321;
-  --topic-cuisine: #cf9a66;
-  --topic-cuisine-border: #4e3e2e;
-  --topic-cuisine-surface: #25211c;
-  --topic-voyage: #5ea6d6;
-  --topic-voyage-border: #2c4150;
-  --topic-voyage-surface: #1c2225;
-  --topic-musique: #a283d4;
-  --topic-musique-border: #40374f;
-  --topic-musique-surface: #211f25;
+  --topic-money: #b9a64e;
+  --topic-money-border: #474127;
+  --topic-money-surface: #23221a;
+  --topic-health: #5fb39b;
+  --topic-health-border: #2c453e;
+  --topic-health-surface: #1c2321;
+  --topic-food: #cf9a66;
+  --topic-food-border: #4e3e2e;
+  --topic-food-surface: #25211c;
+  --topic-travel: #5ea6d6;
+  --topic-travel-border: #2c4150;
+  --topic-travel-surface: #1c2225;
+  --topic-music: #a283d4;
+  --topic-music-border: #40374f;
+  --topic-music-surface: #211f25;
   --topic-culture: #c2788a;
   --topic-culture-border: #4a3339;
   --topic-culture-surface: #241e1f;
-  --topic-maison-deco: #ad9878;
-  --topic-maison-deco-border: #433d33;
-  --topic-maison-deco-surface: #22201e;
-  --topic-famille: #d2b25c;
-  --topic-famille-border: #4e452b;
-  --topic-famille-surface: #25221c;
-  --topic-mode-beaute: #d48cb6;
-  --topic-mode-beaute-border: #4f3946;
-  --topic-mode-beaute-surface: #251f23;
-  --topic-climat: #78ad66;
-  --topic-climat-border: #33432e;
-  --topic-climat-surface: #1e221c;
-  --topic-animaux: #a98466;
-  --topic-animaux-border: #42372e;
-  --topic-animaux-surface: #221f1c;
+  --topic-home: #ad9878;
+  --topic-home-border: #433d33;
+  --topic-home-surface: #22201e;
+  --topic-family: #d2b25c;
+  --topic-family-border: #4e452b;
+  --topic-family-surface: #25221c;
+  --topic-fashion: #d48cb6;
+  --topic-fashion-border: #4f3946;
+  --topic-fashion-surface: #251f23;
+  --topic-climate: #78ad66;
+  --topic-climate-border: #33432e;
+  --topic-climate-surface: #1e221c;
+  --topic-animals: #a98466;
+  --topic-animals-border: #42372e;
+  --topic-animals-surface: #221f1c;
+  /* Behind a site's icon: light, as most icons are drawn for a light page (a black logo stays legible). */
+  --icon-tile: #ececee;
+  /* Soft colour glows (a halo in the desktop reader before an article is open): five topic colours, and how strong. */
+  --glow-1: var(--topic-sport);
+  --glow-2: var(--topic-culture);
+  --glow-3: var(--topic-world);
+  --glow-4: var(--topic-belgium);
+  --glow-5: var(--topic-tech);
+  --glow-strength: 0.32;
 }
 
 :root[data-theme='light'] {
@@ -230,76 +242,84 @@
   --shadow: rgba(43, 33, 26, 0.08);
   --scrim: rgba(251, 248, 242, 0.75);
   --image-button-border: rgba(255, 255, 255, 0.5);
-  --topic-belgique: #876d3a;
-  --topic-belgique-border: #decba1;
-  --topic-belgique-surface: #f4eddf;
-  --topic-monde: #4b667a;
-  --topic-monde-border: #b1c6d1;
-  --topic-monde-surface: #e8eceb;
+  --topic-belgium: #876d3a;
+  --topic-belgium-border: #decba1;
+  --topic-belgium-surface: #f4eddf;
+  --topic-world: #4b667a;
+  --topic-world-border: #b1c6d1;
+  --topic-world-surface: #e8eceb;
   --topic-tech: #416f6b;
   --topic-tech-border: #a9ccc6;
   --topic-tech-surface: #e6eee8;
   --topic-science: #56704f;
   --topic-science-border: #b9cdb1;
   --topic-science-surface: #ebeee3;
-  --topic-films-series: #845966;
-  --topic-films-series-border: #dcbcc2;
-  --topic-films-series-surface: #f4e9e7;
-  --topic-jeux-video: #884d43;
-  --topic-jeux-video-border: #dfb3a8;
-  --topic-jeux-video-surface: #f5e7e0;
-  --topic-ia: #717744;
-  --topic-ia-border: #ced2a9;
-  --topic-ia-surface: #f0efe0;
+  --topic-film-tv: #845966;
+  --topic-film-tv-border: #dcbcc2;
+  --topic-film-tv-surface: #f4e9e7;
+  --topic-gaming: #884d43;
+  --topic-gaming-border: #dfb3a8;
+  --topic-gaming-surface: #f5e7e0;
+  --topic-ai: #717744;
+  --topic-ai-border: #ced2a9;
+  --topic-ai-surface: #f0efe0;
   --topic-broadcast: #646476;
   --topic-broadcast-border: #c4c4ce;
   --topic-broadcast-surface: #edeceb;
   --topic-lifestyle: #745170;
   --topic-lifestyle-border: #d6cacf;
   --topic-lifestyle-surface: #ede8e5;
-  --topic-auto-moto: #5e6874;
-  --topic-auto-moto-border: #d0d0d0;
-  --topic-auto-moto-surface: #ebe9e5;
+  --topic-motoring: #5e6874;
+  --topic-motoring-border: #d0d0d0;
+  --topic-motoring-surface: #ebe9e5;
   --topic-sport: #8c5b33;
   --topic-sport-border: #dbcdbf;
   --topic-sport-surface: #efe8e1;
-  --topic-argent-conso: #7a6e33;
-  --topic-argent-conso-border: #d7d2bf;
-  --topic-argent-conso-surface: #edeae1;
-  --topic-sante: #3f7666;
-  --topic-sante-border: #c8d4cc;
-  --topic-sante-surface: #e9eae5;
-  --topic-cuisine: #896643;
-  --topic-cuisine-border: #dbd0c3;
-  --topic-cuisine-surface: #eee9e2;
-  --topic-voyage: #3e6e8d;
-  --topic-voyage-border: #c8d2d6;
-  --topic-voyage-surface: #e9eae7;
-  --topic-musique: #6b568c;
-  --topic-musique-border: #d3ccd5;
-  --topic-musique-surface: #ece8e7;
+  --topic-money: #7a6e33;
+  --topic-money-border: #d7d2bf;
+  --topic-money-surface: #edeae1;
+  --topic-health: #3f7666;
+  --topic-health-border: #c8d4cc;
+  --topic-health-surface: #e9eae5;
+  --topic-food: #896643;
+  --topic-food-border: #dbd0c3;
+  --topic-food-surface: #eee9e2;
+  --topic-travel: #3e6e8d;
+  --topic-travel-border: #c8d2d6;
+  --topic-travel-surface: #e9eae7;
+  --topic-music: #6b568c;
+  --topic-music-border: #d3ccd5;
+  --topic-music-surface: #ece8e7;
   --topic-culture: #804f5b;
   --topic-culture-border: #d9cac9;
   --topic-culture-surface: #eee8e4;
-  --topic-maison-deco: #72644f;
-  --topic-maison-deco-border: #d5cfc6;
-  --topic-maison-deco-surface: #ede9e3;
-  --topic-famille: #8b753d;
-  --topic-famille-border: #dbd4c2;
-  --topic-famille-surface: #eeeae2;
-  --topic-mode-beaute: #8c5c78;
-  --topic-mode-beaute-border: #dbcdd1;
-  --topic-mode-beaute-surface: #efe8e6;
-  --topic-climat: #4f7243;
-  --topic-climat-border: #ccd3c3;
-  --topic-climat-surface: #eaeae2;
-  --topic-animaux: #705743;
-  --topic-animaux-border: #d4ccc3;
-  --topic-animaux-surface: #ede8e2;
+  --topic-home: #72644f;
+  --topic-home-border: #d5cfc6;
+  --topic-home-surface: #ede9e3;
+  --topic-family: #8b753d;
+  --topic-family-border: #dbd4c2;
+  --topic-family-surface: #eeeae2;
+  --topic-fashion: #8c5c78;
+  --topic-fashion-border: #dbcdd1;
+  --topic-fashion-surface: #efe8e6;
+  --topic-climate: #4f7243;
+  --topic-climate-border: #ccd3c3;
+  --topic-climate-surface: #eaeae2;
+  --topic-animals: #705743;
+  --topic-animals-border: #d4ccc3;
+  --topic-animals-surface: #ede8e2;
+  --icon-tile: #ffffff;
+  /* The topics' light shades: their text colours would make the glows muddy on beige. */
+  --glow-1: #f0a877;
+  --glow-2: #eaa0b4;
+  --glow-3: #93bde3;
+  --glow-4: #ecd27e;
+  --glow-5: #8fd3c8;
+  --glow-strength: 0.42;
 }
 
 /* Poudré: the dark theme in dusty pink, its greys warmed to rose and its accent a powder pink. */
-:root[data-theme='poudre'] {
+:root[data-theme='powder'] {
   color-scheme: dark;
   --bg: #140e11;
   --column: #191215;
@@ -331,6 +351,7 @@
   --glass-border: rgba(255, 228, 236, 0.08);
   --shadow: rgba(0, 0, 0, 0.28);
   --scrim: rgba(20, 14, 17, 0.55);
+  --glow-2: var(--rust);
 }
 
 @media (prefers-color-scheme: light) {
@@ -402,85 +423,93 @@
     --shadow: rgba(43, 33, 26, 0.08);
     --scrim: rgba(251, 248, 242, 0.75);
     --image-button-border: rgba(255, 255, 255, 0.5);
-    --topic-belgique: #876d3a;
-    --topic-belgique-border: #decba1;
-    --topic-belgique-surface: #f4eddf;
-    --topic-monde: #4b667a;
-    --topic-monde-border: #b1c6d1;
-    --topic-monde-surface: #e8eceb;
+    --topic-belgium: #876d3a;
+    --topic-belgium-border: #decba1;
+    --topic-belgium-surface: #f4eddf;
+    --topic-world: #4b667a;
+    --topic-world-border: #b1c6d1;
+    --topic-world-surface: #e8eceb;
     --topic-tech: #416f6b;
     --topic-tech-border: #a9ccc6;
     --topic-tech-surface: #e6eee8;
     --topic-science: #56704f;
     --topic-science-border: #b9cdb1;
     --topic-science-surface: #ebeee3;
-    --topic-films-series: #845966;
-    --topic-films-series-border: #dcbcc2;
-    --topic-films-series-surface: #f4e9e7;
-    --topic-jeux-video: #884d43;
-    --topic-jeux-video-border: #dfb3a8;
-    --topic-jeux-video-surface: #f5e7e0;
-    --topic-ia: #717744;
-    --topic-ia-border: #ced2a9;
-    --topic-ia-surface: #f0efe0;
+    --topic-film-tv: #845966;
+    --topic-film-tv-border: #dcbcc2;
+    --topic-film-tv-surface: #f4e9e7;
+    --topic-gaming: #884d43;
+    --topic-gaming-border: #dfb3a8;
+    --topic-gaming-surface: #f5e7e0;
+    --topic-ai: #717744;
+    --topic-ai-border: #ced2a9;
+    --topic-ai-surface: #f0efe0;
     --topic-broadcast: #646476;
     --topic-broadcast-border: #c4c4ce;
     --topic-broadcast-surface: #edeceb;
     --topic-lifestyle: #745170;
     --topic-lifestyle-border: #d6cacf;
     --topic-lifestyle-surface: #ede8e5;
-    --topic-auto-moto: #5e6874;
-    --topic-auto-moto-border: #d0d0d0;
-    --topic-auto-moto-surface: #ebe9e5;
+    --topic-motoring: #5e6874;
+    --topic-motoring-border: #d0d0d0;
+    --topic-motoring-surface: #ebe9e5;
     --topic-sport: #8c5b33;
     --topic-sport-border: #dbcdbf;
     --topic-sport-surface: #efe8e1;
-    --topic-argent-conso: #7a6e33;
-    --topic-argent-conso-border: #d7d2bf;
-    --topic-argent-conso-surface: #edeae1;
-    --topic-sante: #3f7666;
-    --topic-sante-border: #c8d4cc;
-    --topic-sante-surface: #e9eae5;
-    --topic-cuisine: #896643;
-    --topic-cuisine-border: #dbd0c3;
-    --topic-cuisine-surface: #eee9e2;
-    --topic-voyage: #3e6e8d;
-    --topic-voyage-border: #c8d2d6;
-    --topic-voyage-surface: #e9eae7;
-    --topic-musique: #6b568c;
-    --topic-musique-border: #d3ccd5;
-    --topic-musique-surface: #ece8e7;
+    --topic-money: #7a6e33;
+    --topic-money-border: #d7d2bf;
+    --topic-money-surface: #edeae1;
+    --topic-health: #3f7666;
+    --topic-health-border: #c8d4cc;
+    --topic-health-surface: #e9eae5;
+    --topic-food: #896643;
+    --topic-food-border: #dbd0c3;
+    --topic-food-surface: #eee9e2;
+    --topic-travel: #3e6e8d;
+    --topic-travel-border: #c8d2d6;
+    --topic-travel-surface: #e9eae7;
+    --topic-music: #6b568c;
+    --topic-music-border: #d3ccd5;
+    --topic-music-surface: #ece8e7;
     --topic-culture: #804f5b;
     --topic-culture-border: #d9cac9;
     --topic-culture-surface: #eee8e4;
-    --topic-maison-deco: #72644f;
-    --topic-maison-deco-border: #d5cfc6;
-    --topic-maison-deco-surface: #ede9e3;
-    --topic-famille: #8b753d;
-    --topic-famille-border: #dbd4c2;
-    --topic-famille-surface: #eeeae2;
-    --topic-mode-beaute: #8c5c78;
-    --topic-mode-beaute-border: #dbcdd1;
-    --topic-mode-beaute-surface: #efe8e6;
-    --topic-climat: #4f7243;
-    --topic-climat-border: #ccd3c3;
-    --topic-climat-surface: #eaeae2;
-    --topic-animaux: #705743;
-    --topic-animaux-border: #d4ccc3;
-    --topic-animaux-surface: #ede8e2;
+    --topic-home: #72644f;
+    --topic-home-border: #d5cfc6;
+    --topic-home-surface: #ede9e3;
+    --topic-family: #8b753d;
+    --topic-family-border: #dbd4c2;
+    --topic-family-surface: #eeeae2;
+    --topic-fashion: #8c5c78;
+    --topic-fashion-border: #dbcdd1;
+    --topic-fashion-surface: #efe8e6;
+    --topic-climate: #4f7243;
+    --topic-climate-border: #ccd3c3;
+    --topic-climate-surface: #eaeae2;
+    --topic-animals: #705743;
+    --topic-animals-border: #d4ccc3;
+    --topic-animals-surface: #ede8e2;
+    --icon-tile: #ffffff;
+    /* The topics' light shades: their text colours would make the glows muddy on beige. */
+    --glow-1: #f0a877;
+    --glow-2: #eaa0b4;
+    --glow-3: #93bde3;
+    --glow-4: #ecd27e;
+    --glow-5: #8fd3c8;
+    --glow-strength: 0.42;
   }
 }
 
 /* Each topic: its colour, a dimmed border and a very dark surface (capsules, sidebar squares). */
-[data-topic='belgique'] {
-  --topic: var(--topic-belgique);
-  --topic-border: var(--topic-belgique-border);
-  --topic-surface: var(--topic-belgique-surface);
+[data-topic='belgium'] {
+  --topic: var(--topic-belgium);
+  --topic-border: var(--topic-belgium-border);
+  --topic-surface: var(--topic-belgium-surface);
 }
-[data-topic='monde'] {
-  --topic: var(--topic-monde);
-  --topic-border: var(--topic-monde-border);
-  --topic-surface: var(--topic-monde-surface);
+[data-topic='world'] {
+  --topic: var(--topic-world);
+  --topic-border: var(--topic-world-border);
+  --topic-surface: var(--topic-world-surface);
 }
 [data-topic='tech'] {
   --topic: var(--topic-tech);
@@ -492,20 +521,20 @@
   --topic-border: var(--topic-science-border);
   --topic-surface: var(--topic-science-surface);
 }
-[data-topic='films-series'] {
-  --topic: var(--topic-films-series);
-  --topic-border: var(--topic-films-series-border);
-  --topic-surface: var(--topic-films-series-surface);
+[data-topic='film-tv'] {
+  --topic: var(--topic-film-tv);
+  --topic-border: var(--topic-film-tv-border);
+  --topic-surface: var(--topic-film-tv-surface);
 }
-[data-topic='jeux-video'] {
-  --topic: var(--topic-jeux-video);
-  --topic-border: var(--topic-jeux-video-border);
-  --topic-surface: var(--topic-jeux-video-surface);
+[data-topic='gaming'] {
+  --topic: var(--topic-gaming);
+  --topic-border: var(--topic-gaming-border);
+  --topic-surface: var(--topic-gaming-surface);
 }
-[data-topic='ia'] {
-  --topic: var(--topic-ia);
-  --topic-border: var(--topic-ia-border);
-  --topic-surface: var(--topic-ia-surface);
+[data-topic='ai'] {
+  --topic: var(--topic-ai);
+  --topic-border: var(--topic-ai-border);
+  --topic-surface: var(--topic-ai-surface);
 }
 [data-topic='broadcast'] {
   --topic: var(--topic-broadcast);
@@ -517,79 +546,79 @@
   --topic-border: var(--topic-lifestyle-border);
   --topic-surface: var(--topic-lifestyle-surface);
 }
-[data-topic='auto-moto'] {
-  --topic: var(--topic-auto-moto);
-  --topic-border: var(--topic-auto-moto-border);
-  --topic-surface: var(--topic-auto-moto-surface);
+[data-topic='motoring'] {
+  --topic: var(--topic-motoring);
+  --topic-border: var(--topic-motoring-border);
+  --topic-surface: var(--topic-motoring-surface);
 }
 [data-topic='sport'] {
   --topic: var(--topic-sport);
   --topic-border: var(--topic-sport-border);
   --topic-surface: var(--topic-sport-surface);
 }
-[data-topic='argent-conso'] {
-  --topic: var(--topic-argent-conso);
-  --topic-border: var(--topic-argent-conso-border);
-  --topic-surface: var(--topic-argent-conso-surface);
+[data-topic='money'] {
+  --topic: var(--topic-money);
+  --topic-border: var(--topic-money-border);
+  --topic-surface: var(--topic-money-surface);
 }
-[data-topic='sante'] {
-  --topic: var(--topic-sante);
-  --topic-border: var(--topic-sante-border);
-  --topic-surface: var(--topic-sante-surface);
+[data-topic='health'] {
+  --topic: var(--topic-health);
+  --topic-border: var(--topic-health-border);
+  --topic-surface: var(--topic-health-surface);
 }
-[data-topic='cuisine'] {
-  --topic: var(--topic-cuisine);
-  --topic-border: var(--topic-cuisine-border);
-  --topic-surface: var(--topic-cuisine-surface);
+[data-topic='food'] {
+  --topic: var(--topic-food);
+  --topic-border: var(--topic-food-border);
+  --topic-surface: var(--topic-food-surface);
 }
-[data-topic='voyage'] {
-  --topic: var(--topic-voyage);
-  --topic-border: var(--topic-voyage-border);
-  --topic-surface: var(--topic-voyage-surface);
+[data-topic='travel'] {
+  --topic: var(--topic-travel);
+  --topic-border: var(--topic-travel-border);
+  --topic-surface: var(--topic-travel-surface);
 }
-[data-topic='musique'] {
-  --topic: var(--topic-musique);
-  --topic-border: var(--topic-musique-border);
-  --topic-surface: var(--topic-musique-surface);
+[data-topic='music'] {
+  --topic: var(--topic-music);
+  --topic-border: var(--topic-music-border);
+  --topic-surface: var(--topic-music-surface);
 }
 [data-topic='culture'] {
   --topic: var(--topic-culture);
   --topic-border: var(--topic-culture-border);
   --topic-surface: var(--topic-culture-surface);
 }
-[data-topic='maison-deco'] {
-  --topic: var(--topic-maison-deco);
-  --topic-border: var(--topic-maison-deco-border);
-  --topic-surface: var(--topic-maison-deco-surface);
+[data-topic='home'] {
+  --topic: var(--topic-home);
+  --topic-border: var(--topic-home-border);
+  --topic-surface: var(--topic-home-surface);
 }
-[data-topic='famille'] {
-  --topic: var(--topic-famille);
-  --topic-border: var(--topic-famille-border);
-  --topic-surface: var(--topic-famille-surface);
+[data-topic='family'] {
+  --topic: var(--topic-family);
+  --topic-border: var(--topic-family-border);
+  --topic-surface: var(--topic-family-surface);
 }
-[data-topic='mode-beaute'] {
-  --topic: var(--topic-mode-beaute);
-  --topic-border: var(--topic-mode-beaute-border);
-  --topic-surface: var(--topic-mode-beaute-surface);
+[data-topic='fashion'] {
+  --topic: var(--topic-fashion);
+  --topic-border: var(--topic-fashion-border);
+  --topic-surface: var(--topic-fashion-surface);
 }
-[data-topic='climat'] {
-  --topic: var(--topic-climat);
-  --topic-border: var(--topic-climat-border);
-  --topic-surface: var(--topic-climat-surface);
+[data-topic='climate'] {
+  --topic: var(--topic-climate);
+  --topic-border: var(--topic-climate-border);
+  --topic-surface: var(--topic-climate-surface);
 }
-[data-topic='animaux'] {
-  --topic: var(--topic-animaux);
-  --topic-border: var(--topic-animaux-border);
-  --topic-surface: var(--topic-animaux-surface);
+[data-topic='animals'] {
+  --topic: var(--topic-animals);
+  --topic-border: var(--topic-animals-border);
+  --topic-surface: var(--topic-animals-surface);
 }
 
 /* Réglages > Couleur d’accent: one of the profile colours instead of the theme's own (rust, or Poudré's pink)
    wherever the brand shows (logo dot, active tab, counters, progress), its shades mixed from it. */
-:root[data-accent='belgique'] {
-  --accent: var(--topic-belgique);
+:root[data-accent='belgium'] {
+  --accent: var(--topic-belgium);
 }
-:root[data-accent='monde'] {
-  --accent: var(--topic-monde);
+:root[data-accent='world'] {
+  --accent: var(--topic-world);
 }
 :root[data-accent='tech'] {
   --accent: var(--topic-tech);
@@ -597,14 +626,14 @@
 :root[data-accent='science'] {
   --accent: var(--topic-science);
 }
-:root[data-accent='films-series'] {
-  --accent: var(--topic-films-series);
+:root[data-accent='film-tv'] {
+  --accent: var(--topic-film-tv);
 }
-:root[data-accent='jeux-video'] {
-  --accent: var(--topic-jeux-video);
+:root[data-accent='gaming'] {
+  --accent: var(--topic-gaming);
 }
-:root[data-accent='ia'] {
-  --accent: var(--topic-ia);
+:root[data-accent='ai'] {
+  --accent: var(--topic-ai);
 }
 :root[data-accent='broadcast'] {
   --accent: var(--topic-broadcast);
@@ -612,8 +641,8 @@
 :root[data-accent='sport'] {
   --accent: var(--topic-sport);
 }
-:root[data-accent='musique'] {
-  --accent: var(--topic-musique);
+:root[data-accent='music'] {
+  --accent: var(--topic-music);
 }
 
 :root[data-accent] {

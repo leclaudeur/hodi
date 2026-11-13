@@ -1,0 +1,333 @@
+/* Serveur › Vue d'ensemble: a 12-column board on the whole width. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 36px 36px 64px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.board,
+.plugins {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.plugins {
+  grid-column: 1 / -1;
+}
+
+.kpis {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.card,
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--column);
+}
+
+/* A figure is a button: it chooses what the large chart draws. */
+.kpi {
+  overflow: hidden;
+  gap: 6px;
+  padding: 16px 18px 10px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duration) var(--ease),
+    background var(--duration) var(--ease);
+}
+
+.kpi[aria-pressed='true'] {
+  border-color: var(--rust);
+  background: var(--bg);
+}
+
+@media (hover: hover) {
+  .kpi:not([aria-pressed='true']):hover {
+    border-color: var(--text-3);
+  }
+}
+
+.label {
+  overflow: hidden;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.kpi[aria-pressed='true'] .label {
+  color: var(--text);
+}
+
+.kpiLine {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.figure {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 400;
+  /* The display face has no descent: with this line height the box ends on the figures' baseline, level with the
+     capsule's bottom. */
+  line-height: 0.65;
+  white-space: nowrap;
+}
+
+.figure small {
+  font-size: 0.55em;
+}
+
+.spark {
+  display: block;
+  margin: 0 -18px -10px;
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.count {
+  margin-left: 6px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.activity {
+  grid-column: span 8;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  grid-column: span 4;
+  gap: 14px;
+}
+
+.third,
+.narrow {
+  grid-column: span 4;
+}
+
+/* A plugin's card fills its place, whatever it holds. */
+.slot {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pluginCard {
+  flex: 1;
+}
+
+.wide {
+  grid-column: span 8;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  color: var(--text-2);
+  font-size: 12px;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.lineKey {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rust);
+}
+
+.dashKey {
+  width: 14px;
+  border-top: 2px dashed var(--text-3);
+}
+
+/* The figures start on the content's left edge and the curve ends on its right one. */
+.chart {
+  flex: 1;
+  min-height: 260px;
+}
+
+.tick,
+.chart :global(.recharts-cartesian-axis-tick-value) {
+  fill: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.cursor {
+  stroke: var(--text-3);
+  stroke-dasharray: 3 3;
+}
+
+/* Natural width, as in Statistiques. */
+.periods {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Chosen dates stand in for the quick choices, as tall as them, with a cross to go back. */
+.dates {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 6px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* A small computer or a tablet: the figures three then two, the side cards side by side, the lists two by two,
+   always in the same order. */
+@media (max-width: 1279px) {
+  .kpis {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .kpi {
+    grid-column: span 2;
+  }
+
+  .kpi:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+
+  .activity,
+  .side {
+    grid-column: 1 / -1;
+  }
+
+  .third,
+  .narrow,
+  .wide {
+    grid-column: span 6;
+  }
+
+  .third:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1279px) and (min-width: 601px) {
+  .side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 1024px) {
+  .page {
+    padding-inline: 24px;
+  }
+}
+
+/* A phone: one column, the figures two by two under the first one. */
+@media (max-width: 600px) {
+  .board,
+  .plugins {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .kpis {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .kpi,
+  .kpi:nth-child(n + 4),
+  .activity,
+  .side,
+  .third,
+  .third:last-child,
+  .narrow,
+  .wide,
+  .full {
+    grid-column: auto;
+  }
+
+  .kpi:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .figure {
+    font-size: 32px;
+  }
+
+  .periods,
+  .periods > [role='radiogroup'],
+  .dates {
+    flex: 1;
+  }
+
+  .dates {
+    justify-content: space-between;
+  }
+
+  .periods > [role='radiogroup'] > * {
+    flex: 1;
+  }
+}

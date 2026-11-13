@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h4",
+  "name": "Hostile H4",
+  "version": "0.0.1",
+  "description": "A busy loop is stopped and Hodi keeps answering",
+  "api": 2,
+  "audience": "admin"
+}

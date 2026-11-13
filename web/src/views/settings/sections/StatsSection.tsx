@@ -1,21 +1,19 @@
 import { useState, useSyncExternalStore } from 'react'
 import { type TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import { Bar, BarChart, Cell, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { TopicInfo } from '../../../api.ts'
 import { type ReadingEntry, getReadings, isRead, isVideoReading, startOfDay } from '../../../lib/reading-stats.ts'
 import { getLanguage } from '../../../lib/i18n.ts'
 import { subscribeUserState } from '../../../lib/user-state.ts'
 import Segmented from '../../../ui/Segmented.tsx'
 import DaySeparator, { type CountUnit } from '../../../ui/DaySeparator.tsx'
-import SourceAvatar from '../../../ui/SourceAvatar.tsx'
 import SectionPage from '../SectionPage.tsx'
+import DayBars, { type Day } from './DayBars.tsx'
+import StatsFavourites from './StatsFavourites.tsx'
 import StatsHousehold from './StatsHousehold.tsx'
 import styles from '../Settings.module.css'
 import statStyles from './StatsSection.module.css'
-
-const DAY_MS = 24 * 60 * 60 * 1000
-const TOP_ROWS = 4
+import { DAY_MS } from '../../../../../shared/time.ts'
 
 // "2 H 40", "45 MIN".
 const durationLabel = (total: number) => {
@@ -88,14 +86,6 @@ const ReadSplit = ({ split: { read, started, skimmed }, kind, periodLabel }: Rea
   )
 }
 
-interface Day {
-  key: string
-  short: string
-  date: number
-  count: number
-  today: boolean
-}
-
 // The days of the period, oldest first, with what was read on each.
 const daysOf = (entries: ReadingEntry[], length: number, now: Date): Day[] => {
   const today = startOfDay(now)
@@ -126,48 +116,6 @@ const streakOf = (entries: ReadingEntry[], now: Date) => {
   return streak
 }
 
-// The most frequent first, with their count.
-const ranking = <T,>(values: T[], keyOf: (value: T) => string) =>
-  [
-    ...values.reduce((counts, value) => {
-      const key = keyOf(value)
-      const entry = counts.get(key) ?? { value, count: 0 }
-      entry.count++
-      return counts.set(key, entry)
-    }, new Map<string, { value: T; count: number }>())
-  ]
-    .map(([, entry]) => entry)
-    .sort((a, b) => b.count - a.count)
-
-const DayTick = ({ x, y, payload, days }: { x?: number; y?: number; payload?: { index: number }; days: Day[] }) => {
-  const day = payload ? days[payload.index] : undefined
-  if (!day || x === undefined || y === undefined) return null
-  // 30 days: every fifth day and today, so the labels never overlap.
-  if (days.length > 7 && !day.today && (days.length - 1 - payload!.index) % 5 !== 0) return null
-  return (
-    <g transform={`translate(${x},${y})`} className={day.today ? statStyles.todayTick : statStyles.tick}>
-      <text textAnchor="middle" dy={12}>
-        {day.short}
-      </text>
-      <text textAnchor="middle" dy={27} className={statStyles.tickDate}>
-        {day.date}
-      </text>
-    </g>
-  )
-}
-
-const DayTooltip = ({ active, payload, unit }: { active?: boolean; payload?: { payload: Day }[]; unit: CountUnit }) => {
-  const { t } = useTranslation()
-  const day = payload?.[0]?.payload
-  if (!active || !day) return null
-  return (
-    <span className={statStyles.tooltip}>
-      {t('time.day', { weekday: day.short, numbers: day.date })} ·{' '}
-      {t(`count.${unit}`, { count: day.count }).toUpperCase()}
-    </span>
-  )
-}
-
 const periodLabelOf = (t: TFunction, period: 7 | 30) => t(period === 7 ? 'stats.period.week' : 'stats.period.month')
 
 interface DayChartProps {
@@ -191,7 +139,6 @@ const DayChart = ({ id, kind, unit, entries, period, now }: DayChartProps) => {
   const days = daysOf(entries, period, now)
   const average = inPeriod / period
   const difference = inPeriod - before
-  const max = Math.max(1, ...days.map(day => day.count))
   const periodLabel = periodLabelOf(t, period)
 
   return (
@@ -222,57 +169,47 @@ const DayChart = ({ id, kind, unit, entries, period, now }: DayChartProps) => {
           {t('stats.chart.average', { value: average.toLocaleString(getLanguage(), { maximumFractionDigits: 1 }) })}
         </span>
       </div>
-      <div className={statStyles.chart} role="img" aria-label={`${title}, ${periodLabel}`}>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={days} margin={{ top: 22, right: 0, bottom: 0, left: -24 }}>
-            <YAxis
-              ticks={[0, Math.ceil(max / 2), max]}
-              domain={[0, max]}
-              axisLine={false}
-              tickLine={false}
-              width={40}
-            />
-            <XAxis
-              dataKey="key"
-              axisLine={{ className: statStyles.baseline }}
-              tickLine={false}
-              interval={0}
-              height={40}
-              tick={<DayTick days={days} />}
-            />
-            <ReferenceLine y={average} className={statStyles.average} strokeDasharray="3 3" ifOverflow="extendDomain" />
-            <Tooltip
-              content={<DayTooltip unit={unit} />}
-              cursor={{ className: statStyles.cursor }}
-              isAnimationActive={false}
-            />
-            <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={period === 7 ? 22 : 12} isAnimationActive={false}>
-              {days.map(day => (
-                <Cell key={day.key} className={day.today ? statStyles.todayBar : statStyles.bar} />
-              ))}
-              <LabelList
-                dataKey="count"
-                position="top"
-                content={({ x, y, width, index }) => {
-                  const day = index === undefined ? undefined : days[index]
-                  if (!day?.today || !day.count) return null
-                  return (
-                    <text
-                      x={Number(x) + Number(width) / 2}
-                      y={Number(y) - 8}
-                      textAnchor="middle"
-                      className={statStyles.todayLabel}
-                    >
-                      {day.count}
-                    </text>
-                  )
-                }}
-              />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <DayBars
+        days={days}
+        average={average}
+        unit={count => t(`count.${unit}`, { count })}
+        label={`${title}, ${periodLabel}`}
+      />
     </section>
+  )
+}
+
+interface StatTilesProps {
+  kind: Kind
+  read: number
+  skimmed: number
+  duration: string
+  timeLabel: string
+  streak: number
+}
+
+// Four figures: read (or seen), skimmed, the time spent, and the days in a row.
+const StatTiles = ({ kind, read, skimmed, duration, timeLabel, streak }: StatTilesProps) => {
+  const { t } = useTranslation()
+  return (
+    <div className={`${statStyles.tiles} ${statStyles.four}`}>
+      <span className={statStyles.tile}>
+        <strong>{read}</strong>
+        {t(`stats.tiles.${kind}.read`, { count: read })}
+      </span>
+      <span className={statStyles.tile}>
+        <strong>{skimmed}</strong>
+        {t(`stats.tiles.${kind}.skimmed`, { count: skimmed })}
+      </span>
+      <span className={statStyles.tile}>
+        <strong>{duration}</strong>
+        {timeLabel}
+      </span>
+      <span className={statStyles.tile}>
+        <strong>{streak}</strong>
+        {t('stats.tiles.streak', { count: streak })}
+      </span>
+    </div>
   )
 }
 
@@ -304,19 +241,6 @@ const StatsSection = ({ topics, layout }: StatsSectionProps) => {
   // The time really played, skimmed videos included.
   const videoMinutes = playedInPeriod.reduce((total, entry) => total + entry.minutes, 0)
 
-  const topicOf = (entry: ReadingEntry) =>
-    topics.find(topic => topic.id === entry.topicId) ??
-    topics.find(topic => topic.sources.some(source => source.id === entry.sourceId))
-  const topTopics = ranking(
-    inPeriod.flatMap(entry => {
-      const topic = topicOf(entry)
-      return topic ? [topic] : []
-    }),
-    topic => topic.id
-  ).slice(0, TOP_ROWS)
-  const topSources = ranking(inPeriod, entry => entry.sourceId).slice(0, TOP_ROWS)
-  const topMax = Math.max(1, ...topTopics.map(row => row.count))
-
   const periodLabel = periodLabelOf(t, period)
 
   return (
@@ -342,24 +266,14 @@ const StatsSection = ({ topics, layout }: StatsSectionProps) => {
         still
         className={statStyles.separator}
       />
-      <div className={`${statStyles.tiles} ${statStyles.four}`}>
-        <span className={statStyles.tile}>
-          <strong>{inPeriod.length}</strong>
-          {t('stats.tiles.article.read', { count: inPeriod.length })}
-        </span>
-        <span className={statStyles.tile}>
-          <strong>{articleSplit.skimmed}</strong>
-          {t('stats.tiles.article.skimmed', { count: articleSplit.skimmed })}
-        </span>
-        <span className={statStyles.tile}>
-          <strong>{durationLabel(minutes)}</strong>
-          {t('stats.tiles.readingTime')}
-        </span>
-        <span className={statStyles.tile}>
-          <strong>{streakOf(entries, now)}</strong>
-          {t('stats.tiles.streak', { count: streakOf(entries, now) })}
-        </span>
-      </div>
+      <StatTiles
+        kind="article"
+        read={inPeriod.length}
+        skimmed={articleSplit.skimmed}
+        duration={durationLabel(minutes)}
+        timeLabel={t('stats.tiles.readingTime')}
+        streak={streakOf(entries, now)}
+      />
 
       <ReadSplit split={articleSplit} kind="article" periodLabel={periodLabel} />
 
@@ -373,71 +287,21 @@ const StatsSection = ({ topics, layout }: StatsSectionProps) => {
         className={statStyles.separator}
       />
       {/* The same four figures as the articles. */}
-      <div className={`${statStyles.tiles} ${statStyles.four}`}>
-        <span className={statStyles.tile}>
-          <strong>{videoSplit.read}</strong>
-          {t('stats.tiles.video.read', { count: videoSplit.read })}
-        </span>
-        <span className={statStyles.tile}>
-          <strong>{videoSplit.skimmed}</strong>
-          {t('stats.tiles.video.skimmed', { count: videoSplit.skimmed })}
-        </span>
-        <span className={statStyles.tile}>
-          <strong>{durationLabel(videoMinutes)}</strong>
-          {t('stats.tiles.watchTime')}
-        </span>
-        <span className={statStyles.tile}>
-          <strong>{streakOf(videos, now)}</strong>
-          {t('stats.tiles.streak', { count: streakOf(videos, now) })}
-        </span>
-      </div>
+      <StatTiles
+        kind="video"
+        read={videoSplit.read}
+        skimmed={videoSplit.skimmed}
+        duration={durationLabel(videoMinutes)}
+        timeLabel={t('stats.tiles.watchTime')}
+        streak={streakOf(videos, now)}
+      />
 
       <ReadSplit split={videoSplit} kind="video" periodLabel={periodLabel} />
 
       <DayChart id="stats-videos" kind="video" unit="view" entries={videos} period={period} now={now} />
 
       <DaySeparator label={t('stats.favourites')} still className={statStyles.separator} />
-      <div className={statStyles.pair}>
-        <section className={statStyles.card} aria-labelledby="stats-topics">
-          <h2 id="stats-topics" className={statStyles.cardTitle}>
-            {t('stats.topTopics')}
-          </h2>
-          {topTopics.length === 0 ? (
-            <p className={styles.note}>{t('stats.nothing', { period: periodLabel })}</p>
-          ) : (
-            <ul className={statStyles.rows}>
-              {topTopics.map(({ value: topic, count }) => (
-                <li key={topic.id} className={statStyles.topicRow} data-topic={topic.id}>
-                  <span className={statStyles.dot} aria-hidden="true" />
-                  <span className={statStyles.rowName}>{topic.label}</span>
-                  <span className={statStyles.track} aria-hidden="true">
-                    <span className={statStyles.fill} style={{ width: `${(count / topMax) * 100}%` }} />
-                  </span>
-                  <span className={statStyles.count}>{count}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <section className={statStyles.card} aria-labelledby="stats-sources">
-          <h2 id="stats-sources" className={statStyles.cardTitle}>
-            {t('stats.topSources')}
-          </h2>
-          {topSources.length === 0 ? (
-            <p className={styles.note}>{t('stats.nothing', { period: periodLabel })}</p>
-          ) : (
-            <ul className={statStyles.rows}>
-              {topSources.map(({ value: entry, count }) => (
-                <li key={entry.sourceId} className={statStyles.sourceRow}>
-                  <SourceAvatar sourceId={entry.sourceId} sourceName={entry.sourceName} size={22} />
-                  <span className={statStyles.rowName}>{entry.sourceName}</span>
-                  <span className={statStyles.count}>{count}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+      <StatsFavourites entries={inPeriod} topics={topics} periodLabel={periodLabel} />
     </SectionPage>
   )
 }

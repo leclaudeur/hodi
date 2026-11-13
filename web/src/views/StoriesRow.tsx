@@ -36,14 +36,45 @@ const Face = ({ item }: { item: TopicItem }) => {
 export const isSectionSeen = (section: FrontPageSection) =>
   section.items.every(item => isStorySeen(item.id) || isRead(item.id))
 
+// No API key on the server: no daily summary at all. Grey once the last one was read; violet otherwise.
+// None written yet (or the last one failed): the click writes one (1 AI call, Antho's choice) and
+// opens its story, which waits for it; while it is written the ring turns and clicks do nothing more.
+const DailySummaryBubble = ({ layout }: { layout: StoriesRowProps['layout'] }) => {
+  const { t } = useTranslation()
+  const dailySummary = useDailySummary()
+  const writing = useDailySummaryWriting()
+  if (dailySummary?.status === 'unavailable') return null
+  const seen = dailySummary?.status === 'ok' && isStorySeen(dailySummaryStoryId(dailySummary.generatedAt))
+  let label: 'dailySummary.bubbleWriting' | 'dailySummary.bubbleSeen' | 'dailySummary.name' = 'dailySummary.name'
+  if (writing) label = 'dailySummary.bubbleWriting'
+  else if (seen) label = 'dailySummary.bubbleSeen'
+  return (
+    <a
+      className={`${styles.story} ${styles.dailySummary} ${seen ? styles.seen : ''} ${writing ? styles.writing : ''}`}
+      href={DAILY_SUMMARY_HREF}
+      aria-label={t(label)}
+      aria-busy={writing || undefined}
+      onClick={() => {
+        if (!writing && (dailySummary?.status === 'none' || dailySummary?.status === 'failed'))
+          void requestDailySummary().catch(() => {})
+      }}
+    >
+      <span className={styles.ring}>
+        <span className={`${styles.picture} ${styles.dailySummaryFace}`}>
+          <SparkleIcon size={layout === 'phone' ? 24 : 22} />
+        </span>
+      </span>
+      <span className={styles.label}>{shortLabel(t('dailySummary.bubble'))}</span>
+    </a>
+  )
+}
+
 // "À la une" as stories: one circle per topic, ringed in its colour until its stories are seen, after the
 // "Résumé du jour"'s violet one.
 const StoriesRow = ({ sections, layout }: StoriesRowProps) => {
   const { t } = useTranslation()
   useReadState()
   useSeenStories()
-  const dailySummary = useDailySummary()
-  const writing = useDailySummaryWriting()
   const preferences = usePreferences()
   const row = useRef<HTMLDivElement>(null)
   // Where the row was scrolled to: a topic seen moves to the end, the row stays where it was.
@@ -79,7 +110,6 @@ const StoriesRow = ({ sections, layout }: StoriesRowProps) => {
   }, [order])
 
   if (shown.length === 0) return null
-  const dailySummarySeen = dailySummary?.status === 'ok' && isStorySeen(dailySummaryStoryId(dailySummary.generatedAt))
 
   return (
     <div className={`${styles.wrap} ${styles[layout]} ${more ? styles.more : ''} appear`}>
@@ -91,34 +121,7 @@ const StoriesRow = ({ sections, layout }: StoriesRowProps) => {
           measure(event.currentTarget)
         }}
       >
-        {/* No API key on the server: no daily summary at all. Grey once the last one was read; violet otherwise.
-            None written yet (or the last one failed): the click writes one (1 AI call, Antho's choice) and
-            opens its story, which waits for it; while it is written the ring turns and clicks do nothing more. */}
-        {dailySummary?.status !== 'unavailable' && (
-          <a
-            className={`${styles.story} ${styles.dailySummary} ${dailySummarySeen ? styles.seen : ''} ${writing ? styles.writing : ''}`}
-            href={DAILY_SUMMARY_HREF}
-            aria-label={t(
-              writing
-                ? 'dailySummary.bubbleWriting'
-                : dailySummarySeen
-                  ? 'dailySummary.bubbleSeen'
-                  : 'dailySummary.name'
-            )}
-            aria-busy={writing || undefined}
-            onClick={() => {
-              if (!writing && (dailySummary?.status === 'none' || dailySummary?.status === 'failed'))
-                void requestDailySummary().catch(() => {})
-            }}
-          >
-            <span className={styles.ring}>
-              <span className={`${styles.picture} ${styles.dailySummaryFace}`}>
-                <SparkleIcon size={layout === 'phone' ? 24 : 22} />
-              </span>
-            </span>
-            <span className={styles.label}>{shortLabel(t('dailySummary.bubble'))}</span>
-          </a>
-        )}
+        <DailySummaryBubble layout={layout} />
         {sorted.map(section => {
           const seen = isSectionSeen(section)
           const pictured = section.items.find(item => item.image)

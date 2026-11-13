@@ -1,9 +1,10 @@
 import { AlertCircle, Send } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { groupByDay } from '../lib/day-groups.ts'
 import PageHelp from '../ui/PageHelp.tsx'
 import HelpButton from '../ui/HelpButton.tsx'
-import { useState } from 'react'
-import type { TopicItem } from '../api.ts'
+import { type ReactNode, useState } from 'react'
+import type { ShareEntry, TopicItem } from '../api.ts'
 import { dayOfItem, shortAgo } from '../lib/format.ts'
 import { usePreferences } from '../lib/preferences.ts'
 import { useProfiles } from '../lib/profiles.ts'
@@ -28,6 +29,79 @@ interface SharesScreenProps {
   onUnauthorized: () => void
 }
 
+const SharesHelp = ({ layout }: { layout: 'desktop' | 'phone' }) => {
+  const { t } = useTranslation()
+  return (
+    <HelpButton id="shares_help" title={t('help.shares.title')} layout={layout}>
+      <PageHelp page="shares" layout={layout} />
+    </HelpButton>
+  )
+}
+
+interface FiltersProps {
+  senders: number[]
+  entries: ShareEntry[]
+  chosen: number | null
+  layout: 'desktop' | 'phone'
+  nameOf: (id: number) => string | undefined
+  onChoose: (id: number | null) => void
+}
+
+// A capsule per profile that sent something, as Suivis' subjects; the chosen one again goes back to all.
+const SenderFilters = ({ senders, entries, chosen, layout, nameOf, onChoose }: FiltersProps) => {
+  const { t } = useTranslation()
+  return (
+    <div
+      className={`${layout === 'phone' ? rowStyles.row : followedStyles.filters} no-scrollbar edge-fade`}
+      role="group"
+      aria-label={t('shares.filter')}
+    >
+      <FilterChip selected={chosen === null} count={entries.length} onClick={() => onChoose(null)}>
+        {t('feed.allTopics')}
+      </FilterChip>
+      {senders.map(id => (
+        <FilterChip
+          key={id}
+          selected={chosen === id}
+          count={entries.filter(entry => entry.from === id).length}
+          onClick={() => onChoose(chosen === id ? null : id)}
+        >
+          {nameOf(id)}
+        </FilterChip>
+      ))}
+    </div>
+  )
+}
+
+interface ContentProps {
+  error: boolean
+  loading: boolean
+  empty: boolean
+  layout: 'desktop' | 'phone'
+  children: ReactNode
+}
+
+// The list that failed or is on its way, the reactions over an empty list, or the list.
+const SharesContent = ({ error, loading, empty, layout, children }: ContentProps) => {
+  const { t } = useTranslation()
+  if (error)
+    return (
+      <EmptyState tone="danger" icon={<AlertCircle size={28} />} title={t('shares.loadFailed')}>
+        {t('common.serverDown')}
+      </EmptyState>
+    )
+  if (loading) return <ListSkeleton layout={layout} />
+  if (!empty) return children
+  return (
+    <>
+      <ShareReactions layout={layout} />
+      <EmptyState icon={<Send size={28} />} title={t('shares.empty')}>
+        {t('shares.emptyText')}
+      </EmptyState>
+    </>
+  )
+}
+
 // "Partages": what the household's other profiles sent here this week, newest first, under the day it was sent.
 // The fil's cards, with who sent it and when in place of the source. As in Suivis, an article read (once closed,
 // unless "Masquer les articles lus" is off) or put away goes.
@@ -46,13 +120,11 @@ const SharesScreen = ({ layout, activeId = null, onUnauthorized }: SharesScreenP
   const shown = (entries ?? []).filter(entry => chosen === null || entry.from === chosen)
   const entryOf = new Map(shown.map(entry => [entry.item.id, entry]))
 
-  const groups: DayGroup[] = []
-  for (const entry of shown) {
-    const day = dayOfItem(new Date(entry.sharedAt).toISOString())
-    const group = groups.at(-1)
-    if (group?.day === day) group.items.push(entry.item)
-    else groups.push({ day, items: [entry.item] })
-  }
+  const groups: DayGroup[] = groupByDay(
+    shown,
+    entry => dayOfItem(new Date(entry.sharedAt).toISOString()),
+    entry => entry.item
+  )
 
   const metaOf = (item: TopicItem) => {
     const entry = entryOf.get(item.id)
@@ -74,54 +146,26 @@ const SharesScreen = ({ layout, activeId = null, onUnauthorized }: SharesScreenP
   const meta = count > 0 ? t('count.article', { count }) : undefined
   // As Suivis: held under the header on a computer, above the list on a phone.
   const filters = senders.length > 1 && (
-    <div
-      className={`${layout === 'phone' ? rowStyles.row : followedStyles.filters} no-scrollbar edge-fade`}
-      role="group"
-      aria-label={t('shares.filter')}
-    >
-      <FilterChip selected={chosen === null} count={count} onClick={() => setSender(null)}>
-        {t('feed.allTopics')}
-      </FilterChip>
-      {senders.map(id => (
-        <FilterChip
-          key={id}
-          selected={chosen === id}
-          count={(entries ?? []).filter(entry => entry.from === id).length}
-          onClick={() => setSender(chosen === id ? null : id)}
-        >
-          {profileOf(id)?.name}
-        </FilterChip>
-      ))}
-    </div>
+    <SenderFilters
+      senders={senders}
+      entries={entries ?? []}
+      chosen={chosen}
+      layout={layout}
+      nameOf={id => profileOf(id)?.name}
+      onChoose={setSender}
+    />
   )
-  const content = error ? (
-    <EmptyState tone="danger" icon={<AlertCircle size={28} />} title={t('shares.loadFailed')}>
-      {t('common.serverDown')}
-    </EmptyState>
-  ) : entries === null || !household ? (
-    <ListSkeleton layout={layout} />
-  ) : shown.length === 0 ? (
-    <>
-      <ShareReactions layout={layout} />
-      <EmptyState icon={<Send size={28} />} title={t('shares.empty')}>
-        {t('shares.emptyText')}
-      </EmptyState>
-    </>
-  ) : (
-    <>
+  const content = (
+    <SharesContent error={error} loading={entries === null || !household} empty={shown.length === 0} layout={layout}>
       {layout === 'phone' && filters}
       <ShareReactions layout={layout} from={chosen} />
       <ArticleList groups={groups} layout={layout} activeId={activeId} metaOf={metaOf} />
-    </>
+    </SharesContent>
   )
 
   return layout === 'desktop' ? (
     <ListColumn
-      help={
-        <HelpButton id="shares_help" title={t('help.shares.title')} layout="desktop">
-          <PageHelp page="shares" layout="desktop" />
-        </HelpButton>
-      }
+      help={<SharesHelp layout="desktop" />}
       title={t('nav.shares')}
       meta={meta}
       pinned={filters}
@@ -131,11 +175,7 @@ const SharesScreen = ({ layout, activeId = null, onUnauthorized }: SharesScreenP
     </ListColumn>
   ) : (
     <MobilePage
-      help={
-        <HelpButton id="shares_help" title={t('help.shares.title')} layout="phone">
-          <PageHelp page="shares" layout="phone" />
-        </HelpButton>
-      }
+      help={<SharesHelp layout="phone" />}
       title={t('nav.shares')}
       meta={meta}
       backHref={FRONT_PAGE_HREF}

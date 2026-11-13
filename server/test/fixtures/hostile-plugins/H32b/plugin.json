@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h32b",
+  "name": "Hostile H32b",
+  "version": "0.0.1",
+  "description": "Without the network permission, fetchText does not exist",
+  "api": 2,
+  "audience": "admin"
+}

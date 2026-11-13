@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { foldText, wordPattern } from '../news/word-match.ts'
+import { foldText, wordPattern } from '../../shared/word-match.ts'
 
 const finds = (word: string, text: string) => wordPattern(word).test(foldText(text))
 

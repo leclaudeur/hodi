@@ -110,6 +110,12 @@ describe('article images', () => {
     assert.deepEqual(fetched, ['https://bx1.be/page.html'])
   })
 
+  it('answers nothing for a name that is not an article id, so no path leaves its folder', async () => {
+    const { images } = setup({})
+    assert.equal(await images.file('../../etc/passwd', 240), null)
+    assert.equal(await images.inlineFile('../aaaaaaaaaaaaa', 0, 240), null)
+  })
+
   it('makes the newest articles’ pictures in the background', async () => {
     const { article, images } = setup({ 'https://bx1.be/photo.jpg': photo })
     article('eeeeeeeeeeeeeeee', 'https://bx1.be/photo.jpg')

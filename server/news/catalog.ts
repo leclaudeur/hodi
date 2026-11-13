@@ -80,6 +80,27 @@ const asString = (value: unknown, where: string) =>
 
 const asList = (value: unknown, where: string) => (Array.isArray(value) ? value : fail(where, 'expected a list'))
 
+// reader: true unless the source says false.
+const readerOf = (value: unknown, where: string) =>
+  value === undefined || value === true ? true : value === false ? false : fail(where, 'expected true or false')
+
+// skip: the paths of the source's site whose articles are never listed.
+const skipsOf = (value: unknown, where: string) =>
+  (value === undefined ? [] : asList(value, where)).map((prefix, index) => {
+    const path = asString(prefix, `${where}[${index}]`)
+    return path.startsWith('/') ? path : fail(`${where}[${index}]`, 'expected a path starting with /')
+  })
+
+// base: the household languages the source is a base source for.
+const baseOf = (value: unknown, where: string) =>
+  value === undefined
+    ? []
+    : asList(value, where).map((language, index) =>
+        LANGUAGES.includes(language as Language)
+          ? (language as Language)
+          : fail(`${where}[${index}]`, `expected one of ${LANGUAGES.join(', ')}`)
+      )
+
 const parseSource = (value: unknown, where: string, defaultKind: SourceKind): Source => {
   const raw = asRecord(value, where)
   const id = asString(raw.id, `${where}.id`)
@@ -96,30 +117,15 @@ const parseSource = (value: unknown, where: string, defaultKind: SourceKind): So
     asString(domain, `${where}.domains[${index}]`).toLowerCase()
   )
 
-  const reader =
-    raw.reader === undefined || raw.reader === true
-      ? true
-      : raw.reader === false
-        ? false
-        : fail(`${where}.reader`, 'expected true or false')
+  const reader = readerOf(raw.reader, `${where}.reader`)
 
   if (kind === 'article' && reader && domains.length === 0) {
     fail(`${where}.domains`, 'article sources need at least one domain to read articles from')
   }
 
-  const skip = (raw.skip === undefined ? [] : asList(raw.skip, `${where}.skip`)).map((prefix, index) => {
-    const path = asString(prefix, `${where}.skip[${index}]`)
-    return path.startsWith('/') ? path : fail(`${where}.skip[${index}]`, 'expected a path starting with /')
-  })
+  const skip = skipsOf(raw.skip, `${where}.skip`)
 
-  const base =
-    raw.base === undefined
-      ? []
-      : asList(raw.base, `${where}.base`).map((value, index) =>
-          LANGUAGES.includes(value as Language)
-            ? (value as Language)
-            : fail(`${where}.base[${index}]`, `expected one of ${LANGUAGES.join(', ')}`)
-        )
+  const base = baseOf(raw.base, `${where}.base`)
 
   const young = youngKindsOf(raw.young, `${where}.young`)
   const youngBase = youngKindsOf(raw.young_base, `${where}.young_base`)

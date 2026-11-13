@@ -1,6 +1,6 @@
 import { Sparkle } from 'lucide-react'
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { type Profile, profilePhotoUrl } from '../api.ts'
+import { type Profile, type WornBadge, profilePhotoUrl } from '../api.ts'
 import { avatarUrl } from '../lib/avatars.ts'
 import { claimCelebration, useGameNews, useProfileGame } from '../lib/game.ts'
 import { useCurrentProfile } from '../lib/profiles.ts'
@@ -25,11 +25,11 @@ const CELEBRATION_MS = 3200
 // The burst of colours around the new sparkle: the app's colours, as the confetti's.
 const SPARKS = [
   '--rust',
-  '--topic-belgique',
-  '--topic-monde',
+  '--topic-belgium',
+  '--topic-world',
   '--topic-tech',
   '--topic-science',
-  '--topic-jeux-video',
+  '--topic-gaming',
   '--ai'
 ]
 const SPARK_COUNT = 10
@@ -49,19 +49,10 @@ const useFilling = (target: number) => {
   return shown
 }
 
-// A profile's photo, its drawn avatar (a child) or its initial, in a circle ringed in its colour: as À la une's
-// stories. With the household game on, the ring fills up to the next level, and the badge the profile chose sits
-// at its foot.
-const ProfileAvatar = ({ profile, size, preview, plain = false }: ProfileAvatarProps) => {
-  const drawn = profile.avatar ? avatarUrl(profile.avatar) : null
-  const photo = drawn ?? (preview === undefined ? profilePhotoUrl(profile as Profile) : preview)
-  const state = useProfileGame(plain ? null : profile.id)
-  const game = state === 'loading' ? null : state
-  // The ring starts empty and fills up to the level's progress, then follows it.
-  const progress = useFilling(game?.progress ?? 0)
-  // A new level or badge of the profile in use, not yet seen on its sheet: a sparkle in the badge's place.
+// A new level or badge of the profile in use, not yet seen on its sheet, and whether its celebration is running.
+const useCelebration = (profileId: number, plain: boolean) => {
   const current = useCurrentProfile()
-  const fresh = useGameNews(!plain && current?.id === profile.id)
+  const fresh = useGameNews(!plain && current?.id === profileId)
   const arrived = fresh?.arrived ?? 0
   const [celebrating, setCelebrating] = useState(false)
   // The sparkle already there when more news arrives: it stays put and only bursts again.
@@ -81,97 +72,134 @@ const ProfileAvatar = ({ profile, size, preview, plain = false }: ProfileAvatarP
   useEffect(() => {
     sparkled.current = fresh !== null
   })
+  return { fresh, celebrating, again }
+}
+
+// The ring in the profile's colour, filled up to the next level.
+const Ring = ({
+  size,
+  game,
+  celebrating
+}: {
+  size: number
+  game: { progress: number } | null
+  celebrating: boolean
+}) => {
+  // The ring starts empty and fills up to the level's progress, then follows it.
+  const progress = useFilling(game?.progress ?? 0)
   // A big avatar's ring thicker, as on its sheet.
   const stroke = size >= 64 ? 3 : 2
   const radius = size / 2 - stroke / 2
   const circumference = 2 * Math.PI * radius
+  return (
+    <svg className={styles.ring} width={size} height={size} viewBox={`0 0 ${size} ${size}`} strokeWidth={stroke}>
+      <circle className={styles.track} cx={size / 2} cy={size / 2} r={radius} />
+      {game && (
+        <circle
+          className={styles.progress}
+          // Hidden at 0: its round end would draw a dot.
+          opacity={progress > 0 || celebrating ? 1 : 0}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - progress)}
+          style={
+            {
+              '--offset': `${circumference * (1 - progress)}px`,
+              '--empty': `${circumference}px`,
+              '--emptied': `${-circumference}px`
+            } as CSSProperties
+          }
+        />
+      )}
+    </svg>
+  )
+}
+
+// As the sparkle comes in, a burst of colours from its centre.
+const Burst = ({ pin }: { pin: number }) => (
+  <span className={styles.burst} aria-hidden="true">
+    {Array.from({ length: SPARK_COUNT }, (_, index) => (
+      <i
+        key={index}
+        style={
+          {
+            '--angle': `${(360 / SPARK_COUNT) * index + (index % 2) * 12}deg`,
+            '--from': `${pin / 2}px`,
+            '--distance': `${pin * (index % 2 ? 1.1 : 1.5)}px`,
+            '--color': `var(${SPARKS[index % SPARKS.length]})`
+          } as CSSProperties
+        }
+      />
+    ))}
+  </span>
+)
+
+// The badge worn, at the avatar's foot.
+const BadgePin = ({ badge, pin, leaving = false }: { badge: WornBadge; pin: number; leaving?: boolean }) => (
+  <span
+    className={`${styles.pin} ${leaving ? styles.leaving : ''}`}
+    data-tier={TIERS[badge.tier]}
+    style={{ width: pin, height: pin }}
+  >
+    <BadgeIcon id={badge.id} size={iconSize(pin)} />
+  </span>
+)
+
+// The sparkle in the badge's place while there is news.
+const SparklePin = ({ pin, celebrating }: { pin: number; celebrating: boolean }) => (
+  <span className={`${styles.pin} ${styles.fresh}`} style={{ width: pin, height: pin }}>
+    <Sparkle size={iconSize(pin)} fill="currentColor" strokeWidth={1.5} />
+    {celebrating && <Burst pin={pin} />}
+  </span>
+)
+
+// A profile's photo, its drawn avatar (a child) or its initial.
+const Face = ({ profile, size, preview }: Pick<ProfileAvatarProps, 'profile' | 'size' | 'preview'>) => {
+  const drawn = profile.avatar ? avatarUrl(profile.avatar) : null
+  const photo = drawn ?? (preview === undefined ? profilePhotoUrl(profile as Profile) : preview)
+  return (
+    <span className={`${styles.face} ${drawn ? styles.drawn : ''}`} style={{ fontSize: Math.round(size * 0.38) }}>
+      {photo ? (
+        <img src={photo} alt="" width={size} height={size} />
+      ) : (
+        <span className={styles.initial}>{(profile.name.trim()[0] ?? '?').toUpperCase()}</span>
+      )}
+    </span>
+  )
+}
+
+// The face in a circle ringed in its colour: as À la une's stories. With the household game on, the ring fills up to
+// the next level, and the badge the profile chose sits at its foot.
+const ProfileAvatar = ({ profile, size, preview, plain = false }: ProfileAvatarProps) => {
+  const state = useProfileGame(plain ? null : profile.id)
+  const game = state === 'loading' ? null : state
+  const { fresh, celebrating, again } = useCelebration(profile.id, plain)
   const badge = game?.badge && size >= BADGE_MIN_SIZE ? game.badge : null
   // Half the avatar, so it keeps its place at every size: 22 on the header's 44, 36 on the sheet's 72. Even, so the
   // icon centres on whole pixels.
   const pin = 2 * Math.round(size / 4)
   // The pin's centre on the ring, at the bottom right: it sits astride the circle, half outside it.
   const pinOffset = Math.round(size * (0.5 - Math.SQRT1_2 / 2) - pin / 2)
+  // A new level fills the ring (it shows the points); a badge alone only swaps the pin for the sparkle.
+  const celebration = fresh?.news.level ? 'level' : 'badge'
+  const sparkle = fresh && size >= BADGE_MIN_SIZE
   return (
     <span
       className={styles.avatar}
       data-topic={profile.color}
       data-game={state ? '' : undefined}
-      // A new level fills the ring (it shows the points); a badge alone only swaps the pin for the sparkle.
-      data-celebrating={celebrating ? (fresh?.news.level ? 'level' : 'badge') : undefined}
+      data-celebrating={celebrating ? celebration : undefined}
       data-again={celebrating && again ? '' : undefined}
       style={{ width: size, height: size, '--pin-offset': `${pinOffset}px` } as CSSProperties}
       aria-hidden="true"
     >
-      <span className={`${styles.face} ${drawn ? styles.drawn : ''}`} style={{ fontSize: Math.round(size * 0.38) }}>
-        {photo ? (
-          <img src={photo} alt="" width={size} height={size} />
-        ) : (
-          <span className={styles.initial}>{(profile.name.trim()[0] ?? '?').toUpperCase()}</span>
-        )}
-      </span>
-      {state && (
-        <svg className={styles.ring} width={size} height={size} viewBox={`0 0 ${size} ${size}`} strokeWidth={stroke}>
-          <circle className={styles.track} cx={size / 2} cy={size / 2} r={radius} />
-          {game && (
-            <circle
-              className={styles.progress}
-              // Hidden at 0: its round end would draw a dot.
-              opacity={progress > 0 || celebrating ? 1 : 0}
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              strokeDasharray={circumference}
-              strokeDashoffset={circumference * (1 - progress)}
-              style={
-                {
-                  '--offset': `${circumference * (1 - progress)}px`,
-                  '--empty': `${circumference}px`,
-                  '--emptied': `${-circumference}px`
-                } as CSSProperties
-              }
-            />
-          )}
-        </svg>
-      )}
+      <Face profile={profile} size={size} preview={preview} />
+      {state && <Ring size={size} game={game} celebrating={celebrating} />}
       {/* The badge worn draws back while the ring celebrates; the sparkle then takes its place. */}
-      {celebrating && !again && badge && (
-        <span
-          className={`${styles.pin} ${styles.leaving}`}
-          data-tier={TIERS[badge.tier]}
-          style={{ width: pin, height: pin }}
-        >
-          <BadgeIcon id={badge.id} size={iconSize(pin)} />
-        </span>
-      )}
-      {fresh && size >= BADGE_MIN_SIZE ? (
-        <span className={`${styles.pin} ${styles.fresh}`} style={{ width: pin, height: pin }}>
-          <Sparkle size={iconSize(pin)} fill="currentColor" strokeWidth={1.5} />
-          {/* As the sparkle comes in, a burst of colours from its centre. */}
-          {celebrating && (
-            <span className={styles.burst} aria-hidden="true">
-              {Array.from({ length: SPARK_COUNT }, (_, index) => (
-                <i
-                  key={index}
-                  style={
-                    {
-                      '--angle': `${(360 / SPARK_COUNT) * index + (index % 2) * 12}deg`,
-                      '--from': `${pin / 2}px`,
-                      '--distance': `${pin * (index % 2 ? 1.1 : 1.5)}px`,
-                      '--color': `var(${SPARKS[index % SPARKS.length]})`
-                    } as CSSProperties
-                  }
-                />
-              ))}
-            </span>
-          )}
-        </span>
-      ) : (
-        badge && (
-          <span className={styles.pin} data-tier={TIERS[badge.tier]} style={{ width: pin, height: pin }}>
-            <BadgeIcon id={badge.id} size={iconSize(pin)} />
-          </span>
-        )
-      )}
+      {celebrating && !again && badge && <BadgePin badge={badge} pin={pin} leaving />}
+      {sparkle ? <SparklePin pin={pin} celebrating={celebrating} /> : badge && <BadgePin badge={badge} pin={pin} />}
     </span>
   )
 }

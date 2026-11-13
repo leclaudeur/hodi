@@ -341,3 +341,23 @@ export const createSourceSuggester =
       .slice(0, MAX_SUGGESTED)
       .map(site => ({ name: site.name.trim(), url: site.url.trim(), reason: site.reason.trim() }))
   }
+
+// A plugin's question (ctx.ai.ask): plain text in, plain text out, no tool and no web search, within maxTokens.
+export interface PluginQuestion {
+  system: string
+  prompt: string
+  maxTokens: number
+}
+
+export const createPluginAsker =
+  ({ client, model }: AiClient) =>
+  async ({ system, prompt, maxTokens }: PluginQuestion): Promise<string> => {
+    const response = await client.messages.create({
+      model,
+      max_tokens: maxTokens,
+      ...(system ? { system } : {}),
+      messages: [{ role: 'user', content: prompt }]
+    })
+    if (response.stop_reason === 'refusal') throw new SummaryRefusedError('The model declined to answer')
+    return response.content.flatMap(block => (block.type === 'text' ? [block.text] : [])).join('')
+  }

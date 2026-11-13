@@ -1,0 +1,22 @@
+{
+  "case": "H43",
+  "title": "An unsigned plugin is installed without its web part",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/ok",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": true
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "expect": "Installed unsigned with the admin yes. /api/plugins (or the web registry) does not list a web entry for it, and the web bundle is never served. Until the iframe exists."
+}

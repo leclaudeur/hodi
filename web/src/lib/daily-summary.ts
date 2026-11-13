@@ -64,6 +64,15 @@ const reportFailure = (status: DailySummaryResult['status']) => {
   if (message) showError(status === 'failed' ? `${t(message)} ${t('common.tryAgainSoon')}` : t(message))
 }
 
+// Asks the server until it is done writing, a few times at most: still pending then counts as failed.
+const pollDailySummary = async (): Promise<DailySummaryResult> => {
+  for (let polls = 1; ; polls++) {
+    const next = await writeDailySummary()
+    if (next.status !== 'pending' || polls >= MAX_POLLS) return next.status === 'pending' ? { status: 'failed' } : next
+    await new Promise(resolve => window.setTimeout(resolve, POLL_INTERVAL_MS))
+  }
+}
+
 // Writes a new daily summary: the bubble or the story's violet buttons, once at a time. Throws UnauthorizedError only.
 export const requestDailySummary = async () => {
   if (writing) return
@@ -74,17 +83,10 @@ export const requestDailySummary = async () => {
   }
   setWriting(true)
   try {
-    for (let polls = 1; ; polls++) {
-      const next = await writeDailySummary()
-      if (next.status !== 'pending' || polls >= MAX_POLLS) {
-        const result: DailySummaryResult = next.status === 'pending' ? { status: 'failed' } : next
-        reportFailure(result.status)
-        // A daily summary already shown stays when writing a new one fails.
-        if (result.status === 'ok' || ofToday(current)?.status !== 'ok') setDailySummary(result)
-        return
-      }
-      await new Promise(resolve => window.setTimeout(resolve, POLL_INTERVAL_MS))
-    }
+    const result = await pollDailySummary()
+    reportFailure(result.status)
+    // A daily summary already shown stays when writing a new one fails.
+    if (result.status === 'ok' || ofToday(current)?.status !== 'ok') setDailySummary(result)
   } catch (error) {
     if (error instanceof UnauthorizedError) throw error
     reportFailure('failed')

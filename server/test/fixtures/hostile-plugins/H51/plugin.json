@@ -1,0 +1,11 @@
+{
+  "id": "hostile-h51",
+  "name": "Hostile H51",
+  "version": "0.0.1",
+  "description": "publicRoutes: who is null and the body is capped",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "publicRoutes": true
+  }
+}

@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { contentDays } from '../lib/content-days.ts'
 import { FRONT_PAGE_HREF, searchHref } from '../lib/use-hash-route.ts'
 import { useIsDesktop } from '../lib/use-media.ts'
 import Button from '../ui/Button.tsx'
@@ -24,7 +25,7 @@ const NotFound = ({ title, children }: NotFoundProps) => {
           404
         </p>
         <h1 className={`${styles.title} screen-title`}>{title ?? t('notFound.title')}</h1>
-        <p className={styles.text}>{children ?? t('notFound.text')}</p>
+        <p className={styles.text}>{children ?? t('notFound.text', { count: contentDays().articleDays })}</p>
         <div className={styles.actions}>
           <Button look="primary" href={FRONT_PAGE_HREF}>
             {t('nav.backToFeed')}

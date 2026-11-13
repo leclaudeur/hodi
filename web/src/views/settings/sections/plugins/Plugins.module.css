@@ -1,0 +1,131 @@
+/* The plugin's mark before its name, as a source's square. */
+.mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--tile);
+  color: var(--text-2);
+}
+
+.shield {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.signed {
+  border: 1px solid var(--approve-border);
+  background: var(--approve);
+  color: var(--approve-text);
+}
+
+.unsigned {
+  border: 1px solid var(--destructive-border);
+  background: var(--destructive);
+  color: var(--destructive-text);
+}
+
+/* "Choisir un fichier": the whole width, dashed, as a place to drop a file. A file dragged over it lights it up;
+   pointing at it does the same, only where there is a mouse (a tap must not leave it lit). */
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 28px 16px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 16px;
+  background: none;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    border-color var(--duration) var(--ease),
+    background-color var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+.drop.over {
+  border-color: var(--rust);
+  background: var(--control);
+  color: var(--text);
+}
+
+@media (hover: hover) {
+  .drop:hover:not(:disabled) {
+    border-color: var(--rust);
+    background: var(--control);
+    color: var(--text);
+  }
+}
+
+/* The plugin about to be installed: its name and version on one line, the description the whole width under it. */
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+}
+
+.aboutTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.dropLabel {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dropHint {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.stateHint {
+  color: var(--danger);
+}
+
+/* Under the list, the whole width, as Profils' buttons. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions > * {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+
+@media (max-width: 600px) {
+  .about {
+    padding: 12px;
+  }
+}
+
+/* The command « npx hodi-plugin dev » with its code, to copy: mono, wrapped, selectable. */
+.command {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--tile);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: all;
+}

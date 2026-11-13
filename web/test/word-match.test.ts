@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import * as server from '../../server/news/word-match.ts'
-import { foldText, wordPattern } from '../src/lib/word-match.ts'
+import * as server from '../../shared/word-match.ts'
+import { foldText, wordPattern } from '../../shared/word-match.ts'
 
 const finds = (word: string, text: string) => wordPattern(word).test(foldText(text))
 

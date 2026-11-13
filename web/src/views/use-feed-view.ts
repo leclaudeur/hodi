@@ -8,6 +8,23 @@ import { useReadState } from '../lib/read-state.ts'
 import type { DayGroup } from './ArticleList.tsx'
 import { t } from '../lib/i18n.ts'
 
+// A day just loaded under the list: its separator comes up to the top, so its articles are there without
+// scrolling past the button. Its section, as the separator sticks to the top of whichever day is under it.
+// Once more when the glide is over: cards drawn only once on the screen (content-visibility) may have changed
+// their height on the way, moving the day a little.
+export const revealDay = (day: string) => {
+  const reveal = () => {
+    const section = [...document.querySelectorAll<HTMLElement>(`[data-day="${day}"]`)].find(
+      element => element.getClientRects().length > 0
+    )
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    section?.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' })
+  }
+  requestAnimationFrame(reveal)
+  window.setTimeout(reveal, GLIDE_MS)
+}
+const GLIDE_MS = 700
+
 // What Le fil and a topic's list show, on a desktop or a phone: the days loaded so far, without the
 // articles the settings hide (read ones, muted sources and words).
 export const useFeedView = (scope: string, onUnauthorized: () => void) => {
@@ -52,7 +69,10 @@ export const useFeedView = (scope: string, onUnauthorized: () => void) => {
       const previous = state.days.at(-1)?.previousDay
       return previous ? loadDayLabel(previous, compact) : ''
     },
-    loadPrevious: () => void loadPreviousDay(scope),
+    loadPrevious: () => {
+      const day = state.days.at(-1)?.previousDay
+      void loadPreviousDay(scope).then(() => day && revealDay(day))
+    },
     refresh: () => refreshDayFeed(scope)
   }
 }

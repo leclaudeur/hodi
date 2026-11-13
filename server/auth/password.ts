@@ -13,8 +13,13 @@ export interface ScryptParams {
   p: number
 }
 
-// About 32 MiB of memory and roughly 100 ms per check on the home server CPU.
-export const DEFAULT_PARAMS: ScryptParams = { N: 2 ** 15, r: 8, p: 1 }
+// One of OWASP's recommended scrypt settings (N=2^15, r=8, p=3): about 32 MiB of memory and three times the work of
+// p=1 per check. OWASP's N=2^17 setting is as strong but takes 128 MiB a check, which the container's 256 MiB cannot
+// hold twice at once.
+export const DEFAULT_PARAMS: ScryptParams = { N: 2 ** 15, r: 8, p: 3 }
+// Checks running at once, whoever asks: more wait their turn, so that a flood of sign-ins (the decoy for an unknown
+// e-mail hashes too) never takes more than 64 MiB of the server's memory.
+export const MAX_RUNNING = 2
 
 interface ParsedHash {
   params: ScryptParams
@@ -22,7 +27,33 @@ interface ParsedHash {
   hash: Buffer
 }
 
-const derive = (password: string, salt: Buffer, { N, r, p }: ScryptParams) =>
+let running = 0
+const waiting: (() => void)[] = []
+
+// The next check starts when one ends.
+const inTurn = async <T>(work: () => Promise<T>): Promise<T> => {
+  if (running >= MAX_RUNNING) await new Promise<void>(resolve => waiting.push(resolve))
+  else running += 1
+  try {
+    return await work()
+  } finally {
+    const next = waiting.shift()
+    if (next) next()
+    else running -= 1
+  }
+}
+
+// The highest number of checks that ran at once, for tests.
+let mostRunning = 0
+export const mostRunningChecks = () => mostRunning
+
+const derive = (password: string, salt: Buffer, params: ScryptParams) =>
+  inTurn(() => {
+    mostRunning = Math.max(mostRunning, running)
+    return scryptOnce(password, salt, params)
+  })
+
+const scryptOnce = (password: string, salt: Buffer, { N, r, p }: ScryptParams) =>
   new Promise<Buffer>((resolve, reject) => {
     // maxmem must exceed 128 * N * r, which Node's 32 MiB default does not at N = 2^15.
     scrypt(password, salt, KEY_LENGTH, { N, r, p, maxmem: 256 * N * r }, (error, key) =>
@@ -69,4 +100,11 @@ export const verifyPassword = async (password: string, encoded: string) => {
   const candidate = await derive(password, salt, params)
 
   return timingSafeEqual(candidate, hash)
+}
+
+// A hash made with weaker settings than today's: hashed again, from the password just typed, when it is right.
+export const needsRehash = (encoded: string, params: ScryptParams = DEFAULT_PARAMS) => {
+  const { params: current } = parsePasswordHash(encoded)
+  // The work a guess takes: scrypt's cost grows with N * r * p.
+  return current.N * current.r * current.p < params.N * params.r * params.p || current.N < params.N
 }

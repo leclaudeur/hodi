@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Lock, type LucideIcon } from 'lucide-react'
-import { type InputHTMLAttributes, useState } from 'react'
+import { type InputHTMLAttributes, type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './PasswordField.module.css'
 
@@ -8,15 +8,17 @@ interface PasswordFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   icon?: LucideIcon
   // Red border: the password was refused.
   invalid?: boolean
+  // In the icon's place: a new password's strength ring.
+  lead?: ReactNode
 }
 
 // A password's pill: the lock, the dots, and the eye that shows it.
-const PasswordField = ({ icon: Icon = Lock, invalid = false, className = '', ...props }: PasswordFieldProps) => {
+const PasswordField = ({ icon: Icon = Lock, invalid = false, lead, className = '', ...props }: PasswordFieldProps) => {
   const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
   return (
     <div className={`${styles.field} ${invalid ? styles.invalid : ''} ${className}`}>
-      <Icon size={16} aria-hidden="true" />
+      {lead ?? <Icon size={16} aria-hidden="true" />}
       <input
         className={styles.input}
         type={visible ? 'text' : 'password'}

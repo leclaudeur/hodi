@@ -1,6 +1,7 @@
-import type { StoredIcon } from '../db/news-store.ts'
+import type { StoredIcon } from '../db/media-queries.ts'
 import { type Catalog, type Source, allSources } from './catalog.ts'
 import type { FetchBytes, FetchText } from './fetch-text.ts'
+import { siteNameOf } from './source-name.ts'
 import { decodeEntities } from './text.ts'
 
 // Each source's icon for its avatar, fetched once from its site and kept: the app falls back to the
@@ -29,6 +30,8 @@ export interface SourceIconsOptions {
   store?: IconStore
   now?: () => number
   log?: (message: string) => void
+  // The name the home page gives the site, for a source that has none yet (see nameFromSite).
+  siteName?: { wanted: (source: Source) => boolean; found: (source: Source, name: string) => void }
 }
 
 // The type is read from the bytes, never from the site's headers: only these images are served.
@@ -99,11 +102,15 @@ export class SourceIcons {
   readonly #log: (message: string) => void
   readonly #memory = new Map<string, StoredIcon>()
   readonly #pending = new Map<string, Promise<StoredIcon>>()
+  readonly #siteName: SourceIconsOptions['siteName']
+  // Sources whose home page was read for a name since Hodi started: asked once each.
+  readonly #named = new Set<string>()
 
   constructor(
     catalog: Catalog,
-    { fetchText, fetchBytes, store, now = Date.now, log = console.warn }: SourceIconsOptions
+    { fetchText, fetchBytes, store, now = Date.now, log = console.warn, siteName }: SourceIconsOptions
   ) {
+    this.#siteName = siteName
     this.#catalog = catalog
     this.#fetchText = fetchText
     this.#fetchBytes = fetchBytes
@@ -119,7 +126,10 @@ export class SourceIcons {
 
     const known = this.#memory.get(sourceId) ?? this.#store?.getIcon(sourceId) ?? null
     const ttl = known?.data ? ICON_TTL_MS : MISSING_TTL_MS
-    const icon = known && known.fetchedAt > this.#now() - ttl ? known : await this.#refresh(source, known)
+    const fresh = known && known.fetchedAt > this.#now() - ttl
+    // An icon kept from before: the home page is still read once for the site's name.
+    if (fresh) void this.#readName(source)
+    const icon = fresh ? known : await this.#refresh(source, known)
 
     return icon.data && icon.contentType ? { contentType: icon.contentType, data: icon.data } : null
   }
@@ -147,6 +157,28 @@ export class SourceIcons {
     return refresh
   }
 
+  #wantsName(source: Source) {
+    return !!this.#siteName?.wanted(source) && !this.#named.has(source.id)
+  }
+
+  #takeName(source: Source, html: string) {
+    if (!this.#wantsName(source)) return
+    this.#named.add(source.id)
+    const name = siteNameOf(html)
+    if (name) this.#siteName!.found(source, name)
+  }
+
+  async #readName(source: Source) {
+    const domain = source.domains[0]
+    if (!domain || !this.#wantsName(source)) return
+    try {
+      const page = await this.#fetchText(`https://${domain}/`)
+      this.#takeName(source, page.text)
+    } catch {
+      // The site did not answer: its name is asked again at the next start.
+    }
+  }
+
   // The home page's own icons first, then the usual places.
   async #find(source: Source): Promise<{ contentType: string; data: Uint8Array } | null> {
     const domain = source.domains[0]
@@ -155,7 +187,10 @@ export class SourceIcons {
 
     let reached = true
     const declared = await this.#fetchText(home).then(
-      page => declaredIcons(page.text, page.url),
+      page => {
+        this.#takeName(source, page.text)
+        return declaredIcons(page.text, page.url)
+      },
       () => {
         reached = false
         return []

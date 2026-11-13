@@ -8,6 +8,8 @@ interface Layer {
   id: string
   // Closes it the way its cross does: its onClose follows.
   close: () => void
+  // Puts it back on top of the page's top layer, as it is, without closing it.
+  raise: () => void
 }
 
 let stack: Layer[] = []
@@ -27,6 +29,13 @@ export const openLayer = (layer: Layer) => set([...stack.filter(entry => entry.i
 
 export const closeLayer = (id: string) => {
   if (stack.some(entry => entry.id === id)) set(stack.filter(entry => entry.id !== id))
+}
+
+// A dialog under others put back in the top layer (see Dialog) would cover them, and they would take no more clicks or
+// typing: the ones above it go back on top of it, in their order.
+export const raiseAbove = (id: string) => {
+  const index = stack.findIndex(entry => entry.id === id)
+  if (index !== -1) stack.slice(index + 1).forEach(entry => entry.raise())
 }
 
 // The cross and a click outside close them all, the top one first.

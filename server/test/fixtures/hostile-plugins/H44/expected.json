@@ -1,0 +1,121 @@
+{
+  "case": "H44",
+  "title": "A binary response cannot claim an active content type",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/html",
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "contentTypeNotIn": [
+          "text/html",
+          "image/svg+xml",
+          "application/xhtml+xml",
+          "text/javascript",
+          "application/pdf"
+        ],
+        "headers": {
+          "x-content-type-options": "nosniff"
+        },
+        "cspContains": "sandbox",
+        "ifServed": "Content-Disposition: attachment"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/svg",
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "contentTypeNotIn": [
+          "text/html",
+          "image/svg+xml",
+          "application/xhtml+xml",
+          "text/javascript",
+          "application/pdf"
+        ],
+        "headers": {
+          "x-content-type-options": "nosniff"
+        },
+        "cspContains": "sandbox",
+        "ifServed": "Content-Disposition: attachment"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/xml",
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "contentTypeNotIn": [
+          "text/html",
+          "image/svg+xml",
+          "application/xhtml+xml",
+          "text/javascript",
+          "application/pdf"
+        ],
+        "headers": {
+          "x-content-type-options": "nosniff"
+        },
+        "cspContains": "sandbox",
+        "ifServed": "Content-Disposition: attachment"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/js",
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "contentTypeNotIn": [
+          "text/html",
+          "image/svg+xml",
+          "application/xhtml+xml",
+          "text/javascript",
+          "application/pdf"
+        ],
+        "headers": {
+          "x-content-type-options": "nosniff"
+        },
+        "cspContains": "sandbox",
+        "ifServed": "Content-Disposition: attachment"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/pdf",
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "contentTypeNotIn": [
+          "text/html",
+          "image/svg+xml",
+          "application/xhtml+xml",
+          "text/javascript",
+          "application/pdf"
+        ],
+        "headers": {
+          "x-content-type-options": "nosniff"
+        },
+        "cspContains": "sandbox",
+        "ifServed": "Content-Disposition: attachment"
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

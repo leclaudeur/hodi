@@ -1,0 +1,11 @@
+{
+  "id": "hostile-h37",
+  "name": "Hostile H37",
+  "version": "0.0.1",
+  "description": "publicRoutes rate limit per address",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "publicRoutes": true
+  }
+}

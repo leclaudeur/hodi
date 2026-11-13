@@ -1,6 +1,8 @@
 import type { FeedItem } from './feed-parser.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
 import { truncate } from './text.ts'
-import { foldText, wordPattern } from './word-match.ts'
+import { foldText, wordPattern } from '../../shared/word-match.ts'
+import { HOUR_MS } from '../../shared/time.ts'
 
 // A browser's push subscription, as PushSubscription.toJSON() gives it.
 export interface PushTarget {
@@ -24,6 +26,8 @@ export interface AlertSettings {
   shares?: boolean
   // Told when someone reacts to an article this profile sent them. Missing on devices registered before: on.
   reactions?: boolean
+  // Told what the household's plugins send (ctx.notify). Missing on devices registered before: on.
+  plugins?: boolean
   // The profile open on the device, set by the server: the device stops when the profile is deleted.
   profileId?: number
 }
@@ -49,8 +53,10 @@ export interface SubscriptionStore {
 }
 
 export interface FollowedAlertsOptions {
-  // The articles of every topic that open in the reader.
-  listItems: () => Promise<FeedItem[]>
+  // The articles of every topic of a household that open in the reader.
+  listItems: (householdId: number) => Promise<FeedItem[]>
+  // The household of a device's profile: it is told about its own household's sources only.
+  householdOf?: (profileId: number) => number
   send: SendPush
   subscriptions?: SubscriptionStore
   now?: () => number
@@ -59,7 +65,6 @@ export interface FollowedAlertsOptions {
   mayNotify?: (profileId: number, now: number) => boolean
 }
 
-const HOUR_MS = 60 * 60 * 1000
 export const CHECK_INTERVAL_MS = 10 * 60 * 1000
 // At most one notification per subject in this time; articles in between are grouped into the next one.
 export const SUBJECT_COOLDOWN_MS = 3 * HOUR_MS
@@ -124,7 +129,8 @@ export const inQuietHours = ({ quietStart, quietEnd, timeZone }: AlertSettings, 
 
 // "Notifications" for followed subjects: new articles about them, grouped, outside quiet hours, within a daily cap.
 export class FollowedAlerts {
-  readonly #listItems: () => Promise<FeedItem[]>
+  readonly #listItems: (householdId: number) => Promise<FeedItem[]>
+  readonly #householdOf: (profileId: number) => number
   readonly #send: SendPush
   readonly #now: () => number
   readonly #log: (message: string) => void
@@ -140,8 +146,10 @@ export class FollowedAlerts {
     subscriptions,
     now = Date.now,
     log = console.warn,
-    mayNotify = () => true
+    mayNotify = () => true,
+    householdOf = () => DEFAULT_ACCOUNT_ID
   }: FollowedAlertsOptions) {
+    this.#householdOf = householdOf
     this.#mayNotify = mayNotify
     this.#listItems = listItems
     this.#send = send
@@ -227,7 +235,7 @@ export class FollowedAlerts {
 
   // An article sent to a profile by another one, or a reaction to one it sent: its devices that want it are told
   // at once, outside quiet hours. Missed then, it still waits in "Partages".
-  async notifyShare(profileId: number, payload: AlertPayload, kind: 'shares' | 'reactions' = 'shares') {
+  async notifyShare(profileId: number, payload: AlertPayload, kind: 'shares' | 'reactions' | 'plugins' = 'shares') {
     const now = this.#now()
     const devices = [...this.#devices.entries()].filter(
       ([, device]) =>
@@ -266,9 +274,20 @@ export class FollowedAlerts {
   }
 
   async #check() {
+    // Each household's articles, listed once for all its devices.
+    const households = new Map<number, [string, Device][]>()
+    for (const entry of this.#devices.entries()) {
+      const { profileId } = entry[1].settings
+      const id = profileId === undefined ? DEFAULT_ACCOUNT_ID : this.#householdOf(profileId)
+      households.set(id, [...(households.get(id) ?? []), entry])
+    }
+    for (const [householdId, devices] of households) await this.#checkHousehold(householdId, devices)
+  }
+
+  async #checkHousehold(householdId: number, devices: [string, Device][]) {
     let items: FeedItem[]
     try {
-      items = await this.#listItems()
+      items = await this.#listItems(householdId)
     } catch (error) {
       this.#log(`Followed alerts: listing failed: ${error instanceof Error ? error.message : String(error)}`)
       return
@@ -278,7 +297,7 @@ export class FollowedAlerts {
     const texts = new Map(items.map(item => [item.id, foldText(`${item.title} ${item.summary}`)]))
 
     await Promise.all(
-      [...this.#devices.entries()].map(async ([endpoint, device]) => {
+      devices.map(async ([endpoint, device]) => {
         this.#collect(device, items, texts, now)
         const payloads = this.#due(device, now)
 
@@ -352,7 +371,7 @@ export class FollowedAlerts {
       payloads.push({
         title: latest.title,
         body: latest.summary ? truncate(latest.summary, PREVIEW_LENGTH) : latest.sourceName,
-        url: others === 0 ? `#/article/${latest.id}` : '#/suivis',
+        url: others === 0 ? `#/article/${latest.id}` : '#/followed',
         tag: `followed:${word}`,
         badge: device.settings.badge ? device.unseen : null
       })

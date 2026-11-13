@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h16",
+  "name": "Hostile H16",
+  "version": "0.0.1",
+  "description": "VACUUM INTO writes no file anywhere",
+  "api": 2,
+  "audience": "admin"
+}

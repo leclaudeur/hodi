@@ -1,9 +1,12 @@
-/* From the charter's "Installation" boards: the logo above, one step at a time in a 362px column. */
+/* From the charter's "Installation" boards: the logo above, one step at a time in a 362px column, on a card. */
 
 .page {
+  composes: host from '../ui/PageGlows.module.css';
+
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  /* The screen's height exactly: a step taller than its room scrolls inside its card, as a dialog does. */
+  height: 100dvh;
   padding: 32px 40px calc(24px + env(safe-area-inset-bottom));
   background: var(--bg);
 }
@@ -14,84 +17,125 @@
   justify-content: space-between;
 }
 
-.welcome,
-.stepLabel {
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .main {
   display: flex;
   flex: 1;
   align-items: center;
   justify-content: center;
+  min-height: 0;
   padding: 32px 0;
 }
 
+/* The step, on a dialog's card (ui/Panel), as wide as a compact dialog: its header (the progress and the title)
+   and its answers (ui/DialogActions) held while the body scrolls between them. */
 .form {
+  composes: panel from '../ui/Panel.module.css';
+
+  --pad: 24px;
+
   display: flex;
   flex-direction: column;
-  /* Room between the blocks (heading, fields, choices, buttons), each one still read as one. */
-  gap: 28px;
+  /* A dialog body's gap between blocks. */
+  gap: 14px;
+  box-sizing: border-box;
   width: 100%;
-  /* Every step as wide as the setup code's six boxes (6 × 52px and their gaps): the profile form then
-     stacks its avatar above its fields. */
-  max-width: 362px;
+  max-width: 420px;
+  max-height: 100%;
+  padding: var(--pad);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
+/* As a tour step's head: the progress, then the title, tinted and edge to edge over a line. */
 .header {
+  composes: band from '../ui/Panel.module.css';
+
+  position: sticky;
+  /* Against the card's edge: the sticky area stops at its padding. */
+  top: calc(var(--pad) * -1);
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin: calc(var(--pad) * -1) calc(var(--pad) * -1) 6px;
+  padding: 16px var(--pad);
 }
 
+/* The bars, and « 2 / 5 » after them. */
 .stepper {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 12px;
+  align-items: center;
+  gap: 12px;
 }
 
 .bars {
   display: flex;
-  gap: 6px;
+  flex: 1;
+  gap: 4px;
 }
 
 .bars span {
   flex: 1;
   height: 3px;
-  border-radius: 3px;
-  background: var(--border);
+  border-radius: 2px;
+  background: var(--border-strong);
 }
 
 .bars .done {
   background: var(--rust);
 }
 
+.count {
+  color: var(--rust-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
 .titleRow {
-  /* The help "?" in the corner of this larger title, as a footnote call. */
-  --help-title: 38px;
+  /* The help "?" in the corner of the title, as a footnote call. */
+  --help-title: 22px;
 
   display: flex;
   align-items: baseline;
+  /* The "?" pulls itself 6px back towards a title's dot; these titles have none, so the row leaves 4px between the
+     title and the "?", as between a page title's dot and its "?". */
   gap: 10px;
 }
 
 .title {
-  font-family: var(--font-title);
-  font-size: 38px;
-  font-stretch: 75%;
-  font-weight: 650;
-  line-height: 1.05;
+  composes: title from '../ui/Panel.module.css';
+
+  /* Cut to the capitals and the baseline, so the title sits in the middle of its band whatever the font's spacing
+     above and below; the margins give back the line's height. */
+  margin-block: 4px;
+  text-box: trim-both cap alphabetic;
 }
 
+/* The step's text, first in its body, as a dialog's. */
 .intro {
-  color: var(--text-2);
-  font-size: 15px;
-  line-height: 1.45;
+  composes: intro from '../ui/Panel.module.css';
+}
+
+/* The profile step's answers, as the profile form's in a dialog: held at the card's foot under an inset line. */
+.profileForm > :last-child {
+  position: sticky;
+  bottom: calc(var(--pad) * -1);
+  z-index: 1;
+  margin: 6px calc(var(--pad) * -1) calc(var(--pad) * -1);
+  padding: 16px var(--pad) var(--pad);
+  border-top: 0;
+  background: var(--dialog-surface, var(--card));
+}
+
+.profileForm > :last-child::before {
+  position: absolute;
+  top: 0;
+  right: var(--pad);
+  left: var(--pad);
+  border-top: 1px solid var(--divider);
+  content: '';
 }
 
 .choices {
@@ -204,25 +248,12 @@
   font-size: 13px;
 }
 
-/* The profile step's form spaced as the other steps, its footer line included. */
+/* The profile step's form spaced as a dialog's body. */
 .profileForm {
-  gap: 28px;
+  gap: 14px;
 }
 
-/* Under the code, as under a profile's PIN: 20px rather than the form's 28. */
-.codeStatus {
-  margin-top: -8px;
-}
-
-/* The same footer as the profile step's form: a line above the buttons on every step. */
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 16px;
-  border-top: 1px solid var(--divider);
-}
-
+/* Under the code, as under a profile's PIN. */
 .spacer {
   flex: 1;
 }
@@ -234,19 +265,75 @@
 
 @media (max-width: 600px) {
   .page {
+    height: auto;
+    min-height: 100dvh;
     padding: 24px 16px calc(20px + env(safe-area-inset-bottom));
   }
 
   .main {
-    align-items: flex-start;
     padding: 28px 0;
   }
 
-  .titleRow {
-    --help-title: 30px;
+  /* Still on its card, over the glows: centred while it fits, else from the top with the page scrolling, the
+     header with it; the answers stay at the screen's foot while there is more under them. */
+  .form {
+    --pad: 16px;
+
+    margin-block: auto;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
   }
 
-  .title {
-    font-size: 30px;
+  .form > .header {
+    position: static;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .form .actions,
+  .profileForm > :last-child {
+    bottom: 0;
+    margin: 6px calc(var(--pad) * -1) calc(var(--pad) * -1);
+    padding: 16px var(--pad) var(--pad);
+    border-radius: 0 0 24px 24px;
+    background: var(--dialog-surface, var(--card));
+  }
+
+  /* The main answer pushed right by its own margin, not a spacer that would take one more gap. */
+  .form .spacer {
+    display: none;
+  }
+
+  .form .actions > :last-child {
+    margin-left: auto;
+  }
+}
+
+/* "Ton profil t'attend": the profile the code hands over, as a row of "Qui lit ?". */
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.memberName {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Under 360px (the smallest phones), the answers still on one line: tighter buttons, the main one without its
+   arrow. */
+@media (max-width: 359px) {
+  .form .actions > * {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .form .actions > :last-child svg {
+    display: none;
   }
 }

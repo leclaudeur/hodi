@@ -1,0 +1,22 @@
+{
+  "case": "H10",
+  "title": "A huge response is refused by the core",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/huge",
+      "expect": {
+        "statusIn": [
+          500,
+          502
+        ]
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "note": "Either QuickJS runs out of memory first (500) or the core refuses a body over the response cap (502). Never a 200 with the body."
+}

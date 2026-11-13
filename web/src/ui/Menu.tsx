@@ -1,6 +1,8 @@
 import type { LucideIcon } from 'lucide-react'
 import { Check } from 'lucide-react'
-import { type KeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useRef } from 'react'
+import { type KeyboardEvent, type ReactNode, useCallback, useEffect, useRef } from 'react'
+import type { ReferenceType } from '@floating-ui/react-dom'
+import { useFloatingPanel } from '../lib/floating.ts'
 import styles from './Menu.module.css'
 
 interface MenuProps {
@@ -8,10 +10,12 @@ interface MenuProps {
   // refocus: closed with Escape, so the focus goes back to the button that opened it.
   onClose: (refocus: boolean) => void
   label: string
-  // From its wrapper, which is position: relative: under it or above it, from its left edge, its right edge, or as
-  // wide as it.
+  // From its wrapper (or anchor): under it or above it, from its left edge, its right edge, or as wide as it. It
+  // turns to the other side when there is more room there.
   placement?: 'below' | 'above'
   align?: 'start' | 'end' | 'stretch'
+  // What it opens from, when wider than its wrapper (the profile selector's whole row).
+  anchor?: (wrapper: HTMLElement) => ReferenceType
   className?: string
   children: ReactNode
 }
@@ -20,33 +24,36 @@ const ITEMS = '[role^="menuitem"]:not([aria-disabled="true"])'
 
 // Every drop-down list in Hodi, after the profile selector's: a card of 44 px options with a line between them, the
 // chosen one heavier with a check. It closes on a click elsewhere or Escape; up and down go through its options.
-const Menu = ({ open, onClose, label, placement = 'below', align = 'start', className, children }: MenuProps) => {
+const Menu = ({
+  open,
+  onClose,
+  label,
+  placement = 'below',
+  align = 'start',
+  anchor,
+  className,
+  children
+}: MenuProps) => {
   const panel = useRef<HTMLDivElement>(null)
+  const floating = useFloatingPanel(open, {
+    placement: `${placement === 'below' ? 'bottom' : 'top'}${align === 'end' ? '-end' : align === 'start' ? '-start' : ''}`,
+    stretch: align === 'stretch',
+    maxHeight: 360,
+    anchor
+  })
+  const { attach: place } = floating
+  const ref = useCallback(
+    (node: HTMLDivElement | null) => {
+      panel.current = node
+      place(node)
+    },
+    [place]
+  )
   // The latest onClose, without opening the effect again on each render.
   const close = useRef(onClose)
   useEffect(() => {
     close.current = onClose
   })
-
-  // Under its button unless that leaves it cut by the bottom of the screen or of a list that scrolls (a source's
-  // "⋯" at the end of its group): then above, if there is more room there.
-  useLayoutEffect(() => {
-    const box = panel.current
-    if (!open || !box || placement !== 'below') return
-    box.removeAttribute('data-flip')
-    let top = 0
-    let bottom = window.innerHeight
-    for (let parent = box.parentElement; parent; parent = parent.parentElement) {
-      if (getComputedStyle(parent).overflowY === 'visible') continue
-      const frame = parent.getBoundingClientRect()
-      top = Math.max(top, frame.top)
-      bottom = Math.min(bottom, frame.bottom)
-      break
-    }
-    const rect = box.getBoundingClientRect()
-    const anchor = box.parentElement?.getBoundingClientRect()
-    if (rect.bottom > bottom && anchor && anchor.top - top > bottom - anchor.bottom) box.setAttribute('data-flip', '')
-  }, [open, placement])
 
   useEffect(() => {
     if (!open) return
@@ -85,10 +92,12 @@ const Menu = ({ open, onClose, label, placement = 'below', align = 'start', clas
   if (!open) return null
   return (
     <div
-      ref={panel}
+      ref={ref}
+      popover="manual"
+      style={floating.style}
       role="menu"
       aria-label={label}
-      className={`${styles.menu} ${styles[placement]} ${styles[align]} ${className ?? ''}`}
+      className={`${styles.menu} ${align === 'stretch' ? styles.stretch : ''} ${className ?? ''}`}
       onKeyDown={keys}
     >
       {children}
@@ -163,5 +172,8 @@ export const MenuItem = ({
     </button>
   )
 }
+
+// A line between groups of options (the profiles, then the plugins' entries).
+export const MenuSeparator = () => <div role="separator" className={styles.separator} />
 
 export default Menu

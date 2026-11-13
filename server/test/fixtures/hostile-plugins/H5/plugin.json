@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h5",
+  "name": "Hostile H5",
+  "version": "0.0.1",
+  "description": "Endless host calls hit the wall-clock and call limits",
+  "api": 2,
+  "audience": "admin"
+}

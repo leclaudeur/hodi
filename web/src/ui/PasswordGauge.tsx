@@ -4,36 +4,52 @@ import { usePasswordStrength } from '../lib/password-strength.ts'
 import styles from './PasswordGauge.module.css'
 
 const TONES = ['weak', 'weak', 'fair', 'strong', 'strong'] as const
+// As a lucide icon: 16px, drawn on 24 with a 2 stroke, as wide as the Mail and Key icons; its arc fills a quarter
+// per level.
+const RADIUS = 10
+const LENGTH = 2 * Math.PI * RADIUS
 
-// Four bars under a new password, how strong it is, and what would make it stronger. Too short, the first bar
-// fills as it is typed, in red, so the gauge answers from the first key. Empty, it only states the minimum.
-const PasswordGauge = ({ password }: { password: string }) => {
+// How strong a new password is, as a ring in its field's icon place. Too short, it fills as the password is
+// typed up to its first quarter, in red, so it answers from the first key.
+export const PasswordRing = ({ password }: { password: string }) => {
   const { t } = useTranslation()
-  const { score, label, hint } = usePasswordStrength(password)
-  const shortFill = score === 0 ? Math.min(1, password.length / MIN_PASSWORD_LENGTH) : 1
+  const { score, label } = usePasswordStrength(password)
+  const filled = score === 0 ? Math.min(1, password.length / MIN_PASSWORD_LENGTH) / 4 : score / 4
   return (
-    <div
-      className={`${styles.gauge} ${password ? styles[TONES[score]] : ''}`}
+    <span
+      className={`${styles.ring} ${password ? styles[TONES[score]] : ''}`}
       role="meter"
       aria-label={t('password.gauge')}
       aria-valuemin={0}
       aria-valuemax={4}
       aria-valuenow={score}
       aria-valuetext={label}
+      title={password ? label : undefined}
     >
-      <div className={styles.bars} aria-hidden="true">
-        {[1, 2, 3, 4].map(bar => (
-          <span key={bar} className={bar <= score ? styles.on : undefined}>
-            {bar === 1 && score === 0 && <i className={styles.fill} style={{ width: `${shortFill * 100}%` }} />}
-          </span>
-        ))}
-      </div>
-      <div className={styles.text}>
-        <span className={styles.hint}>{hint ?? t('password.perfect')}</span>
-        {password && <span className={styles.label}>{label}</span>}
-      </div>
-    </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+        <circle className={styles.track} cx="12" cy="12" r={RADIUS} />
+        <circle
+          className={styles.arc}
+          cx="12"
+          cy="12"
+          r={RADIUS}
+          strokeDasharray={LENGTH}
+          strokeDashoffset={LENGTH * (1 - filled)}
+        />
+      </svg>
+    </span>
   )
 }
 
-export default PasswordGauge
+// What would make it stronger, in one line under the field, only while it is not strong yet: as an error under a
+// field, it goes once there is nothing left to fix.
+export const PasswordHint = ({ password }: { password: string }) => {
+  const { score, label, hint } = usePasswordStrength(password)
+  if (!password || score >= 3) return null
+  return (
+    <p className={`${styles.hint} ${styles[TONES[score]]}`}>
+      <span className={styles.level}>{label}</span>
+      {hint && ` · ${hint}`}
+    </p>
+  )
+}

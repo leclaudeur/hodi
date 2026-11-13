@@ -1,0 +1,29 @@
+{
+  "case": "H37",
+  "title": "publicRoutes rate limit per address",
+  "drive": [
+    "From one address, 40 POST /ping in under a minute: the first 30 answer 200, the next 10 answer 429 without running the plugin.",
+    "Same 40 again, each with a different X-Forwarded-For: still 429 after 30, unless the server trusts a proxy (then the limit applies to the address the proxy gives, and the test sets trust proxy explicitly).",
+    "GET /count, called from a second address, answers {\"n\": 30}: the 10 refused requests never ran the plugin."
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/ping",
+      "anonymous": true,
+      "body": {},
+      "expect": {
+        "concurrent": 40,
+        "statusCounts": {
+          "200": 30,
+          "429": 10
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

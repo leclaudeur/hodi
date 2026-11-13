@@ -5,7 +5,8 @@ import { openDatabase } from '../db/database.ts'
 import { SCHEMA_VERSION, migrate, versionBefore } from '../db/migrations.ts'
 import { CONTENT_RETENTION_MS, NewsStore } from '../db/news-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
-import { MAX_SUMMARIES_PER_DAY, NewsService } from '../news/news-service.ts'
+import { NewsService } from '../news/news-service.ts'
+import { MAX_SUMMARIES_PER_DAY } from '../news/ai-ledger.ts'
 import { itemId } from '../news/text.ts'
 import { type FakeResponse, articlePage, fakeFetch, rssFeed } from './helpers/news.ts'
 
@@ -14,7 +15,7 @@ const HOUR = 60 * 60 * 1000
 
 const catalog = parseCatalog(`
 topics:
-  - id: monde
+  - id: world
     label: Monde
     sources:
       - id: alpha
@@ -40,9 +41,9 @@ const start = (
 }
 
 const listAll = async (news: NewsService) => {
-  await news.getTopic('monde')
+  await news.getTopic('world')
   await news.whenChecksIdle()
-  return (await news.getTopic('monde'))?.items.map(item => item.title)
+  return (await news.getTopic('world'))?.items.map(item => item.title)
 }
 
 describe('NewsStore', () => {
@@ -110,7 +111,7 @@ describe('NewsStore', () => {
     await listAll(start(store, responses).news)
 
     const { news } = start(store, { 'https://alpha.example/feed': feed })
-    const [item] = (await news.getTopic('monde'))?.items ?? []
+    const [item] = (await news.getTopic('world'))?.items ?? []
     assert.equal(item?.readingMinutes, 1)
     assert.equal(item?.author, 'Marie Dupont')
   })
@@ -126,11 +127,11 @@ describe('NewsStore', () => {
 
     // Ten days later: the topic no longer lists it, the search still finds it, accents aside.
     const { news } = start(store, { 'https://alpha.example/feed': rssFeed([]) }, { now: NOW + 10 * 24 * HOUR })
-    assert.deepEqual((await news.getTopic('monde'))?.items, [])
+    assert.deepEqual((await news.getTopic('world'))?.items, [])
     const found = await news.search('europeen')
     assert.deepEqual(
       found.items.map(item => [item.title, item.topicId]),
-      [['Sommet européen', 'monde']]
+      [['Sommet européen', 'world']]
     )
     assert.deepEqual((await news.search('sommets')).items, [])
     // The source's name counts as a word too: "alpha sommet" finds it, "alpha élections" does not.
@@ -190,6 +191,21 @@ describe('NewsStore', () => {
     assert.equal(store.findItem(sommet)?.item.title, 'Sommet européen')
   })
 
+  it('keeps reader text as many days as Serveur › Contenu says', async () => {
+    let days = 14
+    const store = new NewsStore(openDatabase(':memory:'), () => days * 24 * HOUR)
+    const { news } = start(store, {
+      'https://alpha.example/feed': feed,
+      'https://alpha.example/sommet': articlePage('Sommet européen')
+    })
+    await listAll(news)
+    store.prune(NOW + CONTENT_RETENTION_MS + HOUR)
+    assert.ok(store.getContent(sommet))
+    days = 1
+    store.prune(NOW + CONTENT_RETENTION_MS + HOUR)
+    assert.equal(store.getContent(sommet), null)
+  })
+
   it('empties every reader text on demand, keeping the articles', async () => {
     const store = new NewsStore(openDatabase(':memory:'))
     const { news } = start(store, {
@@ -222,6 +238,35 @@ describe('backupDatabase', () => {
     const names = readdirSync(dir).sort()
     assert.equal(names.length, 7)
     assert.equal(names.at(-1), 'hodi-2026-10-31.db')
+  })
+
+  it('puts a copy set aside back in place of the database, before it opens', async () => {
+    const { existsSync, mkdtempSync, writeFileSync } = await import('node:fs')
+    const { tmpdir } = await import('node:os')
+    const path = await import('node:path')
+    const { applyPendingRestore, backupNow, stageRestore, PENDING_RESTORE } = await import('../db/maintenance.ts')
+    const dir = mkdtempSync(path.join(tmpdir(), 'hodi-restore-'))
+    const file = path.join(dir, 'hodi.db')
+    const pending = path.join(dir, PENDING_RESTORE)
+
+    const before = openDatabase(file)
+    before.prepare("UPDATE accounts SET name = 'Avant' WHERE id = 1").run()
+    const name = await backupNow(before, path.join(dir, 'backups'), NOW)
+    before.prepare("UPDATE accounts SET name = 'Après' WHERE id = 1").run()
+    stageRestore(path.join(dir, 'backups', name), pending)
+    before.close()
+
+    assert.equal(applyPendingRestore(file, pending), true)
+    assert.equal(existsSync(pending), false)
+    const after = openDatabase(file)
+    assert.equal((after.prepare('SELECT name FROM accounts WHERE id = 1').get() as { name: string }).name, 'Avant')
+    after.close()
+
+    // Nothing set aside: nothing changes. Something that is no database is thrown away.
+    assert.equal(applyPendingRestore(file, pending), false)
+    writeFileSync(pending, 'pas une base')
+    assert.equal(applyPendingRestore(file, pending), false)
+    assert.equal(existsSync(pending), false)
   })
 
   it('sums the backups for the settings', async () => {
