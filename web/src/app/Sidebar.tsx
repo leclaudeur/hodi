@@ -8,13 +8,77 @@ import { SETTINGS_HREF, searchHref, topicHref } from '../lib/use-hash-route.ts'
 import RoundButton from '../ui/RoundButton.tsx'
 import ScrollArea from '../ui/ScrollArea.tsx'
 import TopicIcon from '../ui/TopicIcon.tsx'
-import { HISTORY_LINK, type Section, useMainLinks, useNavCounts } from './nav.ts'
+import { HISTORY_LINK, type NavLink, type Section, countOf, useMainLinks, useNavCounts } from './nav.ts'
 import styles from './Sidebar.module.css'
 
 interface SidebarProps {
   // The section or topic shown, highlighted.
   active: Section | 'search' | string | null
   topics: TopicSummary[] | null
+}
+
+const COUNT_TONES: Partial<Record<Section, string | undefined>> = { saved: '', shares: styles.info }
+
+// A main list's link, with its counter, or the last emoji received on "Partages" when nothing sent is left to open.
+const SectionLink = ({
+  link,
+  active,
+  counts
+}: {
+  link: NavLink
+  active: SidebarProps['active']
+  counts: ReturnType<typeof useNavCounts>
+}) => {
+  const { t } = useTranslation()
+  const { id, href, icon: Icon } = link
+  const label = t(`nav.${id}`)
+  const count = countOf(id, counts)
+  return (
+    <li>
+      <a
+        className={styles.link}
+        href={href}
+        title={label}
+        aria-current={active === id ? 'page' : undefined}
+        data-tour={href === '#/' ? 'feed' : undefined}
+      >
+        <span className={styles.square}>
+          <Icon size={14} aria-hidden="true" />
+        </span>
+        <span className={styles.label}>{label}</span>
+        {count > 0 && active !== id && (
+          <span className={`${styles.count} ${COUNT_TONES[id] ?? styles.accent}`}>{count}</span>
+        )}
+        {id === 'shares' && count === 0 && active !== id && counts.reaction && (
+          <span className={`${styles.count} ${styles.reaction}`} aria-label={t('nav.newReaction')}>
+            {counts.reaction}
+          </span>
+        )}
+      </a>
+    </li>
+  )
+}
+
+// A parent's wheel counts the teens' requests waiting for an answer. Open, it is filled like the phone's active tab,
+// and the requests show on top of the list instead of the count.
+const SettingsButton = ({ active, requests }: { active: SidebarProps['active']; requests: number }) => {
+  const { t } = useTranslation()
+  return (
+    <span className={styles.settings}>
+      <RoundButton
+        icon={Settings}
+        label={requests > 0 ? t('nav.newCount', { label: t('nav.settings'), count: requests }) : t('nav.settings')}
+        size={44}
+        href={SETTINGS_HREF}
+        variant={active === 'settings' ? 'on' : 'default'}
+      />
+      {requests > 0 && active !== 'settings' && (
+        <span className={styles.settingsBadge} aria-hidden="true">
+          {requests}
+        </span>
+      )}
+    </span>
+  )
 }
 
 // Desktop and tablets across: the main lists and the history, then the topics.
@@ -43,40 +107,9 @@ const Sidebar = ({ active, topics }: SidebarProps) => {
 
       <ScrollArea className={styles.scroll}>
         <ul className={styles.links}>
-          {[...links, HISTORY_LINK].map(({ id, href, icon: Icon }) => {
-            const label = t(`nav.${id}`)
-            const count =
-              id === 'saved' ? counts.saved : id === 'followed' ? counts.followed : id === 'shares' ? counts.shares : 0
-            return (
-              <li key={id}>
-                <a
-                  className={styles.link}
-                  href={href}
-                  title={label}
-                  aria-current={active === id ? 'page' : undefined}
-                  data-tour={href === '#/' ? 'feed' : undefined}
-                >
-                  <span className={styles.square}>
-                    <Icon size={14} aria-hidden="true" />
-                  </span>
-                  <span className={styles.label}>{label}</span>
-                  {count > 0 && active !== id && (
-                    <span
-                      className={`${styles.count} ${id === 'saved' ? '' : id === 'shares' ? styles.info : styles.accent}`}
-                    >
-                      {count}
-                    </span>
-                  )}
-                  {/* Nothing sent left to open: the last emoji received. */}
-                  {id === 'shares' && count === 0 && active !== id && counts.reaction && (
-                    <span className={`${styles.count} ${styles.reaction}`} aria-label={t('nav.newReaction')}>
-                      {counts.reaction}
-                    </span>
-                  )}
-                </a>
-              </li>
-            )
-          })}
+          {[...links, HISTORY_LINK].map(link => (
+            <SectionLink key={link.id} link={link} active={active} counts={counts} />
+          ))}
         </ul>
 
         <div className={styles.divider} />
@@ -105,26 +138,7 @@ const Sidebar = ({ active, topics }: SidebarProps) => {
           row, so the line above it meets the list column's foot line. */}
       <div className={styles.footer}>
         <ProfileSwitcher />
-        {/* A parent's wheel counts the teens' requests waiting for an answer. Open, it is filled like the phone's active
-            tab, and the requests show on top of the list instead of the count. */}
-        <span className={styles.settings}>
-          <RoundButton
-            icon={Settings}
-            label={
-              counts.requests > 0
-                ? t('nav.newCount', { label: t('nav.settings'), count: counts.requests })
-                : t('nav.settings')
-            }
-            size={44}
-            href={SETTINGS_HREF}
-            variant={active === 'settings' ? 'on' : 'default'}
-          />
-          {counts.requests > 0 && active !== 'settings' && (
-            <span className={styles.settingsBadge} aria-hidden="true">
-              {counts.requests}
-            </span>
-          )}
-        </span>
+        <SettingsButton active={active} requests={counts.requests} />
       </div>
     </nav>
   )

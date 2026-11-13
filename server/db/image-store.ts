@@ -13,8 +13,12 @@ export interface StoredImage {
 export class ImageStore {
   readonly #db: Database
 
-  constructor(db: Database) {
+  // How long a dropped article keeps its text (and its pictures): Serveur › Contenu, 7 days by default.
+  readonly #retention: () => number
+
+  constructor(db: Database, retention: () => number = () => CONTENT_RETENTION_MS) {
     this.#db = db
+    this.#retention = retention
   }
 
   // The picture an article's card shows: the feed's, else its page's (as NewsService lists it).
@@ -70,7 +74,7 @@ export class ImageStore {
   // Pictures of articles the feeds dropped a while ago go, like their texts; saved articles keep theirs. A failed
   // picture is tried again after the same delay. Returns the articles whose files can go.
   prune(now: number): string[] {
-    const limit = now - CONTENT_RETENTION_MS
+    const limit = now - this.#retention()
     return transaction(this.#db, () => {
       const rows = this.#db
         .prepare(

@@ -1,0 +1,51 @@
+{
+  "case": "H25",
+  "title": "No redirect status",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/302",
+      "expect": {
+        "status": 502,
+        "headersAbsent": [
+          "location"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/301",
+      "expect": {
+        "status": 502,
+        "headersAbsent": [
+          "location"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/999",
+      "expect": {
+        "status": 502,
+        "headersAbsent": [
+          "location"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/101",
+      "expect": {
+        "status": 502,
+        "headersAbsent": [
+          "location"
+        ]
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

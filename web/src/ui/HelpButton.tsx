@@ -1,6 +1,7 @@
 import { CircleHelp } from 'lucide-react'
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import Button from './Button.tsx'
+import { useFloatingPanel } from '../lib/floating.ts'
 import { useTranslation } from 'react-i18next'
 import Dialog from './Dialog.tsx'
 import DialogActions from './DialogActions.tsx'
@@ -40,7 +41,8 @@ const HelpButton = ({ id, title, layout, children }: HelpButtonProps) => {
   const [open, setOpen] = useState(false)
   const [seen, setSeen] = useState(() => readSeen().includes(id))
   const wrapper = useRef<HTMLSpanElement>(null)
-  const bubble = useId()
+  const bubbleId = useId()
+  const { attach, style: floatingStyle } = useFloatingPanel(open && layout === 'desktop', { gap: 10, cross: -12 })
 
   const show = () => {
     setOpen(!open)
@@ -72,14 +74,22 @@ const HelpButton = ({ id, title, layout, children }: HelpButtonProps) => {
         className={`${styles.button} ${seen ? styles.seen : ''}`}
         aria-label={t('common.help', { title })}
         aria-expanded={layout === 'desktop' ? open : undefined}
-        aria-controls={layout === 'desktop' && open ? bubble : undefined}
+        aria-controls={layout === 'desktop' && open ? bubbleId : undefined}
         onClick={show}
       >
         <CircleHelp aria-hidden="true" />
       </button>
       {layout === 'desktop'
         ? open && (
-            <div id={bubble} className={styles.bubble} role="dialog" aria-label={title}>
+            <div
+              ref={attach}
+              popover="manual"
+              style={floatingStyle}
+              id={bubbleId}
+              className={styles.bubble}
+              role="dialog"
+              aria-label={title}
+            >
               <strong className={styles.title}>{title}</strong>
               <div className={styles.text}>{children}</div>
             </div>

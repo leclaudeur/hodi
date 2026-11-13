@@ -1,0 +1,15 @@
+{
+  "case": "H49",
+  "title": "checkPassword cannot be used to guess passwords or block sign-in",
+  "setup": "Server admin admin@test. The core's sign-in throttle for an e-mail (failures counted) is known to the test.",
+  "drive": [
+    "POST /guess once with admin@test: the call ends within the time limit; at most as many checkPassword calls ran as the core's sign-in throttle allows for that e-mail (the others are refused with 'throttled' without hashing).",
+    "While /guess runs, the admin signs in normally on /api/login: it succeeds in under 2 s (the plugin does not hold the 2 hashing slots for itself).",
+    "Each checkPassword failure counts in the same throttle as /login for that e-mail and that address."
+  ],
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ],
+  "why": "Each check costs a 32 MiB scrypt and a slot of the global semaphore (2). A loop of checkPassword in a public route would be a free password-guessing oracle and would starve real sign-ins."
+}

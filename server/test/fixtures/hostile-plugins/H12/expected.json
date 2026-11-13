@@ -1,0 +1,12 @@
+{
+  "case": "H12",
+  "title": "A slow onArticle never slows reading down",
+  "requests": [],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "drive": "Open 1000 articles as a profile (POST the read events the app sends).",
+  "expect": "Every read answers in under 200 ms. The onArticle queue stays at its bound; the oldest events are dropped and counted in the log, never kept growing."
+}

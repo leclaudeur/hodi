@@ -1,7 +1,8 @@
 import { Share } from 'lucide-react'
-import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { loadShareOptions } from '../../lib/deferred.ts'
+import { useFloatingPanel } from '../../lib/floating.ts'
 import { useMedia } from '../../lib/use-media.ts'
 import Dialog from '../../ui/Dialog.tsx'
 import RoundButton from '../../ui/RoundButton.tsx'
@@ -27,6 +28,14 @@ const ShareMenu = ({ url, title, kind = 'article', size = 34, variant = 'default
   const menu = useRef<HTMLDivElement>(null)
   const panel = useRef<HTMLDivElement>(null)
   const phone = useMedia('(pointer: coarse)')
+  const { attach: place, style } = useFloatingPanel(open && !phone, { placement: 'bottom-end', gap: 8 })
+  const panelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      panel.current = node
+      place(node)
+    },
+    [place]
+  )
 
   // The menu under the button closes on a click outside or Escape (the phone's dialog on its own).
   useEffect(() => {
@@ -69,7 +78,14 @@ const ShareMenu = ({ url, title, kind = 'article', size = 34, variant = 'default
       />
       {/* A menu under the button on a computer; on a phone, the app's dialog, as every other one. */}
       {open && !phone && (
-        <div ref={panel} className={`${styles.menu} ${styles.popover}`} role="menu" aria-label={heading}>
+        <div
+          ref={panelRef}
+          popover="manual"
+          style={style}
+          className={`${styles.menu} ${styles.popover}`}
+          role="menu"
+          aria-label={heading}
+        >
           <span className={styles.heading}>{heading}</span>
           {options}
         </div>

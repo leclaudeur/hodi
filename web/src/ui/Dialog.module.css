@@ -1,11 +1,13 @@
-/* A card over the blurred page: a tinted header with the title and the cross, then the body, which alone scrolls
+/* A card (ui/Panel) over the blurred page: a tinted header with the title and the cross, then the body, which alone scrolls
    (from right under the header's line to the dialog's bottom, its padding inside), with the answers
    (DialogActions) held at its foot under an inset line. Two widths only: compact (little to read) and wide (more
    to read, so that it does not scroll for nothing). Never taller than 60% of the screen, 80% on a phone. */
 .dialog {
+  composes: panel from './Panel.module.css';
+
   --pad: 24px;
-  /* The header's tint: a step lighter than the card, in every theme. */
-  --dialog-header: color-mix(in srgb, var(--control) 80%, var(--card));
+  /* Opened from a settings card, whose actions are 38px: a dialog keeps the app's 44px buttons and fields. */
+  --button-height: 44px;
 
   box-sizing: border-box;
   /* The browser's own cap (100% less 6px and 2em) would make a phone's dialog 6px narrower than its 16px margins. */
@@ -14,10 +16,6 @@
   margin: auto;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  background: var(--dialog-surface, var(--card));
-  box-shadow: 0 24px 64px var(--shadow);
   color: var(--text);
 }
 
@@ -61,7 +59,8 @@
 }
 
 .dialog::backdrop {
-  background: var(--scrim);
+  /* Grain under the dialog's shadow, so it fades out in specks rather than in bands. */
+  background: var(--grain), var(--scrim);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
@@ -76,6 +75,8 @@
 
 /* Edge to edge, the same height with or without a long title. */
 .header {
+  composes: band from './Panel.module.css';
+
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -86,8 +87,6 @@
   min-height: 65px;
   /* The cross as far from the right edge as from the top and the bottom. */
   padding: 8px 15px 8px var(--pad);
-  border-bottom: 1px solid var(--divider);
-  background: var(--dialog-header);
 }
 
 /* "Retour" before the title, when there is a card to go back to (a dialog under it, or a page inside it). */
@@ -105,13 +104,10 @@
 
 /* Always one line: a title too long for it ends in an ellipsis rather than doubling the header's height. */
 .title {
+  composes: title from './Panel.module.css';
+
   min-width: 0;
   overflow: hidden;
-  font-family: var(--font-title);
-  font-size: 22px;
-  font-stretch: 75%;
-  font-weight: 650;
-  line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -127,17 +123,14 @@
   overscroll-behavior: contain;
 }
 
-/* What the dialog is for, 20px over what follows (the body's 14px gap and 6 more). */
-.intro {
-  margin-bottom: 6px;
-  color: var(--text-2);
-  font-size: 14px;
-  line-height: 1.5;
+/* The body scrolls; what it holds keeps its height rather than being squeezed and cut. */
+.body > * {
+  flex-shrink: 0;
 }
 
-.intro strong {
-  color: var(--text);
-  font-weight: 600;
+/* What the dialog is for (ui/Panel). */
+.intro {
+  composes: intro from './Panel.module.css';
 }
 
 /* 20px under the header's line. */

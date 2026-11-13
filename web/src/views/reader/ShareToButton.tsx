@@ -1,7 +1,7 @@
 import { Check, MessageSquare, Send } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { shareArticle } from '../../api.ts'
+import { type Profile, shareArticle } from '../../api.ts'
 import { getLanguage } from '../../lib/i18n.ts'
 import { useProfiles } from '../../lib/profiles.ts'
 import { useShareTargets } from '../../lib/shares.ts'
@@ -25,6 +25,40 @@ const MAX_NOTE_LENGTH = 140
 
 // "Léa, Tom et Max", in the interface language.
 const names = (list: string[]) => new Intl.ListFormat(getLanguage(), { type: 'conjunction' }).format(list)
+
+// The profiles to send to, each ticked or not.
+const ProfilePicks = ({
+  profiles,
+  picked,
+  onToggle
+}: {
+  profiles: Profile[]
+  picked: number[]
+  onToggle: (id: number) => void
+}) => (
+  <ul className={styles.list}>
+    {profiles.map(profile => {
+      const on = picked.includes(profile.id)
+      return (
+        <li key={profile.id}>
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={on}
+            className={styles.row}
+            onClick={() => onToggle(profile.id)}
+          >
+            <ProfileAvatar profile={profile} size={44} />
+            <span className={styles.name}>{profile.name}</span>
+            <span className={`${styles.check} ${on ? styles.on : ''}`} aria-hidden="true">
+              {on && <Check size={12} strokeWidth={3} />}
+            </span>
+          </button>
+        </li>
+      )
+    })}
+  </ul>
+)
 
 // "Pour…": sends the article to other profiles of the household, into their "Partages". Only the profiles that
 // share are offered; several can be picked. Hidden while nobody else in the household receives shares.
@@ -75,30 +109,7 @@ const ShareToButton = ({ articleId, size }: ShareToButtonProps) => {
         {profiles.length === 0 ? (
           <p className={styles.empty}>{t('shareTo.nobody')}</p>
         ) : (
-          <>
-            <ul className={styles.list}>
-              {profiles.map(profile => {
-                const on = picked.includes(profile.id)
-                return (
-                  <li key={profile.id}>
-                    <button
-                      type="button"
-                      role="checkbox"
-                      aria-checked={on}
-                      className={styles.row}
-                      onClick={() => toggle(profile.id)}
-                    >
-                      <ProfileAvatar profile={profile} size={44} />
-                      <span className={styles.name}>{profile.name}</span>
-                      <span className={`${styles.check} ${on ? styles.on : ''}`} aria-hidden="true">
-                        {on && <Check size={16} />}
-                      </span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </>
+          <ProfilePicks profiles={profiles} picked={picked} onToggle={toggle} />
         )}
         {profiles.length > 0 && (
           <TextField

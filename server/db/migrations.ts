@@ -518,6 +518,374 @@ const MIGRATIONS: string[] = [
     failed INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL
   );
+  `,
+  // Poudré's id becomes English (powder), like every id. Its devices fetch the profile's state again.
+  `
+  UPDATE profile_settings SET value = CAST(value AS INTEGER) + 1
+  WHERE key = 'revision' AND profile_id IN (
+    SELECT profile_id FROM profile_settings
+    WHERE key = 'preferences' AND json_valid(value) AND json_extract(value, '$.theme') = 'poudre'
+  );
+  UPDATE profile_settings SET value = json_set(value, '$.theme', 'powder')
+  WHERE key = 'preferences' AND json_valid(value) AND json_extract(value, '$.theme') = 'poudre';
+  `,
+  // The topics' ids become English, like every id and address (Belgique stays its label, its id is belgium). Every
+  // place that keeps one follows: readings, points, a young profile's topics, avatar colours, sources, preferences,
+  // saved and shared items, daily summaries. A profile whose own state changed gets a new revision, so that its devices fetch it again.
+  `
+  CREATE TEMP TABLE topic_renames (old TEXT PRIMARY KEY, new TEXT NOT NULL);
+  INSERT INTO topic_renames (old, new) VALUES
+    ('belgique', 'belgium'),
+    ('monde', 'world'),
+    ('films-series', 'film-tv'),
+    ('jeux-video', 'gaming'),
+    ('ia', 'ai'),
+    ('auto-moto', 'motoring'),
+    ('argent-conso', 'money'),
+    ('sante', 'health'),
+    ('cuisine', 'food'),
+    ('voyage', 'travel'),
+    ('musique', 'music'),
+    ('maison-deco', 'home'),
+    ('famille', 'family'),
+    ('mode-beaute', 'fashion'),
+    ('climat', 'climate'),
+    ('animaux', 'animals'),
+    ('divers', 'other');
+
+  UPDATE readings SET topic_id = (SELECT new FROM topic_renames WHERE old = topic_id)
+  WHERE topic_id IN (SELECT old FROM topic_renames);
+  UPDATE game_events SET topic_id = (SELECT new FROM topic_renames WHERE old = topic_id)
+  WHERE topic_id IN (SELECT old FROM topic_renames);
+  -- "First of the theme today" is known by its day and topic, so that it never counts twice.
+  UPDATE game_events
+  SET ref = substr(ref, 1, instr(ref, ':')) || (SELECT new FROM topic_renames WHERE old = substr(ref, instr(ref, ':') + 1))
+  WHERE kind = 'first_of_theme' AND substr(ref, instr(ref, ':') + 1) IN (SELECT old FROM topic_renames);
+  UPDATE youth_topics SET topic_id = (SELECT new FROM topic_renames WHERE old = topic_id)
+  WHERE topic_id IN (SELECT old FROM topic_renames);
+  UPDATE profiles SET color = (SELECT new FROM topic_renames WHERE old = color)
+  WHERE color IN (SELECT old FROM topic_renames);
+
+  UPDATE sources SET section_id = (SELECT new FROM topic_renames WHERE old = section_id)
+  WHERE section_id IN (SELECT old FROM topic_renames);
+  UPDATE sources SET topics = (
+    SELECT json_group_array(coalesce((SELECT new FROM topic_renames WHERE old = topic.value), topic.value) ORDER BY topic.key)
+    FROM json_each(sources.topics) AS topic
+  )
+  WHERE topics IS NOT NULL AND json_valid(topics);
+
+  -- The profiles whose own state changes, to send it again to their devices.
+  CREATE TEMP TABLE renamed_profiles AS
+    SELECT profile_id FROM readings WHERE topic_id IN (SELECT old FROM topic_renames)
+    UNION SELECT profile_id FROM saved_articles
+      WHERE json_valid(item) AND json_extract(item, '$.topicId') IN (SELECT old FROM topic_renames)
+    UNION SELECT profile_settings.profile_id FROM profile_settings, json_each(profile_settings.value, '$.topicOrder') AS topic
+      WHERE profile_settings.key = 'preferences' AND json_valid(profile_settings.value) AND topic.value IN (SELECT old FROM topic_renames)
+    UNION SELECT profile_settings.profile_id FROM profile_settings, json_each(profile_settings.value, '$.hiddenTopics') AS topic
+      WHERE profile_settings.key = 'preferences' AND json_valid(profile_settings.value) AND topic.value IN (SELECT old FROM topic_renames)
+    UNION SELECT profile_id FROM profile_settings
+      WHERE key = 'preferences' AND json_valid(value) AND json_extract(value, '$.accent') IN (SELECT old FROM topic_renames);
+
+  UPDATE profile_settings SET value = json_set(value, '$.topicOrder', json((
+    SELECT json_group_array(coalesce((SELECT new FROM topic_renames WHERE old = topic.value), topic.value) ORDER BY topic.key)
+    FROM json_each(profile_settings.value, '$.topicOrder') AS topic
+  )))
+  WHERE key = 'preferences' AND json_valid(value) AND json_type(value, '$.topicOrder') = 'array';
+  UPDATE profile_settings SET value = json_set(value, '$.hiddenTopics', json((
+    SELECT json_group_array(coalesce((SELECT new FROM topic_renames WHERE old = topic.value), topic.value) ORDER BY topic.key)
+    FROM json_each(profile_settings.value, '$.hiddenTopics') AS topic
+  )))
+  WHERE key = 'preferences' AND json_valid(value) AND json_type(value, '$.hiddenTopics') = 'array';
+  UPDATE profile_settings
+  SET value = json_set(value, '$.accent', (SELECT new FROM topic_renames WHERE old = json_extract(value, '$.accent')))
+  WHERE key = 'preferences' AND json_valid(value) AND json_extract(value, '$.accent') IN (SELECT old FROM topic_renames);
+  UPDATE profile_settings SET value = CAST(value AS INTEGER) + 1
+  WHERE key = 'revision' AND profile_id IN (SELECT profile_id FROM renamed_profiles);
+
+  UPDATE saved_articles SET item = json_set(item, '$.topicId', (SELECT new FROM topic_renames WHERE old = json_extract(item, '$.topicId')))
+  WHERE json_valid(item) AND json_extract(item, '$.topicId') IN (SELECT old FROM topic_renames);
+  UPDATE shares SET item = json_set(item, '$.topicId', (SELECT new FROM topic_renames WHERE old = json_extract(item, '$.topicId')))
+  WHERE json_valid(item) AND json_extract(item, '$.topicId') IN (SELECT old FROM topic_renames);
+  UPDATE daily_summaries SET points = (
+    SELECT json_group_array(
+      CASE WHEN json_extract(point.value, '$.topicId') IN (SELECT old FROM topic_renames)
+        THEN json_set(point.value, '$.topicId', (SELECT new FROM topic_renames WHERE old = json_extract(point.value, '$.topicId')))
+        ELSE json(point.value) END
+      ORDER BY point.key
+    )
+    FROM json_each(daily_summaries.points) AS point
+  )
+  WHERE json_valid(points) AND json_type(points) = 'array';
+
+  DROP TABLE topic_renames;
+  DROP TABLE renamed_profiles;
+  `,
+  // Plugins: whether each one installed is on and the settings the admin chose; and the steps of each plugin's own
+  // migrations already applied, since a plugin keeps its own list of schema changes for its own tables.
+  `
+  CREATE TABLE plugins (
+    id TEXT PRIMARY KEY,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    settings TEXT NOT NULL DEFAULT '{}',
+    installed_at INTEGER NOT NULL
+  );
+  CREATE TABLE plugin_migrations (
+    plugin_id TEXT NOT NULL,
+    step INTEGER NOT NULL,
+    applied_at INTEGER NOT NULL,
+    PRIMARY KEY (plugin_id, step)
+  );
+  `,
+  // Personal accounts: each person signs in with their own e-mail and password instead of the household's. The first
+  // one, made in the first-run screens, runs the server. A profile belongs to at most one account; young profiles
+  // have none. The household now counts as set up once it has a name, not a password: set_up_at says when.
+  `
+  CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    password_hash TEXT NOT NULL,
+    password_changed_at INTEGER NOT NULL,
+    session_generation INTEGER NOT NULL DEFAULT 0,
+    server_admin INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+  );
+  ALTER TABLE profiles ADD COLUMN user_id INTEGER REFERENCES users (id) ON DELETE SET NULL;
+  CREATE UNIQUE INDEX profiles_user ON profiles (account_id, user_id) WHERE user_id IS NOT NULL;
+  ALTER TABLE accounts ADD COLUMN set_up_at INTEGER;
+  UPDATE accounts SET set_up_at = COALESCE(password_changed_at, created_at) WHERE password_hash IS NOT NULL;
+  `,
+  // "J'ai un code": six digits an adult of the household gives a person, valid once and for a day. Without a profile,
+  // an invitation to join as a new adult; with one, that profile's person makes their account. Only a keyed hash of
+  // the code is kept.
+  `
+  CREATE TABLE sign_in_codes (
+    code_hash TEXT PRIMARY KEY,
+    account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    profile_id INTEGER REFERENCES profiles (id) ON DELETE CASCADE,
+    created_by INTEGER REFERENCES profiles (id) ON DELETE SET NULL,
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL
+  );
+  `,
+  // Réglages > Compte et données > Appareils: each device signed in with an account, so that one can be signed out
+  // on its own. Its session cookie names its row; a device whose row is gone signs in again.
+  `
+  CREATE TABLE user_devices (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    user_agent TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    last_seen_at INTEGER NOT NULL
+  );
+  CREATE INDEX user_devices_user ON user_devices (user_id);
+  `,
+  // Réglages > Profils > a young profile > Appareils: a teen's or a child's own device, linked by a parent with a
+  // code, which opens that profile only. It stays linked until it goes 90 days unused or a parent removes it.
+  `
+  CREATE TABLE profile_devices (
+    id INTEGER PRIMARY KEY,
+    profile_id INTEGER NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
+    user_agent TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    last_seen_at INTEGER NOT NULL
+  );
+  CREATE INDEX profile_devices_profile ON profile_devices (profile_id);
+  `,
+  // "Mot de passe oublié", without a mail server: the admin's code for an adult who has an account lets them choose a
+  // new password, from the Connexion page.
+  `
+  ALTER TABLE sign_in_codes ADD COLUMN reset INTEGER NOT NULL DEFAULT 0;
+  `,
+  // The account's password replaces the four-digit codes and the Code parental: every adult profile asks for it
+  // each time it opens. The old codes go, and every device chooses its profile again once.
+  `
+  UPDATE accounts SET parental_pin_hash = NULL, parental_pin_version = parental_pin_version + 1;
+  UPDATE profiles SET pin_hash = NULL;
+  `,
+  // Serveur › Vue d'ensemble counts the different profiles that opened Hodi each day: a profile once a day, kept 31
+  // days, never shown but as a number.
+  `
+  CREATE TABLE profile_visits (
+    day TEXT NOT NULL,
+    profile_id INTEGER NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
+    PRIMARY KEY (day, profile_id)
+  );
+  `,
+  // Serveur › Contenu: what the server's admin changed of how long the server keeps what it fetches. A setting
+  // without a row has its default.
+  `
+  CREATE TABLE server_settings (
+    key TEXT PRIMARY KEY,
+    value INTEGER NOT NULL
+  );
+  `,
+  // Serveur › E-mail: the mail server Hodi sends through, one row at most. Its password stays here like an AI key.
+  `
+  CREATE TABLE server_mail (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    host TEXT NOT NULL,
+    port INTEGER NOT NULL,
+    security TEXT NOT NULL,
+    user TEXT,
+    password TEXT,
+    sender TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+  );
+  `,
+  // « Mot de passe oublié »: the address the e-mail's link opens, and the links sent, each valid an hour, once. The
+  // table keeps a hash of each link, keyed with the server's secret.
+  `
+  ALTER TABLE server_mail ADD COLUMN app_url TEXT;
+  CREATE TABLE password_resets (
+    token_hash TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL
+  );
+  `,
+  // Each household its own list of sources: which feeds it follows, in which topics, in which order and added by
+  // whom. A feed itself (its address, kind, language, name) stays one for the whole server, fetched once whoever
+  // follows it. Every source of today is the first household's.
+  `
+  CREATE TABLE household_sources (
+    household_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    source_id TEXT NOT NULL REFERENCES sources (id) ON DELETE CASCADE,
+    section TEXT NOT NULL,
+    section_id TEXT NOT NULL,
+    topics TEXT,
+    position INTEGER NOT NULL,
+    added_by INTEGER REFERENCES profiles (id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (household_id, source_id)
+  );
+  CREATE INDEX household_sources_source ON household_sources (source_id);
+  CREATE INDEX household_sources_added_by ON household_sources (added_by);
+  INSERT INTO household_sources (household_id, source_id, section, section_id, topics, position, added_by, created_at)
+  SELECT 1, id, section, section_id, topics, position, added_by, created_at FROM sources;
+  -- Who added a feed is now each household's to know: a profile that goes takes its household's source with it,
+  -- never another household's.
+  UPDATE sources SET added_by = NULL;
+  `,
+  // Who a plugin's data belongs to (the key that signed it, or its exact files): another plugin that only takes the
+  // same id starts with none of it.
+  `
+  ALTER TABLE plugins ADD COLUMN data_owner TEXT;
+  `,
+  // Households a plugin makes (ctx.households): which plugin made it, the only one that may suspend or remove it, and
+  // when it was suspended. And the household a device is on once moved there (« Changer de foyer »); null: its
+  // account's first.
+  `
+  ALTER TABLE accounts ADD COLUMN made_by_plugin TEXT;
+  ALTER TABLE accounts ADD COLUMN suspended_at INTEGER;
+  ALTER TABLE user_devices ADD COLUMN household_id INTEGER REFERENCES accounts (id) ON DELETE SET NULL;
+  `,
+  // When each of a plugin's scheduled tasks last ran, by task name: a restart does not run them again early.
+  `
+  ALTER TABLE plugins ADD COLUMN task_runs TEXT NOT NULL DEFAULT '{}';
+  `,
+  // Another way in than a password, which a plugin keeps for an account (« Se connecter avec Google »): the plugin's
+  // own name for the person there, such as google:<id>. An account a plugin made that way has no password of its own
+  // (has_password 0) until the person sets one.
+  `
+  CREATE TABLE account_logins (
+    plugin_id TEXT NOT NULL,
+    login TEXT NOT NULL,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (plugin_id, login)
+  );
+  CREATE INDEX account_logins_user ON account_logins (user_id);
+  ALTER TABLE users ADD COLUMN has_password INTEGER NOT NULL DEFAULT 1;
+  `,
+  // Serveur › Plugins › Mode développeur: the code « npx hodi-plugin dev » sends (its hash), while the mode is on, and
+  // the plugins it installed.
+  `
+  CREATE TABLE plugin_dev (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    code_hash TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+  ALTER TABLE plugins ADD COLUMN dev INTEGER NOT NULL DEFAULT 0;
+  `,
+  // A plugin's AI: which plugin each of its calls was for, and the plugins a household's admin keeps away from its AI.
+  `
+  ALTER TABLE ai_calls ADD COLUMN plugin_id TEXT;
+  CREATE TABLE plugin_ai_off (
+    household_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    plugin_id TEXT NOT NULL,
+    PRIMARY KEY (household_id, plugin_id)
+  );
+  `,
+  // What each plugin still has to forget of a deleted profile, account or household: kept until its hook answered,
+  // so that a plugin off, busy or failing is asked again rather than keeping the data.
+  `
+  CREATE TABLE plugin_erasures (
+    id INTEGER PRIMARY KEY,
+    plugin_id TEXT NOT NULL,
+    hook TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    household_id INTEGER,
+    created_at INTEGER NOT NULL,
+    tries INTEGER NOT NULL DEFAULT 0,
+    next_try_at INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE INDEX plugin_erasures_plugin ON plugin_erasures (plugin_id);
+  -- When a plugin was removed with its data kept: the data goes 30 days later unless it comes back.
+  ALTER TABLE plugins ADD COLUMN removed_at INTEGER;
+  `,
+  // A young profile's device cookie now names its row's creation time too: SQLite gives a removed row's id to the
+  // next one, and an old cookie must not open the device linked after it. The devices linked before keep their
+  // cookie without that time until it is sent again.
+  `
+  ALTER TABLE profile_devices ADD COLUMN legacy INTEGER NOT NULL DEFAULT 0;
+  UPDATE profile_devices SET legacy = 1;
+  `,
+  // « Validation en deux étapes »: the authenticator app's secret, sealed with a key from the session secret, once its
+  // first code proved the app holds it; the one waiting for that code; the last 30-second step used, so a code works
+  // once; and the recovery codes, as hashes, each used once.
+  `
+  ALTER TABLE users ADD COLUMN two_factor_secret TEXT;
+  ALTER TABLE users ADD COLUMN two_factor_since INTEGER;
+  ALTER TABLE users ADD COLUMN two_factor_step INTEGER;
+  ALTER TABLE users ADD COLUMN two_factor_pending TEXT;
+  ALTER TABLE users ADD COLUMN two_factor_pending_at INTEGER;
+  CREATE TABLE recovery_codes (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    code_hash TEXT NOT NULL,
+    used_at INTEGER
+  );
+  CREATE INDEX recovery_codes_user ON recovery_codes (user_id);
+  `,
+  // A household's photo, set in Réglages › Foyer, as a profile's: square, small, made on the device.
+  `
+  ALTER TABLE accounts ADD COLUMN photo BLOB;
+  ALTER TABLE accounts ADD COLUMN photo_type TEXT;
+  ALTER TABLE accounts ADD COLUMN photo_version INTEGER;
+  `,
+  // Serveur › Vue d'ensemble beyond the visits' month and the readings' year: one row of the whole server's totals
+  // per finished day, kept for good, and how many reads each theme and source had that day. Totals only, never a
+  // profile's.
+  `
+  CREATE TABLE server_days (
+    day TEXT PRIMARY KEY,
+    visits INTEGER NOT NULL,
+    articles INTEGER NOT NULL,
+    videos INTEGER NOT NULL,
+    minutes INTEGER NOT NULL,
+    shares INTEGER NOT NULL,
+    profiles INTEGER NOT NULL,
+    accounts INTEGER NOT NULL,
+    active_accounts INTEGER NOT NULL
+  );
+  CREATE TABLE server_day_reads (
+    day TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    id TEXT NOT NULL,
+    name TEXT NOT NULL DEFAULT '',
+    count INTEGER NOT NULL,
+    PRIMARY KEY (day, kind, id)
+  );
   `
 ]
 

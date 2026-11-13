@@ -1,0 +1,98 @@
+/* The page the glows stand behind: they stay inside it (clip, not hidden, so a sticky footer still sticks) and
+   under its content without lifting each child (isolate, then the glows at -1). */
+.host {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+}
+
+/* Over the top of the page, fading out downwards, so a long step's foot stays on the plain background. */
+.glows {
+  position: absolute;
+  z-index: -1;
+  inset: -10% -15% auto;
+  height: 900px;
+  opacity: calc(var(--glow-strength) * 1.5);
+  filter: blur(70px) saturate(1.15);
+  -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent);
+  mask-image: linear-gradient(to bottom, #000 45%, transparent);
+  pointer-events: none;
+}
+
+.glows i {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  left: var(--x);
+  top: var(--y);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--colour), transparent);
+  animation: orbit var(--length) ease-in-out infinite alternate;
+}
+
+.glows i:nth-child(1) {
+  --colour: var(--glow-1);
+  --size: 520px;
+  --x: 6%;
+  --y: 6%;
+  --length: 17s;
+}
+
+.glows i:nth-child(2) {
+  --colour: var(--glow-2);
+  --size: 440px;
+  --x: 34%;
+  --y: -8%;
+  --length: 21s;
+
+  animation-delay: -6s;
+}
+
+.glows i:nth-child(3) {
+  --colour: var(--glow-3);
+  --size: 560px;
+  --x: 58%;
+  --y: 4%;
+  --length: 19s;
+
+  animation-delay: -3s;
+}
+
+.glows i:nth-child(4) {
+  --colour: var(--glow-4);
+  --size: 400px;
+  --x: 42%;
+  --y: 30%;
+  --length: 23s;
+
+  animation-delay: -11s;
+}
+
+.glows i:nth-child(5) {
+  --colour: var(--glow-5);
+  --size: 380px;
+  --x: 76%;
+  --y: 34%;
+  --length: 18s;
+
+  animation-delay: -8s;
+}
+
+/* Each blur wanders a few percent of its size, slowly enough to feel alive, never to catch the eye. */
+@keyframes orbit {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate3d(7%, 5%, 0) scale(1.08);
+  }
+
+  66% {
+    transform: translate3d(-5%, 9%, 0) scale(0.94);
+  }
+
+  100% {
+    transform: translate3d(4%, -6%, 0) scale(1.04);
+  }
+}

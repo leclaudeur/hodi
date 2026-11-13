@@ -1,0 +1,51 @@
+{
+  "case": "H15",
+  "title": "ATTACH never opens Hodi database, whatever the path",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/absolute",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/relative",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/uri",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/memory",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

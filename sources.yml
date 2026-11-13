@@ -28,7 +28,7 @@
 # ==========================================
 
 topics:
-  - id: belgique
+  - id: belgium
     label: { fr: Belgique, en: Belgium }
     young: [teen, child]
     # r/belgium is left out: many posts are in Dutch.
@@ -79,7 +79,7 @@ topics:
         domains: [vrt.be, vrtnws.be]
       # BX1 refuses requests from the server.
 
-  - id: monde
+  - id: world
     label: { fr: Monde, en: World }
     young: [teen, child]
     # International news and geopolitics: conflicts, EU, G20, the world economy.
@@ -223,7 +223,7 @@ topics:
         domains: [sciencealert.com]
 
   # Pop culture: blockbusters, series and streaming (Marvel, Star Wars, Disney, Netflix, HBO...).
-  - id: films-series
+  - id: film-tv
     label: { fr: Films / Séries, en: Film & TV }
     young: [teen, child]
     sources:
@@ -275,14 +275,16 @@ topics:
         domains: [cinemablend.com]
       # Les Toiles Héroïques and CinéSéries refuse requests from the server; The Direct has no feed.
 
-  - id: jeux-video
+  - id: gaming
     label: { fr: Jeux vidéo, en: Gaming }
     young: [teen, child]
     sources:
+      # Jeuxvideo.com's bot wall answers 403 to the reader's checks: the app shows
+      # its titles and summaries from the feed, with a link to the site.
       - id: jeuxvideo-com
         name: Jeuxvideo.com
         url: https://www.jeuxvideo.com/rss/rss.xml
-        domains: [jeuxvideo.com]
+        reader: false
       - id: gamekult
         name: Gamekult
         url: https://www.gamekult.com/feed.xml
@@ -315,7 +317,7 @@ topics:
         domains: [videogameschronicle.com]
       # GameSpot refuses article pages from the server.
 
-  - id: ia
+  - id: ai
     label: { fr: IA, en: AI }
     young: [teen]
     sources:
@@ -333,11 +335,13 @@ topics:
         url: https://techcrunch.com/category/artificial-intelligence/feed/
         lang: en
         domains: [techcrunch.com]
+      # openai.com answers 403 to the reader, even as a browser: titles and
+      # summaries from the feed, with a link to the site.
       - id: openai
         name: OpenAI
         url: https://openai.com/news/rss.xml
         lang: en
-        domains: [openai.com]
+        reader: false
       - id: google-deepmind
         name: Google DeepMind
         url: https://deepmind.google/blog/rss.xml
@@ -410,7 +414,7 @@ topics:
         lang: en
         domains: [theguardian.com]
 
-  - id: auto-moto
+  - id: motoring
     label: { fr: Auto / Moto, en: Motoring }
     young: [teen]
     sources:
@@ -465,7 +469,7 @@ topics:
         lang: en
         domains: [theguardian.com]
 
-  - id: argent-conso
+  - id: money
     label: { fr: Argent & Conso, en: Money }
     young: [teen]
     sources:
@@ -488,7 +492,7 @@ topics:
         lang: en
         domains: [bbc.com, bbc.co.uk]
 
-  - id: sante
+  - id: health
     label: { fr: Santé & Bien-être, en: Health }
     young: [teen]
     sources:
@@ -517,7 +521,7 @@ topics:
         lang: en
         domains: [medicalxpress.com]
 
-  - id: cuisine
+  - id: food
     label: { fr: Cuisine, en: Food }
     young: [teen, child]
     sources:
@@ -540,7 +544,7 @@ topics:
         lang: en
         domains: [smittenkitchen.com]
 
-  - id: voyage
+  - id: travel
     label: { fr: Voyage, en: Travel }
     young: [teen]
     sources:
@@ -563,7 +567,7 @@ topics:
         lang: en
         domains: [nomadicmatt.com]
 
-  - id: musique
+  - id: music
     label: { fr: Musique, en: Music }
     young: [teen, child]
     sources:
@@ -613,7 +617,7 @@ topics:
         lang: en
         domains: [openculture.com]
 
-  - id: maison-deco
+  - id: home
     label: { fr: Maison & Déco, en: Home & Decor }
     sources:
       - id: planete-deco
@@ -635,7 +639,7 @@ topics:
         lang: en
         domains: [dezeen.com]
 
-  - id: famille
+  - id: family
     label: { fr: Famille & Parents, en: Family }
     sources:
       - id: parents-fr
@@ -653,12 +657,12 @@ topics:
         lang: en
         domains: [fatherly.com]
 
-  - id: mode-beaute
+  - id: fashion
     label: { fr: Mode & Beauté, en: Fashion }
     young: [teen]
     sources:
       - id: vogue-fr
-        name: Vogue France
+        name: Vogue
         url: https://www.vogue.fr/
         domains: [vogue.fr]
       - id: guardian-fashion
@@ -672,7 +676,7 @@ topics:
         lang: en
         domains: [fashionista.com]
 
-  - id: climat
+  - id: climate
     label: { fr: Climat & Environnement, en: Climate }
     young: [teen, child]
     sources:
@@ -699,7 +703,7 @@ topics:
         lang: en
         domains: [grist.org]
 
-  - id: animaux
+  - id: animals
     label: { fr: Animaux, en: Animals }
     young: [teen, child]
     sources:
@@ -723,7 +727,7 @@ topics:
         domains: [theguardian.com]
 
 listen:
-  - id: films-series
+  - id: film-tv
     label: { fr: Films / Séries, en: Film & TV }
     sources:
       # Followed
@@ -773,7 +777,7 @@ listen:
         url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZGYJFUizSax-yElQaFDp5Q
         lang: en
 
-  - id: jeux-video
+  - id: gaming
     label: { fr: Jeux vidéo, en: Gaming }
     sources:
       # Followed
@@ -851,7 +855,7 @@ listen:
         name: Scilabus
         url: https://www.youtube.com/feeds/videos.xml?channel_id=UCeR8BYZS7IHYjk_9Mh5JgkA
 
-  - id: ia
+  - id: ai
     label: { fr: IA, en: AI }
     sources:
       # Suggested
@@ -938,7 +942,7 @@ listen:
         url: https://www.youtube.com/feeds/videos.xml?channel_id=UCsBjURrPoezykLs9EqgamOA
         lang: en
 
-  - id: divers
+  - id: other
     label: { fr: Divers, en: Other }
     sources:
       # Followed

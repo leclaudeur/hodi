@@ -1,0 +1,11 @@
+{
+  "id": "hostile-h38",
+  "name": "Hostile H38",
+  "version": "0.0.1",
+  "description": "mail: header injection and several recipients",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "mail": true
+  }
+}

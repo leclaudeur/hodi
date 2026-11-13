@@ -84,11 +84,4 @@ export const isVideoReading = (entry: ReadingEntry) => entry.kind === 'video' ||
 export const clearReadings = () =>
   changeUserState(state => ({ ...state, readings: [] }), { method: 'DELETE', path: '/readings' })
 
-// Monday 00:00 of the week holding this date, local time.
-export const startOfWeek = (date: Date) => {
-  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
-  return start
-}
-
 export const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate())

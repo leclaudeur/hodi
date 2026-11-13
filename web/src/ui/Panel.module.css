@@ -1,0 +1,40 @@
+/* The card a dialog is drawn on: its edge, its corners, its shadow and its header's tint. The full-page steps
+   (Connexion, J'ai un code, the setup) stand on the same card, without the dimmed and blurred page under it. */
+.panel {
+  /* The header's tint: a step lighter than the card, in every theme. */
+  --dialog-header: color-mix(in srgb, var(--control) 80%, var(--card));
+
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--dialog-surface, var(--card));
+  box-shadow: 0 24px 64px var(--shadow);
+}
+
+/* A header's band: edge to edge, tinted, over a line. */
+.band {
+  border-bottom: 1px solid var(--divider);
+  background: var(--dialog-header);
+}
+
+/* A header's title. */
+.title {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+/* What the card is for, first in its body, 20px over what follows (the body's 14px gap and 6 more). */
+.intro {
+  margin-bottom: 6px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.intro strong,
+.intro b {
+  color: var(--text);
+  font-weight: 600;
+}

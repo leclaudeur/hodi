@@ -1,0 +1,23 @@
+name: Reader problem
+description: An article that shows wrong in the reader, or a source whose articles never open in it
+labels: [bug]
+body:
+  - type: input
+    id: link
+    attributes:
+      label: Article
+      description: The article's address on its site. It is enough to see what the reader made of it.
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong?
+      description: A paragraph missing, a leftover block such as "Follow us", a picture twice, the article never listed…
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: The reader beside the site's page, if it helps. Drag the pictures here.

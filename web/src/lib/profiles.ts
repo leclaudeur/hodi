@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
+import { isServerOnly } from './server-only.ts'
 import {
   type Profile,
   type ProfileChanges,
@@ -6,11 +7,10 @@ import {
   chooseProfile,
   clearDataCache,
   createProfile,
+  type AdminProof,
   deleteProfile,
   getProfiles,
   removeProfilePhoto,
-  setParentalPin,
-  setProfilePin,
   takeProfileTour,
   updateProfile,
   uploadProfilePhoto
@@ -25,8 +25,10 @@ import { clearUserState, sendPendingChanges } from './user-state.ts'
 export interface ProfilesState {
   profiles: Profile[]
   current: number | null
-  // Whether the household has a Code parental.
-  parentalCode: boolean
+  // The profile of the account signed in on this device, if any.
+  own: number | null
+  // The profile opened here is the server admin's: Réglages leads to /server.
+  serverAdmin: boolean
 }
 
 let state: ProfilesState | null = null
@@ -40,7 +42,7 @@ const commit = (next: ProfilesState) => {
 
 export const refreshProfiles = () => {
   loading ??= getProfiles()
-    .then(({ profiles, current, parentalCode }) => commit({ profiles, current, parentalCode }))
+    .then(({ profiles, current, own, serverAdmin }) => commit({ profiles, current, own, serverAdmin }))
     .finally(() => {
       loading = null
     })
@@ -61,8 +63,7 @@ export const useProfiles = ({
   const value = useSyncExternalStore(subscribe, () => state)
   useEffect(() => {
     if (!state || fresh) refreshProfiles().catch((error: unknown) => onError?.(error))
-    // Loaded once for the app: later changes come through this module.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loaded once for the app: later changes come through this module
   }, [])
   return value
 }
@@ -75,13 +76,25 @@ export const useCurrentProfile = () => {
   return value?.profiles.find(profile => profile.id === value.current) ?? null
 }
 
-// The household's admin reads here: the profiles and the shared data are its to change.
-export const useIsAdmin = () => useCurrentProfile()?.role === 'admin'
+// The server's admin reads here: /server is theirs. null until the list has arrived.
+export const useIsServerAdmin = () => {
+  const value = useProfiles({ onError: () => {} })
+  // No household yet: only the server's admin is ever signed in.
+  if (isServerOnly()) return true
+  return value ? value.serverAdmin : null
+}
 
 export const isYoung = (profile: Pick<Profile, 'kind'>) => profile.kind !== 'adult'
 
+// A profile sent back after a change does not say whether it is locked here: the list's answer stays.
 const replace = (profile: Profile) => {
-  if (state) commit({ ...state, profiles: state.profiles.map(other => (other.id === profile.id ? profile : other)) })
+  if (!state) return
+  commit({
+    ...state,
+    profiles: state.profiles.map(other =>
+      other.id === profile.id ? { ...profile, locked: profile.locked ?? other.locked } : other
+    )
+  })
 }
 
 // Its tour starts: not offered again, on this device or any other. Kept waiting when the server does not hear it.
@@ -125,7 +138,7 @@ export const makePhoto = async (file: File): Promise<Blob> => {
   return photo
 }
 
-// A young profile changes which adults the Code parental guards: the list is asked again.
+// The server says which profiles ask for a password: the list is asked again.
 export const addProfile = async (
   name: string,
   color: ProfileColor,
@@ -135,7 +148,7 @@ export const addProfile = async (
   let profile = await createProfile(name, color, { kind, avatar })
   if (photo && profile.kind !== 'child') profile = await uploadProfilePhoto(profile.id, photo).catch(() => profile)
   if (state) commit({ ...state, profiles: [...state.profiles, profile] })
-  if (profile.kind !== 'adult') void refreshProfiles().catch(() => {})
+  void refreshProfiles().catch(() => {})
   return profile
 }
 
@@ -154,20 +167,8 @@ export const editProfile = async (
   return profile
 }
 
-export const changeParentalPin = async (pin: string | null, current?: string) => {
-  const { parentalCode } = await setParentalPin(pin, current)
-  await refreshProfiles().catch(() => {})
-  if (state) commit({ ...state, parentalCode })
-}
-
-export const changePin = async (id: number, pin: string | null, current?: string) => {
-  const profile = await setProfilePin(id, pin, current)
-  replace(profile)
-  return profile
-}
-
-export const removeProfile = async (id: number) => {
-  await deleteProfile(id)
+export const removeProfile = async (id: number, proof?: AdminProof) => {
+  await deleteProfile(id, proof)
   dropRequestsOf(id)
   if (!state) return
   commit({ ...state, profiles: state.profiles.filter(profile => profile.id !== id) })
@@ -185,12 +186,12 @@ export const PROFILE_SWITCHING = 'hodi:profile-switching'
 export type SwitchResult = 'switched' | 'pending'
 
 // pending: changes made offline still wait to be sent, and would go to the wrong profile.
-// pin: the profile's, when it has one (a wrong one throws a RequestError).
-// opened: once the server took the PIN, before the app reloads on the profile (a green "right" to see).
+// password: the one the profile asks for here, if any (a wrong one throws a RequestError).
+// opened: once the server took it, before the app reloads on the profile.
 export const switchProfile = async (
   id: number,
   chosen: boolean,
-  pin?: string,
+  password?: string,
   opened?: () => Promise<void>
 ): Promise<SwitchResult> => {
   const same = id === state?.current
@@ -200,7 +201,7 @@ export const switchProfile = async (
   }
   if (!same && !(await sendPendingChanges())) return 'pending'
 
-  await chooseProfile(id, pin)
+  await chooseProfile(id, password)
   await opened?.()
   window.dispatchEvent(new Event(PROFILE_SWITCHING))
   if (!same) {

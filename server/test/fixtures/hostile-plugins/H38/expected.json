@@ -1,0 +1,22 @@
+{
+  "case": "H38",
+  "title": "mail: header injection and several recipients",
+  "setup": "Serveur › E-mail set up with the test's fake transport, which records every message.",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/mail",
+      "body": {},
+      "expect": {
+        "status": 200
+      }
+    }
+  ],
+  "expectBody": "Tries 0 to 3 have ok: false (CR/LF anywhere, or more than one recipient). Tries 4 to 7 may have ok: true, but then the recorded message has exactly one recipient, no Bcc/Cc, the core's From, no Reply-To from the plugin, text only (no HTML part), no attachment, and the core's footer naming the plugin.",
+  "afterInCore": "The fake transport recorded at most 4 messages, each to a@example.test only. /etc/passwd was never read.",
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ],
+  "why": "nodemailer accepts address lists, html, attachments with a path (it reads the file!), from and replyTo. The core must build the message from to, subject and text only."
+}

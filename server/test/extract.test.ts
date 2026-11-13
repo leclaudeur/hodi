@@ -366,6 +366,60 @@ describe('cleanArticleHtml', () => {
     assert.match(cleanArticleHtml(html), /Météo A/)
   })
 
+  it('removes an "A lire aussi" card without its accent, with the title, standfirst and picture (Vogue)', () => {
+    const html = `<p>${lead}</p>
+      <div><div><div>A lire aussi</div><a href="/article/tendance-maquillage"><span>Le brun est le nouveau noir</span></a>
+        <p>Du mascara à l’eye-liner, le brun revient en force dans les tendances make-up de la saison.</p>
+        <div><span>Par </span><a href="/journaliste/une-autrice">Une Autrice</a></div></div>
+        <a href="/article/tendance-maquillage"><img src="https://media.example.com/brun.jpg" alt="article image"></a></div>
+      <p>Un deuxième paragraphe, bien distinct du premier, avec la suite de l’article et ses détails.</p>`
+
+    const cleaned = cleanArticleHtml(html)
+
+    assert.doesNotMatch(cleaned, /lire aussi|nouveau noir|mascara|Autrice|brun\.jpg/i)
+    assert.match(cleaned, /Le gouvernement fédéral/)
+    assert.match(cleaned, /Un deuxième paragraphe/)
+  })
+
+  it('removes an "A lire aussi" heading and its links (Futura)', () => {
+    const html = `<p>${lead}</p>
+      <p>Un deuxième paragraphe, bien distinct du premier, avec la suite de l’article et ses détails.</p>
+      <h2>A lire aussi</h2>
+      <ul><li><a href="/guides/ecouteurs">Les meilleurs écouteurs sans fil</a></li><li><a href="/guides/casques">Les meilleurs casques</a></li></ul>`
+
+    const cleaned = cleanArticleHtml(html)
+
+    assert.doesNotMatch(cleaned, /lire aussi|écouteurs|casques/i)
+    assert.match(cleaned, /Un deuxième paragraphe/)
+  })
+
+  it("removes the post's details box, and keeps a glossary (Le Grand Continent)", () => {
+    const html = `<p>${lead}</p>
+      <dl><dt>Auteur</dt><dd><a href="/fr/p/un-auteur/">Un Auteur</a></dd><dt>Image</dt><dd>© Un Photographe</dd>
+        <dt>Date</dt><dd><time datetime="2026-11-11T06:30:00+01:00">11 novembre 2026</time></dd></dl>
+      <dl><dt>Partager</dt><dd><a href="//facebook.com/sharer">Facebook</a></dd>
+        <div><p>Abonnez-vous pour télécharger cet article en format PDF</p><a href="/fr/offre-abonnement/">S'abonner</a></div></dl>
+      <p>Un deuxième paragraphe, bien distinct du premier, avec la suite de l’article et ses détails.</p>
+      <dl><dt>PIB</dt><dd>Produit intérieur brut</dd></dl>`
+
+    const cleaned = cleanArticleHtml(html)
+
+    assert.doesNotMatch(cleaned, /Auteur|Photographe|Date|novembre|Partager|Facebook|PDF/)
+    assert.match(cleaned, /Un deuxième paragraphe/)
+    assert.match(cleaned, /Produit intérieur brut/)
+  })
+
+  it('removes the "Topics" footer and its tags (TechCrunch)', () => {
+    const html = `<p>${lead}</p>
+      <p>Un deuxième paragraphe, bien distinct du premier, avec la suite de l’article et ses détails.</p>
+      <div><p>Topics</p><div><a href="/category/ai/" rel="tag">AI</a>, <a href="/tag/ipo/" rel="tag">IPO</a></div></div>`
+
+    const cleaned = cleanArticleHtml(html)
+
+    assert.doesNotMatch(cleaned, /Topics|IPO/)
+    assert.match(cleaned, /Un deuxième paragraphe/)
+  })
+
   it('removes a rating widget, a cookie wall and a subscriber-only notice', () => {
     const html = `<p>${lead}</p>
       <p>Un deuxième paragraphe, bien distinct du premier, avec la suite de l’article et ses détails.</p>

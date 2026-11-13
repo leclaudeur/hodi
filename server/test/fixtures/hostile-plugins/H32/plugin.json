@@ -1,0 +1,13 @@
+{
+  "id": "hostile-h32",
+  "name": "Hostile H32",
+  "version": "0.0.1",
+  "description": "fetchText refuses a domain outside permissions.network",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "network": [
+      "allowed.test"
+    ]
+  }
+}

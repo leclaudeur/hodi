@@ -46,11 +46,13 @@ export interface StoryCandidate {
 interface TitleAnalysis {
   key: string
   words: Set<string>
-  names: Set<string>
+  // Single-word names only: "Liège", not "Pays Bas".
+  names: string[]
 }
 
-// A topic compares every pair of its titles: analyse each title once.
+// A topic compares every pair of its titles, on each request: analyse each title and read each date once.
 const analyses = new Map<string, TitleAnalysis>()
+const times = new Map<string, number>()
 const MAX_ANALYSES = 5000
 
 const analyse = (title: string) => {
@@ -58,11 +60,29 @@ const analyse = (title: string) => {
 
   if (!analysis) {
     if (analyses.size >= MAX_ANALYSES) analyses.clear()
-    analysis = { key: titleKey(title), words: storyWords(title), names: properNames(title) }
+    const names = [...properNames(title)].filter(name => name && !name.includes(' '))
+    analysis = { key: titleKey(title), words: storyWords(title), names }
     analyses.set(title, analysis)
   }
 
   return analysis
+}
+
+const timeOf = (date: string) => {
+  let time = times.get(date)
+  if (time === undefined) {
+    if (times.size >= MAX_ANALYSES) times.clear()
+    time = Date.parse(date)
+    times.set(date, time)
+  }
+  return time
+}
+
+const sharedCount = (a: Set<string>, b: Set<string>) => {
+  const [small, large] = a.size <= b.size ? [a, b] : [b, a]
+  let shared = 0
+  for (const word of small) if (large.has(word)) shared++
+  return shared
 }
 
 export const sameStory = (a: StoryCandidate, b: StoryCandidate) => {
@@ -70,21 +90,23 @@ export const sameStory = (a: StoryCandidate, b: StoryCandidate) => {
   const { key: keyB, words: wordsB, names: namesB } = analyse(b.title)
 
   if (keyA === keyB) return true
+  // Below three words in common, never the same story: the cheapest test first.
+  if (wordsA.size < 3 || wordsB.size < 3) return false
 
-  if (a.publishedAt && b.publishedAt) {
-    const gap = Math.abs(Date.parse(a.publishedAt) - Date.parse(b.publishedAt))
-    if (gap > MAX_GAP_MS) return false
+  if (a.publishedAt && b.publishedAt && Math.abs(timeOf(a.publishedAt) - timeOf(b.publishedAt)) > MAX_GAP_MS) {
+    return false
   }
 
+  const shared = sharedCount(wordsA, wordsB)
+  if (shared < 3) return false
+
   // "Incendie à Liège" and "Incendie à Charleroi" are two stories.
-  const ownName = (names: Set<string>, otherWords: Set<string>) =>
-    [...names].some(name => name && !otherWords.has(name) && !name.includes(' '))
+  const ownName = (names: string[], otherWords: Set<string>) => names.some(name => !otherWords.has(name))
   if (ownName(namesA, wordsB) && ownName(namesB, wordsA)) return false
 
-  const shared = [...wordsA].filter(word => wordsB.has(word)).length
-  const union = new Set([...wordsA, ...wordsB]).size
-  const overlap = shared / Math.max(1, Math.min(wordsA.size, wordsB.size))
+  const union = wordsA.size + wordsB.size - shared
+  const overlap = shared / Math.min(wordsA.size, wordsB.size)
 
   // Many words in common, or nearly the same few words.
-  return (shared >= 4 && overlap >= 0.6) || (shared >= 3 && shared / union >= 0.75)
+  return (shared >= 4 && overlap >= 0.6) || shared / union >= 0.75
 }

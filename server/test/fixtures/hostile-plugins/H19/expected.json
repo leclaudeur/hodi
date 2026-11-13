@@ -1,0 +1,23 @@
+{
+  "case": "H19",
+  "title": "Filling the disk stops at the quota",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/fill",
+      "expect": {
+        "statusIn": [
+          200,
+          504
+        ],
+        "note": "200 with a \"full\" error from SQLite, or 504 if the time limit comes first"
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "expect": "The plugin folder never grows past the quota (database and files together)."
+}

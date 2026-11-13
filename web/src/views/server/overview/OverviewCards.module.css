@@ -1,0 +1,280 @@
+.keys,
+.people,
+.list,
+.bars,
+.health {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  list-style: none;
+}
+
+.ringRow {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.donut {
+  position: relative;
+}
+
+.donutCentre {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donutCentre strong {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.donutCentre span {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.keys {
+  gap: 10px;
+}
+
+.keys li,
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.keys i,
+.list i {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.keys span,
+.list span {
+  flex: 1;
+  min-width: 0;
+}
+
+.keys b,
+.list b,
+.bars b {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.nobody {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+/* The people take the card's free height and scroll: the card never grows with them, and two of them fit with no
+   space left below. */
+.online {
+  flex: 1;
+  min-height: 0;
+}
+
+.pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.people {
+  flex: 1 1 0;
+  overflow-y: auto;
+  min-height: 112px;
+  border-top: 1px solid var(--divider);
+  overscroll-behavior: contain;
+}
+
+.people li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.people li:last-child {
+  border-bottom: none;
+}
+
+.avatar {
+  display: grid;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  place-items: center;
+}
+
+.who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.who b {
+  font-weight: 500;
+}
+
+.who small {
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.device {
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+.split {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.splitBar,
+.share {
+  display: flex;
+  overflow: hidden;
+  gap: 3px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+}
+
+.share {
+  flex-shrink: 0;
+  height: 12px;
+}
+
+.share span,
+.list i {
+  background: var(--topic);
+}
+
+/* Every topic and source: the list scrolls rather than stop at a top five. */
+.list,
+.bars {
+  overflow-y: auto;
+  max-height: 228px;
+}
+
+/* A list that scrolls reaches the card's bottom edge: the card's bottom padding scrolls with it. */
+.list,
+.bars,
+.people {
+  margin-bottom: -18px;
+  padding-bottom: 18px;
+}
+
+.list {
+  gap: 10px;
+}
+
+.bars {
+  gap: 6px;
+}
+
+.bars li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+}
+
+.barFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 8px;
+  background: var(--control);
+}
+
+.bars li > :not(.barFill) {
+  position: relative;
+}
+
+.barName {
+  flex: 1;
+  min-width: 0;
+}
+
+.health li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--divider);
+}
+
+.health li:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.health span {
+  flex: 1;
+  color: var(--text-2);
+}
+
+.health b {
+  font-weight: 500;
+  text-align: right;
+}
+
+.problem {
+  color: var(--danger);
+}
+
+/* A tablet: « En ligne » beside « Profils », the ring and its keys only. */
+@media (max-width: 1279px) and (min-width: 601px) {
+  .people,
+  .online .nobody {
+    display: none;
+  }
+}
+
+/* A phone: four people, then the list scrolls. */
+@media (max-width: 600px) {
+  .people {
+    flex: none;
+    min-height: 0;
+    max-height: 206px;
+  }
+}

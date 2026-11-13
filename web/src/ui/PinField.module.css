@@ -27,6 +27,19 @@
   gap: 10px;
 }
 
+/* Eight boxes, in two groups of four: narrower, with a wider gap in the middle to read the code out. */
+.grouped {
+  gap: 8px;
+}
+
+.grouped .box {
+  width: 44px;
+}
+
+.grouped .box:nth-of-type(4) {
+  margin-right: 10px;
+}
+
 /* The real field, over the boxes: invisible, but it takes the taps, the keys and the paste. */
 .input {
   position: absolute;

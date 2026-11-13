@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import sharp from 'sharp'
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -8,7 +9,6 @@ import { createApp } from '../app.ts'
 import { GameStore } from '../db/game-store.ts'
 import { parseRules } from '../game/rules.ts'
 import { LoginThrottle } from '../auth/login-throttle.ts'
-import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
@@ -19,6 +19,9 @@ import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { SourceIcons } from '../news/source-icons.ts'
 import { itemId } from '../news/text.ts'
+import { ADMIN_EMAIL, withAdminAccount } from './helpers/accounts.ts'
+import { hashPassword } from '../auth/password.ts'
+import type { UserAccountStore } from '../db/user-account-store.ts'
 import { PNG, articlePage, fakeFetch, rssFeed } from './helpers/news.ts'
 import { brotliCompressSync } from 'node:zlib'
 
@@ -27,6 +30,7 @@ const PASSWORD = 'a very long test password'
 let baseUrl: string
 let close: () => void
 let clock = Date.UTC(2026, 9, 23)
+let accountStore: UserAccountStore
 let news: NewsService
 const db = openDatabase(':memory:')
 const household = new HouseholdStore(db)
@@ -56,13 +60,11 @@ before(async () => {
     databaseFile: ':memory:',
     backupDir: 'unused-backups',
     timeZone: 'Europe/Brussels',
-    maxSources: 200,
     vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
   }
   household.setUp(
     {
       name: 'Foyer',
-      passwordHash: await hashPassword(PASSWORD, { N: 2 ** 10, r: 8, p: 1 }),
       timeZone: null,
       country: null,
       ai: null
@@ -72,14 +74,14 @@ before(async () => {
 
   const catalog = parseCatalog(`
 topics:
-  - id: belgique
+  - id: belgium
     label: Belgique
     sources:
       - id: bx1
         name: BX1
         url: https://bx1.be/feed/
         domains: [bx1.be]
-  - id: monde
+  - id: world
     label: Monde
     sources: []
 listen:
@@ -111,9 +113,14 @@ listen:
     ]
   })
 
+  const profiles = new ProfileStore(db)
+
+  const adminStores = await withAdminAccount(db, profiles, PASSWORD, clock)
+  accountStore = adminStores.accounts
   const server = createApp(config, {
     news,
-    profiles: new ProfileStore(db),
+    profiles,
+    ...adminStores,
     household,
     storage: {
       usage: () => ({ databaseBytes: 1, backupBytes: 0, backups: 0, articles: 0, texts: 0 }),
@@ -133,7 +140,7 @@ listen:
       // A proposal: in the file, not in the catalogue.
       file: parseCatalog(`
 topics:
-  - id: belgique
+  - id: belgium
     label: Belgique
     sources:
       - id: gazette
@@ -174,21 +181,50 @@ topics:
 
 after(() => close())
 
+const MEMBER_PASSWORD = 'le mot de passe du membre'
+let adults = 0
+
+// Every adult profile opens with its own account's password: an adult made here gets an account, then this device
+// opens its profile, signed in with that account from then on.
+const openAdult = async (session: string, id: number) => {
+  if (!accountStore.ofProfile(id)) {
+    const hash = await hashPassword(MEMBER_PASSWORD, { N: 2 ** 10, r: 8, p: 1 })
+    accountStore.linkProfile(accountStore.create(`adult-${++adults}@example.com`, hash, clock)!.id, id)
+  }
+  const opened = await fetch(`${baseUrl}/api/profiles/current`, {
+    method: 'PUT',
+    headers: { cookie: session, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, password: MEMBER_PASSWORD })
+  })
+  assert.equal(opened.status, 200)
+  return sessionCookieFrom(opened)
+}
+
 const login = (password: string) =>
   fetch(`${baseUrl}/api/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password })
+    body: JSON.stringify({ email: ADMIN_EMAIL, password })
   })
 
-const sessionCookieFrom = (response: Response) => response.headers.get('set-cookie')?.split(';')[0] ?? ''
+// The session and, after a sign-in, the account's own profile it opens: every adult profile asks for its password,
+// so the session alone opens nothing.
+const sessionCookieFrom = (response: Response) =>
+  response.headers
+    .getSetCookie()
+    .map(cookie => cookie.split(';')[0])
+    .join('; ')
 
 describe('app', () => {
   it('serves a public health endpoint with security headers', async () => {
     const response = await fetch(`${baseUrl}/health`)
 
     assert.equal(response.status, 200)
-    assert.deepEqual(await response.json(), { status: 'ok' })
+    const body = (await response.json()) as { status: string; boot: string }
+    assert.equal(body.status, 'ok')
+    // The same on each answer until Hodi restarts.
+    assert.match(body.boot, /^[0-9a-f]{16}$/)
+    assert.equal(((await (await fetch(`${baseUrl}/health`)).json()) as { boot: string }).boot, body.boot)
     assert.match(response.headers.get('content-security-policy') ?? '', /default-src 'self'/)
     assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow')
     assert.equal(response.headers.get('x-powered-by'), null)
@@ -258,7 +294,8 @@ describe('app', () => {
     const session = await fetch(`${baseUrl}/api/session`, { headers: { cookie } })
 
     assert.equal(session.status, 200)
-    assert.deepEqual(await session.json(), { authenticated: true, profileChosen: false, language: 'fr', hourCycle: 24 })
+    // The account's own profile opens at once.
+    assert.deepEqual(await session.json(), { authenticated: true, profileChosen: true, language: 'fr', hourCycle: 24 })
     assert.equal((await fetch(`${baseUrl}/api/unknown`, { headers: { cookie } })).status, 404)
 
     const logout = await fetch(`${baseUrl}/api/logout`, { method: 'POST', headers: { cookie } })
@@ -282,20 +319,20 @@ describe('app', () => {
     const cookie = sessionCookieFrom(await login(PASSWORD))
     const get = (route: string) => fetch(`${baseUrl}/api${route}`, { headers: { cookie } })
 
-    assert.equal((await get('/topics/belgique')).status, 200)
+    assert.equal((await get('/topics/belgium')).status, 200)
     assert.deepEqual(await (await get('/topics')).json(), {
       topics: [
-        { id: 'belgique', label: 'Belgique', sources: [{ id: 'bx1', name: 'BX1' }] },
-        { id: 'monde', label: 'Monde', sources: [] }
+        { id: 'belgium', label: 'Belgique', sources: [{ id: 'bx1', name: 'BX1' }] },
+        { id: 'world', label: 'Monde', sources: [] }
       ]
     })
     assert.equal((await get('/topics/nope')).status, 404)
-    assert.equal((await get('/topics/belgique?limit=0')).status, 400)
-    assert.equal((await get('/topics/belgique?limit=abc')).status, 400)
+    assert.equal((await get('/topics/belgium?limit=0')).status, 400)
+    assert.equal((await get('/topics/belgium?limit=abc')).status, 400)
 
     // The first listing starts the background checks: only readable articles are listed afterwards.
     await news.whenChecksIdle()
-    const topic = (await (await get('/topics/belgique')).json()) as {
+    const topic = (await (await get('/topics/belgium')).json()) as {
       checking: number
       items: { title: string; access: string }[]
     }
@@ -345,7 +382,7 @@ describe('app', () => {
     }
     assert.deepEqual(
       frontPage.sections.map(section => [section.id, section.items.map(item => item.title)]),
-      [['belgique', ['Bruxelles']]]
+      [['belgium', ['Bruxelles']]]
     )
 
     // Seen stories step aside, but a topic with nothing newer still shows them.
@@ -392,7 +429,8 @@ describe('app', () => {
         ['summary', 0],
         ['question', 0],
         ['dailySummary', 0],
-        ['sources', 0]
+        ['sources', 0],
+        ['plugin', 0]
       ]
     )
 
@@ -404,9 +442,9 @@ describe('app', () => {
     }
     assert.deepEqual(
       [day.day, day.items.map(item => [item.title, item.topicId]), day.previousDay],
-      ['2026-10-22', [['Bruxelles', 'belgique']], null]
+      ['2026-10-22', [['Bruxelles', 'belgium']], null]
     )
-    const belgique = (await (await get('/feed?tz=Europe/Brussels&topic=belgique')).json()) as { day: string }
+    const belgique = (await (await get('/feed?tz=Europe/Brussels&topic=belgium')).json()) as { day: string }
     assert.equal(belgique.day, '2026-10-22')
     for (const query of [
       '',
@@ -485,7 +523,7 @@ describe('app', () => {
   it('requires a session for news routes', async () => {
     for (const route of [
       '/topics',
-      '/topics/belgique',
+      '/topics/belgium',
       '/front-page',
       '/daily-summary',
 
@@ -520,7 +558,7 @@ describe('app', () => {
     const fromElsewhere = await fetch(`${baseUrl}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '203.0.113.9' },
-      body: JSON.stringify({ password: PASSWORD })
+      body: JSON.stringify({ email: ADMIN_EMAIL, password: PASSWORD })
     })
 
     assert.equal(fromElsewhere.status, 204)
@@ -550,7 +588,7 @@ describe('reader state', () => {
     assert.equal(
       (
         await call('PUT', '/preferences', {
-          preferences: { theme: 'poudre', accent: 'bleu', mutedWords: ['foot'], junk: 1 }
+          preferences: { theme: 'powder', accent: 'bleu', mutedWords: ['foot'], junk: 1 }
         })
       ).status,
       200
@@ -565,12 +603,28 @@ describe('reader state', () => {
       read: string[]
     }
     assert.equal(state.revision, revision)
-    assert.deepEqual(state.preferences, { theme: 'poudre', accent: 'bleu', mutedWords: ['foot'] })
+    assert.deepEqual(state.preferences, { theme: 'powder', accent: 'bleu', mutedWords: ['foot'] })
     assert.equal(state.saved[0]?.item.title, 'Sommet')
     assert.deepEqual(state.read, [ID])
 
     // Nothing changed since: nothing to send.
     assert.equal((await call('GET', `/?since=${revision}`)).status, 204)
+
+    // A device from before the topics' ids were English still sends its accent by the old name.
+    assert.equal((await call('PUT', '/preferences', { preferences: { accent: 'monde' } })).status, 200)
+
+    // A device from before every id was English sends Poudré by its old name: it is kept under the new one.
+    assert.equal((await call('PUT', '/preferences', { preferences: { theme: 'poudre' } })).status, 200)
+    const renamed = (await (await call('GET', '/')).json()) as { preferences: Record<string, unknown> }
+    assert.equal(renamed.preferences.theme, 'powder')
+    assert.equal(
+      (
+        await call('PUT', '/preferences', {
+          preferences: { theme: 'powder', accent: 'bleu', mutedWords: ['foot'] }
+        })
+      ).status,
+      200
+    )
   })
 
   it('keeps a profile’s own interface language, or none for the household’s', async () => {
@@ -652,7 +706,7 @@ describe('reader state', () => {
       saved: unknown[]
       readings: unknown[]
     }
-    assert.equal(state.preferences.theme, 'poudre')
+    assert.equal(state.preferences.theme, 'powder')
     assert.equal(state.saved.length, 2)
     assert.equal(state.readings.length, 1)
 
@@ -817,7 +871,8 @@ describe('profiles', () => {
   })
 
   it('asks "Qui lit ?" until the device picks a profile, then keeps each profile’s state apart', async () => {
-    assert.deepEqual(await (await call('GET', '/session')).json(), {
+    const signedInOnly = session.split('; ')[0]!
+    assert.deepEqual(await (await call('GET', '/session', { cookie: signedInOnly })).json(), {
       authenticated: true,
       profileChosen: false,
       language: 'fr',
@@ -829,10 +884,8 @@ describe('profiles', () => {
     const lea = (await created.json()) as { id: number; name: string }
     assert.equal(lea.name, 'Léa')
 
-    const picked = await call('PUT', '/profiles/current', { body: { id: lea.id } })
-    const profile = picked.headers.get('set-cookie')?.split(';')[0] ?? ''
-    assert.match(profile, new RegExp(`^hodi_profile=${lea.id}\\.[\\w-]+$`))
-    const asLea = `${session}; ${profile}`
+    const asLea = await openAdult(session, lea.id)
+    assert.match(asLea, new RegExp(`hodi_profile=${lea.id}\\.[\\w-]+`))
 
     assert.deepEqual(await (await call('GET', '/session', { cookie: asLea })).json(), {
       authenticated: true,
@@ -869,8 +922,7 @@ describe('profiles', () => {
       ((await (await call('GET', '/me/share-targets')).json()) as { profiles: number[] }).profiles
     assert.deepEqual(await targets(), [lea.id])
 
-    const picked = await call('PUT', '/profiles/current', { body: { id: lea.id } })
-    const asLea = `${session}; ${picked.headers.get('set-cookie')?.split(';')[0] ?? ''}`
+    const asLea = await openAdult(session, lea.id)
     await call('PUT', '/me/preferences', { body: { preferences: { sharing: false } }, cookie: asLea })
 
     assert.deepEqual(await targets(), [])
@@ -893,14 +945,15 @@ describe('profiles', () => {
     // Not the admin's to take for her.
     assert.equal((await call('POST', `/profiles/${lea.id}/tour`)).status, 403)
 
-    const picked = await call('PUT', '/profiles/current', { body: { id: lea.id } })
-    const asLea = `${session}; ${picked.headers.get('set-cookie')?.split(';')[0] ?? ''}`
+    const asLea = await openAdult(session, lea.id)
     const taken = await call('POST', `/profiles/${lea.id}/tour`, { cookie: asLea })
     assert.equal(((await taken.json()) as { tourPending: boolean }).tourPending, false)
   })
 
   it('keeps a photo under an address that changes with it', async () => {
-    const photo = Buffer.from('RIFF0000WEBPVP8 ', 'latin1')
+    const photo = await sharp({ create: { width: 4, height: 4, channels: 3, background: '#c4673a' } })
+      .webp()
+      .toBuffer()
     const put = await fetch(`${baseUrl}/api/profiles/1/photo`, {
       method: 'PUT',
       headers: { cookie: session, 'Content-Type': 'image/webp' },
@@ -921,6 +974,21 @@ describe('profiles', () => {
     })
     assert.equal(wrongType.status, 400)
 
+    // Said to be a picture, but not one: an SVG or a page could run as one if it were served back.
+    const disguised = await fetch(`${baseUrl}/api/profiles/1/photo`, {
+      method: 'PUT',
+      headers: { cookie: session, 'Content-Type': 'image/png' },
+      body: '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+    })
+    assert.equal(disguised.status, 400)
+    // A real picture under another picture's type.
+    const mislabelled = await fetch(`${baseUrl}/api/profiles/1/photo`, {
+      method: 'PUT',
+      headers: { cookie: session, 'Content-Type': 'image/jpeg' },
+      body: photo
+    })
+    assert.equal(mislabelled.status, 400)
+
     assert.equal(
       ((await (await call('DELETE', '/profiles/1/photo')).json()) as { photoVersion: null }).photoVersion,
       null
@@ -929,12 +997,12 @@ describe('profiles', () => {
   })
 
   it('leaves a member its own profile only, and the household to the admin', async () => {
-    const zoe = (await (await call('POST', '/profiles', { body: { name: 'Zoé', color: 'ia' } })).json()) as {
+    const zoe = (await (await call('POST', '/profiles', { body: { name: 'Zoé', color: 'ai' } })).json()) as {
       id: number
       role: string
     }
     assert.equal(zoe.role, 'member')
-    const asZoe = `${session}; hodi_profile=${zoe.id}`
+    const asZoe = await openAdult(session, zoe.id)
 
     assert.equal((await call('PATCH', `/profiles/${zoe.id}`, { body: { name: 'Zoë' }, cookie: asZoe })).status, 200)
     assert.equal((await call('PATCH', '/profiles/1', { body: { name: 'X' }, cookie: asZoe })).status, 403)
@@ -950,17 +1018,19 @@ describe('profiles', () => {
     assert.equal((await call('POST', '/ai-usage/reset', { body: { kind: 'nope' } })).status, 400)
     assert.equal((await call('POST', '/ai-usage/reset', { body: { kind: 'summary', profileId: zoe.id } })).status, 200)
 
-    assert.equal((await call('DELETE', `/profiles/${zoe.id}`)).status, 204)
+    // Zoé has an account of her own: deleting her profile takes the admin's password.
+    assert.equal((await call('DELETE', `/profiles/${zoe.id}`)).status, 403)
+    assert.equal((await call('DELETE', `/profiles/${zoe.id}`, { body: { password: PASSWORD } })).status, 204)
   })
 
   it('lets every adult manage the young profiles, and a young profile only its colour and avatar', async () => {
     const parent = (await (await call('POST', '/profiles', { body: { name: 'Sam', color: 'tech' } })).json()) as {
       id: number
     }
-    const asParent = `${session}; hodi_profile=${parent.id}`
+    const asParent = await openAdult(session, parent.id)
     // A parent adds young profiles, never an adult.
     assert.equal(
-      (await call('POST', '/profiles', { body: { name: 'Eva', color: 'ia' }, cookie: asParent })).status,
+      (await call('POST', '/profiles', { body: { name: 'Eva', color: 'ai' }, cookie: asParent })).status,
       403
     )
     const max = (await (
@@ -969,7 +1039,7 @@ describe('profiles', () => {
     assert.equal(max.kind, 'child')
     assert.ok(max.avatar)
     assert.equal(
-      (await call('POST', '/profiles', { body: { name: 'X', color: 'ia', kind: 'boss' }, cookie: asParent })).status,
+      (await call('POST', '/profiles', { body: { name: 'X', color: 'ai', kind: 'boss' }, cookie: asParent })).status,
       400
     )
 
@@ -984,18 +1054,22 @@ describe('profiles', () => {
     )
     assert.equal((await call('PATCH', '/profiles/1', { body: { name: 'X' }, cookie: asParent })).status, 403)
 
-    // The young profile picks its colour, not its name or kind, and never a PIN of its own.
-    const asMax = `${session}; hodi_profile=${max.id}`
+    // The young profile picks its colour, not its name or kind.
+    const asMax = `${session.split('; ')[0]}; hodi_profile=${max.id}`
     await call('PATCH', `/profiles/${max.id}`, { body: { kind: 'child' }, cookie: asParent })
     assert.equal(
-      (await call('PATCH', `/profiles/${max.id}`, { body: { color: 'musique', avatar: 'owl' }, cookie: asMax })).status,
+      (await call('PATCH', `/profiles/${max.id}`, { body: { color: 'music', avatar: 'owl' }, cookie: asMax })).status,
       200
     )
+    // A device from before the topics' ids were English sends the colour's old name: it is taken under the new one.
+    const recolored = await call('PATCH', `/profiles/${max.id}`, { body: { color: 'musique' }, cookie: asMax })
+    assert.equal(recolored.status, 200)
+    assert.equal(((await recolored.json()) as { color: string }).color, 'music')
+    assert.equal((await call('PATCH', `/profiles/${max.id}`, { body: { color: 'rouge' }, cookie: asMax })).status, 400)
     assert.equal((await call('PATCH', `/profiles/${max.id}`, { body: { name: 'Boss' }, cookie: asMax })).status, 403)
     assert.equal((await call('PATCH', `/profiles/${max.id}`, { body: { kind: 'adult' }, cookie: asMax })).status, 403)
-    assert.equal((await call('PUT', `/profiles/${max.id}/pin`, { body: { pin: '1234' }, cookie: asMax })).status, 403)
     assert.equal(
-      (await call('POST', '/profiles', { body: { name: 'Y', color: 'ia', kind: 'child' }, cookie: asMax })).status,
+      (await call('POST', '/profiles', { body: { name: 'Y', color: 'ai', kind: 'child' }, cookie: asMax })).status,
       403
     )
     const photo = await fetch(`${baseUrl}/api/profiles/${max.id}/photo`, {
@@ -1008,187 +1082,7 @@ describe('profiles', () => {
     // Deleting stays the admin's.
     assert.equal((await call('DELETE', `/profiles/${max.id}`, { cookie: asParent })).status, 403)
     assert.equal((await call('DELETE', `/profiles/${max.id}`)).status, 204)
-    assert.equal((await call('DELETE', `/profiles/${parent.id}`)).status, 204)
-  })
-
-  it('opens a private profile with its PIN only', async () => {
-    const zoe = (await (await call('POST', '/profiles', { body: { name: 'Zoé', color: 'ia' } })).json()) as {
-      id: number
-    }
-    const asZoe = `${session}; hodi_profile=${zoe.id}`
-    assert.equal((await call('PUT', `/profiles/1/pin`, { body: { pin: '1234' }, cookie: asZoe })).status, 403)
-    assert.equal((await call('PUT', '/profiles/1/pin', { body: { pin: '12' } })).status, 400)
-    assert.equal((await call('PUT', '/profiles/1/pin', { body: { pin: '123456' } })).status, 400)
-
-    const locked = await call('PUT', '/profiles/1/pin', { body: { pin: '1234' } })
-    assert.equal(locked.status, 200)
-    assert.equal(((await locked.json()) as { locked: boolean }).locked, true)
-    const asAdmin = `${session}; ${(locked.headers.get('set-cookie') ?? '').split(';')[0]}`
-    assert.equal(
-      ((await (await call('GET', '/session', { cookie: asAdmin })).json()) as { profileChosen: boolean }).profileChosen,
-      true
-    )
-
-    // A plain or old cookie no longer opens it: the first profile without a PIN answers, and is not admin.
-    const plain = `${session}; hodi_profile=1`
-    const fallback = (await (await call('GET', '/profiles', { cookie: plain })).json()) as { current: number }
-    assert.notEqual(fallback.current, 1)
-    assert.equal(
-      ((await call('GET', '/session', { cookie: plain }).then(r => r.json())) as { profileChosen: boolean })
-        .profileChosen,
-      false
-    )
-    assert.equal((await call('POST', '/profiles', { body: { name: 'Sam', color: 'tech' }, cookie: plain })).status, 403)
-
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: 1 } })).status, 403)
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: 1, pin: '0000' } })).status, 403)
-    const opened = await call('PUT', '/profiles/current', { body: { id: 1, pin: '1234' } })
-    assert.equal(opened.status, 200)
-    const asOpened = `${session}; ${(opened.headers.get('set-cookie') ?? '').split(';')[0]}`
-
-    // Removed with the current PIN only.
-    assert.equal((await call('PUT', '/profiles/1/pin', { body: { pin: null }, cookie: asOpened })).status, 403)
-    const removed = await call('PUT', '/profiles/1/pin', { body: { pin: null, current: '1234' }, cookie: asOpened })
-    assert.equal(((await removed.json()) as { locked: boolean }).locked, false)
-
-    // A member makes its own profile private too; the admin may remove a forgotten PIN, never set one.
-    const zoePrivate = await call('PUT', `/profiles/${zoe.id}/pin`, { body: { pin: '2468' }, cookie: asZoe })
-    assert.equal(((await zoePrivate.json()) as { locked: boolean }).locked, true)
-    assert.equal(
-      (await call('PUT', `/profiles/${zoe.id}/pin`, { body: { pin: '1111' }, cookie: asOpened })).status,
-      403
-    )
-    const reset = await call('PUT', `/profiles/${zoe.id}/pin`, { body: { pin: null }, cookie: asOpened })
-    assert.equal(((await reset.json()) as { locked: boolean }).locked, false)
-    assert.equal((await call('DELETE', `/profiles/${zoe.id}`)).status, 204)
-  })
-
-  it('gives a device that has not opened a profile no right of any, when every profile is private', async () => {
-    const zoe = (await (await call('POST', '/profiles', { body: { name: 'Zoé', color: 'ia' } })).json()) as {
-      id: number
-    }
-    // Every profile private, the ones of the tests before too.
-    const { profiles: known } = (await (await call('GET', '/profiles')).json()) as { profiles: { id: number }[] }
-    const members = known.map(profile => profile.id).filter(id => id !== 1)
-    for (const id of members) {
-      await call('PUT', `/profiles/${id}/pin`, { body: { pin: '2468' }, cookie: `${session}; hodi_profile=${id}` })
-    }
-    const locked = await call('PUT', '/profiles/1/pin', { body: { pin: '1234' } })
-    const asAdmin = `${session}; ${(locked.headers.get('set-cookie') ?? '').split(';')[0]}`
-
-    // "Qui lit ?" still answers: the list, a photo and the choice of a profile with its code.
-    assert.equal((await call('GET', '/session')).status, 200)
-    assert.equal((await call('GET', '/profiles')).status, 200)
-    assert.equal((await call('GET', `/profiles/${zoe.id}/photo`)).status, 404)
-    // Nothing the admin does: neither another profile's PIN, nor a profile added or deleted, nor the Code parental.
-    assert.equal((await call('PUT', `/profiles/${zoe.id}/pin`, { body: { pin: null } })).status, 403)
-    assert.equal((await call('POST', '/profiles', { body: { name: 'Intrus', color: 'tech' } })).status, 403)
-    assert.equal((await call('PATCH', `/profiles/${zoe.id}`, { body: { name: 'Intrus' } })).status, 403)
-    assert.equal((await call('DELETE', `/profiles/${zoe.id}`)).status, 403)
-    assert.equal((await call('PUT', '/profiles/parental-pin', { body: { pin: '0000' } })).status, 403)
-    const opened = await call('PUT', '/profiles/current', { body: { id: zoe.id, pin: '2468' } })
-    assert.equal(opened.status, 200)
-
-    for (const id of members) await call('PUT', `/profiles/${id}/pin`, { body: { pin: null }, cookie: asAdmin })
-    await call('PUT', '/profiles/1/pin', { body: { pin: null, current: '1234' }, cookie: asAdmin })
-    assert.equal((await call('DELETE', `/profiles/${zoe.id}`)).status, 204)
-  })
-
-  it('opens the adults with the Code parental once there are young profiles, the young ones directly', async () => {
-    // Past the wrong PINs of the test before.
-    clock += 16 * 60_000
-    const sam = (await (await call('POST', '/profiles', { body: { name: 'Sam', color: 'tech' } })).json()) as {
-      id: number
-    }
-    // Only the admin sets it.
-    assert.equal(
-      (
-        await call('PUT', '/profiles/parental-pin', {
-          body: { pin: '1357' },
-          cookie: `${session}; hodi_profile=${sam.id}`
-        })
-      ).status,
-      403
-    )
-    const set = await call('PUT', '/profiles/parental-pin', { body: { pin: '1357' } })
-    assert.deepEqual(await set.json(), { parentalCode: true })
-    const asAdmin = `${session}; ${(set.headers.get('set-cookie') ?? '').split(';')[0]}`
-
-    // No young profile yet: nothing is guarded.
-    const before = (await (await call('GET', '/profiles', { cookie: asAdmin })).json()) as {
-      profiles: { id: number; parental: boolean }[]
-      parentalCode: boolean
-    }
-    assert.equal(before.parentalCode, true)
-    assert.ok(before.profiles.every(profile => !profile.parental))
-
-    const max = (await (
-      await call('POST', '/profiles', { body: { name: 'Max', color: 'sport', kind: 'child' }, cookie: asAdmin })
-    ).json()) as { id: number; parental: boolean }
-    assert.equal(max.parental, false)
-    const after = (await (await call('GET', '/profiles', { cookie: `${session}; hodi_profile=${max.id}` })).json()) as {
-      profiles: { id: number; parental: boolean }[]
-    }
-    const guarded = after.profiles.filter(profile => profile.parental).map(profile => profile.id)
-    assert.ok(guarded.includes(1) && guarded.includes(sam.id) && !guarded.includes(max.id))
-
-    // The admin's device chose before the first young profile: it is asked again.
-    assert.equal(
-      ((await (await call('GET', '/session', { cookie: asAdmin })).json()) as { profileChosen: boolean }).profileChosen,
-      false
-    )
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: sam.id } })).status, 403)
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: sam.id, pin: '0000' } })).status, 403)
-    const opened = await call('PUT', '/profiles/current', { body: { id: sam.id, pin: '1357' } })
-    assert.equal(opened.status, 200)
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: max.id } })).status, 200)
-
-    // A private adult keeps its own PIN.
-    const asSam = `${session}; ${(opened.headers.get('set-cookie') ?? '').split(';')[0]}`
-    assert.equal((await call('PUT', `/profiles/${sam.id}/pin`, { body: { pin: '2468' }, cookie: asSam })).status, 200)
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: sam.id, pin: '1357' } })).status, 403)
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: sam.id, pin: '2468' } })).status, 200)
-
-    // Changed with the current code only, then removed.
-    const asAdminAgain = `${session}; ${((await call('PUT', '/profiles/current', { body: { id: 1, pin: '1357' } })).headers.get('set-cookie') ?? '').split(';')[0]}`
-    assert.equal(
-      (await call('PUT', '/profiles/parental-pin', { body: { pin: '9999', current: '0000' }, cookie: asAdminAgain }))
-        .status,
-      403
-    )
-    const removed = await call('PUT', '/profiles/parental-pin', {
-      body: { pin: null, current: '1357' },
-      cookie: asAdminAgain
-    })
-    assert.deepEqual(await removed.json(), { parentalCode: false })
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: 1 } })).status, 200)
-
-    assert.equal((await call('DELETE', `/profiles/${max.id}`)).status, 204)
-    assert.equal((await call('DELETE', `/profiles/${sam.id}`)).status, 204)
-  })
-
-  it('stops guessing after a few wrong PINs', async () => {
-    // Past the wrong PINs of the test before.
-    clock += 16 * 60_000
-    const locked = await call('PUT', '/profiles/1/pin', { body: { pin: '4321' } })
-    const asAdmin = `${session}; ${(locked.headers.get('set-cookie') ?? '').split(';')[0]}`
-    const statuses = []
-    for (let attempt = 0; attempt < 6; attempt++) {
-      statuses.push((await call('PUT', '/profiles/current', { body: { id: 1, pin: '9999' } })).status)
-    }
-    assert.deepEqual(statuses, [403, 403, 403, 403, 403, 429])
-    assert.equal((await call('PUT', '/profiles/current', { body: { id: 1, pin: '4321' } })).status, 429)
-    // Another device of the household, behind the same proxy, still opens it with its PIN.
-    const elsewhere = await fetch(`${baseUrl}/api/profiles/current`, {
-      method: 'PUT',
-      headers: { cookie: session, 'Content-Type': 'application/json', 'X-Forwarded-For': '192.168.1.20' },
-      body: JSON.stringify({ id: 1, pin: '4321' })
-    })
-    assert.equal(elsewhere.status, 200)
-
-    clock += 16 * 60_000
-    const unlocked = await call('PUT', '/profiles/1/pin', { body: { pin: null, current: '4321' }, cookie: asAdmin })
-    assert.equal(unlocked.status, 200)
+    assert.equal((await call('DELETE', `/profiles/${parent.id}`, { body: { password: PASSWORD } })).status, 204)
   })
 
   it('renames, refuses bad names and colours, and never deletes the admin', async () => {
@@ -1205,7 +1099,7 @@ describe('profiles', () => {
       [1]
     )
     for (const profile of profiles.filter(other => other.id !== 1)) {
-      assert.equal((await call('DELETE', `/profiles/${profile.id}`)).status, 204)
+      assert.equal((await call('DELETE', `/profiles/${profile.id}`, { body: { password: PASSWORD } })).status, 204)
     }
     assert.equal((await call('DELETE', '/profiles/1')).status, 409)
   })
@@ -1233,26 +1127,27 @@ describe('adding a source', () => {
     const found = (await (await call('POST', '/sources/find', { body: { url: 'blog.example' } })).json()) as {
       status: string
       added: number
-      limit: number
+      limit: number | null
     }
     assert.equal(found.status, 'ok')
-    assert.equal(found.limit, 200)
+    // No limit until Serveur › Contenu sets one.
+    assert.equal(found.limit, null)
 
     assert.equal(
       (
         await call('POST', '/sources', {
-          body: { url: 'https://rien.example', section: 'topic', sectionId: 'belgique' }
+          body: { url: 'https://rien.example', section: 'topic', sectionId: 'belgium' }
         })
       ).status,
       422
     )
     assert.equal(
-      (await call('POST', '/sources', { body: { url: 'video', section: 'topic', sectionId: 'belgique' } })).status,
+      (await call('POST', '/sources', { body: { url: 'video', section: 'topic', sectionId: 'belgium' } })).status,
       400
     )
 
     const added = await call('POST', '/sources', {
-      body: { url: 'blog.example', section: 'topic', sectionId: 'belgique' }
+      body: { url: 'blog.example', section: 'topic', sectionId: 'belgium' }
     })
     assert.equal(added.status, 201)
     const { id } = (await added.json()) as { id: string }
@@ -1265,22 +1160,23 @@ describe('adding a source', () => {
 
     // Already followed: not twice.
     assert.equal(
-      (await call('POST', '/sources', { body: { url: 'blog.example', section: 'topic', sectionId: 'belgique' } }))
+      (await call('POST', '/sources', { body: { url: 'blog.example', section: 'topic', sectionId: 'belgium' } }))
         .status,
       409
     )
 
-    const other = (await (await call('POST', '/profiles', { body: { name: 'Zoé', color: 'ia' } })).json()) as {
+    const other = (await (await call('POST', '/profiles', { body: { name: 'Zoé', color: 'ai' } })).json()) as {
       id: number
     }
+    const asOther = await openAdult(session, other.id)
     // A new profile starts with the base sources: the one added is off for it.
-    const zoe = (await (await call('GET', '/me', { cookie: `${session}; hodi_profile=${other.id}` })).json()) as {
+    const zoe = (await (await call('GET', '/me', { cookie: asOther })).json()) as {
       preferences: { hiddenSources?: string[] } | null
     }
     assert.deepEqual(zoe.preferences?.hiddenSources, [id])
 
     // In two topics, the first one labelling it; only its profile (or the admin) changes them.
-    assert.equal((await call('PATCH', `/sources/${id}`, { body: { topicIds: ['monde', 'belgique'] } })).status, 204)
+    assert.equal((await call('PATCH', `/sources/${id}`, { body: { topicIds: ['world', 'belgium'] } })).status, 204)
     const moved = (await (await call('GET', '/topics')).json()) as {
       topics: { id: string; sources: { id: string }[] }[]
     }
@@ -1292,8 +1188,8 @@ describe('adding a source', () => {
     assert.equal(
       (
         await call('PATCH', `/sources/${id}`, {
-          body: { topicIds: ['monde'] },
-          cookie: `${session}; hodi_profile=${other.id}`
+          body: { topicIds: ['world'] },
+          cookie: asOther
         })
       ).status,
       403
@@ -1304,29 +1200,26 @@ describe('adding a source', () => {
       proposals: { id: string; topicId: string }[]
     }
     assert.deepEqual(proposals.proposals, [
-      { id: 'gazette', name: 'La Gazette', topicId: 'belgique', lang: 'fr', site: 'https://gazette.example/' }
+      { id: 'gazette', name: 'La Gazette', topicId: 'belgium', lang: 'fr', site: 'https://gazette.example/' }
     ])
     assert.equal((await call('POST', '/sources/proposals/gazette')).status, 201)
     assert.deepEqual(((await (await call('GET', '/sources/proposals')).json()) as { proposals: [] }).proposals, [])
     assert.equal((await call('POST', '/sources/proposals/gazette')).status, 404)
-    const zoeAgain = (await (await call('GET', '/me', { cookie: `${session}; hodi_profile=${other.id}` })).json()) as {
+    const zoeAgain = (await (await call('GET', '/me', { cookie: asOther })).json()) as {
       preferences: { hiddenSources?: string[] } | null
     }
     assert.deepEqual(zoeAgain.preferences?.hiddenSources, [id, 'gazette'])
     assert.equal((await call('DELETE', '/sources/gazette')).status, 204)
-    assert.equal(
-      (await call('DELETE', `/sources/${id}`, { cookie: `${session}; hodi_profile=${other.id}` })).status,
-      403
-    )
+    assert.equal((await call('DELETE', `/sources/${id}`, { cookie: asOther })).status, 403)
     // A starting-list source: hidden by whoever wants, removed by no one.
-    assert.equal((await call('DELETE', '/sources/bx1', { cookie: `${session}; hodi_profile=${other.id}` })).status, 403)
+    assert.equal((await call('DELETE', '/sources/bx1', { cookie: asOther })).status, 403)
     assert.equal((await call('DELETE', '/sources/nope')).status, 404)
 
     assert.equal((await call('DELETE', `/sources/${id}`)).status, 204)
 
     // Suggested once it is no longer followed; BX1, followed, never is.
     const suggested = (await (
-      await call('POST', '/sources/suggest', { body: { topicId: 'belgique', replacing: 'bx1' } })
+      await call('POST', '/sources/suggest', { body: { topicId: 'belgium', replacing: 'bx1' } })
     ).json()) as { status: string; suggestions: { link: string; source: { name: string } }[] }
     assert.equal(suggested.status, 'ok')
     assert.deepEqual(
@@ -1342,6 +1235,6 @@ describe('adding a source', () => {
       true
     )
     assert.ok(left.sources.every(source => source.lang === 'fr' || source.lang === 'en'))
-    assert.equal((await call('DELETE', `/profiles/${other.id}`)).status, 204)
+    assert.equal((await call('DELETE', `/profiles/${other.id}`, { body: { password: PASSWORD } })).status, 204)
   })
 })

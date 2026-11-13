@@ -57,6 +57,9 @@
 }
 
 .card {
+  /* Every action in a card is 38px tall: buttons, rounds, switches and choices. Search fields, filters and add
+     buttons outside the cards keep the app's sizes. */
+  --button-height: 38px;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -64,11 +67,51 @@
 }
 
 .row {
+  /* Every action of a row is 38px tall: labelled buttons, rounds, switches and choices. */
+  --button-height: 38px;
   display: flex;
   align-items: center;
   gap: 14px;
   min-height: 66px;
-  padding: 14px 20px;
+  padding: 14px;
+}
+
+.card [role='switch'] {
+  width: 62px;
+  height: 38px;
+}
+
+.card [role='switch'] > span {
+  width: 30px;
+  height: 30px;
+}
+
+.card [role='switch'][aria-checked='true'] > span {
+  transform: translateX(24px);
+}
+
+/* A group of choices: each of its buttons is 38px tall, as a row's other actions. The group's line is drawn
+   inside, so the chosen button covers it and the group stays 38px. */
+.card [role='radiogroup'] {
+  padding: 0;
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.card [role='radiogroup'] > [role='radio'] {
+  min-width: 38px;
+  height: 38px;
+}
+
+.choice,
+.rowActions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.rowActions {
+  --button-height: 38px;
+  gap: 8px;
 }
 
 /* A row whose control is too wide beside its text on a phone (the accent colours): the control goes under it. */
@@ -106,7 +149,29 @@
 
 .rowHint {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
+}
+
+.rowValue {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A figure under the label (a backup's size): mono and grey, as metadata. */
+.figure {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+/* A computer's or a tablet's line stops at a comfortable length; the action stays at the row's end. */
+@media (min-width: 601px) {
+  .rowText {
+    max-width: 500px;
+    margin-right: auto;
+  }
 }
 
 .dim {
@@ -143,6 +208,12 @@
   color: var(--text-2);
 }
 
+/* A row that only says the list is empty: in grey, as a hint. */
+.quietRow .rowLabel {
+  color: var(--text-3);
+  font-weight: 400;
+}
+
 /* A list with no row yet (EmptyCard): the same card, in dashes and quiet. */
 .emptyCard {
   border-style: dashed;
@@ -174,28 +245,32 @@
 
 @media (max-width: 600px) {
   .row {
-    padding: 12px 14px;
+    padding: 12px;
+  }
+
+  /* A choice goes on its own line under the text, across the row. */
+  .choiceRow {
+    flex-wrap: wrap;
+  }
+
+  .choiceRow > .rowText {
+    flex-basis: 100%;
+  }
+
+  .choice {
+    flex-basis: 100%;
+    margin-top: 4px;
+  }
+
+  .choice > [role='radiogroup'] {
+    flex: 1;
+  }
+
+  .choice [role='radio'] {
+    flex: 1;
   }
 
   .title {
     font-size: 30px;
-  }
-}
-
-/* A row that opens another page, with its chevron. */
-.rowLink {
-  color: var(--text);
-  text-decoration: none;
-}
-
-.rowLink > svg {
-  flex-shrink: 0;
-  color: var(--text-3);
-}
-
-@media (hover: hover) {
-  .rowLink:hover {
-    background: var(--control-hover);
-    color: var(--text);
   }
 }

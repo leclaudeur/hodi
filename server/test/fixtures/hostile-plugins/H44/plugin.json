@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h44",
+  "name": "Hostile H44",
+  "version": "0.0.1",
+  "description": "A binary response cannot claim an active content type",
+  "api": 2,
+  "audience": "admin"
+}

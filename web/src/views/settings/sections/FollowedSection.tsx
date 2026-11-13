@@ -1,12 +1,13 @@
 import { Activity, Bell, BellOff, X } from 'lucide-react'
 import { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import type { TopicItem } from '../../../api.ts'
 import { useFollowedItems } from '../../../lib/followed-items.ts'
 import { countByKind } from '../../../lib/format.ts'
 import { updateNotificationSettings, useNotificationSettings } from '../../../lib/notifications.ts'
 import { updatePreferences, usePreferences } from '../../../lib/preferences.ts'
 import { settingsHref } from '../../../lib/use-hash-route.ts'
-import { foldText, wordPattern } from '../../../lib/word-match.ts'
+import { foldText, wordPattern } from '../../../../../shared/word-match.ts'
 import Notice from '../../../ui/Notice.tsx'
 import EmptyCard from '../EmptyCard.tsx'
 import Toggle from '../../../ui/Toggle.tsx'
@@ -16,8 +17,73 @@ import RoundButton from '../../../ui/RoundButton.tsx'
 import styles from '../Settings.module.css'
 import followedStyles from './FollowedSection.module.css'
 import WordForm from './WordForm.tsx'
+import { WEEK_MS } from '../../../../../shared/time.ts'
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+// Articles and videos of the last 7 days about a subject (one can count for several).
+const weekItems = (items: TopicItem[], followed: string, now: number) => {
+  const pattern = wordPattern(followed)
+  return items.filter(
+    item =>
+      item.publishedAt !== null &&
+      now - new Date(item.publishedAt).getTime() < WEEK_MS &&
+      pattern.test(foldText(`${item.title} ${item.summary}`))
+  )
+}
+
+interface FollowedRowProps {
+  followed: string
+  // null while the articles come.
+  count: TopicItem[] | null
+  notifications: ReturnType<typeof useNotificationSettings>
+  followedWords: string[]
+}
+
+// A subject: what it found this week, its alert and « Ne plus suivre ».
+const FollowedRow = ({ followed, count, notifications, followedWords }: FollowedRowProps) => {
+  const { t } = useTranslation()
+  const alert = notifications.enabled && !notifications.silentWords.includes(followed)
+  return (
+    <SettingRow
+      as="li"
+      lead={
+        <span className={`${styles.tile} ${styles.rustTile}`}>
+          <Activity size={18} aria-hidden="true" />
+        </span>
+      }
+      label={followed}
+      hint={
+        count === null
+          ? t('settings.followed.searching')
+          : count.length === 0
+            ? t('settings.followed.nothingThisWeek')
+            : t('settings.followed.thisWeek', { count: countByKind(count) })
+      }
+    >
+      <span className={`${styles.mono} ${followedStyles.alert}`}>
+        <Bell size={13} aria-hidden="true" />
+        {t('settings.followed.alert')}
+      </span>
+      <Toggle
+        label={t('settings.followed.alertFor', { word: followed })}
+        checked={alert}
+        disabled={!notifications.enabled}
+        onChange={on =>
+          updateNotificationSettings({
+            silentWords: on
+              ? notifications.silentWords.filter(other => other !== followed)
+              : [...notifications.silentWords, followed]
+          })
+        }
+      />
+      <RoundButton
+        icon={X}
+        size={38}
+        label={t('settings.followed.unfollow', { word: followed })}
+        onClick={() => updatePreferences({ followedWords: followedWords.filter(other => other !== followed) })}
+      />
+    </SettingRow>
+  )
+}
 
 interface FollowedSectionProps {
   layout: 'desktop' | 'phone'
@@ -32,18 +98,6 @@ const FollowedSection = ({ layout, onUnauthorized }: FollowedSectionProps) => {
   const { items } = useFollowedItems(onUnauthorized)
   const { followedWords } = preferences
   const [now] = useState(Date.now)
-
-  // Articles and videos of the last 7 days about each subject (one can count for several).
-  const weekItems = (followed: string) => {
-    if (!items) return null
-    const pattern = wordPattern(followed)
-    return items.filter(
-      item =>
-        item.publishedAt !== null &&
-        now - new Date(item.publishedAt).getTime() < WEEK_MS &&
-        pattern.test(foldText(`${item.title} ${item.summary}`))
-    )
-  }
 
   return (
     <SectionPage title={t('settings.nav.followed')} intro={t('settings.followed.intro')} layout={layout}>
@@ -63,54 +117,15 @@ const FollowedSection = ({ layout, onUnauthorized }: FollowedSectionProps) => {
         />
       ) : (
         <ul className={styles.card}>
-          {followedWords.map(followed => {
-            const count = weekItems(followed)
-            const alert = notifications.enabled && !notifications.silentWords.includes(followed)
-            return (
-              <SettingRow
-                key={followed}
-                as="li"
-                lead={
-                  <span className={`${styles.tile} ${styles.rustTile}`}>
-                    <Activity size={18} aria-hidden="true" />
-                  </span>
-                }
-                label={followed}
-                hint={
-                  count === null
-                    ? t('settings.followed.searching')
-                    : count.length === 0
-                      ? t('settings.followed.nothingThisWeek')
-                      : t('settings.followed.thisWeek', { count: countByKind(count) })
-                }
-              >
-                <span className={`${styles.mono} ${followedStyles.alert}`}>
-                  <Bell size={13} aria-hidden="true" />
-                  {t('settings.followed.alert')}
-                </span>
-                <Toggle
-                  label={t('settings.followed.alertFor', { word: followed })}
-                  checked={alert}
-                  disabled={!notifications.enabled}
-                  onChange={on =>
-                    updateNotificationSettings({
-                      silentWords: on
-                        ? notifications.silentWords.filter(other => other !== followed)
-                        : [...notifications.silentWords, followed]
-                    })
-                  }
-                />
-                <RoundButton
-                  icon={X}
-                  size={34}
-                  label={t('settings.followed.unfollow', { word: followed })}
-                  onClick={() =>
-                    updatePreferences({ followedWords: followedWords.filter(other => other !== followed) })
-                  }
-                />
-              </SettingRow>
-            )
-          })}
+          {followedWords.map(followed => (
+            <FollowedRow
+              key={followed}
+              followed={followed}
+              count={items && weekItems(items, followed, now)}
+              notifications={notifications}
+              followedWords={followedWords}
+            />
+          ))}
         </ul>
       )}
 

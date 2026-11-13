@@ -41,4 +41,16 @@ describe('sameStory', () => {
       false
     )
   })
+
+  it('gives the same answer either way round and on every call, as titles and dates are read once', () => {
+    const a = { title: 'Incendie à Liège : trois immeubles évacués cette nuit', publishedAt: '2026-11-10T08:00:00Z' }
+    const b = { title: 'Liège : trois immeubles évacués après un incendie', publishedAt: '2026-11-10T09:30:00Z' }
+    const late = { ...b, publishedAt: '2026-11-13T09:30:00Z' }
+
+    for (let call = 0; call < 3; call++) {
+      assert.equal(sameStory(a, b), true)
+      assert.equal(sameStory(b, a), true)
+      assert.equal(sameStory(a, late), false)
+    }
+  })
 })

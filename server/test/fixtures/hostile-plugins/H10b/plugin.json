@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h10b",
+  "name": "Hostile H10b",
+  "version": "0.0.1",
+  "description": "A response just over the cap is refused",
+  "api": 2,
+  "audience": "admin"
+}

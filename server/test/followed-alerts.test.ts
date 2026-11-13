@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { parseAlertSettings } from '../app.ts'
+import { parseAlertSettings } from '../http/push-routes.ts'
 import type { FeedItem } from '../news/feed-parser.ts'
 import {
   type AlertPayload,
@@ -136,7 +136,7 @@ describe('followed alerts', () => {
     assert.deepEqual(sent.at(-1), {
       title: 'GTA 6 : troisième',
       body: 'Journal du Geek',
-      url: '#/suivis',
+      url: '#/followed',
       tag: 'followed:GTA 6',
       badge: 0
     })
@@ -180,7 +180,7 @@ describe('parseAlertSettings', () => {
   }
 
   it('accepts a known push service and well-formed settings', () => {
-    assert.deepEqual(parseAlertSettings(body), { ...body, shares: true, reactions: true })
+    assert.deepEqual(parseAlertSettings(body), { ...body, shares: true, reactions: true, plugins: true })
   })
 
   it('refuses other endpoints and odd values', () => {
@@ -265,5 +265,67 @@ describe('FollowedAlerts subscriptions', () => {
     assert.equal(parseAlertSettings({ ...older, shares: 'no' }), null)
     assert.equal(parseAlertSettings(older)?.reactions, true)
     assert.equal(parseAlertSettings({ ...older, reactions: false })?.reactions, false)
+    assert.equal(parseAlertSettings(older)?.plugins, true)
+    assert.equal(parseAlertSettings({ ...older, plugins: false })?.plugins, false)
+    assert.equal(parseAlertSettings({ ...older, plugins: 'no' }), null)
+  })
+
+  it('tells a profile what a plugin sends, unless its « Plugins » switch is off', async () => {
+    const { alerts, sent } = setup()
+    const notice = {
+      title: 'Village · Bonjour',
+      body: 'Un mot.',
+      url: '#/settings/plugin/village',
+      tag: 'plugin:village',
+      badge: null
+    }
+    alerts.register(settings({ profileId: 1 }))
+    alerts.register(
+      settings({
+        profileId: 1,
+        plugins: false,
+        target: { ...settings().target, endpoint: 'https://web.push.apple.com/off' }
+      })
+    )
+
+    await alerts.notifyShare(1, notice, 'plugins')
+    assert.deepEqual(sent, [notice])
+  })
+})
+
+describe('followed alerts in two households', () => {
+  it("tells each device about its own household's sources only", async () => {
+    let clock = START
+    // Profile 1 reads in the Duponts' household, profile 10 in the Martins'.
+    const byHousehold: Record<number, FeedItem[]> = { 1: [], 2: [] }
+    const listed: number[] = []
+    const sent: [string, string][] = []
+    const alerts = new FollowedAlerts({
+      listItems: async householdId => {
+        listed.push(householdId)
+        return byHousehold[householdId] ?? []
+      },
+      householdOf: profileId => (profileId === 10 ? 2 : 1),
+      send: async (target, payload) => {
+        sent.push([target.endpoint, payload.title])
+      },
+      now: () => clock,
+      log: () => {}
+    })
+    alerts.register(settings({ profileId: 1 }))
+    alerts.register(
+      settings({ profileId: 10, target: { ...settings().target, endpoint: 'https://web.push.apple.com/martin' } })
+    )
+
+    clock += MINUTE
+    byHousehold[1]!.push(article('GTA 6 : chez les Dupont', clock))
+    byHousehold[2]!.push(article('GTA 6 : chez les Martin', clock, 'other'))
+    await alerts.check()
+
+    assert.deepEqual(listed.toSorted(), [1, 2])
+    assert.deepEqual(sent.toSorted(), [
+      ['https://web.push.apple.com/abc', 'GTA 6 : chez les Dupont'],
+      ['https://web.push.apple.com/martin', 'GTA 6 : chez les Martin']
+    ])
   })
 })

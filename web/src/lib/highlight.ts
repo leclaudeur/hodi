@@ -1,4 +1,4 @@
-import { foldText } from './word-match.ts'
+import { foldText } from '../../../shared/word-match.ts'
 
 // The parts of a text that start with one of the searched words, as [start, end) ranges of the text itself.
 // Compared without accents or case, like the search: "foret" marks "Forêt".

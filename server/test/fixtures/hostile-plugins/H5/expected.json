@@ -1,0 +1,20 @@
+{
+  "case": "H5",
+  "title": "Endless host calls hit the wall-clock and call limits",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/calls",
+      "expect": {
+        "status": 504,
+        "withinMs": 6000
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "note": "QuickJS CPU time stays tiny here: the stop must come from the wall-clock limit or the max number of ctx calls per request."
+}

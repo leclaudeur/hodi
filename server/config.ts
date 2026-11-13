@@ -3,8 +3,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import webpush from 'web-push'
 
-const DEFAULT_MAX_SOURCES = 200
-
 export interface Config {
   host: string
   port: number
@@ -19,8 +17,6 @@ export interface Config {
   timeZone: string
   // The key pair that signs notifications: made on the first start and kept next to the database.
   vapid: { publicKey: string; privateKey: string; subject: string }
-  // The household's sources, all profiles together (MAX_SOURCES, 200 by default): each one is fetched.
-  maxSources: number
 }
 
 // Push services want a way to reach whoever sends: the project's page will do.
@@ -65,11 +61,6 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): Config => {
     throw new Error('PORT must be a valid TCP port')
   }
 
-  const maxSources = Number(env.MAX_SOURCES ?? DEFAULT_MAX_SOURCES)
-  if (!Number.isInteger(maxSources) || maxSources < 1) {
-    throw new Error('MAX_SOURCES must be a whole number above 0')
-  }
-
   return {
     host: env.HOST ?? '127.0.0.1',
     port,
@@ -79,7 +70,6 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): Config => {
     databaseFile: path.resolve(dataDir, DATABASE_NAME),
     backupDir: path.resolve(dataDir, 'backups'),
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    vapid: loadVapid(path.resolve(dataDir, 'vapid.json')),
-    maxSources
+    vapid: loadVapid(path.resolve(dataDir, 'vapid.json'))
   }
 }

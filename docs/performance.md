@@ -1,93 +1,111 @@
 # Performance
 
-Hodi is a news reader you open many times a day, often on a phone with a weak connection. It should show something fast and cost little battery. This page records how fast it is, how it was measured, and what made it fast, so a change that slows it down can be caught.
+Hodi is a news reader you open many times a day, often on a phone with a weak connection, so it should show something fast and cost little battery. This page records how fast it is, how it was measured and what made it fast, so that a change that slows it down is caught before it reaches anyone's phone.
 
 ## Results
 
-Lighthouse 12 performance scores on the 21 screens of the app, at three sizes, before and after the performance work of November 2026 (#389 to #396, #399):
+Lighthouse 12 scored the 21 screens of the app at three sizes. The work ran in two rounds in November 2026: the first took a phone from 59 to 85, and the second, after Hodi gained personal accounts, the server space and plugins, from 85 to 92. The average performance score now:
 
-| Page                | Phone       | Tablet      | Computer     |
-| ------------------- | ----------- | ----------- | ------------ |
-| Le fil              | 56 → **79** | 58 → **80** | 75 → **98**  |
-| Belgique (topic)    | 57 → **80** | 56 → **76** | 67 → **98**  |
-| Monde (topic)       | 55 → **82** | 58 → **75** | 68 → **99**  |
-| Article (reader)    | 60 → **86** | 60 → **83** | 75 → **99**  |
-| Une story           | 55 → **88** | 56 → **81** | 75 → **98**  |
-| Vidéos              | 60 → **89** | 60 → **88** | 90 → **99**  |
-| Plus tard           | 61 → **82** | 59 → **84** | 90 → **99**  |
-| Suivis              | 58 → **83** | 58 → **83** | 90 → **99**  |
-| Partages            | 60 → **86** | 59 → **89** | 90 → **99**  |
-| Historique          | 60 → **87** | 59 → **86** | 90 → **99**  |
-| Search              | 59 → **85** | 59 → **85** | 82 → **99**  |
-| Résumé du jour      | 58 → **80** | 57 → **81** | 76 → **98**  |
-| Profils             | 59 → **90** | 59 → **90** | 92 → **100** |
-| Réglages            | 60 → **88** | 59 → **88** | 92 → **100** |
-| Réglages › Lecture  | 59 → **90** | 60 → **89** | 92 → **100** |
-| Réglages › Sources  | 60 → **89** | 60 → **89** | 92 → **100** |
-| Statistiques        | 56 → **76** | 55 → **79** | 86 → **99**  |
-| Réglages › Foyer    | 59 → **88** | 56 → **89** | 92 → **100** |
-| Réglages › IA       | 59 → **88** | 60 → **89** | 92 → **100** |
-| Réglages › À propos | 59 → **88** | 59 → **89** | 92 → **100** |
-| Sign-in             | 60 → **89** | 60 → **88** | 92 → **100** |
-| **Average**         | 59 → **85** | 58 → **85** | 85 → **99**  |
+- **Phone**: **92**, every screen between 87 and 94
+- **Tablet**: **92**, every screen between 88 and 94
+- **Computer**: **99.8**, twenty screens out of 21 at 100
 
-The other categories are 91 to 100 for accessibility and 96 to 100 for best practices. SEO is 54 to 58 on purpose: a household's Hodi is private and asks search engines not to index it.
+Accessibility scores 95 to 100 and best practices 96 to 100. SEO stays at 54 to 58 on purpose, since a household's
+Hodi is private and asks search engines not to index it.
 
-Le fil, the screen opened most often:
+A plugin's public pages are the exception. Village's welcome page and legal pages score **100** in SEO on a phone and on
+a computer, with their title, description, share card and languages. Their performance is 85 to 97 on a computer but
+only 53 to 69 on a phone, where the main picture or text (LCP) takes about 7 s: the app's code and the landing's own
+script both load before anything is drawn.
 
-|                            | Phone before | Phone after | Computer before | Computer after |
-| -------------------------- | ------------ | ----------- | --------------- | -------------- |
-| First text on screen (FCP) | 6.5 s        | 2.5 s       | 1.4 s           | 0.6 s          |
-| Main picture or text (LCP) | 15.5 s       | 4.8 s       | 3.3 s           | 1.1 s          |
-| Bytes downloaded           | 3.1 MB       | 560 KB      | 3.8 MB          | 554 KB         |
+_Feed_, the screen opened most often, on a phone, before and after the second round:
+
+- **First text on screen** (FCP): from 2.8 s to **2.2 s**
+- **Main picture or text** (LCP): from 3.5 s to **2.9 s**
+- **Bytes downloaded**: from 535 KB to **418 KB**
+
+On a computer, its first text shows in 0.55 s and its main picture in 0.66 s.
 
 ## The reports
 
-Each picture is the top of the Lighthouse report for one screen, from the "after" run above.
+Each picture is the top of the Lighthouse report for one screen, from the last run.
 
-**Computer:** eight screens score 100, and the screens full of pictures score 98 to 99.
+**Computer**: every screen but the server's overview scores 100.
 
-![Réglages on a computer: performance 100](performance/desktop-reglages.png)
-![An article on a computer: performance 99](performance/desktop-article.png)
-![Le fil on a computer: performance 98](performance/desktop-fil.png)
+![Settings on a computer: performance 100](performance/desktop-reglages.png)
+![An article on a computer: performance 100](performance/desktop-article.png)
+![The feed on a computer: performance 100](performance/desktop-fil.png)
 
-**Phone** (Lighthouse's default mobile profile: a mid-range phone, slow 4G, CPU four times slower):
+**Phone**: Lighthouse's default mobile profile, a mid-range phone on slow 4G with a CPU four times slower.
 
-![Réglages › Lecture on a phone: performance 90](performance/mobile-lecture.png)
-![An article on a phone: performance 86](performance/mobile-article.png)
-![Le fil on a phone: performance 79](performance/mobile-fil.png)
+![Settings › Reading on a phone: performance 93](performance/mobile-lecture.png)
+![An article on a phone: performance 91](performance/mobile-article.png)
+![The feed on a phone: performance 93](performance/mobile-fil.png)
 
-**Tablet** (the same network and CPU as the phone, screen 820 × 1180):
+**Tablet**: the same network and CPU as the phone, on an 820 × 1180 screen.
 
-![An article on a tablet: performance 83](performance/tablet-article.png)
-![Le fil on a tablet: performance 80](performance/tablet-fil.png)
+![An article on a tablet: performance 93](performance/tablet-article.png)
+![The feed on a tablet: performance 93](performance/tablet-fil.png)
 
 ## How it was measured
 
-- A fresh install from the production build (`npm run build`, `npm start`), set up once through the wizard. The household has no AI key.
-- The data is 240 real articles from the bench's pages (Belgique, Monde…). Their pictures are 24 JPEG of 1600 × 900, about 160 KB each, the usual size of a news site's share picture. They are served over local HTTPS so the content security policy accepts them.
-- Lighthouse 12 runs in headless Chromium with simulated throttling, one report per screen and size (63 reports).
-  - Phone: Lighthouse's default mobile settings.
-  - Tablet: the same settings with an 820 × 1180 screen at DPR 2.
-  - Computer: Lighthouse's desktop settings.
-- Run nothing else on the machine during the reports. Another process using the CPU shows up as blocking time: one report fell from 83 to 34 because of that.
+- **The install**: a production build, set up once with the wizard, with no AI key, then copied so that every run starts from the same data
+- **The data**: the 4 base sources, 30 articles each, read from real article pages, with JPEG pictures of 1600 × 900
+- **The connection**: HTTPS with HTTP/2, as behind a reverse proxy or Tailscale
+- **The runs**: Lighthouse 12.8 in headless Chromium, simulated throttling, 63 reports for each version
+- **Phone**: Lighthouse's default mobile settings
+- **Tablet**: the same settings, on an 820 × 1180 screen at DPR 2
+- **Computer**: Lighthouse's desktop settings
 
-Scores move by 2 or 3 points from one run to the next. Compare averages over several screens, not one report.
+> [!TIP]
+> Run nothing else on the machine during the reports: another process shows up as blocking time, and one report fell
+> from 83 to 34 because of it. Scores also move by 2 or 3 points between runs, so compare averages over several screens.
+
+> [!NOTE]
+> Over plain HTTP (`http://<address>:3000` with no proxy), the phone average falls to 86. The browser then opens only
+> 6 connections at a time, so the code every start needs comes in one file, but the screens and pictures still wait
+> their turn. Put Hodi behind HTTPS: HTTP/2 sends all the files at once.
 
 ## What made it fast
 
-- **Compression** (#389, #395): every answer is compressed. JS and CSS are precompressed with brotli at the highest level at build time and served with a one-year cache.
-- **Pictures made smaller by the server** (#390, #391, #393): the first picture of a list loads first. The server downloads each article's picture once and makes three WebP widths (240, 480, 960) plus a tiny blurred preview with `sharp`. Cards, stories, related articles and the pictures inside an article ask for the width they need. An article's pictures keep their place before they load.
-- **No blur on touch screens** (#392): the bottom bar, the header and the buttons over pictures use a solid background on phones and tablets. A blur makes the GPU work on every frame of scrolling.
-- **The first requests start with the HTML** (#394): `web/public/preload.js` preloads the session, the profile, the feed and "À la une" while the app's code downloads.
-- **Nothing moves while the home loads** (#396): skeletons hold the exact place of the stories row, the Reprendre pile and the list column.
-- **Less work in the background** (#396): the 40 article downloads for offline reading wait until the app has shown, and a hidden app runs no timer.
-- **One language** (#399): English is downloaded only by a household that reads in English.
+- **Compression**: every answer is compressed, and JS and CSS are precompressed with brotli
+- **Smaller pictures**: the server makes three WebP widths and a blurred preview with `sharp`
+- **No blur on touch screens**: a solid background instead, so scrolling costs the GPU less
+- **Early requests**: `web/public/preload.js` asks for the session and the feed while the code downloads
+- **Nothing moves**: skeletons hold the exact place of what the home page loads
+- **Less background work**: offline downloads wait until the app has shown
+- **One language**: English is downloaded only by a household that reads in English
+- **Code on demand**: the server space and its charts, the setup wizard, Réglages and the QR code maker download only
+  when they open; Réglages is fetched in the background once the app has shown
+- **A tidy offline copy**: the service worker removes the files of older versions after an update
+
+Cards, stories and the pictures inside an article each ask for the width they need, from 240 to 960 pixels. An
+article's pictures keep their place before they load, so the text never jumps.
+
+## The server
+
+Most answers take 2 to 10 ms, and no SQLite query takes more than 2 ms. Two things cost more, and are kept out of the
+requests' way:
+
+- **Reading an article page** (Readability) takes 49 ms at the median and up to a second for a heavy page. It runs on
+  a worker thread of its own, started on demand and stopped after a minute without work, so the server keeps
+  answering meanwhile.
+- **Grouping articles into stories** compares every pair of titles. Each title is analysed once and each date read once,
+  so 400 titles take about 18 ms.
+
+These numbers come from a bench with 111 sources and 959 real article pages, on a 2.1 GHz Xeon.
 
 ## Battery
 
-At rest, Hodi does almost nothing: 1 to 2 ms of CPU in 20 s, no layout, no request and no animation frame on every screen but a playing story. Battery goes to loading (radio and CPU) and to scrolling (GPU). The changes above cut both: about 80 % fewer bytes on the first load of Le fil, and no blur to redraw while scrolling on a phone.
+At rest, Hodi does almost nothing: 1 to 2 ms of CPU in 20 s, with no layout, no request and no animation frame. Battery
+goes to loading, for the radio and the CPU, and to scrolling, for the GPU.
+
+The changes above cut both: the first load of _Feed_ downloads about 80 % fewer bytes, and a phone no longer redraws a blur on every frame while it scrolls.
 
 ## What is left
 
-On a phone, every screen waits about 2.3 s before its first text: the browser downloads and runs about 230 KB of compressed JavaScript (React, the app, the shared components) before it can draw anything. Going further would need the server to send the first screen as HTML (an app shell or server rendering), a larger change than this work.
+On a phone, every screen waits about 2.2 s before its first text. The browser first downloads and runs about 240 KB of
+compressed JavaScript (React, the app and the shared components), and only then can it draw anything. Going further would need the server to send the first screen as HTML, through an app shell or server rendering. That
+is a larger change than this work.
+
+[← Back to the README](../README.md)

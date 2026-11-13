@@ -1,0 +1,42 @@
+{
+  "case": "H32",
+  "title": "fetchText refuses a domain outside permissions.network",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/allowed",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": true
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/other",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/redirect",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "setup": "Fake fetch: allowed.test/ answers 200; allowed.test/redirect-to-exfil answers 302 to exfil.test. The redirect target is checked against the list too."
+}

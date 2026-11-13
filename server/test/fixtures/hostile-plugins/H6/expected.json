@@ -1,0 +1,19 @@
+{
+  "case": "H6",
+  "title": "An endless chain of promises is stopped",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/jobs",
+      "expect": {
+        "status": 504,
+        "withinMs": 6000
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

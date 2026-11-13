@@ -16,7 +16,8 @@
     "noResult": "No results.",
     "loading": "Loading…",
     "serverDown": "The server isn’t answering right now.",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "change": "Change"
   },
   "language": {
     "label": "Language",
@@ -34,11 +35,60 @@
   },
   "login": {
     "tagline": "Your news, just for you.",
+    "email": "E-mail",
     "password": "Password",
-    "wrongPassword": "Wrong password, try again.",
+    "wrongCredentials": "Wrong e-mail or password, try again.",
     "failed": "Something went wrong. Try again in a moment.",
     "signingIn": "Opening…",
-    "enter": "Enter"
+    "enter": "Enter",
+    "haveCode": "I have a code",
+    "forgot": "Forgot password",
+    "refused": "Your sign-in was refused. If it keeps happening, ask whoever runs the server."
+  },
+  "join": {
+    "code": {
+      "title": "Enter the code",
+      "intro": "The 8 characters an adult of the household gave you, or the link that came with them.",
+      "label": "Code",
+      "helpTitle": "Where does this code come from?",
+      "help": "An adult of the household makes it in Settings › Profiles, with “Invite an adult” or “Connect a device”. It works once, for 24 hours.",
+      "wrong": "This code doesn’t work: it may have been used already, or its 24 hours are over. Ask for a new one."
+    },
+    "invite": {
+      "title": "Join {{household}}",
+      "intro": "{{name}} invites you. Create your account: your e-mail and password will sign you in on each of your devices.",
+      "introNoName": "Create your account: your e-mail and password will sign you in on each of your devices."
+    },
+    "profile": {
+      "title": "Last step: the profile",
+      "intro": "In {{household}}. Create your account: this profile becomes yours, with its reading.",
+      "introExisting": "In {{household}}. Sign in with the account you already have: this profile will be linked to it, with its reading."
+    },
+    "full": {
+      "title": "The household is full",
+      "intro": "It already has 5 profiles. Ask the admin to remove one, then try this code again."
+    },
+    "who": {
+      "intro": "Your name and colour in the household. You can change them in Settings."
+    },
+    "age": "I am at least 13 years old",
+    "create": "Create my account",
+    "emailTaken": "This address already has an account: sign in with it.",
+    "failed": "Your account could not be created. Try again in a moment.",
+    "device": {
+      "title": "Link this device",
+      "intro": "This device will open only <b>{{name}}</b>’s profile, with no e-mail or password. It stays signed in as long as it is used at least once every 90 days, or until a parent removes it.",
+      "button": "Confirm"
+    },
+    "reset": {
+      "title": "New password",
+      "intro": "Choose the new password for <b>{{name}}</b>’s account. Your other devices are signed out: you’ll sign in again on them with it.",
+      "button": "Confirm"
+    },
+    "existing": "I already have an account",
+    "newAccount": "Create a new account",
+    "signIn": "Join",
+    "alreadyMember": "This account already has a profile in this household: sign in with it."
   },
   "password": {
     "show": "Show password",
@@ -54,7 +104,6 @@
     "missing_one": "{{count}} more character.",
     "missing_other": "{{count}} more characters.",
     "another": "Add a word to reach {{level}}.",
-    "perfect": "Perfect.",
     "tips": {
       "keyboard": "Avoid keyboard runs (qwerty, 1234).",
       "repeat": "Avoid repeats and runs (aaa, abc).",
@@ -84,16 +133,16 @@
   },
   "profileForm": {
     "colors": {
-      "belgique": "Gold",
-      "monde": "Blue",
+      "belgium": "Gold",
+      "world": "Blue",
       "tech": "Turquoise",
       "science": "Sage",
-      "films-series": "Pink",
-      "jeux-video": "Coral",
-      "ia": "Olive",
+      "film-tv": "Pink",
+      "gaming": "Coral",
+      "ai": "Olive",
       "broadcast": "Lilac",
       "sport": "Orange",
-      "musique": "Violet"
+      "music": "Violet"
     },
     "photoTooBig": "This photo is over 20 MB. Pick a lighter one.",
     "photoUnreadable": "This image can’t be read. Try another photo.",
@@ -105,10 +154,6 @@
     "name": "Name",
     "namePlaceholder": "E.g. Al",
     "color": "Colour",
-    "security": "Security",
-    "private": "Private",
-    "privateHint": "Its code is asked before it opens",
-    "removePin": "Remove the code",
     "deleteProfile": "Delete the profile",
     "delete": "Delete",
     "create": "Create profile",
@@ -141,7 +186,19 @@
     "childSoon": {
       "title": "Soon, an app just for them",
       "text": "The Child profile is on its way. Until then, choose Teen or Adult."
-    }
+    },
+    "account": "Account",
+    "noAccount": "No account",
+    "noAccountHint": "A code, on their device",
+    "connect": "Connect a device",
+    "forgotPassword": "Forgotten password",
+    "forgotPasswordHint": "A code, to choose a new one",
+    "newPassword": "New password",
+    "inviteHint": "An adult makes their own account: you give them an invitation code, to type in “I have a code”.",
+    "invite": "Invite",
+    "makeAdmin": "Household admin",
+    "makeAdminHint": "Hand over your role: a household has one admin.",
+    "makeAdminButton": "Hand over the admin role"
   },
   "setup": {
     "step": "Step {{step}} of {{total}}",
@@ -150,26 +207,61 @@
     "codeCheckFailed": "The code couldn’t be checked. Try again in a moment.",
     "setupFailed": "The setup didn’t go through. Try again in a moment.",
     "start": {
-      "title": "Welcome to Hodi",
-      "intro": "Your news, on your own server. Four steps and you’re set: the household, your profile, the AI if you want, then your region.",
+      "kicker": "Welcome to Hodi",
+      "title": "News for the whole home",
+      "lead": "Your favourite news sites, <b>sorted by topic</b>, read <b>with no ads or tracking</b>. Everyone has a profile, and the household shares what’s worth reading.",
       "codeHelpTitle": "The setup code",
-      "codeHelpWhy": "This server can be reached from the Internet: so that nobody sets it up in your place, Hodi asks for the 6-digit code written in its log when it starts. Each restart draws a new one: take the latest.",
+      "codeHelpWhy": "This server can be reached from the Internet: so that nobody sets it up in your place, Hodi asks for the 8-character code (letters and digits) written in its log when it starts. Each restart draws a new one: take the latest.",
       "codeHelpServer": "On the server:",
       "codeHelpLocal": "From the server’s computer or your home network, no code is asked.",
       "code": "Setup code",
-      "button": "Start"
+      "button": "Install Hodi",
+      "length": "A few minutes · all in the browser",
+      "codeWhere": "It’s written in the server’s log."
+    },
+    "account": {
+      "title": "Account",
+      "intro": "It’s yours, not the household’s: everyone you invite will have their own. You become this server’s admin.",
+      "helpTitle": "E-mail and password",
+      "help": "You sign in with them on each of your devices, which remember them for 90 days. 8 characters minimum: the longer the password is and the more it mixes capitals, digits and symbols, the stronger it is.",
+      "email": "E-mail",
+      "emailPlaceholder": "E.g. you@example.com",
+      "password": "Password",
+      "confirm": "Confirm the password",
+      "mismatch": "The two passwords aren’t the same."
+    },
+    "ready": {
+      "title": "The server is ready",
+      "intro": "Create the household that will read Hodi now, or go to the Server space first: a household can be created there later too, for you or for someone else.",
+      "household": "Create my household",
+      "server": "Later"
+    },
+    "plugins": {
+      "title": "Plugins found",
+      "intro": "These plugins were already in Hodi's folder. Keep the ones you want to use: the others stay installed, turned off, and can be turned on later in the server space.",
+      "use": "Use {{name}}",
+      "broken": "This plugin cannot load. The server space says why.",
+      "unsigned": "Not verified: its pages won’t show.",
+      "failed": "The plugins could not be saved. Try again."
+    },
+    "pluginStep": {
+      "failed": "This step of {{name}} could not be shown. Go on: it can also be set in the server’s space."
+    },
+    "mail": {
+      "title": "Server e-mail",
+      "intro": "Hodi uses it to send « Forgot password » links and the plugins’ e-mails. It can also be set later, in Server › E-mail.",
+      "later": "Later"
     },
     "household": {
       "title": "Your household",
-      "intro": "Up to 5 profiles share this password, each with its own reading.",
-      "helpTitle": "One home, one password",
-      "help": "Each device asks for it once, then keeps it for 90 days. 8 characters minimum: the longer it is and the more it mixes capitals, digits and symbols, the stronger it is. You can change the name and the password in Settings › Household.",
+      "intro": "The household brings together up to 5 profiles, each with its own reading. No shared password: everyone has their own account.",
+      "helpTitle": "The household’s name",
+      "help": "It shows on the sign-in page and in Hodi. You can change it in Settings › Household.",
       "name": "Household",
       "namePlaceholder": "E.g. The Smiths",
-      "password": "Password",
       "confirm": "Confirm the password",
       "mismatch": "The two passwords aren’t the same.",
-      "typeAgain": "The password is never kept on the device: type it again to pick up where you left off."
+      "laterFailed": "Could not open the Server space. Try again in a moment."
     },
     "profile": {
       "title": "And who are you?",
@@ -183,12 +275,13 @@
       "label": "AI",
       "providerHint": "With your API key, billed as you go",
       "none": "No AI",
-      "noneHint": "The purple buttons stay hidden",
-      "countryHint": "Places its web searches: “sunny tomorrow?”"
+      "noneHint": "The purple buttons stay hidden"
     },
     "done": {
       "title": "All set",
       "intro": "We guessed your region from this browser. Correct it if needed, then enter Hodi.",
+      "account": "Account",
+      "serverAdmin": "{{email}} · Server admin",
       "household": "Home",
       "admin": "{{household}} · {{profile}}, admin",
       "ai": "AI",
@@ -221,12 +314,9 @@
   },
   "profiles": {
     "pending": "Changes made offline haven’t been sent yet. Reconnect before switching profiles.",
-    "wrongPin": "That code isn’t right.",
     "openFailed": "This profile can’t be opened right now.",
-    "pin": "PIN code",
     "switch": "Switch profile",
     "switchFrom": "{{name}}, switch profile",
-    "private": "Private",
     "create": "New profile",
     "new": "New profile",
     "added": "{{name}} added",
@@ -234,11 +324,36 @@
     "of": "{{name}}’s profile",
     "loadFailed": "The profiles couldn’t be loaded. Reload the page in a moment.",
     "who": "Who’s in?",
-    "locked": "Protected by a code",
+    "locked": "Protected by a password",
     "add": "Add",
     "manage": "Manage profiles",
-    "parentalPin": "Parental code",
-    "admin": "Admin"
+    "admin": "Admin",
+    "code": {
+      "invite": "Invite an adult",
+      "inviteTitle": "Invite an adult",
+      "inviteIntro": "With this code, an adult joins your household with their own account. On their device, they open Hodi, choose <i>I have a code</i> on the sign-in page and type these 8 characters. Then they choose their e-mail and password.",
+      "connectTitle": "Connect {{name}}",
+      "connectIntro": "With this code, {{name}} signs in to their profile with their own account. On their device, {{name}} opens Hodi, chooses <i>I have a code</i> on the sign-in page, types these 8 characters, then chooses an e-mail and password. <b>The profile becomes theirs</b>, with all its reading.",
+      "label": "Code",
+      "qr": "QR code of the invitation link",
+      "scan": "Or scan this QR with the phone’s camera: Hodi opens with the code filled in. Valid for 24 h, once.",
+      "copy": "Copy the link",
+      "copied": "Link copied",
+      "copiedButton": "Copied",
+      "copyFailed": "The link could not be copied.",
+      "done": "Done",
+      "failed": "The code could not be made. Try again in a moment.",
+      "deviceIntro": "With this code, {{name}}’s device opens on their profile, with no e-mail or password. On that device, open Hodi, choose <i>I have a code</i> on the sign-in page and type these 8 characters. <b>The device will open only {{name}}’s profile.</b>",
+      "resetTitle": "New password",
+      "resetIntro": "With this code, {{name}} chooses a new password. On their device, {{name}} opens Hodi, chooses <i>I have a code</i> on the sign-in page, types these 8 characters, then the new password. <b>Their other devices are signed out</b>: they sign in again with the new one."
+    },
+    "wrongPassword": "That password is not the right one.",
+    "passwordOf": "{{name}}’s password",
+    "yourPassword": "Password",
+    "open": "Open",
+    "noAccount": "{{name}} has no account yet. This profile opens once {{name}} makes one with their code.",
+    "loginOnly": "{{name}} signs in without a password: continue with the same button as at sign-in to open their profile.",
+    "loginOnlyNoWay": "{{name}} signs in without a password, through a plugin that is gone. An adult of the household can give them a code to choose a password."
   },
   "limits": {
     "fiveMinutes": "Only 5 minutes of reading left today",
@@ -331,28 +446,14 @@
     "deleteFailed": "Deleting failed. Try again in a moment.",
     "backToProfiles": "Back to the profiles",
     "perDayCount": "{{count}} / day",
-    "channels": "YouTube channels"
-  },
-  "family": {
-    "title": "Family",
-    "parentalCode": "Parental code",
-    "parentalHint": "Asked to open an adult profile that isn’t private",
-    "parentalNone": "None: adult profiles open without a code",
-    "set": "Set",
-    "change": "Change",
-    "setTitle": "Set the parental code",
-    "changeTitle": "Change the parental code",
-    "current": "Current code",
-    "new": "New code (4 digits)",
-    "again": "Once more",
-    "mismatch": "The two codes don’t match.",
-    "wrong": "The current code isn’t right.",
-    "failed": "The code couldn’t be saved. Try again in a moment.",
-    "saved": "Parental code saved",
-    "code": "Code",
-    "removeTitle": "Remove the parental code",
-    "remove": "Remove code",
-    "removed": "Parental code removed"
+    "channels": "YouTube channels",
+    "devices": "Devices",
+    "ownDevice": "Their device",
+    "ownDeviceHint": "A code, on their tablet or phone",
+    "removeDevice": "Remove",
+    "removeDeviceLabel": "Remove {{device}}",
+    "deviceRemoved": "{{device}} removed",
+    "deviceRemoveFailed": "Couldn’t remove this device."
   },
   "requests": {
     "push": "{{name}} asks for {{source}}",
@@ -450,7 +551,7 @@
       "pick": "Pick one or more topics."
     },
     "first": {
-      "title": "Your first source",
+      "title": "First source",
       "together": "Let’s add one together, for {{topic}}.",
       "settings": "Start by opening the settings."
     },
@@ -501,7 +602,7 @@
         "how": "Here’s how it works."
       },
       "feed": {
-        "title": "Your feed",
+        "title": "The feed",
         "chosen": "Here, the news picked with your parents.",
         "open": "Tap an article to open it."
       },
@@ -548,7 +649,8 @@
   },
   "notFound": {
     "title": "This page doesn’t exist",
-    "text": "The link may be broken, or the article left the feed after 3 days.",
+    "text_one": "The link may be broken, or the article left the feed after {{count}} day.",
+    "text_other": "The link may be broken, or the article left the feed after {{count}} days.",
     "error": "ERROR 404"
   },
   "time": {
@@ -802,7 +904,7 @@
     "sentBy": "Sent by {{name}}",
     "sentYouArticle": "<b>{{name}}</b> sent you this article",
     "sentYouVideo": "<b>{{name}}</b> sent you this video",
-    "opinionFor": "Your take for {{name}}",
+    "opinionFor": "Note for {{name}}",
     "opinion": "Your take for <b>{{name}}</b>?",
     "reactFor": "React for {{name}}"
   },
@@ -813,7 +915,8 @@
     "previousWeek": "Previous week",
     "loadPreviousWeek": "Load the previous week",
     "gone": "This video is gone",
-    "goneText": "It’s older than 60 days, or its channel is no longer one of your sources.",
+    "goneText_one": "It’s older than {{count}} day, or its channel is no longer one of your sources.",
+    "goneText_other": "It’s older than {{count}} days, or its channel is no longer one of your sources.",
     "openYouTube": "Open on YouTube",
     "openSite": "Open the site",
     "backToList": "Back to the list",
@@ -894,7 +997,7 @@
     "nothingText": "Try another word, or follow this subject to be told."
   },
   "stats": {
-    "yours": "Your stats",
+    "yours": "My stats",
     "title": "Statistics",
     "articles": "Articles",
     "favourites": "Faves",
@@ -952,7 +1055,7 @@
     "intro": "What you read, on all your devices. An article is read once you scrolled through 80% of it and spent at least a third of its reading time on it; a video, once 80% watched. Past 15%, it stays in progress and waits for you in “Pick up”; below that, it was skimmed."
   },
   "game": {
-    "yourHousehold": "Your household",
+    "yourHousehold": "Household",
     "tiers": {
       "1": "Bronze",
       "2": "Silver",
@@ -1089,30 +1192,34 @@
       "profiles": "Profiles",
       "ai": "AI & credits",
       "notifications": "Notifications",
-      "account": "Data",
+      "account": "Account and data",
       "shortcuts": "Keyboard shortcuts",
+      "server": "Server",
       "about": "About"
     },
     "hints": {
+      "history": "Read and watched, 7 days",
       "reading": "Appearance, text size",
       "themes": "Order, visibility",
       "sources": "Feed status",
       "failing": "{{count}} failing",
       "none": "None",
-      "me": "Name, photo, code",
+      "me": "Name and photo",
       "stats": "Reading and videos",
       "on": "On",
       "off": "Off",
-      "household": "Name, password, region",
+      "household": "Name, language, region",
       "callsLeft_one": "{{count}} call left today",
       "callsLeft_other": "{{count}} calls left today",
       "aiOff": "Off",
       "ai": "Today’s calls",
       "onPlural": "On",
       "offPlural": "Off",
-      "account": "Storage, offline",
+      "account": "E-mail, devices, copy",
       "shortcuts": "Press ?",
-      "about": "Version, source code, credits"
+      "server": "Plugins, for the whole server",
+      "about": "Version, source code, credits",
+      "plugins": "Add features"
     },
     "titles": {
       "reading": "Reading",
@@ -1127,9 +1234,11 @@
       "household": "Household",
       "profiles": "Profiles",
       "sharing": "Sharing",
-      "account": "Data",
+      "account": "Account and data",
       "shortcuts": "Shortcuts",
-      "about": "About"
+      "about": "About",
+      "plugins": "Plugins",
+      "plugin": "Plugin"
     },
     "themes": {
       "intro": "The sections of your feed, in the menu’s order. Drag them to change that order. A hidden topic leaves your feed and the menu, but stays visible to the other profiles. A topic with no source doesn’t show.",
@@ -1145,13 +1254,13 @@
         "system": "System",
         "light": "Light",
         "dark": "Dark",
-        "poudre": "Poudré"
+        "powder": "Poudré"
       },
       "accent": "Accent colour",
       "accentHint": "Logo, active tab, counters, progress",
       "accents": {
         "auto": "Rust (the theme’s)",
-        "autoPoudre": "Powder pink (the theme’s)",
+        "autoPowder": "Powder pink (the theme’s)",
         "rose": "Pink",
         "corail": "Coral",
         "ocre": "Gold",
@@ -1165,8 +1274,7 @@
       "sizes": ["Very small", "Normal", "Large", "Very large", "Huge"],
       "hideRead": "Hide read articles and watched videos",
       "hideReadHint": "They stay in searches, stats and history",
-      "history": "History",
-      "historyHint": "Articles read and videos seen in the last 7 days"
+      "history": "History"
     },
     "followed": {
       "intro": "A word or a phrase. Articles and videos about it get a star and go to Followed. With its alert, a subject sends you a notification when a new article mentions it, at most one every 3 hours.",
@@ -1208,14 +1316,52 @@
     },
     "account": {
       "browser": "Browser",
-      "intro": "What this device keeps from Hodi, and for how long. You stay signed in for 90 days, then the password is asked again. The text of articles you haven’t read yet is kept here, to read them offline.",
+      "intro": "Your account, your devices and everything Hodi keeps about you. Your name and photo change in Your profile.",
       "sessionHint": "Signed in for 90 days, then the password is asked again",
       "thisDevice": "This device",
       "offline": "Offline",
       "offlineReading": "Offline reading",
       "ready_one": "{{count}} here",
       "ready_other": "{{count}} here",
-      "offlineHint": "The text of the feed’s unread articles, kept while the app is open"
+      "offlineHint": "The text of the feed’s unread articles, kept while the app is open",
+      "deviceIntro": "What this device keeps of Hodi, and for how long. Your sign-in lasts 90 days, then the password is asked again. The text of articles not read yet is kept here, to read them offline.",
+      "yourAccount": "Account",
+      "email": "E-mail",
+      "password": "Password",
+      "passwordChanged": "Changed on {{date}}",
+      "change": "Change",
+      "devices": "Devices",
+      "used": "Used {{when}}",
+      "signOut": "Sign out",
+      "signOutLabel": "Sign out {{device}}",
+      "signedOut": "{{device}} signed out",
+      "signOutFailed": "The device could not be signed out. Try again in a moment.",
+      "yourData": "Data",
+      "copy": "Download a copy",
+      "copyHint": "Your account, household, profiles, sources, saved, read, shares and statistics, in a JSON file",
+      "download": "Download",
+      "delete": "Delete your account",
+      "deleteHint": "Erased at once, with everything in it",
+      "deleteButton": "Delete",
+      "deleteFailed": "Your account could not be deleted. Try again in a moment.",
+      "emailTitle": "Change e-mail",
+      "emailIntro": "Your new address replaces the old one as soon as you save it.",
+      "newEmail": "New address",
+      "yourPassword": "Password",
+      "emailTaken": "This address already has an account.",
+      "emailFailed": "The e-mail could not be changed. Try again in a moment.",
+      "emailSaved": "E-mail changed",
+      "passwordIntro": "Your other devices will have to sign in again, this one stays signed in.",
+      "passwordSaved": "Password changed",
+      "wrongPassword": "This password is not the right one.",
+      "loadFailed": "Your account could not be loaded.",
+      "noPassword": "None, you sign in without one",
+      "choose": "Choose",
+      "choosePasswordTitle": "Choose a password",
+      "choosePasswordIntro": "You will be able to sign in with your e-mail and this password, besides your other way.",
+      "signInAgain": "To confirm it is you, sign in again just before (less than 5 minutes ago), then come back here.",
+      "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use “Forgot password” or ask an adult of the household for a code.",
+      "sessionHintNoPassword": "Signed in for 90 days, then you sign in again"
     },
     "roles": {
       "admin": "Admin",
@@ -1226,7 +1372,7 @@
     "editProfileTitle": "Edit profile",
     "profileSaved": "Profile saved",
     "me": {
-      "intro": "What’s only yours: your name, your photo and your code, which makes your profile private. You can also replay the guided tour, or reset your settings and your stats, without touching the other profiles.",
+      "intro": "What’s only yours: your name and your photo. You can also replay the guided tour, or reset your settings and your stats, without touching the other profiles.",
       "help": "Help",
       "tour": "Guided tour",
       "tourHint": "Add a source step by step, like on the first day",
@@ -1243,20 +1389,16 @@
       "clearStatsMessage": "Your reads are cleared on all your devices. This cannot be undone.",
       "clearAction": "Clear",
       "clearStatsDone": "Stats cleared",
-      "tourHintTeen": "Your feed and asking for a source, step by step"
+      "tourHintTeen": "The feed and asking for a source, step by step"
     },
     "profiles": {
-      "intro": "Up to {{max}} readers on this account, each with their own saved articles, reads, stats and settings. The admin adds and deletes profiles, the others change their own. A profile can become private with a code, in Your profile.",
+      "intro": "Up to {{max}} readers on this account, each with their own saved articles, reads, stats and settings. The admin adds and deletes profiles, the others change their own. An adult profile with its own account asks for its password on another account’s device.",
       "deleteTitle": "Delete {{name}}?",
       "deleteMessage": "Their saved articles, reads and settings are deleted too. This cannot be undone.",
       "deleted": "{{name}} deleted",
       "deleteFailed": "The deletion failed. Try again in a moment.",
       "active": "Open",
-      "add": "Add a profile",
-      "resetPinTitle": "Remove {{name}}’s code?",
-      "resetPinMessage": "Their profile becomes public again. They can choose a new code in Your profile.",
-      "pinRemoved": "{{name}}’s code removed",
-      "pinRemoveFailed": "The code could not be removed. Try again in a moment."
+      "add": "Add a profile"
     },
     "notifications": {
       "errors": {
@@ -1292,7 +1434,9 @@
       "hours": "Time range",
       "start": "Quiet from",
       "end": "Quiet until",
-      "testBody": "Notifications reach this device."
+      "testBody": "Notifications reach this device.",
+      "plugins": "Plugins",
+      "pluginsHint": "What the household’s plugins send you, such as the answer to a request."
     },
     "data": {
       "kb": "{{value}} kB",
@@ -1329,31 +1473,29 @@
       "passwordTitle": "Change the password",
       "currentPassword": "Current password",
       "newPassword": "New password",
-      "signedOut": "Other devices signed out",
-      "signOutFailed": "The other devices could not be signed out. Try again in a moment.",
-      "intro": "What holds for the whole install, and only the admin sees: the password, the sources and the AI all profiles share. The time zone sets when the day changes for the feed, the Daily summary and quiet hours; the country helps the AI place your questions.",
+      "intro": "What holds for the whole install, and only the admin sees: its name, its language, its region and what all profiles share. The time zone sets when the day changes for the feed, the Daily summary and quiet hours; the country helps the AI place your questions.",
       "loadFailed": "The household’s settings could not be read. Try again in a moment.",
       "heading": "Household",
+      "photo": "Photo",
+      "photoHint": "JPEG, PNG, WebP · 20 MB",
+      "photoAdd": "Add",
+      "photoChange": "Change",
+      "photoRemove": "Remove",
+      "photoFailed": "The photo could not be saved.",
+      "photoRemoveTitle": "Remove the household’s photo?",
+      "photoRemoveMessage": "The photo of <b>{{name}}</b> goes for the whole household, in Hodi and in Server › Households: the household’s initial takes its place. You can add another at any time.",
       "name": "Name",
-      "nameHint": "“{{name}}” · shown on the sign-in screen",
       "rename": "Rename",
-      "passwordChanged": "The same for all profiles · changed on {{date}}",
-      "passwordHint": "The same for all profiles",
-      "otherDevices": "Other devices",
-      "otherDevicesHint": "They’ll have to retype the password",
-      "signOutTitle": "Sign out the other devices?",
-      "signOutMessage": "Every device in the household except this one goes back to the sign-in screen.",
-      "signOut": "Sign out",
       "region": "Region",
       "timeZone": "Time zone",
-      "timeZoneHint": "New day, Daily summary, quiet hours · {{offset}}",
       "regionFailed": "The region could not be saved. Try again in a moment.",
       "game": "Game",
       "gameToggle": "Levels and badges",
       "gameHint": "Points for every read, a challenge and a ranking each week",
       "gameOn": "Game on",
       "gameOff": "Game off",
-      "gameFailed": "The game could not be changed. Try again in a moment."
+      "gameFailed": "The game could not be changed. Try again in a moment.",
+      "timeZoneValue": "{{zone}} · {{offset}}"
     },
     "proposals": {
       "errors": {
@@ -1386,6 +1528,10 @@
       "licence": "Licence",
       "licenceHint": "Free software, AGPL-3.0 licence",
       "source": "Source code",
+      "support": "Support Hodi",
+      "supportHint": "Free and ad-free",
+      "supportHint": "Free and ad-free, thanks to those who give",
+      "supportButton": "Patreon",
       "credits": "Credits",
       "people": {
         "antho": {
@@ -1412,27 +1558,7 @@
     }
   },
   "pin": {
-    "wrongCurrent": "The current code is wrong.",
-    "tooMany": "Too many attempts. Try again in a few minutes.",
-    "saveFailed": "The code could not be saved. Try again in a moment.",
-    "nowPrivate": "Now private",
-    "nowPublic": "Now public",
-    "changed": "PIN changed",
-    "setTitle": "Make profile private",
-    "removeTitle": "Make your profile public",
-    "changeTitle": "Change the code",
-    "lockedHint": "Your code is asked in “Who’s reading?” before your profile opens",
-    "openHint": "Anyone in the household can open your profile",
-    "digits": "4 digits",
-    "change": "Change",
-    "yourCurrent": "Current code",
-    "current": "Old code",
-    "yours": "Your code (4 digits)",
-    "new": "New code (4 digits)",
-    "again": "Once more",
-    "mismatch": "The two codes are not the same.",
-    "makePrivate": "Make private",
-    "makePublic": "Make public"
+    "change": "Change"
   },
   "addSource": {
     "videos": "Its videos go to Videos.",
@@ -1469,7 +1595,9 @@
     "whichSection": "In which Videos section?",
     "topics": "Source topics",
     "count": "{{added}} / {{limit}} home sources",
-    "adding": "Adding"
+    "adding": "Adding",
+    "countAll_one": "{{count}} home source",
+    "countAll_other": "{{count}} home sources"
   },
   "suggest": {
     "add": {
@@ -1561,7 +1689,8 @@
       "summary": "Article summaries",
       "question": "Article questions",
       "dailySummary": "Daily summary",
-      "sources": "Source suggestions"
+      "sources": "Source suggestions",
+      "plugin": "Plugins"
     },
     "resetKindLabel": "Reset: {{kind}}",
     "replaceKey": "Replace the key",
@@ -1578,7 +1707,6 @@
     "model": "Model {{model}}",
     "key": "API key",
     "replace": "Replace",
-    "countryHint": "Places the AI’s web searches: “sunny tomorrow?”",
     "off": "AI not on",
     "offAdmin": "Add an API key for summaries, questions and the Daily summary.",
     "addKey": "Add a key",
@@ -1588,7 +1716,8 @@
       "summary": "Reset the household’s summaries?",
       "question": "Reset the household’s questions?",
       "dailySummary": "Reset the household’s Daily summaries?",
-      "sources": "Reset the household’s source suggestions?"
+      "sources": "Reset the household’s source suggestions?",
+      "plugin": "Reset the household’s plugin requests?"
     },
     "resetHouseholdAll": "Reset all for the household?",
     "resetHouseholdMessage": "Calls from the last 24 hours no longer count, for any profile.",
@@ -1596,7 +1725,8 @@
       "summary": "Reset {{name}}’s summaries?",
       "question": "Reset {{name}}’s questions?",
       "dailySummary": "Reset {{name}}’s Daily summaries?",
-      "sources": "Reset {{name}}’s source suggestions?"
+      "sources": "Reset {{name}}’s source suggestions?",
+      "plugin": "Reset {{name}}’s plugin requests?"
     },
     "resetProfileAll": "Reset everything for {{name}}?",
     "resetProfileMessage": "{{name}} gets their credits back. The household total doesn’t change.",
@@ -1605,9 +1735,16 @@
     "offMember": "The admin can turn it on here with an API key.",
     "householdDay": "All household · 24 hours",
     "profilesDay": "Per profile · 24 hours",
-    "yoursOf": "Your calls · {{name}} · 24 hours",
-    "yours": "Your calls · 24 hours",
-    "introAdmin": "Resetting a profile gives back its credits without lowering the household total."
+    "yoursOf": "Calls · {{name}} · 24 hours",
+    "yours": "Calls · 24 hours",
+    "introAdmin": "Resetting a profile gives back its credits without lowering the household total.",
+    "plugins": {
+      "title": "Plugins",
+      "calls_one": "{{count}} call in 24 hours",
+      "calls_other": "{{count}} calls in 24 hours",
+      "toggle": "AI for {{name}}",
+      "failed": "The change wasn’t saved. Try again in a moment."
+    }
   },
   "push": {
     "someone": "Someone at home",
@@ -1639,12 +1776,8 @@
     "deleteProfile": {
       "title": "Delete this profile?",
       "message": "<b>{{name}}</b>’s profile is deleted with its saved articles, reading history, points and settings. <b>This can’t be undone.</b>",
-      "button": "Delete profile"
-    },
-    "removePin": {
-      "title": "Remove private code?",
-      "message": "<b>{{name}}</b>’s profile will open <b>without a code</b> for the whole household. {{name}} can choose a new code in <i>My profile</i>.",
-      "button": "Remove code"
+      "button": "Delete profile",
+      "messageAccount": "<b>{{name}}</b>’s profile is deleted with its saved articles, reading history, points and settings, and <b>their account no longer opens this household</b>. This can’t be undone: type your password to confirm."
     },
     "deleteSource": {
       "title": "Delete the source?",
@@ -1701,27 +1834,56 @@
       "message": "<b>{{name}}</b> gets today’s credits for <b>{{kind}}</b> back. The household’s credits don’t move.",
       "button": "Refill"
     },
-    "logoutOthers": {
-      "title": "Log out devices?",
-      "message": "Every household device <b>except this one</b> goes back to the login screen. They’ll need the household password again.",
-      "button": "Log out devices"
-    },
     "kinds": {
       "summary": "summaries",
       "question": "questions",
       "dailySummary": "Daily summaries",
-      "sources": "source suggestions"
+      "sources": "source suggestions",
+      "plugin": "plugin requests"
+    },
+    "deleteAccount": {
+      "title": "Delete your account?",
+      "message": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. Backup copies forget it within {{days}}.",
+      "messageHousehold": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>The household {{name}} has no other adult with an account: it goes too.</b> Backup copies forget it within {{days}}.",
+      "messageHouseholdWith": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>The household {{name}} has no other adult with an account: it goes too, with the profiles of {{profiles}}.</b> Backup copies forget it within {{days}}.",
+      "button": "Delete"
+    },
+    "signOutDevice": {
+      "title": "Sign out {{device}}?",
+      "message": "This device will have to sign in again with your e-mail and password.",
+      "button": "Sign out"
+    },
+    "removeYoungDevice": {
+      "title": "Remove {{device}}?",
+      "message": "This device will no longer open <b>{{name}}</b>’s profile. Linking it again will take a new code.",
+      "button": "Remove"
+    },
+    "removeMail": {
+      "title": "Stop sending e-mails?",
+      "message": "Hodi forgets the mail server and its password. It sends no e-mail until another one is set.",
+      "button": "Remove"
+    },
+    "proof": {
+      "password": "Your password",
+      "wrongPassword": "That password isn’t the right one.",
+      "failed": "That didn’t work. Try again in a moment.",
+      "code": "Code from your authenticator app",
+      "wrongCode": "That code doesn’t work: use the one your app shows now."
+    },
+    "resetPassword": {
+      "title": "New password?",
+      "message": "The next code lets someone choose a new password for <b>{{name}}</b>’s account, and so get into it. Type your password to make it.",
+      "button": "Make the code"
+    },
+    "makeAdmin": {
+      "title": "Hand over the admin role?",
+      "message": "<b>{{name}}</b> then manages the household’s profiles, sources, AI key and settings. <b>You become an adult like the others</b>, and only {{name}} can give the role back. Type your password to confirm.",
+      "button": "Hand over"
     }
   },
   "dialogIntro": {
-    "pinOpen": "<b>{{name}}</b>’s profile is private. Type its code to open it.",
-    "parentalOpen": "This adult profile is protected by the <b>parental code</b>. Type it to open it.",
+    "ownOpen": "Type <b>your password</b> to open this profile.",
     "shortcuts": "On a computer, without leaving the keyboard. Press <b>?</b> anywhere to see them again.",
-    "parentalSet": "The <b>parental code</b> is asked to open an adult profile that isn’t private: young readers can’t get in.",
-    "codeChange": "The new code replaces the old one <b>on every device</b>.",
-    "parentalRemove": "Adult profiles will open <b>without a code</b> on every device, young readers included.",
-    "pinSet": "A private profile opens <b>only with your code</b>, in “Who’s reading?” on every device.",
-    "pinRemove": "Anyone at home opens your profile <b>with no code</b>.",
     "timeZone": "It sets <b>when each day starts</b>: new feed, daily summary, quiet hours and young readers’ screen time.",
     "country": "It places the <b>AI’s web searches</b>: “will it rain tomorrow?” looks near you.",
     "share": "The <b>original link</b>, to the publisher’s site, to send anywhere.",
@@ -1730,7 +1892,6 @@
     "aiTurnOn": "Paste an <b>API key</b> from your provider. It’s checked without spending credits, then kept on this server.",
     "aiReplace": "The new key replaces the old one <b>for the whole household</b>. It’s checked without spending credits.",
     "rename": "The household’s name shows <b>on the sign-in screen</b> of every device.",
-    "password": "One password for <b>every profile</b>. Other devices will have to sign in again, this one stays signed in.",
     "sourceTopics": "Choose where to file <b>{{name}}</b>. Its articles show up in <b>each theme</b> ticked.",
     "daily": "The reading time allowed each day. Once it’s used up, the app pauses <b>until tomorrow</b>.",
     "window": "The hours when the app opens. Outside them it stays shut and says <b>when it reopens</b>.",
@@ -1742,6 +1903,609 @@
     "shareTo": "Pick one or more profiles of the household. The article lands in their <b>Shares</b>, with your note if you write one.",
     "ask": "Paste the link of a site or a YouTube channel. <b>Your parents</b> get your request: if they accept, it reaches your feed or Videos.",
     "request": "<b>{{name}}</b> would like this source in their feed. Accepted, it shows up <b>for {{name}} only</b>, filed in the theme below.",
-    "requestChannel": "<b>{{name}}</b> would like to follow this channel. Accepted, it shows up <b>for {{name}} only</b>, in their Videos."
+    "requestChannel": "<b>{{name}}</b> would like to follow this channel. Accepted, it shows up <b>for {{name}} only</b>, in their Videos.",
+    "passwordOpen": "<b>{{name}}</b> has their own account. Type their password to open their profile on this device."
+  },
+  "plugins": {
+    "count_one": "{{count}} plugin",
+    "count_other": "{{count}} plugins",
+    "emptyTitle": "No plugins",
+    "emptyText": "Install one from the list below or from a file.",
+    "manage": "Manage",
+    "manageLabel": "Manage {{name}}",
+    "back": "Plugins",
+    "brokenChip": "Error",
+    "brokenTitle": "{{name}} could not start",
+    "broken": "Hodi got this error: {{error}}",
+    "version": "Version",
+    "versionHint": "The installed package’s",
+    "enabled": "On",
+    "enabledHint": "Its pages and features are there for the household",
+    "disabledHint": "It keeps its settings and data",
+    "options": "Options",
+    "remove": "Remove the plugin",
+    "saveFailed": "The setting was not saved.",
+    "removeFailed": "The plugin was not removed.",
+    "loadFailed": "The plugin list could not be loaded.",
+    "confirmRemove": {
+      "title": "Remove this plugin?",
+      "message": "Hodi restarts to remove <b>{{name}}</b>. <b>Its settings and data stay for 30 days</b>, in case you reinstall it.",
+      "button": "Remove"
+    },
+    "confirmRemoveAll": {
+      "title": "Remove everything?",
+      "message": "Hodi restarts to remove <b>{{name}}</b>, with <b>its settings and all its data</b>. This can’t be undone.",
+      "button": "Remove all"
+    },
+    "add": {
+      "title": "Add a plugin",
+      "intro": "Send a .hodi-plugin file. Hodi shows you what is in it before installing it.",
+      "choose": "Choose or drop a file",
+      "reading": "Reading the file…",
+      "signed": "Verified",
+      "signedHint": "Signed by a key Hodi knows",
+      "unsigned": "Unverified code",
+      "unsignedHint": "No one has checked this code: its pages won’t show.",
+      "signedOnly": "Can’t be installed unsigned",
+      "signedOnlyHint": "It asks for access only verified plugins get: accounts, households, sign-ins, e-mails or notifications.",
+      "forAll": "For the whole household",
+      "forAdmin": "For the admin only",
+      "replaces": "Replaces version {{version}}",
+      "install": "Allow and install",
+      "installAnyway": "Install anyway",
+      "errors": {
+        "too_big": "This file is too big (50 MB at most).",
+        "not_a_package": "This file is not a Hodi plugin.",
+        "invalid_manifest": "This plugin is badly described and cannot be installed.",
+        "not_found": "The file expired, choose it again.",
+        "failed": "Sending failed. Try again.",
+        "signed_only": "This plugin is not verified and asks for access only verified plugins get."
+      },
+      "forAllHint": "Every profile can use it",
+      "forAdminHint": "Other profiles don’t see it",
+      "dropHere": "Drop the file here",
+      "dropHint": ".hodi-plugin · 50 MB max",
+      "update": "Update",
+      "fromFile": "Install from a file"
+    },
+    "restart": {
+      "title": "Hodi is restarting",
+      "text": "It takes a few seconds. The page reloads on its own.",
+      "installing": "Installing {{name}}",
+      "removing": "Removing {{name}}",
+      "slowTitle": "Hodi is not answering yet",
+      "slowText": "The restart is taking longer than expected."
+    },
+    "brokenHint": "Not loaded: open it to see why",
+    "outdatedChip": "Off",
+    "outdatedTitle": "{{name}} is off",
+    "outdated": "It was written for an older version of Hodi. Install its new version to use it.",
+    "outdatedHint": "Too old for this version of Hodi",
+    "outdatedToggleHint": "Not possible until it is updated",
+    "installUpdate": "Update",
+    "unsignedChip": "Not verified",
+    "unsignedTitle": "Nobody checked this plugin",
+    "unsigned": "It runs, but its pages do not show in Hodi.",
+    "devChip": "In development",
+    "devTitle": "In development",
+    "dev": "Installed by <code>npx hodi-plugin dev</code>: its pages show while developer mode is on.",
+    "devMode": {
+      "group": "To write a plugin",
+      "label": "Developer mode",
+      "hint": "Run <code>npx hodi-plugin dev</code> to install your plugin each time you save, pages included.",
+      "onHint": "Turn it off when you’re done: nobody checks these plugins.",
+      "newCode": "New code",
+      "newCodeHint": "The old code stops working.",
+      "newCodeButton": "New code",
+      "confirm": {
+        "title": "Turn on developer mode?",
+        "message": "With its code, anyone can install code <b>no one has checked</b> on this server, and its pages will show in Hodi. Only turn it on on a test server.",
+        "button": "Turn on"
+      },
+      "codeTitle": "Your developer code",
+      "onceTitle": "It shows only once",
+      "once": "Keep it to yourself. Run this command in your plugin’s folder:",
+      "copy": "Copy the command",
+      "done": "Got it",
+      "failed": "Developer mode could not change. Try again.",
+      "restarting": "Hodi restarts without the plugins in development…"
+    },
+    "removeHint": "Its settings and data stay.",
+    "removeButton": "Remove",
+    "removeAll": "Remove the plugin and its data",
+    "removeAllHint": "Nothing stays, neither its settings nor its data.",
+    "removeAllButton": "Remove all",
+    "plugin": "Plugin",
+    "confirmUnsigned": {
+      "title": "Install this code?",
+      "message": "Nobody checked the code of <b>{{name}}</b>. It runs apart and only touches its own data and what it declares. <b>Its pages won’t show</b>: only verified plugins add pages to Hodi.",
+      "button": "Install anyway"
+    },
+    "pageMissingTitle": "Page not found",
+    "pageMissingText": "This plugin is off or has no page.",
+    "pageFailedTitle": "Page broken",
+    "pageFailedText": "This plugin could not show its page.",
+    "permissions": {
+      "title": "What this plugin will be able to do",
+      "data": "Keep its own data",
+      "dataHint": "In a database of its own, apart from Hodi’s",
+      "network_one": "Reach {{count}} site",
+      "network_other": "Reach {{count}} sites",
+      "networkHint": "{{hosts}}",
+      "articles": "Read the articles",
+      "articlesHint": "The ones Hodi’s sources listed",
+      "households": "Create and manage households",
+      "householdsHint": "It only deletes households it created",
+      "accounts": "Create and check accounts",
+      "accountsHint": "It never reads stored passwords",
+      "signIn": "Sign devices in",
+      "signInHint": "With an account it just created or checked, and refuse a sign-in",
+      "publicRoutes": "Open pages without signing in",
+      "publicRoutesHint": "To sign up, join a waiting list or show its own page before sign-in",
+      "mail": "Send e-mails",
+      "mailHint": "Through Server › E-mail, 50 an hour at most",
+      "notify": "Send notifications",
+      "notifyHint": "To people across the whole server, on their devices, 10 a day at most for each",
+      "ai": "Household AI",
+      "aiHint": "A click on its violet button asks the AI one question, paid from the household’s credits. Only if it is Verified.",
+      "feeds_one": "Offer {{count}} source",
+      "feeds_other": "Offer {{count}} sources",
+      "feedsHint": "In « Add a source »: {{names}}"
+    },
+    "aiButton": {
+      "unavailable": "AI isn’t turned on for this household.",
+      "off": "The household’s admin turned this plugin’s AI off.",
+      "limited": "Today’s cap for plugins is reached.",
+      "refused": "The AI declined to answer this request.",
+      "failed": "The request didn’t go through. Try again in a moment."
+    },
+    "confirmInstall": {
+      "title": "Install {{name}}?",
+      "message": "<b>{{name}}</b> is verified. It will read and change what its permissions declare, for <b>every household on the server</b>. Type your password to install it.",
+      "button": "Install"
+    },
+    "catalog": {
+      "title": "Available",
+      "install": "Install",
+      "installLabel": "Install {{name}}",
+      "failed": "Hodi’s plugin list isn’t answering. Try again later.",
+      "downloading": "Downloading…",
+      "updateTitle": "{{name}} {{version}} is available",
+      "update": "You have version {{version}}. The new one installs with the same questions as a file.",
+      "updateChip": "{{version}} available",
+      "errors": {
+        "download_failed": "The plugin couldn’t be downloaded. Try again.",
+        "checksum_mismatch": "The downloaded file isn’t the one on the list: Hodi won’t install it.",
+        "not_a_package": "This file isn’t a Hodi plugin.",
+        "invalid_manifest": "This plugin is badly described and can’t be installed.",
+        "signed_only": "This plugin isn’t verified and asks for access only verified plugins get.",
+        "failed": "The download failed. Try again."
+      }
+    }
+  },
+  "server": {
+    "title": "Server",
+    "nav": "The server’s sections",
+    "backToApp": "Back to Hodi",
+    "support": "Support Hodi",
+    "supportHint": "Free and ad-free",
+    "backToServer": "Back to the server",
+    "groups": {
+      "settings": "Settings"
+    },
+    "titles": {
+      "overview": "Overview",
+      "households": "Households",
+      "accounts": "Accounts",
+      "content": "Content",
+      "backups": "Backups",
+      "mail": "E-mail",
+      "plugins": "Plugins"
+    },
+    "pluginsIntro": "More features, for the whole server. Each plugin runs apart, with its own data. Only verified plugins add pages to Hodi.",
+    "hints": {
+      "overview": "Totals, who is online",
+      "households": "Households and their profiles",
+      "accounts": "E-mails and their household",
+      "content": "Durations and sources per household",
+      "backups": "Copies of the whole database",
+      "mail": "The server that sends e-mails"
+    },
+    "overview": {
+      "introOne": "The household in totals. Never what one person reads.",
+      "introSeveral": "Every household together, in totals. Never what one person reads.",
+      "period": "Period",
+      "span": {
+        "days": "{{count}} d",
+        "yearShort": "1 yr",
+        "all": "All",
+        "year": "1 year"
+      },
+      "metrics": {
+        "visits": "Visits / day",
+        "articles": "Articles read",
+        "hours": "Hours of reading",
+        "videos": "Videos watched",
+        "shares": "Shares"
+      },
+      "hoursUnit": "h",
+      "byDay": "{{metric}}, day by day",
+      "legend": {
+        "days_one": "This day",
+        "days_other": "These {{count}} days",
+        "daysBefore_one": "The day before",
+        "daysBefore_other": "The {{count}} days before",
+        "year": "These 12 months",
+        "yearBefore": "The 12 months before",
+        "all": "Since the start"
+      },
+      "online": "Online now",
+      "live": "Live",
+      "onlineEmpty": "Nobody right now",
+      "device": {
+        "phone": "Phone",
+        "tablet": "Tablet",
+        "computer": "Computer"
+      },
+      "profiles_one": "Profile",
+      "profiles_other": "Profiles",
+      "adults": "Adults",
+      "young": "Teens and children",
+      "added": "+{{count}} in {{span}}",
+      "addedAll": "+{{count}} in all",
+      "top": {
+        "topics": "Most read topics",
+        "sources": "Most read sources",
+        "share": "Share of reading",
+        "read": "Articles read"
+      },
+      "nothing": "Nothing read in this period",
+      "health": {
+        "title": "Server health",
+        "sources": "Source feeds",
+        "sourcesOk": "{{count}} of {{count}} up to date",
+        "sourcesFailing": "{{failing}} failing of {{count}}",
+        "backup": "Last backup",
+        "noBackup": "None",
+        "mail": "E-mail",
+        "mailOn": "Set up",
+        "mailOff": "Not set up",
+        "plugins": "Plugins",
+        "pluginsOn_one": "{{count}} working",
+        "pluginsOn_other": "{{count}} working",
+        "noPlugins": "None",
+        "version": "Version"
+      },
+      "dates": {
+        "title": "Choose dates",
+        "from": "From",
+        "to": "To",
+        "previous": "Previous month",
+        "next": "Next month",
+        "apply": "Apply",
+        "clear": "Back to 7 days"
+      },
+      "pluginFailed": "This plugin could not be shown."
+    },
+    "people": {
+      "searchHouseholds": "Search households",
+      "searchAccounts": "Search accounts",
+      "householdsMeta_one": "{{count}} household",
+      "householdsMeta_other": "{{count}} households",
+      "accountsMeta_one": "{{count}} account",
+      "accountsMeta_other": "{{count}} accounts",
+      "householdRow_one": "{{count}} profile",
+      "householdRow_other": "{{count}} profiles",
+      "householdRowFull": "{{count}} profiles, full",
+      "householdRowWaiting_one": "{{count}} profile · waiting for {{name}}",
+      "householdRowWaiting_other": "{{count}} profiles · waiting for {{name}}",
+      "noHousehold": "No household",
+      "noMatchHouseholds": "No household matches.",
+      "noMatchAccounts": "No account matches.",
+      "backToHouseholds": "Back to households",
+      "backToAccounts": "Back to accounts",
+      "failed": "The list could not be loaded.",
+      "household": {
+        "intro": "Created on {{date}}. The server sees its accounts and numbers, never what is read there. Only the household’s admin hands over the role, in Settings › Profiles.",
+        "this": "This household",
+        "admin": "Household admin",
+        "waiting": "{{name}} · waiting for an account",
+        "adminCode": "New code",
+        "adminCodeLabel": "New code for {{name}}",
+        "profiles": "Profiles",
+        "profilesValue": "{{count}} of {{max}}",
+        "adults_one": "{{count}} adult",
+        "adults_other": "{{count}} adults",
+        "young_one": "{{count}} young",
+        "young_other": "{{count}} young",
+        "invite": "Invite",
+        "inviteLabel": "Invite an adult",
+        "inviteHint": "A code and its QR, valid for 24 h and once",
+        "fullHint": "Full: a profile has to leave before anyone is invited",
+        "full": "Full",
+        "accounts": "Accounts",
+        "noAccounts": "No account yet",
+        "see": "See",
+        "seeLabel": "See {{email}}",
+        "more_one": "See the other one",
+        "more_other": "See the {{count}} others",
+        "deleteSection": "Delete",
+        "delete": "Delete this household",
+        "deleteHint": "Its profiles, their reading and its sources go with it",
+        "deleteButton": "Delete",
+        "confirmDelete": {
+          "title": "Delete this household?",
+          "message": "<b>{{name}}</b> is deleted at once with its {{count}} profiles, their saved articles, their reading and its sources. Accounts with no other household go too. Backup copies forget it within {{days}} at most. <b>This can’t be undone.</b>"
+        }
+      },
+      "account": {
+        "intro": "The server sees the account, never what is read with it nor its settings.",
+        "section": "Account",
+        "email": "E-mail",
+        "household": "Household",
+        "role": "Role",
+        "roles": {
+          "admin": "Household admin",
+          "member": "Adult",
+          "none": "No profile"
+        },
+        "serverAdmin": "Server admin",
+        "lastSeen": "Last seen",
+        "never": "Never",
+        "lastSeenValue": "{{date}} · {{time}}",
+        "devices": "Signed-in devices",
+        "created": "Created on",
+        "reset": "Forgotten password",
+        "resetLabel": "Make a code",
+        "resetHint": "The person types it after “I have a code”, then picks a new password. Their devices are signed out.",
+        "own": "Yours changes in Settings › Account and data",
+        "deleteSection": "Delete",
+        "delete": "Delete this account",
+        "deleteHint": "Its profile and all it holds go with it",
+        "deleteButton": "Delete",
+        "confirmDelete": {
+          "title": "Delete this account?",
+          "message": "<b>{{email}}</b> is deleted at once with its profile, saved articles, reading, shares and statistics. Backup copies forget it within {{days}} at most. <b>This can’t be undone.</b>",
+          "messageAdmin": "<b>{{email}}</b> is deleted at once with its profile, saved articles, reading, shares and statistics. <b>They are {{household}}’s admin</b>: the role goes to the household’s oldest adult with an account, and with no other adult, the household goes too. Backup copies forget it within {{days}} at most. <b>This can’t be undone.</b>"
+        }
+      },
+      "emptyTitle": "No household",
+      "emptyText": "Create your household to read in it, or a household for someone else, who will be its admin.",
+      "createFailed": "Could not create the household. Try again in a moment.",
+      "createMine": "Create my household",
+      "createOther": "Create a household",
+      "otherIntro": "For someone else: its profile waits for that person, who becomes its admin with the code. You do not enter this household unless someone invites you.",
+      "otherAdmin": "Its admin’s first name",
+      "otherAdminPlaceholder": "E.g. Sophie",
+      "otherSubmit": "Create and make the code",
+      "oneTitle": "One household per server",
+      "oneText": "This server has its own already. To read in it, ask its admin to invite you."
+    },
+    "content": {
+      "intro": "How long the server keeps what it fetches, and how many sources each household may follow.",
+      "durations": "Durations",
+      "sources": "Sources",
+      "less": "Less",
+      "more": "More",
+      "saved": "Setting saved",
+      "failed": "The setting could not be saved.",
+      "loadFailed": "The settings could not be loaded.",
+      "bounds": "From {{min}} to {{max}} days, {{byDefault}} by default.",
+      "articleDays": {
+        "label": "Articles",
+        "title": "How long articles stay",
+        "intro": "How many days an article stays in the feed, the search and the topics."
+      },
+      "videoDays": {
+        "label": "Videos",
+        "title": "How long videos stay",
+        "intro": "How many days a video or an episode stays in Videos. A video takes almost no room: its title and its picture."
+      },
+      "textDays": {
+        "label": "Article text",
+        "title": "How long texts stay",
+        "intro": "How many days the server keeps the text of an article read in Hodi, and its pictures. A saved article always keeps its own."
+      },
+      "maxSources": {
+        "label": "Sources per household",
+        "title": "Sources per household",
+        "intro": "How many sources a household may follow, all its profiles together: the server fetches each one. A household that already has more keeps them, but cannot add any.",
+        "toggle": "Limit sources",
+        "toggleHint": "Otherwise each household adds as many as it likes.",
+        "unlimited": "Unlimited"
+      }
+    },
+    "backups": {
+      "intro": "Copies of the whole database and of the plugins’ data, one every night. A single account’s copy is downloaded in Settings › Account and data.",
+      "settings": "Settings",
+      "kept": "Copies kept",
+      "keptValue_one": "{{count}} copy",
+      "keptValue_other": "{{count}} copies",
+      "keptIntro": "How many copies the server keeps: the oldest goes when a new one comes. Deleted data stays at most this many days in the copies.",
+      "keptBounds": "From {{min}} to {{max}}, {{byDefault}} by default.",
+      "now": "Back up now",
+      "nowHint": "Before an update, for instance",
+      "nowButton": "Back up",
+      "done": "Copy made",
+      "failed": "The copy could not be made.",
+      "saved": "Setting saved",
+      "saveFailed": "The setting could not be saved.",
+      "loadFailed": "The copies could not be loaded.",
+      "list_one": "{{count}} copy · {{size}}",
+      "list_other": "{{count}} copies · {{size}}",
+      "empty": "No copy yet",
+      "when": "{{date}} · {{time}}",
+      "download": "Download",
+      "downloadLabel": "Download the copy of {{date}}",
+      "downloadTitle": "Download the copy",
+      "downloadIntro": "The copy of <b>{{date}} at {{time}}</b> holds everyone’s data. The account’s password protects it.",
+      "downloadFailed": "The copy could not be downloaded.",
+      "more_one": "See the other one",
+      "more_other": "See the {{count}} others",
+      "less": "Less",
+      "more2": "More",
+      "restore": "Restore",
+      "restoreLabel": "Restore the copy of {{date}}",
+      "restoreTitle": "Restore the copy",
+      "restoreIntro": "The whole server goes back to <b>{{date}} at {{time}}</b>: accounts, households, reading, the plugins’ data. What changed since is lost, but Hodi first keeps a copy of how things are now. What was deleted since stays deleted: an account, a profile, a household. A plugin removed since does not come back: its data stays 30 days, time to install it again. Then Hodi restarts, and people sign in again if needed.",
+      "restoreFailed": "The copy could not be restored.",
+      "restoring": "Restoring the copy of {{date}} at {{time}}"
+    },
+    "mail": {
+      "intro": "The server Hodi sends its e-mails through, such as the « Forgot password » link. Until it is set, Hodi sends none and that link doesn’t show on Sign in.",
+      "server": "Mail server",
+      "notSet": "Not set yet",
+      "set": "Set up",
+      "host": "Server",
+      "hostValue": "{{host}}:{{port}} · {{security}}",
+      "security": "Security",
+      "securities": {
+        "starttls": "STARTTLS",
+        "tls": "TLS",
+        "none": "None"
+      },
+      "port": "Port",
+      "user": "User name",
+      "userPlaceholder": "Empty if the server asks for none",
+      "noUser": "None",
+      "password": "Password",
+      "passwordKept": "Unchanged",
+      "sender": "Sender",
+      "dialogTitle": "Mail server",
+      "dialogIntro": "These settings come from your e-mail provider (Gmail, OVH, Infomaniak…). STARTTLS goes with port 587, TLS with 465. The e-mails’ links open Hodi at its address.",
+      "saved": "Settings saved",
+      "saveFailed": "Couldn’t save the settings.",
+      "invalid": "A field isn’t valid: check the server, the port, the sender’s address and Hodi’s.",
+      "loadFailed": "Couldn’t load the settings.",
+      "test": "Send a test",
+      "testHint": "An e-mail to this account’s address",
+      "testButton": "Send",
+      "testSent": "Test sent to {{email}}",
+      "failedUnreachable": "The server doesn’t answer: check the server, the port and the security.",
+      "failedAuth": "The server refuses the user name or the password.",
+      "failedRefused": "The server refuses the e-mail: check the sender’s address.",
+      "remove": "Stop sending e-mails",
+      "removeHint": "Hodi forgets these settings",
+      "removeButton": "Remove",
+      "removed": "Settings removed",
+      "appUrl": "Hodi’s address",
+      "noAppUrl": "Not given yet"
+    },
+    "logout": "Sign out"
+  },
+  "mail": {
+    "test": {
+      "subject": "Hodi: test e-mail",
+      "text": "This e-mail comes from Hodi. The mail server works: Hodi can send its e-mails."
+    },
+    "reset": {
+      "subject": "Hodi: choose a new password",
+      "text": "Hello,\n\nA new password was asked for the Hodi account {{email}}. To choose it, open this link within the hour:\n\n{{link}}\n\nIf you didn’t ask, ignore this e-mail: the password stays the same."
+    },
+    "plugin": {
+      "footer": "Sent by the Hodi plugin {{plugin}}, {{address}}",
+      "footerNoAddress": "Sent by the Hodi plugin {{plugin}}"
+    }
+  },
+  "forgot": {
+    "title": "Forgot password",
+    "intro": "The link to choose a new one comes by e-mail. It works for an hour.",
+    "send": "Send the link",
+    "sentTitle": "Check your e-mails",
+    "sentIntro": "If an account has the address <b>{{email}}</b>, the link is on its way. It works for an hour. Check the spam folder too.",
+    "failed": "The link couldn’t be sent. Try again in a moment.",
+    "newTitle": "New password",
+    "newIntro": "For the account <b>{{email}}</b>. This account’s other devices sign out: they will ask for this new password.",
+    "save": "Save and enter",
+    "checking": "Checking the link…",
+    "deadTitle": "This link no longer works",
+    "deadIntro": "It was used already or is more than an hour old. Ask for another one.",
+    "askAgain": "Ask for another link"
+  },
+  "twoFactor": {
+    "failed": "Two-step verification couldn’t start. Try again in a moment.",
+    "scan": {
+      "app": "Install an authenticator app on your phone: Google Authenticator, Microsoft Authenticator, 1Password, Aegis…",
+      "qr": "In the app, add an account and scan this QR. Without a camera, type the key beside it.",
+      "qrLabel": "Two-step verification QR",
+      "key": "Key",
+      "copyKey": "Copy the key",
+      "keyCopied": "Key copied",
+      "type": "Type the 6-digit code the app shows for Hodi.",
+      "code": "App code",
+      "wrong": "That code doesn’t work: use the one the app shows now. If it still fails, check your phone’s clock.",
+      "link": "Tap the button: the app opens and adds Hodi. If nothing opens, add an account in the app and type the key.",
+      "open": "Add to my app"
+    },
+    "codes": {
+      "title": "Keep your recovery codes",
+      "intro": "Without your phone, each of these codes replaces the app’s once. Keep them in your password manager or on paper: <b>Hodi won’t show them again</b>.",
+      "label": "Recovery codes",
+      "download": "Download",
+      "copy": "Copy",
+      "copied": "Codes copied",
+      "fileTitle": "Hodi · recovery codes (each works once)",
+      "done": "I kept them"
+    },
+    "setup": {
+      "title": "Protect your account",
+      "intro": "This account runs the whole server. On top of the password, it will ask for a code from your phone each time you sign in on a new device.",
+      "helpTitle": "Why is it required?",
+      "help": "The server’s account can create and delete households and accounts, install plugins and restore backups. A stolen password isn’t enough to take it: your phone is needed too."
+    },
+    "account": {
+      "row": "Two-step verification",
+      "on": "On since {{date}}",
+      "off": "Off",
+      "required": "Required for the server’s account",
+      "turnOn": "Turn on",
+      "turnOff": "Turn off",
+      "newCodes": "New codes",
+      "recoveryLeft_one": "{{count}} recovery code left",
+      "recoveryLeft_other": "{{count}} recovery codes left",
+      "dialogTitle": "Two-step verification",
+      "dialogIntro": "On top of the password, Hodi will ask for a code from your phone each time you sign in on a new device.",
+      "done": "On: your next sign-in on a new device will ask for the code.",
+      "confirmOff": {
+        "title": "Turn off verification?",
+        "message": "Your password alone will open your account from a new device again, and your recovery codes will stop working. Type your password and your app’s code to confirm.",
+        "button": "Turn off"
+      },
+      "confirmCodes": {
+        "title": "New recovery codes?",
+        "message": "The old codes will stop working. Type your password and your app’s code to get 10 new ones.",
+        "button": "Create"
+      },
+      "confirmOn": {
+        "title": "Turn on verification?",
+        "message": "Type your password: Hodi then shows the QR to scan with your authenticator app.",
+        "button": "Continue"
+      }
+    },
+    "login": {
+      "title": "Your app’s code",
+      "intro": "Open your authenticator app and type Hodi’s 6-digit code.",
+      "code": "Code",
+      "recovery": "Use a recovery code",
+      "recoveryLabel": "Recovery code",
+      "recoveryIntro": "One of the 10 codes you kept when turning on two-step verification. Each works once.",
+      "useApp": "Use the app’s code",
+      "wrong": "That code doesn’t work. Use the one the app shows now.",
+      "back": "Back",
+      "signInNow": "Done: sign in with your e-mail, your password, then your app’s code."
+    },
+    "server": {
+      "intro": "This account runs the whole server: before the Server space opens, add a code from your phone to your password. Type your password to begin.",
+      "back": "Back to the app"
+    },
+    "pluginSignIn": {
+      "title": "Two-step verification",
+      "message": "This account is protected by two-step verification. Type the 6-digit code the app shows for Hodi.",
+      "button": "Continue"
+    }
+  },
+  "seo": {
+    "title": "Hodi - News for the whole family, free and everywhere",
+    "description": "Your favourite news sites, sorted by topic, all in one place. A profile for everyone, and the household shares what’s worth reading."
   }
 }

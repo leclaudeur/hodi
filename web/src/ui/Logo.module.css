@@ -21,3 +21,17 @@
   /* The brand colour, so it follows the accent chosen in Réglages > Lecture et affichage. */
   fill: var(--rust);
 }
+
+/* While the app loads: the dot fades and shrinks, then comes back, as a breath. */
+.breathing {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: breathe 1.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+}

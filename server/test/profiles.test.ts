@@ -12,7 +12,7 @@ const reading = (id: string, at = NOW) => ({
   id,
   sourceId: 'alpha',
   sourceName: 'Alpha',
-  topicId: 'monde',
+  topicId: 'world',
   minutes: 3,
   at,
   kind: 'article' as const
@@ -37,7 +37,7 @@ describe('profiles', () => {
     db.prepare('INSERT INTO read_articles (article_id, read_at, hidden) VALUES (?, ?, 1)').run('b', NOW)
     db.prepare(
       `INSERT INTO readings (article_id, source_id, source_name, topic_id, minutes, read_at, kind)
-       VALUES ('b', 'alpha', 'Alpha', 'monde', 3, ?, 'video')`
+       VALUES ('b', 'alpha', 'Alpha', 'world', 3, ?, 'video')`
     ).run(NOW)
     db.prepare('INSERT INTO push_subscriptions (endpoint, settings, updated_at) VALUES (?, ?, ?)').run(
       'https://push.example/1',
@@ -52,14 +52,13 @@ describe('profiles', () => {
       {
         id: 1,
         name: 'Admin',
-        color: 'monde',
+        color: 'world',
         role: 'admin',
         kind: 'adult',
         avatar: null,
-        locked: false,
-        parental: false,
         photoVersion: null,
-        tourPending: false
+        tourPending: false,
+        hasAccount: false
       }
     ])
     const state = new UserStore(db).getState()
@@ -153,7 +152,7 @@ describe('profiles', () => {
     assert.equal(profiles.list().length, MAX_PROFILES)
 
     const last = profiles.list().at(-1)!
-    assert.deepEqual(profiles.update(last.id, { name: 'Sam', color: 'ia' }), { ...last, name: 'Sam', color: 'ia' })
+    assert.deepEqual(profiles.update(last.id, { name: 'Sam', color: 'ai' }), { ...last, name: 'Sam', color: 'ai' })
 
     profiles
       .list()
@@ -197,17 +196,15 @@ describe('profiles', () => {
     const max = profiles.create('Max', 'sport', NOW, { kind: 'child' })!
     assert.equal(max.kind, 'child')
     assert.equal(max.avatar, 'fox')
-    assert.equal(profiles.create('Zoé', 'ia', NOW, { kind: 'child' })!.avatar, 'pirate')
+    assert.equal(profiles.create('Zoé', 'ai', NOW, { kind: 'child' })!.avatar, 'pirate')
     assert.equal(profiles.create('Léo', 'tech', NOW, { kind: 'child', avatar: 'owl' })!.avatar, 'owl')
     assert.equal(profiles.create('Lou', 'tech', NOW, { kind: 'teen', avatar: 'owl' })!.avatar, null)
 
-    // An adult with a PIN and a photo becomes a child: neither stays.
+    // An adult with a photo becomes a child: it does not stay.
     const sam = profiles.list().find(profile => profile.name === 'Lou')!
     profiles.update(sam.id, { kind: 'adult' })
-    profiles.setPin(sam.id, 'hash')
     profiles.setPhoto(sam.id, { data: Buffer.from([1]), type: 'image/webp' }, NOW)
     const child = profiles.update(sam.id, { kind: 'child' })!
-    assert.equal(child.locked, false)
     assert.equal(child.photoVersion, null)
     assert.equal(child.avatar, 'astronaut')
     assert.equal(profiles.update(sam.id, { kind: 'teen' })!.avatar, null)

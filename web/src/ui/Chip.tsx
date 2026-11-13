@@ -14,7 +14,7 @@ const Chip = ({
   children: ReactNode
   label?: string
   title?: string
-  tone?: 'success' | 'warning' | 'accent'
+  tone?: 'success' | 'warning' | 'danger' | 'accent'
   size?: 'capsule' | 'row'
 }) => (
   <span

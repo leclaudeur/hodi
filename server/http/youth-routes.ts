@@ -10,24 +10,20 @@ import {
   isTime,
   minutesOf
 } from '../db/youth-store.ts'
-import type { FindResult } from '../news/source-finder.ts'
-import type { NewsService } from '../news/news-service.ts'
 import type { YouthSources } from '../news/youth-sources.ts'
 import { isAdminOf, isParentOf, kindOf, profileIdOf } from './profile-routes.ts'
+import { WEEK_MS } from '../../shared/time.ts'
 
 const MAX_IDS = 300
-const MAX_LINK_LENGTH = 500
 // A teen waits for its parents' answers past this many: a short list for them, and no flood.
 export const MAX_PENDING_REQUESTS = 3
 
-const idList = (value: unknown) =>
+export const idList = (value: unknown) =>
   Array.isArray(value) &&
   value.length <= MAX_IDS &&
   value.every(id => typeof id === 'string' && id.length > 0 && id.length <= 100)
     ? [...new Set(value as string[])]
     : null
-
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
 // What a young profile may not open once its time is up or outside its hours: everything that lists or shows
 // articles and videos. Its profile, its settings and "Qui lit ?" still answer, for the À demain screen.
@@ -121,38 +117,43 @@ export const youthMeRoutes = ({ youth, now }: { youth: YouthStore; now: () => nu
   return router
 }
 
-// A young profile's fiche, for its parents: its rules, and its week (time, articles and themes, never titles).
-export const youthProfileRoutes = ({
-  youth,
-  sources,
-  profiles,
-  users,
-  now
-}: {
+interface YouthProfileOptions {
   youth: YouthStore
   // Its sources and themes; absent in tests that do not need them.
   sources?: YouthSources
   profiles: ProfileStore
   users?: (profileId: number) => UserStore
   now: () => number
-}) => {
+}
+
+type YoungOf = ReturnType<typeof youngOfProfiles>
+
+// A young profile's fiche, for its parents: its rules, and its week (time, articles and themes, never titles).
+export const youthProfileRoutes = (options: YouthProfileOptions) => {
   const router = express.Router()
+  const youngOf = youngOfProfiles(options.profiles)
+  mountRulesRoutes(router, options, youngOf)
+  mountYouthSourceRoutes(router, options, youngOf)
+  mountWeekRoute(router, options, youngOf)
+  return router
+}
 
-  // The young profile asked about, when the one asking is one of its parents; else the refusal is sent.
-  const youngOf = (request: express.Request, response: express.Response) => {
-    const id = Number(request.params.id)
-    const profile = Number.isInteger(id) ? profiles.get(id) : null
-    if (!profile || !isYoung(profile)) {
-      response.status(404).json({ error: 'not_found' })
-      return null
-    }
-    if (!isParentOf(response) && !isAdminOf(response)) {
-      response.status(403).json({ error: 'parents_only' })
-      return null
-    }
-    return profile
+// The young profile asked about, when the one asking is one of its parents; else the refusal is sent.
+const youngOfProfiles = (profiles: ProfileStore) => (request: express.Request, response: express.Response) => {
+  const id = Number(request.params.id)
+  const profile = Number.isInteger(id) ? profiles.get(id) : null
+  if (!profile || !isYoung(profile)) {
+    response.status(404).json({ error: 'not_found' })
+    return null
   }
+  if (!isParentOf(response) && !isAdminOf(response)) {
+    response.status(403).json({ error: 'parents_only' })
+    return null
+  }
+  return profile
+}
 
+const mountRulesRoutes = (router: express.Router, { youth, now }: YouthProfileOptions, youngOf: YoungOf) => {
   router.get('/:id/rules', (request, response) => {
     const profile = youngOf(request, response)
     if (profile) response.json(youth.limits(profile.id, now()))
@@ -169,52 +170,55 @@ export const youthProfileRoutes = ({
     youth.setRules(profile.id, change)
     response.json(youth.limits(profile.id, now()))
   })
+}
 
-  if (sources) {
-    // Its parents' catalogue for it, theme by theme, each source on or off.
-    router.get('/:id/sources', (request, response) => {
-      const profile = youngOf(request, response)
-      if (profile) response.json({ topics: sources.catalogue(profile) })
-    })
+const mountYouthSourceRoutes = (router: express.Router, { youth, sources }: YouthProfileOptions, youngOf: YoungOf) => {
+  if (!sources) return
+  // Its parents' catalogue for it, theme by theme, each source on or off.
+  router.get('/:id/sources', (request, response) => {
+    const profile = youngOf(request, response)
+    if (profile) response.json({ topics: sources.catalogue(profile) })
+  })
 
-    router.put('/:id/sources', (request, response) => {
-      const profile = youngOf(request, response)
-      if (!profile) return
-      const on = idList(request.body?.on)
-      if (!on) {
-        response.status(400).json({ error: 'bad_request' })
-        return
-      }
-      sources.setSources(profile, on, profileIdOf(response))
-      response.json({ topics: sources.catalogue(profile) })
-    })
-
-    // The themes its kind may see, each on unless its parents turned it off.
-    const topicsOf = (profile: Profile) => {
-      const hidden = youth.hiddenTopics(profile.id)
-      return sources
-        .topicsFor(profile.kind as 'teen' | 'child')
-        .map(topic => ({ id: topic.id, label: topic.label, on: !hidden.includes(topic.id) }))
+  router.put('/:id/sources', (request, response) => {
+    const profile = youngOf(request, response)
+    if (!profile) return
+    const on = idList(request.body?.on)
+    if (!on) {
+      response.status(400).json({ error: 'bad_request' })
+      return
     }
+    sources.setSources(profile, on, profileIdOf(response))
+    response.json({ topics: sources.catalogue(profile) })
+  })
 
-    router.get('/:id/topics', (request, response) => {
-      const profile = youngOf(request, response)
-      if (profile) response.json({ topics: topicsOf(profile) })
-    })
-
-    router.put('/:id/topics', (request, response) => {
-      const profile = youngOf(request, response)
-      if (!profile) return
-      const hidden = idList(request.body?.hidden)
-      if (!hidden) {
-        response.status(400).json({ error: 'bad_request' })
-        return
-      }
-      sources.setHiddenTopics(profile, hidden)
-      response.json({ topics: topicsOf(profile) })
-    })
+  // The themes its kind may see, each on unless its parents turned it off.
+  const topicsOf = (profile: Profile) => {
+    const hidden = youth.hiddenTopics(profile.id)
+    return sources
+      .topicsFor(profile.kind as 'teen' | 'child')
+      .map(topic => ({ id: topic.id, label: topic.label, on: !hidden.includes(topic.id) }))
   }
 
+  router.get('/:id/topics', (request, response) => {
+    const profile = youngOf(request, response)
+    if (profile) response.json({ topics: topicsOf(profile) })
+  })
+
+  router.put('/:id/topics', (request, response) => {
+    const profile = youngOf(request, response)
+    if (!profile) return
+    const hidden = idList(request.body?.hidden)
+    if (!hidden) {
+      response.status(400).json({ error: 'bad_request' })
+      return
+    }
+    sources.setHiddenTopics(profile, hidden)
+    response.json({ topics: topicsOf(profile) })
+  })
+}
+
+const mountWeekRoute = (router: express.Router, { youth, users, now }: YouthProfileOptions, youngOf: YoungOf) => {
   router.get('/:id/week', (request, response) => {
     const profile = youngOf(request, response)
     if (!profile) return
@@ -231,142 +235,4 @@ export const youthProfileRoutes = ({
       topics: [...topics].map(([id, count]) => ({ id, count })).sort((a, b) => b.count - a.count)
     })
   })
-
-  return router
-}
-
-// "Demander une source": a teen pastes a link, the source is looked for (through the SSRF guard), and waits for a
-// parent. A child asks for nothing.
-export const sourceRequestMeRoutes = ({
-  youth,
-  find,
-  news,
-  now,
-  onRequest
-}: {
-  youth: YouthStore
-  find: (link: string) => Promise<FindResult>
-  news: NewsService
-  now: () => number
-  // The parents hear of it.
-  onRequest: (request: ReturnType<YouthStore['addRequest']>) => void
-}) => {
-  const router = express.Router()
-
-  router.get('/source-requests', (_request, response) => {
-    response.json({ requests: youth.requests({ profileId: profileIdOf(response), status: 'pending' }) })
-  })
-
-  // Its parents' answers not seen yet, shown once on top of its Réglages.
-  router.get('/source-requests/answers', (_request, response) => {
-    response.json({ answers: youth.answers(profileIdOf(response)) })
-  })
-
-  router.post('/source-requests/answers/seen', (request, response) => {
-    const ids: unknown = request.body?.ids
-    if (!Array.isArray(ids) || ids.length > 100 || !ids.every(id => Number.isInteger(id))) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    youth.seeAnswers(profileIdOf(response), ids as number[])
-    response.status(204).end()
-  })
-
-  router.post('/source-requests', async (request, response) => {
-    if (kindOf(response) !== 'teen') {
-      response.status(403).json({ error: 'teens_only' })
-      return
-    }
-    const link: unknown = request.body?.url
-    if (typeof link !== 'string' || !link.trim() || link.length > MAX_LINK_LENGTH) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    if (youth.requests({ profileId: profileIdOf(response), status: 'pending' }).length >= MAX_PENDING_REQUESTS) {
-      response.status(409).json({ error: 'full' })
-      return
-    }
-    const result = await find(link.trim())
-    // A site's feed or a YouTube channel; channel: anything else (a podcast), which only a parent adds.
-    if (result.status !== 'ok' || (result.source.kind !== 'article' && result.source.kind !== 'video')) {
-      response.status(422).json({ error: result.status === 'ok' ? 'channel' : result.status })
-      return
-    }
-    const profileId = profileIdOf(response)
-    const allowed = new Set(youth.allowedSources(profileId))
-    const following = [...news.catalog.topics, ...news.catalog.listen]
-      .flatMap(section => section.sources)
-      .some(source => source.url === result.source.url && allowed.has(source.id))
-    const pending = youth
-      .requests({ profileId, status: 'pending' })
-      .some(entry => entry.source.url === result.source.url)
-    if (following || pending) {
-      response.status(409).json({ error: following ? 'following' : 'pending' })
-      return
-    }
-    const { name, url, kind, lang, domains, reader } = result.source
-    // Its id is made when a parent accepts it, as theirs.
-    const added = youth.addRequest(profileId, { id: '', name, url, kind, lang, domains, reader, skip: [] }, now())
-    onRequest(added)
-    response.status(201).json(added)
-  })
-
-  return router
-}
-
-// The parents' side: every pending request ("Demandes"), each accepted (on for that teen only) or refused.
-export const sourceRequestRoutes = ({
-  youth,
-  sources,
-  news,
-  profiles,
-  now
-}: {
-  youth: YouthStore
-  sources: YouthSources
-  news: NewsService
-  profiles: ProfileStore
-  now: () => number
-}) => {
-  const router = express.Router()
-
-  const parentsOnly = (response: express.Response) => {
-    if (isParentOf(response) || isAdminOf(response)) return true
-    response.status(403).json({ error: 'parents_only' })
-    return false
-  }
-
-  router.get('/', (_request, response) => {
-    if (parentsOnly(response)) response.json({ requests: youth.requests({ status: 'pending' }) })
-  })
-
-  // accept: true or false; topicIds: where a source new to the household goes (Monde unless said). A channel goes to
-  // a section of "Vidéos" (Divers unless said).
-  router.post('/:id', (request, response) => {
-    if (!parentsOnly(response)) return
-    const entry = youth.request(Number(request.params.id))
-    const profile = entry ? profiles.get(entry.profileId) : null
-    const accept: unknown = request.body?.accept
-    const topicIds = request.body?.topicIds === undefined ? undefined : idList(request.body.topicIds)
-    if (!entry || entry.status !== 'pending' || !profile) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    const section = entry.source.kind === 'video' ? 'listen' : 'topic'
-    const fallback = section === 'listen' ? 'divers' : 'monde'
-    const known = new Set((section === 'listen' ? news.catalog.listen : news.catalog.topics).map(group => group.id))
-    const topics = topicIds ?? [known.has(fallback) ? fallback : [...known][0]!]
-    if (typeof accept !== 'boolean' || topics.length === 0 || topics.some(id => !known.has(id))) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    if (accept && !sources.accept(profile, entry.source, section, topics, profileIdOf(response))) {
-      response.status(400).json({ error: 'bad_section' })
-      return
-    }
-    youth.decide(entry.id, accept ? 'accepted' : 'refused', now())
-    response.json({ requests: youth.requests({ status: 'pending' }) })
-  })
-
-  return router
 }

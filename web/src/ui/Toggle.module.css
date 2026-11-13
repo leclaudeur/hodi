@@ -26,13 +26,14 @@
     background-color var(--duration) var(--ease);
 }
 
+/* On, it keeps a button's weight: a raised fill and a stronger border, only the knob takes the text colour. */
 .toggle[aria-checked='true'] {
-  border-color: var(--text);
-  background: var(--text);
+  border-color: var(--border-strong);
+  background: var(--raised);
 }
 
 .toggle[aria-checked='true'] .knob {
-  background: var(--bg);
+  background: var(--text);
   transform: translateX(22px);
 }
 

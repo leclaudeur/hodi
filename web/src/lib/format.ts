@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { FeedItem } from '../api.ts'
 import { type Language, getLanguage, t } from './i18n.ts'
+import { DAY_MS } from '../../../shared/time.ts'
 
 // How the household writes the time of day (Réglages › Foyer): 24 ("21:00") or 12 ("9:00 PM"). Kept on the device
 // too, so the first screen shows the right one before the server answers.
@@ -26,8 +27,6 @@ export const setHourCycle = (next: HourCycle) => {
   formatters.clear()
   hourCycleListeners.forEach(listener => listener())
 }
-
-export const getHourCycle = () => hourCycle
 
 export const useHourCycle = () =>
   useSyncExternalStore(
@@ -92,8 +91,6 @@ export const hourText = (hhmm: string) => {
     .replace(/\s/g, '\u00a0')
 }
 
-export const fullDate = (iso: string | null) => (iso ? format().day.format(new Date(iso)) : null)
-
 export const hostOf = (link: string) => new URL(link).hostname.replace(/^www\./, '')
 
 // Mobile cards: "40 MIN", "3 H", "2 J".
@@ -104,8 +101,6 @@ export const shortAgo = (iso: string | null, now = Date.now()) => {
   if (minutes < 24 * 60) return t('time.hours', { count: Math.round(minutes / 60) })
   return t('time.days', { count: Math.round(minutes / (24 * 60)) })
 }
-
-const DAY_MS = 24 * 60 * 60 * 1000
 
 // A calendar day of "Le fil" (YYYY-MM-DD, local), as the charter writes it: "ven. 24.10", "vendredi 24.10".
 const dayParts = (day: string) => {

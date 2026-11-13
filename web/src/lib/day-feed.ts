@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import { type DayFeed, type SearchItem, UnauthorizedError, getDay } from '../api.ts'
+import { type DayFeed, UnauthorizedError, getDay } from '../api.ts'
 import { keepForOffline } from './offline.ts'
 import { rememberRelated } from './related.ts'
 
@@ -135,6 +135,3 @@ export const useDayFeed = (scope: string) => {
 
   return state
 }
-
-// Every article listed so far for that scope, newest first.
-export const itemsOf = (state: DayFeedState): SearchItem[] => state.days.flatMap(day => day.items)

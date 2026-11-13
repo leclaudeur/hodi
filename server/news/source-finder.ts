@@ -3,6 +3,7 @@ import type { Source, SourceKind } from './catalog.ts'
 import { extractArticle, extractFeedContent } from './extract.ts'
 import { type FetchText, YOUTUBE_PAGE, YOUTUBE_PAGE_BYTES, createFetchText } from './fetch-text.ts'
 import { type FeedEntry, parseFeedEntries } from './feed-parser.ts'
+import { siteNameOf, tidySourceName } from './source-name.ts'
 import { decodeEntities } from './text.ts'
 
 // "Ajouter une source": from a link a profile pastes (a site, a feed or a YouTube channel),
@@ -56,10 +57,10 @@ const parseUrl = (text: string) => {
 
 const decode = (text: string) => decodeEntities(text.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')).trim()
 
-// The feed's own title, else its site's name.
+// The feed's own title (the first one, the channel's).
 const feedTitle = (xml: string) => {
   const match = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(xml)
-  return match ? decode(match[1] ?? '').slice(0, 60) : ''
+  return match ? decode(match[1] ?? '') : ''
 }
 
 const attribute = (tag: string, name: string) =>
@@ -102,28 +103,13 @@ const fetchYouTubeText = createFetchText({ timeoutMs: 8000, maxBytes: YOUTUBE_PA
 const fetchYouTubePage = async (url: string) =>
   (await fetchYouTubeText(url, YOUTUBE_PAGE)).text.slice(0, 4 * 1024 * 1024)
 
-export const createSourceFinder = ({
-  fetchText,
-  fetchYouTube = fetchYouTubePage,
-  isPublic = isPublicUrl
-}: {
-  fetchText: FetchText
-  fetchYouTube?: (url: string) => Promise<string>
-  isPublic?: IsPublicUrl
-}) => {
+// What the finder may reach: only public addresses, the page's and the one it was redirected to.
+const pageFetchers = (fetchText: FetchText, isPublic: IsPublicUrl) => {
   const fetchPublic = async (url: string) => {
     if (!(await isPublic(new URL(url)))) throw new BlockedError()
     const page = await fetchText(url)
     if (!(await isPublic(new URL(page.url)))) throw new BlockedError()
     return page
-  }
-
-  const entriesOf = (xml: string, url: string, kind: SourceKind) => {
-    try {
-      return parseFeedEntries(xml, draft(url, kind))
-    } catch {
-      return null
-    }
   }
 
   // Articles open in the reader when most of the latest do, on their site's domain.
@@ -145,32 +131,6 @@ export const createSourceFinder = ({
     return { tried: results.length, ok: results.filter(Boolean).length }
   }
 
-  const fromFeed = async (url: string, xml: string, origin: FoundSource['origin']): Promise<FindResult> => {
-    const kind: SourceKind = origin === 'youtube' ? 'video' : 'article'
-    const entries = entriesOf(xml, url, kind)
-    if (!entries) return { status: 'none' }
-    if (entries.length === 0) return { status: 'empty' }
-
-    const links = entries.map(entry => entry.item.link)
-    const hosts = [...new Set(links.flatMap(link => (URL.canParse(link) ? [hostOf(link)] : [])))]
-    const readable = kind === 'article' && origin === 'feed' ? await readerTest(entries) : { tried: 0, ok: 0 }
-    const reader = readable.tried > 0 && readable.ok * 2 > readable.tried
-    return {
-      status: 'ok',
-      source: {
-        name: feedTitle(xml) || hosts[0] || new URL(url).hostname,
-        url,
-        kind,
-        lang: languageOf(xml),
-        domains: reader ? hosts.slice(0, 3) : [],
-        reader,
-        origin,
-        readable,
-        samples: entries.slice(0, 3).map(entry => entry.item.title)
-      }
-    }
-  }
-
   // The usual feed addresses of a site, asked together: the first one that is a feed.
   const guessFeed = async (base: string) => {
     const guesses = await Promise.all(
@@ -179,6 +139,98 @@ export const createSourceFinder = ({
     return guesses.find(feed => feed && entriesOf(feed.text, feed.url, 'article')) ?? null
   }
 
+  // A site whose page turns Hodi away (a bot wall) often still serves its feed at a usual address.
+  const pageOrGuess = (url: URL) =>
+    fetchPublic(url.toString()).catch(async (error: unknown) => {
+      if (error instanceof BlockedError) throw error
+      const guessed = await guessFeed(url.toString())
+      if (guessed) return guessed
+      throw error
+    })
+
+  // The feeds the page names, in its order; else the usual addresses, asked together.
+  const namedOrGuessedFeed = async (page: { text: string; url: string }) => {
+    const named = [...new Set(feedLinks(page.text, page.url))]
+    for (const candidate of named.slice(0, 4)) {
+      const feed = await fetchPublic(candidate).catch(() => null)
+      if (feed && entriesOf(feed.text, feed.url, 'article')) return feed
+    }
+    return guessFeed(page.url)
+  }
+
+  return { fetchPublic, readerTest, pageOrGuess, namedOrGuessedFeed }
+}
+
+const entriesOf = (xml: string, url: string, kind: SourceKind) => {
+  try {
+    return parseFeedEntries(xml, draft(url, kind))
+  } catch {
+    return null
+  }
+}
+
+// siteName: what the site's page calls itself, when the feed was found from it.
+const feedSource = async (
+  readerTest: ReturnType<typeof pageFetchers>['readerTest'],
+  url: string,
+  xml: string,
+  origin: FoundSource['origin'],
+  siteName: string | null
+): Promise<FindResult> => {
+  const kind: SourceKind = origin === 'youtube' ? 'video' : 'article'
+  const entries = entriesOf(xml, url, kind)
+  if (!entries) return { status: 'none' }
+  if (entries.length === 0) return { status: 'empty' }
+
+  const links = entries.map(entry => entry.item.link)
+  const hosts = [...new Set(links.flatMap(link => (URL.canParse(link) ? [hostOf(link)] : [])))]
+  const readable = kind === 'article' && origin === 'feed' ? await readerTest(entries) : { tried: 0, ok: 0 }
+  const reader = readable.tried > 0 && readable.ok * 2 > readable.tried
+  return {
+    status: 'ok',
+    source: {
+      // A channel's title is its name; an article feed's is tidied ("https://www.voici.fr : flux d'articles").
+      name:
+        origin === 'youtube'
+          ? feedTitle(xml).slice(0, 60) || new URL(url).hostname
+          : tidySourceName(feedTitle(xml), hosts[0] ? `https://${hosts[0]}` : url, siteName),
+      url,
+      kind,
+      lang: languageOf(xml),
+      domains: reader ? hosts.slice(0, 3) : [],
+      reader,
+      origin,
+      readable,
+      samples: entries.slice(0, 3).map(entry => entry.item.title)
+    }
+  }
+}
+
+// A channel's id: in its address, or else in its page.
+const youTubeChannelOf = async (url: URL, fetchYouTube: (url: string) => Promise<string>) => {
+  const id = url.searchParams.get('channel_id') ?? /\/channel\/(UC[\w-]{22})/.exec(url.pathname)?.[1]
+  return id && CHANNEL_ID.test(id)
+    ? id
+    : channelIdOf(
+        await fetchYouTube(
+          `https://www.youtube.com${url.pathname.replace(/\/(videos|featured|shorts|streams)\/?$/, '')}`
+        )
+      )
+}
+
+export const createSourceFinder = ({
+  fetchText,
+  fetchYouTube = fetchYouTubePage,
+  isPublic = isPublicUrl
+}: {
+  fetchText: FetchText
+  fetchYouTube?: (url: string) => Promise<string>
+  isPublic?: IsPublicUrl
+}) => {
+  const { fetchPublic, readerTest, pageOrGuess, namedOrGuessedFeed } = pageFetchers(fetchText, isPublic)
+  const fromFeed = (url: string, xml: string, origin: FoundSource['origin'], siteName: string | null = null) =>
+    feedSource(readerTest, url, xml, origin, siteName)
+
   const find = async (pasted: string): Promise<FindResult> => {
     const url = parseUrl(pasted)
     if (!url) return { status: 'invalid' }
@@ -186,38 +238,19 @@ export const createSourceFinder = ({
       if (isReddit(url)) return { status: 'reddit' }
 
       if (isYouTube(url)) {
-        const id = url.searchParams.get('channel_id') ?? /\/channel\/(UC[\w-]{22})/.exec(url.pathname)?.[1]
-        const channel =
-          id && CHANNEL_ID.test(id)
-            ? id
-            : channelIdOf(
-                await fetchYouTube(
-                  `https://www.youtube.com${url.pathname.replace(/\/(videos|featured|shorts|streams)\/?$/, '')}`
-                )
-              )
+        const channel = await youTubeChannelOf(url, fetchYouTube)
         if (!channel) return { status: 'none' }
         const feed = `${YOUTUBE_FEED}${channel}`
         return fromFeed(feed, (await fetchPublic(feed)).text, 'youtube')
       }
 
-      // A site whose page turns Hodi away (a bot wall) often still serves its feed at a usual address.
-      const page = await fetchPublic(url.toString()).catch(async (error: unknown) => {
-        if (error instanceof BlockedError) throw error
-        const guessed = await guessFeed(url.toString())
-        if (guessed) return guessed
-        throw error
-      })
+      const page = await pageOrGuess(url)
       const direct = entriesOf(page.text, page.url, 'article')
       if (direct) return fromFeed(page.url, page.text, 'feed')
 
-      // The feeds the page names, in its order; else the usual addresses, asked together.
-      const named = [...new Set(feedLinks(page.text, page.url))]
-      for (const candidate of named.slice(0, 4)) {
-        const feed = await fetchPublic(candidate).catch(() => null)
-        if (feed && entriesOf(feed.text, feed.url, 'article')) return fromFeed(feed.url, feed.text, 'feed')
-      }
-      const guessed = await guessFeed(page.url)
-      return guessed ? fromFeed(guessed.url, guessed.text, 'feed') : { status: 'none' }
+      const siteName = siteNameOf(page.text)
+      const feed = await namedOrGuessedFeed(page)
+      return feed ? fromFeed(feed.url, feed.text, 'feed', siteName) : { status: 'none' }
     } catch (error) {
       if (error instanceof BlockedError) return { status: 'blocked' }
       // In the server's log, to tell a site that is down from one that refuses Hodi.

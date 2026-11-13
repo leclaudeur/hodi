@@ -1,0 +1,28 @@
+{
+  "case": "H24",
+  "title": "Headers chosen by the plugin are dropped",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/cookie",
+      "expect": {
+        "status": 200,
+        "headersAbsent": [
+          "set-cookie",
+          "location",
+          "access-control-allow-origin"
+        ],
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-content-type-options": "nosniff"
+        },
+        "cspContains": "sandbox"
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

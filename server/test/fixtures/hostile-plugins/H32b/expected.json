@@ -1,0 +1,22 @@
+{
+  "case": "H32b",
+  "title": "Without the network permission, the main thread refuses fetchText",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/net",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false,
+          "error": "not_allowed"
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

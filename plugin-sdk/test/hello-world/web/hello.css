@@ -1,0 +1,14 @@
+/* A plugin's styles are prefixed with its id: they share the page with Hodi's. Colours come from Hodi's variables,
+   so the card follows the theme. */
+.hello-world-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--column);
+}
+
+.hello-world-period {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}

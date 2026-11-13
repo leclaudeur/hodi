@@ -1,6 +1,6 @@
 # The sources of the end-to-end tests: two made-up sites that e2e/server.ts serves itself.
 topics:
-  - id: monde
+  - id: world
     label: { fr: Monde, en: World }
     young: [teen, child]
     sources:

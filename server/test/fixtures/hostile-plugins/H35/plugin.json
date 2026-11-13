@@ -1,0 +1,11 @@
+{
+  "id": "hostile-h35",
+  "name": "Hostile H35",
+  "version": "0.0.1",
+  "description": "households: remove or suspend what the plugin did not create",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "households": true
+  }
+}

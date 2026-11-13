@@ -32,12 +32,72 @@ interface AddSourceDialogProps {
 // those the AI finds. The topics show until one is picked, then give way to its sites.
 type Way = 'link' | 'topic'
 
+interface WayProps {
+  topics: TopicInfo[]
+  request: AddSourceRequest
+  way: Way
+  picked: string | null
+  onPick: (id: string | null) => void
+  proposals: ReturnType<typeof useProposals>
+  onAdded: (id: string) => void
+  onUnauthorized: () => void
+}
+
+// The topics to pick from, until one is picked.
+const TopicPicker = ({ topics, onPick }: { topics: TopicInfo[]; onPick: (id: string) => void }) => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <h3 className={styles.label}>{t('settings.addSource.pickTopic')}</h3>
+      <div className={dialogStyles.topics} data-tour="add-topics">
+        {topics.map(choice => (
+          <TopicCapsule
+            key={choice.id}
+            topicId={choice.id}
+            label={choice.label}
+            size="filter"
+            onClick={() => onPick(choice.id)}
+          />
+        ))}
+      </div>
+    </>
+  )
+}
+
+// The way picked: a link pasted, or the sites we propose and those the AI finds for a topic.
+const WayContent = ({ topics, request, way, picked, onPick, proposals, onAdded, onUnauthorized }: WayProps) => {
+  const { t } = useTranslation()
+  const topic = topics.find(candidate => candidate.id === picked) ?? null
+  if (way === 'link') {
+    return <AddSource topics={topics} topicHint={picked} onAdded={onAdded} onUnauthorized={onUnauthorized} />
+  }
+  if (!topic) return <TopicPicker topics={topics} onPick={onPick} />
+  return (
+    <>
+      <div className={dialogStyles.picked}>
+        <TopicCapsule topicId={topic.id} label={topic.label} size="filter" selected href={null} />
+        <Button onClick={() => onPick(null)}>{t('settings.addSource.changeTopic')}</Button>
+      </div>
+      {proposals && (
+        <SourceProposals topic={topic} proposals={proposals} onAdded={onAdded} onUnauthorized={onUnauthorized} />
+      )}
+      <SourceSuggestions
+        // A new topic: the last suggestions go.
+        key={picked}
+        topic={topic}
+        replacing={request.replacing?.id ?? null}
+        onAdded={onAdded}
+        onUnauthorized={onUnauthorized}
+      />
+    </>
+  )
+}
+
 const AddSourceDialog = ({ topics, request, onClose, onAdded, onUnauthorized }: AddSourceDialogProps) => {
   const { t } = useTranslation()
   const [picked, setPicked] = useState<string | null>(null)
   const [way, setWay] = useState<Way>('link')
   const proposals = useProposals(request !== null, onUnauthorized)
-  const topic = topics.find(candidate => candidate.id === picked) ?? null
   // Each opening starts on its own topic (the one of a source being replaced).
   const [opened, setOpened] = useState<AddSourceRequest | null>(null)
   if (request !== opened) {
@@ -77,47 +137,16 @@ const AddSourceDialog = ({ topics, request, onClose, onAdded, onUnauthorized }: 
               onChange={setWay}
             />
           </div>
-          {way === 'link' ? (
-            <AddSource topics={topics} topicHint={picked} onAdded={onAdded} onUnauthorized={onUnauthorized} />
-          ) : !topic ? (
-            <>
-              <h3 className={styles.label}>{t('settings.addSource.pickTopic')}</h3>
-              <div className={dialogStyles.topics} data-tour="add-topics">
-                {topics.map(choice => (
-                  <TopicCapsule
-                    key={choice.id}
-                    topicId={choice.id}
-                    label={choice.label}
-                    size="filter"
-                    onClick={() => setPicked(choice.id)}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className={dialogStyles.picked}>
-                <TopicCapsule topicId={topic.id} label={topic.label} size="filter" selected href={null} />
-                <Button onClick={() => setPicked(null)}>{t('settings.addSource.changeTopic')}</Button>
-              </div>
-              {proposals && (
-                <SourceProposals
-                  topic={topic}
-                  proposals={proposals}
-                  onAdded={onAdded}
-                  onUnauthorized={onUnauthorized}
-                />
-              )}
-              <SourceSuggestions
-                // A new topic: the last suggestions go.
-                key={picked}
-                topic={topic}
-                replacing={request.replacing?.id ?? null}
-                onAdded={onAdded}
-                onUnauthorized={onUnauthorized}
-              />
-            </>
-          )}
+          <WayContent
+            topics={topics}
+            request={request}
+            way={way}
+            picked={picked}
+            onPick={setPicked}
+            proposals={proposals}
+            onAdded={onAdded}
+            onUnauthorized={onUnauthorized}
+          />
         </>
       )}
     </Dialog>

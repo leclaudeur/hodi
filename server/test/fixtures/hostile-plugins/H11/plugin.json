@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h11",
+  "name": "Hostile H11",
+  "version": "0.0.1",
+  "description": "Many calls at once queue, then overflow",
+  "api": 2,
+  "audience": "admin"
+}

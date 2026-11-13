@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h40",
+  "name": "Hostile H40",
+  "version": "0.0.1",
+  "description": "SDK objects not declared in the manifest do not exist",
+  "api": 2,
+  "audience": "admin"
+}

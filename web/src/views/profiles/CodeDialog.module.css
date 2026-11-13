@@ -1,0 +1,27 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* The QR beside what it is for: the dialog stays short enough for a computer's screen. */
+.qr {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* The QR's place while the code comes, so nothing moves when it appears. */
+.qrWait {
+  flex-shrink: 0;
+  width: 112px;
+  height: 112px;
+  border-radius: 12px;
+  background: var(--raised);
+}
+
+.scan {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.45;
+}

@@ -1,29 +1,46 @@
 import { useSyncExternalStore } from 'react'
-import { PROFILE_COLORS, type TopicItem, type TopicSummary } from '../api.ts'
+import { type ProfileColor, type TopicItem, type TopicSummary } from '../api.ts'
 import { type Language, isLanguage } from './i18n.ts'
 import { isDismissed, isReadAndClosed } from './read-state.ts'
+import { currentTopicId } from './renamed-topics.ts'
 import { changeUserState, getUserState, subscribeUserState } from './user-state.ts'
-import { foldText, wordPattern } from './word-match.ts'
+import { foldText, wordPattern } from '../../../shared/word-match.ts'
 
 // What to show and in which order, shared by every device (kept on the server, see user-state.ts).
 
 // system: a profile that never chose, on its device's light or dark.
-export type Theme = 'system' | 'light' | 'dark' | 'poudre'
-export const THEMES: Theme[] = ['system', 'light', 'dark', 'poudre']
+export type Theme = 'system' | 'light' | 'dark' | 'powder'
+export const THEMES: Theme[] = ['system', 'light', 'dark', 'powder']
+// The themes' names before every id was English.
+const OLD_THEMES: Record<string, Theme> = { poudre: 'powder' }
 
-// The brand's colour: the theme's own (rust, Poudré's pink), or one of the profile colours.
-export const ACCENTS = ['auto', ...PROFILE_COLORS] as const
+// The brand's colour: the theme's own (rust, Poudré's pink), or one of five profile colours. Six choices at most:
+// more were hard to tell apart in a row.
+export const ACCENT_COLORS = [
+  'belgium',
+  'world',
+  'tech',
+  'science',
+  'film-tv'
+] as const satisfies readonly ProfileColor[]
+export const ACCENTS = ['auto', ...ACCENT_COLORS] as const
 export type Accent = (typeof ACCENTS)[number]
 
-// The accent colours before they were the profile colours, each to the profile colour it was drawn from.
+// The accent colours before they were the profile colours, and the profile colours no longer offered, each to
+// the nearest colour kept.
 const OLD_ACCENTS: Record<string, Accent> = {
-  rose: 'films-series',
-  corail: 'jeux-video',
-  ocre: 'belgique',
+  rose: 'film-tv',
+  corail: 'film-tv',
+  ocre: 'belgium',
   vert: 'science',
   turquoise: 'tech',
-  bleu: 'monde',
-  lavande: 'broadcast'
+  bleu: 'world',
+  lavande: 'world',
+  gaming: 'film-tv',
+  ai: 'science',
+  broadcast: 'world',
+  sport: 'belgium',
+  music: 'film-tv'
 }
 
 export interface Preferences {
@@ -47,6 +64,8 @@ export interface Preferences {
   mutedSharers: number[]
   // The interface's language; null: the household's.
   language: Language | null
+  // A card already slid by itself once, on a touch screen, to show its swipe.
+  swipeHinted: boolean
 }
 
 export const DEFAULT_TEXT_SIZE = 1
@@ -63,11 +82,17 @@ const DEFAULTS: Preferences = {
   textSize: DEFAULT_TEXT_SIZE,
   sharing: true,
   mutedSharers: [],
-  language: null
+  language: null,
+  swipeHinted: false
 }
 
 const strings = (value: unknown) =>
   Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : []
+
+const accentOf = (stored: unknown): Accent => {
+  const accent = typeof stored === 'string' ? currentTopicId(stored) : ''
+  return ACCENTS.includes(accent as Accent) ? (accent as Accent) : (OLD_ACCENTS[accent] ?? 'auto')
+}
 
 // Whatever was stored, with anything unexpected left out.
 export const parsePreferences = (stored: unknown): Preferences => {
@@ -77,21 +102,22 @@ export const parsePreferences = (stored: unknown): Preferences => {
 
   return {
     hideRead: value.hideRead !== false,
-    topicOrder: strings(value.topicOrder),
-    hiddenTopics: strings(value.hiddenTopics),
+    topicOrder: strings(value.topicOrder).map(currentTopicId),
+    hiddenTopics: strings(value.hiddenTopics).map(currentTopicId),
     hiddenSources: strings(value.hiddenSources),
     mutedWords: strings(value.mutedWords),
     followedWords: strings(value.followedWords),
-    theme: THEMES.includes(value.theme as Theme) ? (value.theme as Theme) : 'system',
-    accent: ACCENTS.includes(value.accent as Accent)
-      ? (value.accent as Accent)
-      : (OLD_ACCENTS[value.accent as string] ?? 'auto'),
+    theme: THEMES.includes(value.theme as Theme)
+      ? (value.theme as Theme)
+      : (OLD_THEMES[value.theme as string] ?? 'system'),
+    accent: accentOf(value.accent),
     textSize: Number.isInteger(value.textSize) ? (value.textSize as number) : DEFAULT_TEXT_SIZE,
     sharing: value.sharing !== false,
     mutedSharers: Array.isArray(value.mutedSharers)
       ? value.mutedSharers.filter((id): id is number => Number.isInteger(id))
       : [],
-    language: isLanguage(value.language) ? value.language : null
+    language: isLanguage(value.language) ? value.language : null,
+    swipeHinted: value.swipeHinted === true
   }
 }
 

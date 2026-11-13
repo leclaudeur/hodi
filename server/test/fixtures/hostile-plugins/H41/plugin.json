@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h41",
+  "name": "Hostile H41",
+  "version": "0.0.1",
+  "description": "An API 1 plugin is never imported by Node",
+  "api": 1,
+  "audience": "admin"
+}

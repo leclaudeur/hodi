@@ -1,0 +1,11 @@
+{
+  "case": "H13",
+  "title": "A plugin that crashes on start is disabled after three deaths",
+  "requests": [],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "expect": "Restarted with a growing delay, then disabled after 3 deaths in 10 minutes. Serveur › Plugins shows it as stopped with the reason. Hodi keeps answering throughout."
+}

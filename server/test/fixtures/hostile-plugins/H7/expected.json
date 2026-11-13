@@ -1,0 +1,20 @@
+{
+  "case": "H7",
+  "title": "A recursive SQL query never blocks the main thread",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/recursive",
+      "expect": {
+        "status": 504,
+        "withinMs": 6000
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "whileRunning": "GET /health answers 200 in under 200 ms while the query runs (proves the SQL is not on the main thread)"
+}

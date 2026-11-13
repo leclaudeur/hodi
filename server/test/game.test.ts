@@ -18,7 +18,7 @@ const setup = (gameRules = rules) => {
   const user = new UserStore(db, 1)
   let count = 0
   // A reading opened now; tracked ones start skimmed (done: false).
-  const open = (topicId: string | null = 'monde', extra: Partial<Reading> = {}) => {
+  const open = (topicId: string | null = 'world', extra: Partial<Reading> = {}) => {
     const id = `article-${++count}`
     user.addReadings(
       [{ id, sourceId: 'alpha', sourceName: 'Alpha', topicId, minutes: 3, at: NOW, kind: 'article', ...extra }],
@@ -86,7 +86,7 @@ describe('gamification.yml', () => {
 describe('GameStore', () => {
   it('counts an article once it is read, never while it is only skimmed', () => {
     const { game, user, open } = setup()
-    const id = open('monde', { done: false, progress: 0.2 })
+    const id = open('world', { done: false, progress: 0.2 })
     game.recordReads(1, [id], NOW)
     assert.equal(game.summary(1, NOW).points, 0)
 
@@ -111,17 +111,15 @@ describe('GameStore', () => {
     assert.equal(game.summary(1, NOW).points, 51)
   })
 
-  it('stops at the daily cap, and starts again the next day', () => {
+  it('earns for every article read in a day, with no cap on points', () => {
     const { game, open } = setup()
-    const ids = Array.from({ length: 20 }, () => open('monde'))
+    const ids = Array.from({ length: 20 }, () => open('world'))
     game.recordReads(1, ids, NOW)
-    assert.equal(game.summary(1, NOW).points, rules.points.dailyCap)
-
-    game.recordReads(1, [open('monde')], NOW + 24 * HOUR)
-    assert.equal(game.summary(1, NOW + 24 * HOUR).points, rules.points.dailyCap + 10 + 5)
+    // 20 × 10 + 5 (first in Monde) + 10 (reading day).
+    assert.equal(game.summary(1, NOW).points, 215)
   })
 
-  it('counts a reading sent late (made offline) on its own day, under that day’s cap', () => {
+  it('counts a reading sent late (made offline) on its own day', () => {
     const { db, game, open } = setup()
     const yesterday = NOW - 24 * HOUR
     const pointsOn = (day: string) =>
@@ -132,20 +130,20 @@ describe('GameStore', () => {
       ).points
 
     // Twenty articles read yesterday without network, reaching the server today.
-    const offline = Array.from({ length: 20 }, () => open('monde'))
+    const offline = Array.from({ length: 20 }, () => open('world'))
     game.recordReads(1, offline, NOW, () => yesterday)
-    assert.equal(pointsOn('2026-10-28'), rules.points.dailyCap)
+    assert.equal(pointsOn('2026-10-28'), 215)
     assert.equal(pointsOn('2026-10-29'), 0)
 
-    // Today keeps its own cap: a reading of today still earns.
-    game.recordReads(1, [open('monde')], NOW)
+    // A reading of today earns on today, with today's first in Monde.
+    game.recordReads(1, [open('world')], NOW)
     assert.equal(pointsOn('2026-10-29'), 10 + 5)
-    assert.equal(game.summary(1, NOW).points, rules.points.dailyCap + 15)
+    assert.equal(game.summary(1, NOW).points, 215 + 15)
   })
 
   it('counts as now a reading time in the future, or more than a week old', () => {
     const { db, game, open } = setup()
-    game.recordReads(1, [open('monde')], NOW, () => NOW + HOUR)
+    game.recordReads(1, [open('world')], NOW, () => NOW + HOUR)
     game.recordReads(1, [open('tech')], NOW, () => NOW - 8 * 24 * HOUR)
     const days = db.prepare("SELECT DISTINCT day FROM game_events WHERE kind = 'article_read'").all() as {
       day: string
@@ -158,7 +156,7 @@ describe('GameStore', () => {
 
   it('counts a share with a note once, and each reaction once', () => {
     const { db, game } = setup()
-    const julie = new ProfileStore(db).create('Julie', 'monde', NOW)
+    const julie = new ProfileStore(db).create('Julie', 'world', NOW)
     assert.ok(julie)
     game.recordShare(1, 'article-1', NOW)
     game.recordShare(1, 'article-1', NOW)
@@ -173,7 +171,7 @@ describe('GameStore', () => {
     assert.equal(mondayOf('2026-11-01'), '2026-10-26')
 
     const { game, open } = setup()
-    game.recordReads(1, [open('monde')], NOW)
+    game.recordReads(1, [open('world')], NOW)
     // The next Monday, 00:30 in Brussels: a new week.
     const monday = Date.UTC(2026, 10, 1, 23, 30)
     game.recordReads(1, [open('tech')], monday)
@@ -193,9 +191,9 @@ describe('GameStore', () => {
     const { game, open } = setup(easy)
     // 06:00 in Brussels: before 7.
     const early = Date.UTC(2026, 9, 29, 5)
-    game.recordReads(1, [open('monde'), open('monde')], early)
+    game.recordReads(1, [open('world'), open('world')], early)
     game.recordReads(1, [open('tech')], NOW)
-    const badges = new Map(game.badges(1, ['monde', 'tech']).map(badge => [badge.id, badge]))
+    const badges = new Map(game.badges(1, ['world', 'tech']).map(badge => [badge.id, badge]))
     assert.deepEqual(badges.get('early-bird'), {
       id: 'early-bird',
       name: 'Lève-tôt',
@@ -215,7 +213,7 @@ describe('GameStore', () => {
   it('takes the server’s word, not the device’s, for what a reading earns', () => {
     const { game, user, open } = setup(easy)
     // The device says Monde and an early reading; the server knows a Tech article published at 9:00.
-    const id = open('monde')
+    const id = open('world')
     const published = Date.UTC(2026, 9, 29, 8)
     const early = Date.UTC(2026, 9, 29, 5)
     game.recordReads(
@@ -226,8 +224,8 @@ describe('GameStore', () => {
       () => ({ kind: 'article', topicId: 'tech', publishedAt: published })
     )
     // An id the server never listed earns nothing.
-    game.recordReads(1, [open('monde')], NOW, undefined, () => null)
-    const badges = new Map(game.badges(1, ['monde', 'tech']).map(badge => [badge.id, badge]))
+    game.recordReads(1, [open('world')], NOW, undefined, () => null)
+    const badges = new Map(game.badges(1, ['world', 'tech']).map(badge => [badge.id, badge]))
     assert.equal(badges.get('encyclopedia')?.count, 1)
     assert.equal(badges.get('globetrotter')?.count, 0)
     assert.equal(badges.get('early-bird')?.count, 0)
@@ -236,82 +234,87 @@ describe('GameStore', () => {
 
   it('stops counting what no one reads in a day: made-up readings and alerts', () => {
     const { game, open } = setup()
-    const ids = Array.from({ length: (DAILY_COUNT_LIMITS.article_read ?? 0) + 10 }, () => open('monde'))
+    const ids = Array.from({ length: (DAILY_COUNT_LIMITS.article_read ?? 0) + 10 }, () => open('world'))
     game.recordReads(1, ids, NOW)
     for (let alert = 0; alert < (DAILY_COUNT_LIMITS.alert_opened ?? 0) + 5; alert++) {
       game.recordAlert(1, `alert-${alert}`, NOW)
     }
-    const badges = new Map(game.badges(1, ['monde']).map(badge => [badge.id, badge]))
+    const badges = new Map(game.badges(1, ['world']).map(badge => [badge.id, badge]))
     assert.equal(badges.get('encyclopedia')?.count, DAILY_COUNT_LIMITS.article_read)
     assert.equal(badges.get('sleuth')?.count, DAILY_COUNT_LIMITS.alert_opened)
+    // Nor for points: an article past the limit earns nothing.
+    const points = game.summary(1, NOW).points
+    game.recordReads(1, [open('world')], NOW)
+    assert.equal(game.summary(1, NOW).points, points)
     // The next day counts again.
-    game.recordReads(1, [open('monde')], NOW + 24 * HOUR)
+    game.recordReads(1, [open('world')], NOW + 24 * HOUR)
     assert.equal(
-      game.badges(1, ['monde']).find(badge => badge.id === 'encyclopedia')?.count,
+      game.badges(1, ['world']).find(badge => badge.id === 'encyclopedia')?.count,
       (DAILY_COUNT_LIMITS.article_read ?? 0) + 1
     )
   })
 
   it("gives the level and badges in the reader's language", () => {
     const { game, open } = setup()
-    game.recordReads(1, [open('monde')], NOW)
+    game.recordReads(1, [open('world')], NOW)
     // 10 points: still the first grade, the second next.
     assert.deepEqual(
       [game.summary(1, NOW).name, game.summary(1, NOW, 'en').name, game.summary(1, NOW, 'en').next?.name],
       ['Curieux', 'Curious', 'Reader']
     )
-    assert.equal(game.badges(1, ['monde'], 'en').find(badge => badge.id === 'early-bird')?.name, 'Up early')
+    assert.equal(game.badges(1, ['world'], 'en').find(badge => badge.id === 'early-bird')?.name, 'Up early')
   })
 
   it('wears only a badge the profile earned', () => {
     const { game, open } = setup(easy)
-    game.recordReads(1, [open('monde')], NOW)
-    assert.equal(game.wear(1, 'night-owl', ['monde'], NOW), false)
-    assert.equal(game.wornBadge(1, ['monde']), null)
-    assert.equal(game.wear(1, 'globetrotter', ['monde'], NOW), true)
-    assert.deepEqual(game.wornBadge(1, ['monde']), { id: 'globetrotter', tier: 1 })
-    assert.equal(game.wear(1, null, ['monde'], NOW), true)
-    assert.equal(game.wornBadge(1, ['monde']), null)
+    game.recordReads(1, [open('world')], NOW)
+    assert.equal(game.wear(1, 'night-owl', ['world'], NOW), false)
+    assert.equal(game.wornBadge(1, ['world']), null)
+    assert.equal(game.wear(1, 'globetrotter', ['world'], NOW), true)
+    assert.deepEqual(game.wornBadge(1, ['world']), { id: 'globetrotter', tier: 1 })
+    assert.equal(game.wear(1, null, ['world'], NOW), true)
+    assert.equal(game.wornBadge(1, ['world']), null)
   })
 
   it('tells what is new since the sheet was last opened, from the first time it asks', () => {
     const { game, open } = setup(easy)
-    game.recordReads(1, [open('monde')], NOW)
+    game.recordReads(1, [open('world')], NOW)
     // What was earned before the first look is not news.
-    assert.deepEqual(game.news(1, ['monde'], NOW), { level: null, badges: [] })
-    game.recordReads(1, [open('monde'), open('monde'), open('monde')], NOW)
-    const news = game.news(1, ['monde'], NOW)
+    assert.deepEqual(game.news(1, ['world'], NOW), { level: null, badges: [] })
+    game.recordReads(1, [open('world'), open('world'), open('world')], NOW)
+    const news = game.news(1, ['world'], NOW)
     assert.ok(news.level !== null && news.level > 1)
     assert.deepEqual(
       news.badges.find(badge => badge.id === 'globetrotter'),
       { id: 'globetrotter', tier: 3 }
     )
     // Asking again changes nothing; opening the sheet does.
-    assert.deepEqual(game.news(1, ['monde'], NOW), news)
-    game.markSeen(1, ['monde'], NOW)
-    assert.deepEqual(game.news(1, ['monde'], NOW), { level: null, badges: [] })
+    assert.deepEqual(game.news(1, ['world'], NOW), news)
+    game.markSeen(1, ['world'], NOW)
+    assert.deepEqual(game.news(1, ['world'], NOW), { level: null, badges: [] })
   })
 
   it('dates news by the last look, so the same tiers earned again after a reset are new news', () => {
     const { game, open } = setup(easy)
-    game.news(1, ['monde'], NOW)
-    game.recordReads(1, [open('monde'), open('monde'), open('monde')], NOW)
-    assert.equal(game.news(1, ['monde'], NOW).since, NOW)
-    game.markSeen(1, ['monde'], NOW + 1000)
-    game.recordReads(1, [open('monde'), open('monde'), open('monde'), open('monde')], NOW + 2000)
-    assert.equal(game.news(1, ['monde'], NOW + 2000).since, NOW + 1000)
+    game.news(1, ['world'], NOW)
+    game.recordReads(1, [open('world'), open('world'), open('world')], NOW)
+    assert.equal(game.news(1, ['world'], NOW).since, NOW)
+    game.markSeen(1, ['world'], NOW + 1000)
+    game.recordReads(1, [open('world'), open('world'), open('world'), open('world')], NOW + 2000)
+    assert.equal(game.news(1, ['world'], NOW + 2000).since, NOW + 1000)
   })
 
-  it('gives every profile the weekly bonus once the household reaches its goal, past the daily cap', () => {
+  it('gives every profile the weekly bonus once the household reaches its goal', () => {
     const { db, game, open } = setup(easy)
-    const julie = new ProfileStore(db).create('Julie', 'monde', NOW)
+    const julie = new ProfileStore(db).create('Julie', 'world', NOW)
     assert.ok(julie)
     assert.deepEqual(game.challenge(NOW), { goal: 3, read: 0, reached: false })
 
-    const ids = Array.from({ length: 40 }, () => open('monde'))
+    const ids = Array.from({ length: 40 }, () => open('world'))
     game.recordReads(1, ids, NOW)
     assert.deepEqual(game.challenge(NOW), { goal: 3, read: 40, reached: true })
-    assert.equal(game.summary(1, NOW).points, rules.points.dailyCap + rules.weeklyChallenge.bonus)
+    // 40 × 10 + 5 (first in Monde) + 10 (reading day), then the bonus.
+    assert.equal(game.summary(1, NOW).points, 415 + rules.weeklyChallenge.bonus)
     assert.equal(game.summary(julie.id, NOW).points, rules.weeklyChallenge.bonus)
     assert.equal(game.badges(julie.id, []).find(badge => badge.id === 'team-player')?.count, 1)
 

@@ -1,7 +1,6 @@
-import { Code } from 'lucide-react'
+import { Code, Heart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { SOURCE_URL } from '../../../api.ts'
-import Button from '../../../ui/Button.tsx'
+import { SOURCE_URL, SUPPORT_URL } from '../../../api.ts'
 import Chip from '../../../ui/Chip.tsx'
 import SectionPage from '../SectionPage.tsx'
 import SettingRow from '../SettingRow.tsx'
@@ -24,11 +23,16 @@ const AboutSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
             {__APP_VERSION__}
           </Chip>
         </SettingRow>
-        <SettingRow label={t('settings.about.licence')} hint={t('settings.about.licenceHint')}>
-          <Button icon={Code} href={SOURCE_URL} external>
-            {t('settings.about.source')}
-          </Button>
-        </SettingRow>
+        <SettingRow
+          label={t('settings.about.licence')}
+          hint={t('settings.about.licenceHint')}
+          action={{ label: t('settings.about.source'), icon: Code, href: SOURCE_URL, external: true }}
+        />
+        <SettingRow
+          label={t('settings.about.support')}
+          hint={t('settings.about.supportHint')}
+          action={{ label: t('settings.about.supportButton'), icon: Heart, href: SUPPORT_URL, external: true }}
+        />
       </div>
 
       <h2 className={styles.label}>{t('settings.about.credits')}</h2>

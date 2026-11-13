@@ -54,6 +54,127 @@ const keepQueued = (utterance: SpeechSynthesisUtterance) => {
   queued.push(utterance)
 }
 
+// Stops the voice and lets go of what it held.
+const cancelVoice = () => {
+  if (isSupported()) window.speechSynthesis.cancel()
+  forgetQueued()
+  releasePlaybackChannel()
+}
+
+const clearHighlightIn = (root: HTMLElement | null) => {
+  root?.querySelectorAll(`[${SPEAKING_ATTRIBUTE}]`).forEach(block => {
+    block.removeAttribute(SPEAKING_ATTRIBUTE)
+  })
+}
+
+const markBlock = (root: HTMLElement | null, block: HTMLElement, heard?: (block: HTMLElement) => void) => {
+  clearHighlightIn(root)
+  block.setAttribute(SPEAKING_ATTRIBUTE, '')
+  block.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  heard?.(block)
+}
+
+const blocksIn = (root: HTMLElement | null) => {
+  if (!root) return []
+  return [...root.querySelectorAll<HTMLElement>(BLOCKS)].filter(
+    // A list item holding paragraphs is read through them.
+    block => block.textContent?.trim() && !block.querySelector(BLOCKS)
+  )
+}
+
+// The blocks from the first one inside from (or from itself) on, else all of them.
+const blocksFrom = (root: HTMLElement | null, from?: HTMLElement | null) => {
+  const all = blocksIn(root)
+  const first = from ? all.findIndex(block => from === block || from.contains(block)) : 0
+  return all.slice(Math.max(first, 0))
+}
+
+const readySynth = () => {
+  const synth = window.speechSynthesis
+  // On iOS, a speak() right after cancel() is dropped: only cancel what is really playing.
+  if (synth.speaking || synth.pending) synth.cancel()
+  // A voice paused before the jump would keep the new one paused too.
+  if (synth.paused) synth.resume()
+  return synth
+}
+
+const utteranceOf = (block: HTMLElement, voiceLang: string, voice: SpeechSynthesisVoice | undefined) => {
+  const utterance = new SpeechSynthesisUtterance(block.textContent?.trim() ?? '')
+  utterance.lang = voiceLang
+  if (voice) utterance.voice = voice
+  keepQueued(utterance)
+  return utterance
+}
+
+// Chrome's keep-alive (NEEDS_KEEP_ALIVE), which leaves a voice paused by a tap paused.
+const useKeepAlive = (timer: RefObject<number | undefined>, paused: RefObject<boolean>) => {
+  const stop = () => {
+    window.clearInterval(timer.current)
+    timer.current = undefined
+  }
+  const start = () => {
+    stop()
+    if (!NEEDS_KEEP_ALIVE) return
+    timer.current = window.setInterval(() => {
+      const synth = window.speechSynthesis
+      if (paused.current || !synth.speaking) return
+      synth.pause()
+      synth.resume()
+    }, KEEP_ALIVE_MS)
+  }
+  return { start, stop }
+}
+
+interface Reading {
+  synth: SpeechSynthesis
+  voiceLang: string
+  // Whether no stop came since this reading started.
+  isCurrent: () => boolean
+  // The last block the voice started.
+  spoken: { current: number }
+  mark: (block: HTMLElement) => void
+  finish: () => void
+}
+
+// Queues the blocks from start on, all at once: iOS may refuse to start a voice outside the tap that asked for it.
+const queueFrom = (blocks: HTMLElement[], start: number, reading: Reading) => {
+  const { synth, voiceLang, isCurrent, spoken, finish } = reading
+  const voice = pickVoice(synth.getVoices(), voiceLang)
+  forgetQueued()
+
+  blocks.slice(start).forEach((block, offset) => {
+    const index = start + offset
+    const utterance = utteranceOf(block, voiceLang, voice)
+
+    utterance.onstart = () => {
+      if (!isCurrent()) return
+      spoken.current = index
+      reading.mark(block)
+    }
+
+    // Some voices (the online ones of Chrome and Edge) end an utterance and drop the rest of the queue:
+    // once nothing is left playing, the blocks not read yet are queued again.
+    const settle = () => {
+      if (!isCurrent()) return
+      if (index === blocks.length - 1) return finish()
+      window.setTimeout(() => {
+        if (!isCurrent() || synth.speaking || synth.pending) return
+        if (spoken.current >= blocks.length - 1) return finish()
+        queueFrom(blocks, spoken.current + 1, reading)
+      }, 250)
+    }
+    utterance.onend = settle
+    utterance.onerror = event => {
+      // A stop cancels the queue: nothing more to read. A block the voice fails on is skipped.
+      if (event.error === 'canceled' || event.error === 'interrupted') return
+      if (isCurrent()) spoken.current = Math.max(spoken.current, index)
+      settle()
+    }
+
+    synth.speak(utterance)
+  })
+}
+
 // The browser's own voices read the article (free, offline, nothing leaves the device).
 // The block being read is marked.
 // onBlock hears each block as the voice reaches it, for a view that follows the voice.
@@ -72,162 +193,72 @@ export const useSpeech = (
   const session = useRef(0)
   // The last block the voice started.
   const spoken = useRef(-1)
-  const keepAlive = useRef<number | undefined>(undefined)
   // Paused by a tap: the keep-alive leaves the voice paused.
   const paused = useRef(false)
+  const keepAliveTimer = useRef<number | undefined>(undefined)
+  const keepAlive = useKeepAlive(keepAliveTimer, paused)
+  const clearHighlight = () => clearHighlightIn(content.current)
 
-  const stopKeepAlive = () => {
-    window.clearInterval(keepAlive.current)
-    keepAlive.current = undefined
-  }
-
-  const startKeepAlive = () => {
-    stopKeepAlive()
-    if (!NEEDS_KEEP_ALIVE) return
-    keepAlive.current = window.setInterval(() => {
-      const synth = window.speechSynthesis
-      if (paused.current || !synth.speaking) return
-      synth.pause()
-      synth.resume()
-    }, KEEP_ALIVE_MS)
-  }
-
-  const clearHighlight = () => {
-    content.current?.querySelectorAll(`[${SPEAKING_ATTRIBUTE}]`).forEach(block => {
-      block.removeAttribute(SPEAKING_ATTRIBUTE)
-    })
-  }
-
-  const mark = (block: HTMLElement) => {
-    clearHighlight()
-    block.setAttribute(SPEAKING_ATTRIBUTE, '')
-    block.scrollIntoView({ block: 'center', behavior: 'smooth' })
-    heard.current?.(block)
-  }
-
-  const silence = () => {
-    stopKeepAlive()
-    if (isSupported()) window.speechSynthesis.cancel()
-    forgetQueued()
-    releasePlaybackChannel()
-  }
+  const mark = (block: HTMLElement) => markBlock(content.current, block, heard.current)
 
   // Leaving the article stops the voice.
   useEffect(
     () => () => {
       session.current++
-      window.clearInterval(keepAlive.current)
-      if (isSupported()) window.speechSynthesis.cancel()
-      forgetQueued()
-      releasePlaybackChannel()
+      window.clearInterval(keepAliveTimer.current)
+      cancelVoice()
     },
     []
   )
 
   const stop = () => {
     session.current++
-    silence()
+    keepAlive.stop()
+    cancelVoice()
     clearHighlight()
     setState('idle')
   }
 
-  const blocksOf = () => {
-    const root = content.current
-    if (!root) return []
-    return [...root.querySelectorAll<HTMLElement>(BLOCKS)].filter(
-      // A list item holding paragraphs is read through them.
-      block => block.textContent?.trim() && !block.querySelector(BLOCKS)
-    )
-  }
-
-  // Queues the blocks from start on, all at once: iOS may refuse to start a voice outside the tap that asked for it.
-  const speakFrom = (blocks: HTMLElement[], start: number, current: number) => {
-    const synth = window.speechSynthesis
-    const voiceLang = VOICE_LANGS[lang]
-    const voice = pickVoice(synth.getVoices(), voiceLang)
+  const finish = () => {
+    keepAlive.stop()
     forgetQueued()
-
-    const finish = () => {
-      stopKeepAlive()
-      forgetQueued()
-      clearHighlight()
-      releasePlaybackChannel()
-      setState('idle')
-    }
-
-    blocks.slice(start).forEach((block, offset) => {
-      const index = start + offset
-      const utterance = new SpeechSynthesisUtterance(block.textContent?.trim() ?? '')
-      utterance.lang = voiceLang
-      if (voice) utterance.voice = voice
-      keepQueued(utterance)
-
-      utterance.onstart = () => {
-        if (current !== session.current) return
-        spoken.current = index
-        mark(block)
-      }
-
-      // Some voices (the online ones of Chrome and Edge) end an utterance and drop the rest of the queue:
-      // once nothing is left playing, the blocks not read yet are queued again.
-      const settle = () => {
-        if (current !== session.current) return
-        if (index === blocks.length - 1) return finish()
-        window.setTimeout(() => {
-          if (current !== session.current || synth.speaking || synth.pending) return
-          if (spoken.current >= blocks.length - 1) return finish()
-          speakFrom(blocks, spoken.current + 1, current)
-        }, 250)
-      }
-      utterance.onend = settle
-      utterance.onerror = event => {
-        // A stop cancels the queue: nothing more to read. A block the voice fails on is skipped.
-        if (event.error === 'canceled' || event.error === 'interrupted') return
-        if (current === session.current) spoken.current = Math.max(spoken.current, index)
-        settle()
-      }
-
-      synth.speak(utterance)
-    })
+    clearHighlight()
+    releasePlaybackChannel()
+    setState('idle')
   }
 
   // from: the voice starts at the first block inside it (or at it), else at the top.
   const play = (from?: HTMLElement | null) => {
-    const all = blocksOf()
-    const first = from ? all.findIndex(block => from === block || from.contains(block)) : 0
-    const blocks = all.slice(Math.max(first, 0))
+    const blocks = blocksFrom(content.current, from)
     if (blocks.length === 0 || !isSupported()) return
     askPlaybackChannel()
 
     const current = ++session.current
-    const synth = window.speechSynthesis
-
-    // On iOS, a speak() right after cancel() is dropped: only cancel what is really playing.
-    if (synth.speaking || synth.pending) synth.cancel()
-    // A voice paused before the jump would keep the new one paused too.
-    if (synth.paused) synth.resume()
+    const synth = readySynth()
     spoken.current = -1
     paused.current = false
-    speakFrom(blocks, 0, current)
-    startKeepAlive()
+    queueFrom(blocks, 0, {
+      synth,
+      voiceLang: VOICE_LANGS[lang],
+      isCurrent: () => current === session.current,
+      spoken,
+      mark,
+      finish
+    })
+    keepAlive.start()
 
     setState('playing')
   }
 
+  // A voice still loading stops; one playing pauses, and a paused one goes on.
   const toggle = (from?: HTMLElement | null) => {
-    if (state === 'idle') {
-      play(from)
-    } else if (state === 'playing') {
-      paused.current = true
-      window.speechSynthesis.pause()
-      setState('paused')
-    } else if (state === 'paused') {
-      paused.current = false
-      window.speechSynthesis.resume()
-      setState('playing')
-    } else {
-      stop()
-    }
+    if (state === 'idle') return play(from)
+    if (state === 'loading') return stop()
+    const pausing = state === 'playing'
+    paused.current = pausing
+    if (pausing) window.speechSynthesis.pause()
+    else window.speechSynthesis.resume()
+    setState(pausing ? 'paused' : 'playing')
   }
 
   // Moved by hand while the voice runs: it goes on from there.

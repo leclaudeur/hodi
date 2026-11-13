@@ -14,11 +14,101 @@ import styles from './RequestDialog.module.css'
 import RichText from '../../ui/RichText.tsx'
 
 // Where a new source goes when the teen's themes cannot be read.
-const DEFAULT_TOPIC = 'monde'
+const DEFAULT_TOPIC = 'world'
 
 const close = () => {
   window.location.hash = SETTINGS_HREF
 }
+
+// The teen's themes the source may go under, and the one it goes under.
+const useRequestTopics = (profileId: number | undefined) => {
+  const [topics, setTopics] = useState<YouthTopic[] | null>(null)
+  const [topic, setTopic] = useState(DEFAULT_TOPIC)
+  useEffect(() => {
+    if (profileId === undefined) return
+    getYouthTopics(profileId)
+      .then(all => {
+        const shown = all.filter(entry => entry.on)
+        setTopics(shown)
+        if (!shown.some(entry => entry.id === DEFAULT_TOPIC) && shown[0]) setTopic(shown[0].id)
+      })
+      .catch(() => setTopics([]))
+  }, [profileId])
+  return [topics, topic, setTopic] as const
+}
+
+const hostOf = (source: { domains: string[]; url: string }) =>
+  source.domains[0] ?? (URL.canParse(source.url) ? new URL(source.url).hostname : '')
+
+interface TopicChoiceProps {
+  topics: YouthTopic[]
+  topic: string
+  chosen: YouthTopic
+  choosing: boolean
+  onChoosing: (choosing: boolean) => void
+  onTopic: (topic: string) => void
+}
+
+// The theme it goes under, alone until « Changer » shows the others.
+const TopicChoice = ({ topics, topic, chosen, choosing, onChoosing, onTopic }: TopicChoiceProps) => {
+  const { t } = useTranslation()
+  return (
+    <div className={styles.topics} role="group" aria-label={t('requests.topic')}>
+      <span className={styles.label}>{t('requests.topic')}</span>
+      <div className={`${styles.capsules} ${choosing ? '' : styles.collapsed}`}>
+        {choosing ? (
+          topics.map(entry => (
+            <TopicCapsule
+              key={entry.id}
+              topicId={entry.id}
+              label={entry.label}
+              size="filter"
+              selected={entry.id === topic}
+              onClick={() => {
+                onTopic(entry.id)
+                onChoosing(false)
+              }}
+            />
+          ))
+        ) : (
+          <>
+            <TopicCapsule topicId={chosen.id} label={chosen.label} size="filter" href={null} />
+            {topics.length > 1 && (
+              <Button compact onClick={() => onChoosing(true)}>
+                {t('requests.changeTopic')}
+              </Button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Answered from another device, or withdrawn.
+const GoneDialog = ({ loaded }: { loaded: boolean }) => {
+  const { t } = useTranslation()
+  return (
+    <Dialog open={loaded} onClose={close} title={t('requests.title')}>
+      <p className={styles.text}>{t('requests.gone')}</p>
+      <DialogActions>
+        <Button look="primary" onClick={close}>
+          {t('common.close')}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+const SourceLine = ({ name, host }: { name: string; host: string }) => (
+  <div className={styles.source}>
+    <SourceAvatar sourceId="" sourceName={name} size={44} />
+    <span className={styles.sourceText}>
+      <span className={styles.name}>{name}</span>
+      <span className={styles.host}>{host}</span>
+    </span>
+  </div>
+)
 
 // A teen's request, from the pile on top of Réglages or its notification: the source, the theme it goes under,
 // Refuser or Accepter.
@@ -28,8 +118,6 @@ const RequestDialog = ({ requestId }: { requestId: number }) => {
   const household = useProfiles({ onError: () => {} })
   const request = requests.find(entry => entry.id === requestId)
   const profile = household?.profiles.find(entry => entry.id === request?.profileId)
-  const [topics, setTopics] = useState<YouthTopic[] | null>(null)
-  const [topic, setTopic] = useState(DEFAULT_TOPIC)
   // The theme it goes under shows alone; "Changer" opens the others.
   const [choosing, setChoosing] = useState(false)
   const [busy, setBusy] = useState<'accept' | 'refuse' | null>(null)
@@ -41,16 +129,7 @@ const RequestDialog = ({ requestId }: { requestId: number }) => {
   }, [])
 
   const profileId = request?.profileId
-  useEffect(() => {
-    if (profileId === undefined) return
-    getYouthTopics(profileId)
-      .then(all => {
-        const shown = all.filter(entry => entry.on)
-        setTopics(shown)
-        if (!shown.some(entry => entry.id === DEFAULT_TOPIC) && shown[0]) setTopic(shown[0].id)
-      })
-      .catch(() => setTopics([]))
-  }, [profileId])
+  const [topics, topic, setTopic] = useRequestTopics(profileId)
 
   const answer = async (accept: boolean) => {
     if (!request) return
@@ -78,21 +157,9 @@ const RequestDialog = ({ requestId }: { requestId: number }) => {
   // A channel goes to "Vidéos", where the server files it: no theme to choose.
   const channel = request ? request.source.kind === 'video' : null
   const chosen = channel ? undefined : topics?.find(entry => entry.id === topic)
-  const host = request
-    ? (request.source.domains[0] ?? (URL.canParse(request.source.url) ? new URL(request.source.url).hostname : ''))
-    : ''
+  const host = request ? hostOf(request.source) : ''
 
-  if (!request)
-    return (
-      <Dialog open={loaded} onClose={close} title={t('requests.title')}>
-        <p className={styles.text}>{t('requests.gone')}</p>
-        <DialogActions>
-          <Button look="primary" onClick={close}>
-            {t('common.close')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    )
+  if (!request) return <GoneDialog loaded={loaded} />
 
   return (
     <Dialog
@@ -108,43 +175,16 @@ const RequestDialog = ({ requestId }: { requestId: number }) => {
       }
     >
       <div className={styles.body}>
-        <div className={styles.source}>
-          <SourceAvatar sourceId="" sourceName={request.source.name} size={44} />
-          <span className={styles.sourceText}>
-            <span className={styles.name}>{request.source.name}</span>
-            <span className={styles.host}>{host}</span>
-          </span>
-        </div>
+        <SourceLine name={request.source.name} host={host} />
         {chosen && (
-          <div className={styles.topics} role="group" aria-label={t('requests.topic')}>
-            <span className={styles.label}>{t('requests.topic')}</span>
-            <div className={`${styles.capsules} ${choosing ? '' : styles.collapsed}`}>
-              {choosing ? (
-                (topics ?? []).map(entry => (
-                  <TopicCapsule
-                    key={entry.id}
-                    topicId={entry.id}
-                    label={entry.label}
-                    size="filter"
-                    selected={entry.id === topic}
-                    onClick={() => {
-                      setTopic(entry.id)
-                      setChoosing(false)
-                    }}
-                  />
-                ))
-              ) : (
-                <>
-                  <TopicCapsule topicId={chosen.id} label={chosen.label} size="filter" href={null} />
-                  {(topics?.length ?? 0) > 1 && (
-                    <Button compact onClick={() => setChoosing(true)}>
-                      {t('requests.changeTopic')}
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
+          <TopicChoice
+            topics={topics ?? []}
+            topic={topic}
+            chosen={chosen}
+            choosing={choosing}
+            onChoosing={setChoosing}
+            onTopic={setTopic}
+          />
         )}
       </div>
       <DialogActions>

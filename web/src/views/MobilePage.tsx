@@ -1,25 +1,17 @@
 import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { type ReactNode, createContext, useContext, useState } from 'react'
+import { type ReactNode, createContext, use, useState } from 'react'
 import { createPortal } from 'react-dom'
 import PhoneHeader from '../ui/PhoneHeader.tsx'
 import RoundButton from '../ui/RoundButton.tsx'
 import styles from './MobilePage.module.css'
 
 // The header's right side, for content that has its own controls (the stats' period).
-const ActionsSlot = createContext<HTMLElement | null>(null)
+const ActionsSlotContext = createContext<HTMLElement | null>(null)
 
 // Shows its children on the right of the page's title, when inside a MobilePage.
 export const HeaderActions = ({ children }: { children: ReactNode }) => {
-  const slot = useContext(ActionsSlot)
-  return slot ? createPortal(children, slot) : null
-}
-
-// Right after the page's title: the "?" of a section shown inside a MobilePage.
-const HelpSlot = createContext<HTMLElement | null>(null)
-
-export const HeaderHelp = ({ children }: { children: ReactNode }) => {
-  const slot = useContext(HelpSlot)
+  const slot = use(ActionsSlotContext)
   return slot ? createPortal(children, slot) : null
 }
 
@@ -60,7 +52,6 @@ const MobilePage = ({
 }: MobilePageProps) => {
   const { t } = useTranslation()
   const [slot, setSlot] = useState<HTMLElement | null>(null)
-  const [helpSlot, setHelpSlot] = useState<HTMLElement | null>(null)
 
   return (
     <section className={styles.page} aria-label={title} aria-busy={busy}>
@@ -69,11 +60,7 @@ const MobilePage = ({
           backHref && <RoundButton icon={ArrowLeft} label={backLabel ?? t('nav.backHome')} size={44} href={backHref} />
         }
         title={title}
-        help={
-          <span ref={setHelpSlot} className={styles.help}>
-            {help}
-          </span>
-        }
+        help={<span className={styles.help}>{help}</span>}
         meta={meta}
         actions={
           <span ref={setSlot} className={styles.actions}>
@@ -83,12 +70,10 @@ const MobilePage = ({
         line={divided}
         sticky={divided}
       />
-      <ActionsSlot.Provider value={slot}>
-        <HelpSlot.Provider value={helpSlot}>
-          {top}
-          {children}
-        </HelpSlot.Provider>
-      </ActionsSlot.Provider>
+      <ActionsSlotContext value={slot}>
+        {top}
+        {children}
+      </ActionsSlotContext>
       {footer && <div className={styles.footer}>{footer}</div>}
     </section>
   )

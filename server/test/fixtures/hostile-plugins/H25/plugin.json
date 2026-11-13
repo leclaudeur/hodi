@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h25",
+  "name": "Hostile H25",
+  "version": "0.0.1",
+  "description": "No redirect status",
+  "api": 2,
+  "audience": "admin"
+}

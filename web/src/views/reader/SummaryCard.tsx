@@ -31,6 +31,22 @@ interface SummaryCardProps {
   onUnauthorized: () => void
 }
 
+// Before any summary: the offer, and the violet button that spends the call.
+const SummaryOffer = ({ capped, onSummarize }: { capped: boolean; onSummarize: () => void }) => {
+  const { t } = useTranslation()
+  return (
+    <div className={styles.offer} id="summary">
+      <span className={`${styles.mark} ${styles.offerMark}`}>
+        <SparkleIcon size={16} />
+      </span>
+      <span className={styles.offerText}>{t(capped ? 'summary.capped' : 'summary.offer')}</span>
+      <Button look="ai" icon={SparkleIcon} onClick={onSummarize} disabled={capped} data-shortcut="summarize">
+        {t('summary.summarize')}
+      </Button>
+    </div>
+  )
+}
+
 // "Pas le temps ?": the article's key points, written by the AI only when "Résumer" is clicked.
 const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCardProps & { language: Language }) => {
   const { t } = useTranslation()
@@ -57,24 +73,7 @@ const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCar
     void refreshAiUsage()
   }
 
-  if (state.status === 'idle')
-    return (
-      <div className={styles.offer} id="summary">
-        <span className={`${styles.mark} ${styles.offerMark}`}>
-          <SparkleIcon size={16} />
-        </span>
-        <span className={styles.offerText}>{t(capped ? 'summary.capped' : 'summary.offer')}</span>
-        <Button
-          look="ai"
-          icon={SparkleIcon}
-          onClick={() => void summarize()}
-          disabled={capped}
-          data-shortcut="summarize"
-        >
-          {t('summary.summarize')}
-        </Button>
-      </div>
-    )
+  if (state.status === 'idle') return <SummaryOffer capped={capped} onSummarize={() => void summarize()} />
 
   return (
     <section

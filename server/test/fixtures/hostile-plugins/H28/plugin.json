@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h28",
+  "name": "Hostile H28",
+  "version": "0.0.1",
+  "description": "A request carries no cookie, header or session",
+  "api": 2,
+  "audience": "admin"
+}

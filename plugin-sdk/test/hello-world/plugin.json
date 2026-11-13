@@ -1,0 +1,12 @@
+{
+  "id": "hello-world",
+  "name": "Hello world",
+  "version": "0.1.0",
+  "description": "Un exemple de plugin : un réglage, une route et sa propre carte.",
+  "api": 2,
+  "audience": "all",
+  "settings": [
+    { "key": "greeting", "type": "text", "default": "Bonjour", "maxLength": 40 },
+    { "key": "loud", "type": "boolean", "default": false }
+  ]
+}
