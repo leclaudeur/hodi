@@ -723,6 +723,8 @@ export const shareArticle = (articleId: string, to: number[], note: string) =>
 
 // Hodi's code, which the AGPL asks to offer to whoever uses it.
 export const SOURCE_URL = 'https://github.com/leclaudeur/hodi'
+// Where whoever likes Hodi can support its work; nothing in the app is paid.
+export const SUPPORT_URL = 'https://www.patreon.com/cw/LeClaudeur'
 
 export const MIN_PASSWORD_LENGTH = 8
 // The setup code printed in the server's log, asked away from the server.

@@ -1386,6 +1386,9 @@
       "licence": "Licence",
       "licenceHint": "Logiciel libre, sous licence AGPL-3.0",
       "source": "Code source",
+      "support": "Soutenir Hodi",
+      "supportHint": "Gratuit et sans pub, grâce à ceux qui donnent",
+      "supportButton": "Patreon",
       "credits": "Crédits",
       "people": {
         "antho": {
