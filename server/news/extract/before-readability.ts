@@ -66,6 +66,12 @@ export const unmarkLayoutBlocks = (root: Element) => {
     }
     if (SIDEBAR.test(element.getAttribute('id') ?? '')) element.removeAttribute('id')
   }
+  // A "js-" class is a hook for the site's script, not a name for the block: Readability reads "js-widget-toggle"
+  // as a widget and drops Elle's gallery, its slides' text included.
+  for (const element of [...root.querySelectorAll('[class*="js-" i]')]) {
+    const tokens: string[] = (element.getAttribute('class') ?? '').split(/\s+/)
+    element.setAttribute('class', tokens.filter(token => token !== '' && !/^js-/i.test(token)).join(' '))
+  }
   // A heading's id is an anchor made from its words ("h-comment-installer-le-mod"): Readability reads it as a
   // layout word and drops the heading.
   for (const heading of [...root.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]')]) {
