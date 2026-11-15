@@ -1,10 +1,10 @@
 import { mkdirSync, readdirSync, rmSync } from 'node:fs'
 import { access, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import sharp from 'sharp'
 import type { ImageStore } from '../db/image-store.ts'
 import type { FetchBytes } from './fetch-text.ts'
 import type { ImageSize } from './inline-images.ts'
+import { pictureMaker, type PictureMaker } from './picture-maker.ts'
 import { imageType } from './source-icons.ts'
 
 // Article pictures, made smaller once on the server. A news site's picture is often 1600 pixels wide and 150 KB or
@@ -34,10 +34,6 @@ const WARM_BATCH = 20
 const MAX_DOWNLOADS = 4
 const WARM_WINDOW_MS = 3 * 24 * 60 * 60 * 1000
 
-// One picture at a time, without libvips' own cache: the server is a small home computer.
-sharp.cache(false)
-sharp.concurrency(1)
-
 // Picture n of a text: no article has hundreds.
 const MAX_INLINE_INDEX = 199
 
@@ -60,6 +56,8 @@ export interface ArticleImagesOptions {
   dir: string
   now?: () => number
   log?: (message: string) => void
+  // sharp, or null on a processor it cannot run on: then no picture is made and each one shows from its site.
+  sharp?: PictureMaker | null
 }
 
 export class ArticleImages {
@@ -68,6 +66,7 @@ export class ArticleImages {
   readonly #dir: string
   readonly #now: () => number
   readonly #log: (message: string) => void
+  readonly #sharp: PictureMaker | null
   readonly #previews: Map<string, string>
   // One making per article, even when several cards ask at once.
   readonly #pending = new Map<string, Promise<boolean>>()
@@ -79,12 +78,20 @@ export class ArticleImages {
   #queue: Promise<unknown> = Promise.resolve()
   #warming = false
 
-  constructor({ store, fetchBytes, dir, now = Date.now, log = console.warn }: ArticleImagesOptions) {
+  constructor({
+    store,
+    fetchBytes,
+    dir,
+    now = Date.now,
+    log = console.warn,
+    sharp = pictureMaker
+  }: ArticleImagesOptions) {
     this.#store = store
     this.#fetchBytes = fetchBytes
     this.#dir = dir
     this.#now = now
     this.#log = log
+    this.#sharp = sharp
     this.#previews = store.previews()
     mkdirSync(dir, { recursive: true })
   }
@@ -105,7 +112,7 @@ export class ArticleImages {
 
   // The file of an article's picture at this width, made first if needed; null when there is none to show.
   async file(articleId: string, width: number): Promise<string | null> {
-    if (!ARTICLE_ID.test(articleId) || !isWidth(width)) return null
+    if (!this.#sharp || !ARTICLE_ID.test(articleId) || !isWidth(width)) return null
     const file = this.#file(articleId, width)
     if (await exists(file)) return file
     if (this.#store.get(articleId)?.failed) return null
@@ -115,6 +122,7 @@ export class ArticleImages {
   // The file of picture n inside an article's text at this width, made the first time the reader asks for it.
   async inlineFile(articleId: string, index: number, width: number): Promise<string | null> {
     if (
+      !this.#sharp ||
       !ARTICLE_ID.test(articleId) ||
       !isWidth(width) ||
       !Number.isInteger(index) ||
@@ -138,11 +146,12 @@ export class ArticleImages {
   // The size of picture n inside an article's text, once the server made it: its largest copy is as wide as the
   // original up to 960 pixels, wider than the reader's column, so the reader can keep its exact place.
   async inlineSize(articleId: string, index: number): Promise<ImageSize | null> {
+    if (!this.#sharp) return null
     for (const width of [...IMAGE_WIDTHS].reverse()) {
       const file = this.#inlineFile(articleId, index, width)
       if (!(await exists(file))) continue
       try {
-        const { width: w, height: h } = await sharp(file).metadata()
+        const { width: w, height: h } = await this.#sharp(file).metadata()
         return w && h ? { width: w, height: h } : null
       } catch {
         return null
@@ -221,7 +230,7 @@ export class ArticleImages {
 
   // Writes the three widths.
   async #resize(fileOf: (width: ImageWidth) => string, bytes: Buffer) {
-    const picture = sharp(bytes, { limitInputPixels: MAX_INPUT_PIXELS }).rotate()
+    const picture = this.#sharp!(bytes, { limitInputPixels: MAX_INPUT_PIXELS }).rotate()
     for (const width of IMAGE_WIDTHS) {
       const file = fileOf(width)
       const data = await picture
@@ -237,7 +246,7 @@ export class ArticleImages {
 
   // The 16-pixel preview the lists carry, as a data URL.
   async #preview(bytes: Buffer) {
-    const preview = await sharp(bytes, { limitInputPixels: MAX_INPUT_PIXELS })
+    const preview = await this.#sharp!(bytes, { limitInputPixels: MAX_INPUT_PIXELS })
       .rotate()
       .resize({ width: PREVIEW_WIDTH })
       .webp({ quality: PREVIEW_QUALITY })
@@ -247,7 +256,7 @@ export class ArticleImages {
 
   // Makes the pictures of the newest articles that have none yet. One at a time, so that a card someone opens gets a download at once; until none is left, a batch after another.
   async warm() {
-    if (this.#warming) return
+    if (this.#warming || !this.#sharp) return
     this.#warming = true
     try {
       // An article tried once in this pass is not tried again, even if it still has no picture.

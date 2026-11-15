@@ -1,14 +1,15 @@
 import express from 'express'
-import sharp from 'sharp'
 import { MAX_PHOTO_BYTES, PHOTO_TYPES, type PhotoType, type ProfileStore } from '../db/profile-store.ts'
+import { pictureMaker } from '../news/picture-maker.ts'
 
 // The app makes a photo 256 pixels square; a header that declares far more is refused, since a few kilobytes could
 // unpack into gigabytes in every browser that shows it.
 const MAX_PHOTO_SIDE = 1024
 
-// The type an uploaded picture really has, read from its header by sharp; null when it is none of the three, or
-// larger than MAX_PHOTO_SIDE.
-export const photoFormatOf = async (data: Buffer): Promise<PhotoType | null> => {
+// The type an uploaded picture really has, read from its header by sharp; null when it is none of the three, larger
+// than MAX_PHOTO_SIDE, or on a processor sharp cannot run on, since its size cannot be checked there.
+export const photoFormatOf = async (data: Buffer, sharp = pictureMaker): Promise<PhotoType | null> => {
+  if (!sharp) return null
   const meta = await sharp(data)
     .metadata()
     .catch(() => null)

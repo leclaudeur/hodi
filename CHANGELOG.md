@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Virtual machines with a generic CPU.** Hodi now starts on a processor without SSE4, such as Proxmox's kvm64: its
+  pictures then show from their site, without a smaller copy, and a profile photo cannot be added there.
+
 ## [1.0.0-beta.2] - 2026-11-15
 
 Hodi now installs on more servers: older processors and Portainer without admin rights.

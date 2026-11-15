@@ -18,7 +18,7 @@ const photo = await sharp({ create: { width: 1600, height: 900, channels: 3, bac
   .jpeg()
   .toBuffer()
 
-const setup = (pictures: Record<string, Buffer>, slow?: Promise<void>) => {
+const setup = (pictures: Record<string, Buffer>, slow?: Promise<void>, withSharp = true) => {
   const db = openDatabase(':memory:')
   const insert = db.prepare(
     `INSERT INTO articles (id, source_id, source_name, kind, lang, title, summary, link, image, first_seen_at, last_seen_at)
@@ -44,11 +44,30 @@ const setup = (pictures: Record<string, Buffer>, slow?: Promise<void>) => {
   }
   const dir = mkdtempSync(path.join(tmpdir(), 'hodi-images-'))
   const store = new ImageStore(db)
-  const images = new ArticleImages({ store, fetchBytes, dir, now: () => NOW, log: () => {} })
+  const images = new ArticleImages({
+    store,
+    fetchBytes,
+    dir,
+    now: () => NOW,
+    log: () => {},
+    sharp: withSharp ? sharp : null
+  })
   return { db, article, text, fetched, dir, store, images }
 }
 
 describe('article images', () => {
+  it('makes no picture and downloads nothing on a processor sharp cannot run on', async () => {
+    const { article, text, fetched, images } = setup({ 'https://bx1.be/photo.jpg': photo }, undefined, false)
+    article('aaaaaaaaaaaaaaaa', 'https://bx1.be/photo.jpg')
+    text('aaaaaaaaaaaaaaaa', '<p><img src="https://bx1.be/photo.jpg"></p>')
+
+    await images.warm()
+    assert.equal(await images.file('aaaaaaaaaaaaaaaa', 480), null)
+    assert.equal(await images.inlineFile('aaaaaaaaaaaaaaaa', 0, 480), null)
+    assert.equal(await images.inlineSize('aaaaaaaaaaaaaaaa', 0), null)
+    assert.deepEqual(fetched, [])
+  })
+
   it('makes three smaller WebP widths and a tiny preview, from one download', async () => {
     const { article, fetched, images } = setup({ 'https://bx1.be/photo.jpg': photo })
     article('aaaaaaaaaaaaaaaa', 'https://bx1.be/photo.jpg')
