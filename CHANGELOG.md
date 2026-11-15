@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Shown password.** It reads at the size of the other fields' text, no longer larger and spaced out.
+
 ## [1.0.0-beta.4] - 2026-11-15
 
 Code fields read in two groups with a dash, and the setup code says where to find it in one short notice.
