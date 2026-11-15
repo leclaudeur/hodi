@@ -44,13 +44,37 @@ export const removeLabelledAds = (root: Element) => {
   }
 }
 
+// A newsletter sign-up, with its title and its data-protection notice, can outweigh a short article: Frandroid's
+// brief was replaced by it. Only a block named for it that holds the form, never the page around the article.
+const SIGN_UP = '[class*="newsletter" i], [id*="newsletter" i]'
+const MAX_SIGN_UP_LENGTH = 2000
+
+export const removeSignUps = (root: Element) => {
+  for (const block of [...root.querySelectorAll(SIGN_UP)]) {
+    if (!block.isConnected || block.matches('html, body, article, main') || block.querySelector('h1')) continue
+    if (!block.querySelector('form, input[type="email" i]')) continue
+    if (normalized(block.textContent).length <= MAX_SIGN_UP_LENGTH) block.remove()
+  }
+}
+
 // Readability judges a block by its class and id: it drops "sidebar" blocks before scoring the page, and scores
 // down "share" and "comment" ones. ActuGaming names its two-column layout "sidebar", text column included, and wraps
 // the text in its share block: the article was lost, and a sponsored card or the related links came instead.
 // The word on its own ("ag-sidebar"), not inside a longer name: the BBC's "ContainerWithSidebarWrapper" also holds
 // its tag list, which Readability rightly leaves out.
 const SIDEBAR = /(^|[\s_-])sidebar([\s_-]|$)/i
+// A name that says a block sits beside a sidebar ("article-content--has-sidebar", "container-with-sidebar") is the
+// text column's: Frandroid's article was dropped for it, and its newsletter form came instead.
+const BESIDE_SIDEBAR = /(has|with)[_-]+sidebar/i
+const SCRIPT_HOOK = /^js-/i
 const MIN_REAL_PARAGRAPH = 300
+
+const dropClassWords = (element: Element, word: RegExp) => {
+  const tokens: string[] = (element.getAttribute('class') ?? '').split(/\s+/)
+  if (tokens.some(token => word.test(token))) {
+    element.setAttribute('class', tokens.filter(token => token !== '' && !word.test(token)).join(' '))
+  }
+}
 
 export const unmarkLayoutBlocks = (root: Element) => {
   // A "sidebar" holding the article's title (its h1) is the page's layout: it loses that word.
@@ -60,17 +84,16 @@ export const unmarkLayoutBlocks = (root: Element) => {
     element && element !== root;
     element = element.parentElement
   ) {
-    const tokens: string[] = (element.getAttribute('class') ?? '').split(/\s+/)
-    if (tokens.some(token => SIDEBAR.test(token))) {
-      element.setAttribute('class', tokens.filter(token => token !== '' && !SIDEBAR.test(token)).join(' '))
-    }
+    dropClassWords(element, SIDEBAR)
     if (SIDEBAR.test(element.getAttribute('id') ?? '')) element.removeAttribute('id')
+  }
+  for (const element of [...root.querySelectorAll('[class*="sidebar" i]')]) {
+    dropClassWords(element, BESIDE_SIDEBAR)
   }
   // A "js-" class is a hook for the site's script, not a name for the block: Readability reads "js-widget-toggle"
   // as a widget and drops Elle's gallery, its slides' text included.
   for (const element of [...root.querySelectorAll('[class*="js-" i]')]) {
-    const tokens: string[] = (element.getAttribute('class') ?? '').split(/\s+/)
-    element.setAttribute('class', tokens.filter(token => token !== '' && !/^js-/i.test(token)).join(' '))
+    dropClassWords(element, SCRIPT_HOOK)
   }
   // A heading's id is an anchor made from its words ("h-comment-installer-le-mod"): Readability reads it as a
   // layout word and drops the heading.
@@ -84,6 +107,29 @@ export const unmarkLayoutBlocks = (root: Element) => {
     if ([...element.querySelectorAll('p')].some(p => normalized(p.textContent).length >= MIN_REAL_PARAGRAPH)) {
       element.replaceWith(...element.childNodes)
     }
+  }
+}
+
+// Readability drops every aside. One inside the article that is a list, not links (Gamekult's games of the week,
+// in a box after the last paragraph), is part of the text: it becomes a plain block. Related links, newsletter
+// prompts and the site's explanations stay asides.
+const MIN_BOX_TEXT = 100
+const MIN_LIST_SHARE = 0.8
+const MAX_BOX_LINK_SHARE = 0.3
+
+const lengthOf = (elements: Element[]) =>
+  elements.reduce((sum, element) => sum + normalized(element.textContent).length, 0)
+
+export const keepListBoxes = (root: Element) => {
+  for (const box of [...root.querySelectorAll('article aside')]) {
+    const text = normalized(box.textContent).length
+    const listed = lengthOf([...box.querySelectorAll('li')])
+    const links = lengthOf([...box.querySelectorAll('a')])
+    if (text < MIN_BOX_TEXT || listed < text * MIN_LIST_SHARE || links > text * MAX_BOX_LINK_SHARE) continue
+    const block = box.ownerDocument.createElement('div')
+    for (const name of box.getAttributeNames()) block.setAttribute(name, box.getAttribute(name) ?? '')
+    block.append(...box.childNodes)
+    box.replaceWith(block)
   }
 }
 
