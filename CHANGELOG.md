@@ -15,6 +15,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   corners and its text in proportion, up to 44 px wide. The setup code in the log reads the same way, `ABCD-1234`; it
   is typed with or without the dash.
 - **Commands in a sentence** show in the mono font with no tile behind them.
+- **Page not found.** The big « 404. » now carries the accent dot, and the title under it has none.
 
 ## [1.0.0-beta.3] - 2026-11-15
 

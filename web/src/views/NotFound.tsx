@@ -24,7 +24,7 @@ const NotFound = ({ title, children }: NotFoundProps) => {
         <p className={styles.code} aria-hidden="true">
           404
         </p>
-        <h1 className={`${styles.title} screen-title`}>{title ?? t('notFound.title')}</h1>
+        <h1 className={styles.title}>{title ?? t('notFound.title')}</h1>
         <p className={styles.text}>{children ?? t('notFound.text', { count: contentDays().articleDays })}</p>
         <div className={styles.actions}>
           <Button look="primary" href={FRONT_PAGE_HREF}>
