@@ -20,7 +20,7 @@ interface SectionPageProps {
 const SectionPage = ({ title, intro, aside, layout, children }: SectionPageProps) => {
   const phone = useIsPhone()
   return (
-    <div className={layout === 'phone' ? `${styles.page} ${styles.phonePage}` : styles.page}>
+    <div className={layout === 'phone' ? `${styles.page} ${styles.phonePage}` : styles.page} data-section-page>
       {layout === 'phone' && !phone && aside && <HeaderActions>{aside}</HeaderActions>}
       {(layout === 'desktop' || intro) && (
         <div className={styles.header}>

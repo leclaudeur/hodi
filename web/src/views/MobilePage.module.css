@@ -3,6 +3,21 @@
   padding-bottom: calc(140px + env(safe-area-inset-bottom));
 }
 
+/* A page with only an empty state: its content fills the room under the header, to centre the state there. */
+.page:has(> [data-empty-state]),
+.page:has(> [data-section-page] > [data-empty-state]) {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+
+.page > [data-empty-state] {
+  min-height: 0;
+  /* The header already ends on its own margin: 4px more puts the state halfway between it and the bottom. */
+  padding-top: 4px;
+  padding-bottom: calc(24px + var(--nav-room, env(safe-area-inset-bottom)));
+}
+
 .actions {
   display: flex;
   flex-shrink: 0;
