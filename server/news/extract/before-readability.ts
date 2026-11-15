@@ -44,12 +44,28 @@ export const removeLabelledAds = (root: Element) => {
   }
 }
 
+// A newsletter sign-up, with its title and its data-protection notice, can outweigh a short article: Frandroid's
+// brief was replaced by it. Only a block named for it that holds the form, never the page around the article.
+const SIGN_UP = '[class*="newsletter" i], [id*="newsletter" i]'
+const MAX_SIGN_UP_LENGTH = 2000
+
+export const removeSignUps = (root: Element) => {
+  for (const block of [...root.querySelectorAll(SIGN_UP)]) {
+    if (!block.isConnected || block.matches('html, body, article, main') || block.querySelector('h1')) continue
+    if (!block.querySelector('form, input[type="email" i]')) continue
+    if (normalized(block.textContent).length <= MAX_SIGN_UP_LENGTH) block.remove()
+  }
+}
+
 // Readability judges a block by its class and id: it drops "sidebar" blocks before scoring the page, and scores
 // down "share" and "comment" ones. ActuGaming names its two-column layout "sidebar", text column included, and wraps
 // the text in its share block: the article was lost, and a sponsored card or the related links came instead.
 // The word on its own ("ag-sidebar"), not inside a longer name: the BBC's "ContainerWithSidebarWrapper" also holds
 // its tag list, which Readability rightly leaves out.
 const SIDEBAR = /(^|[\s_-])sidebar([\s_-]|$)/i
+// A name that says a block sits beside a sidebar ("article-content--has-sidebar", "container-with-sidebar") is the
+// text column's: Frandroid's article was dropped for it, and its newsletter form came instead.
+const BESIDE_SIDEBAR = /(has|with)[_-]+sidebar/i
 const MIN_REAL_PARAGRAPH = 300
 
 export const unmarkLayoutBlocks = (root: Element) => {
@@ -65,6 +81,12 @@ export const unmarkLayoutBlocks = (root: Element) => {
       element.setAttribute('class', tokens.filter(token => token !== '' && !SIDEBAR.test(token)).join(' '))
     }
     if (SIDEBAR.test(element.getAttribute('id') ?? '')) element.removeAttribute('id')
+  }
+  for (const element of [...root.querySelectorAll('[class*="sidebar" i]')]) {
+    const tokens: string[] = (element.getAttribute('class') ?? '').split(/\s+/)
+    if (tokens.some(token => BESIDE_SIDEBAR.test(token))) {
+      element.setAttribute('class', tokens.filter(token => token !== '' && !BESIDE_SIDEBAR.test(token)).join(' '))
+    }
   }
   // A heading's id is an anchor made from its words ("h-comment-installer-le-mod"): Readability reads it as a
   // layout word and drops the heading.

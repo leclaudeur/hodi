@@ -5,6 +5,7 @@ import {
   recoverSplitText,
   removeAds,
   removeLabelledAds,
+  removeSignUps,
   showLiveBlogPosts,
   unmarkLayoutBlocks
 } from './extract/before-readability.ts'
@@ -228,6 +229,7 @@ export const extractArticle = (html: string, url: string): ExtractedArticle | nu
   showLazyImages(document)
   removeAds(document.body as unknown as Element)
   removeLabelledAds(document.body as unknown as Element)
+  removeSignUps(document.body as unknown as Element)
   unmarkLayoutBlocks(document.body as unknown as Element)
   keepListBoxes(document.body as unknown as Element)
   showLiveBlogPosts(document.body as unknown as Element)
