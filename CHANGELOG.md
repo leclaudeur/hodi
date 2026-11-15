@@ -11,7 +11,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 ### Changed
 
 - **Setup code.** Where to find it is now a blue notice under its boxes, as wide as them, instead of a « ? ».
-- **Code boxes** are squares of the same size everywhere (setup, sign-in, profile codes, two-factor, backups).
+- **Code boxes** are 44 × 60 everywhere (setup, sign-in, profile codes, two-factor, backups) and keep that shape on a
+  narrow phone.
 - **Commands in a sentence** show in the mono font with no tile behind them.
 
 ## [1.0.0-beta.3] - 2026-11-15

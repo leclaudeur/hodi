@@ -58,10 +58,10 @@
   align-items: center;
   flex: 0 1 auto;
   justify-content: center;
-  /* Always a square, of the app's 44px: on a narrow phone the boxes shrink together rather than overflow. */
+  /* Always 44 × 60, everywhere: on a narrow phone the boxes shrink together and keep that shape. */
   width: 44px;
   min-width: 0;
-  aspect-ratio: 1;
+  aspect-ratio: 44 / 60;
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--control);

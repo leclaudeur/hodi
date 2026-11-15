@@ -28,7 +28,7 @@ const CodeNotice = () => {
     <Notice icon={Terminal} title={t('setup.start.codeNoticeTitle')}>
       <p>{t('setup.start.codeNoticeText')}</p>
       <p>
-        {t('setup.start.codeNoticeCommand')} <code>docker compose logs app</code>
+        <code>docker compose logs app</code>
       </p>
     </Notice>
   )

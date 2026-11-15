@@ -81,7 +81,8 @@
   align-self: stretch;
 }
 
-/* The notice reads from its left, in the centred welcome. */
+/* The notice reads from its left, in the centred welcome, a little away from the boxes. */
 .code > aside {
+  margin-top: 14px;
   text-align: left;
 }

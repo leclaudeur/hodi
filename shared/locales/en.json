@@ -213,7 +213,6 @@
       "lead": "Your favourite news sites, <b>sorted by topic</b>, read <b>with no ads or tracking</b>. Everyone has a profile, and the household shares what’s worth reading.",
       "codeNoticeTitle": "The code is in the server’s log",
       "codeNoticeText": "Hodi writes a new one each time it starts, on the “Setup code” line: take the latest.",
-      "codeNoticeCommand": "In a terminal:",
       "code": "Setup code",
       "button": "Install Hodi",
       "length": "A few minutes · all in the browser"
