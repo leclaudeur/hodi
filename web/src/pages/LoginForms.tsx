@@ -32,6 +32,7 @@ const SecondField = ({ login, recovery }: { login: Login; recovery: boolean }) =
   return (
     <PinField
       label={t('twoFactor.login.code')}
+      labelHidden
       length={TWO_FACTOR_CODE_LENGTH}
       masked={false}
       autoFocus

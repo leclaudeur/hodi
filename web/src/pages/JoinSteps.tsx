@@ -67,6 +67,7 @@ export const CodeStep = ({ join, onBack }: { join: Join; onBack: () => void }) =
       <div className={householdStyles.field}>
         <PinField
           label={t('join.code.label')}
+          labelHidden
           length={SIGN_IN_CODE_LENGTH}
           characters={SIGN_IN_CODE_CHARACTERS}
           masked={false}

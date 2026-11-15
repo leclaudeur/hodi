@@ -5,6 +5,8 @@ export type PinState = 'idle' | 'wrong' | 'right'
 
 interface PinFieldProps {
   label: string
+  // Read aloud but not shown, when the screen's own title already says what to type.
+  labelHidden?: boolean
   value: string
   onChange: (value: string) => void
   // The full code typed: the screen checks it at once, no button to press.
@@ -58,6 +60,7 @@ const Group = ({ from, to, value, length, masked }: GroupProps) => (
 // password one draws them in whatever its autocomplete says), with each manager's own "ignore me" attribute.
 const PinField = ({
   label,
+  labelHidden = false,
   value,
   onChange,
   onComplete,
@@ -76,7 +79,7 @@ const PinField = ({
     <label
       className={`${styles.field} ${styles[state]} ${align === 'start' ? styles.start : ''} ${masked ? '' : styles.shown}`}
     >
-      <span className={styles.label}>{label}</span>
+      <span className={labelHidden ? 'visually-hidden' : styles.label}>{label}</span>
       <span className={styles.boxes}>
         <input
           ref={input}
