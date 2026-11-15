@@ -9,6 +9,7 @@ import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { PluginHouseholdStore } from '../db/plugin-household-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { ServerPeopleStore } from '../db/server-people-store.ts'
@@ -17,6 +18,7 @@ import { ServerStatsStore } from '../db/server-stats-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
+import type { MailMessage } from '../mail/mailer.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { fakeFetch } from './helpers/news.ts'
@@ -46,6 +48,7 @@ async function startServer() {
     timeZone: 'UTC',
     vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
   }
+  const sent: MailMessage[] = []
   const catalog = parseCatalog('topics:\n  - id: monde\n    label: Monde\n    sources: []\n')
   const server = createApp(config, {
     news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
@@ -56,6 +59,7 @@ async function startServer() {
     serverStats: new ServerStatsStore(db, () => 'UTC'),
     serverPeople: new ServerPeopleStore(db),
     serverSettings: new ServerSettingsStore(db),
+    serverMail: { store: new MailSettingsStore(db), send: async (_settings, message) => void sent.push(message) },
     codes: new SignInCodeStore(db, config.sessionSecret)
   }).listen(0)
   await new Promise(resolve => server.once('listening', resolve))
@@ -68,18 +72,19 @@ async function startServer() {
     })
   const account = await call('/setup/account', '', 'POST', { email: EMAIL, password: PASSWORD })
   assert.equal(account.status, 204)
-  return { call, db, session: cookiesFrom(account), close: () => server.close() }
+  return { call, db, sent, session: cookiesFrom(account), close: () => server.close() }
 }
 
 // « Aller à l'espace Serveur » once the server is set up: the server runs with its admin's account alone, in
 // /server, until Serveur › Foyers brings the household steps back.
 describe('a server whose household is left for later', () => {
   let call: Awaited<ReturnType<typeof startServer>>['call']
+  let sent: MailMessage[] = []
   let close: () => void
   let session = ''
 
   before(async () => {
-    ;({ call, close, session } = await startServer())
+    ;({ call, close, session, sent } = await startServer())
   })
 
   after(() => close())
@@ -126,6 +131,13 @@ describe('a server whose household is left for later', () => {
     const feed = await call('/profiles', signedIn)
     assert.equal(feed.status, 403)
     assert.equal(((await feed.json()) as { error: string }).error, 'no_household')
+
+    // Serveur › E-mail's test goes to the admin's own address, with no profile to find it through.
+    const mail = { host: 'smtp.example.com', port: 465, security: 'tls', user: null, sender: 'hodi@example.com' }
+    assert.equal((await call('/server/mail', signedIn, 'PUT', mail)).status, 200)
+    const test = await call('/server/mail/test', signedIn, 'POST')
+    assert.deepEqual(await test.json(), { to: EMAIL })
+    assert.equal(sent.at(-1)?.to, EMAIL)
   })
 
   it('brings the household steps back from Serveur › Foyers, then works as any server', async () => {

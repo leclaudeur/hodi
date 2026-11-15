@@ -69,7 +69,9 @@ export const mailRoutes = ({
   // « Envoyer un essai »: one e-mail to the admin's own address, through the saved settings.
   router.post('/test', async (_request, response) => {
     const settings = mail.get()
-    const account = accounts.ofProfile(profileIdOf(response))
+    // The account signed in, even when it has no profile: a server's admin outside any household tests too.
+    const accountId = response.locals.accountId as number | undefined
+    const account = accountId === undefined ? accounts.ofProfile(profileIdOf(response)) : accounts.get(accountId)
     if (!settings || !account) {
       response.status(409).json({ error: 'not_configured' })
       return
