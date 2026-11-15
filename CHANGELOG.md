@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.3] - 2026-11-15
+
+Hodi starts on any processor, even a virtual machine with a generic CPU, and its image is 9 MB lighter.
+
 ### Fixed
 
 - **Virtual machines with a generic CPU.** Hodi now starts on a processor without SSE4, such as Proxmox's kvm64: its
@@ -293,6 +297,7 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.2...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.3...HEAD
+[1.0.0-beta.3]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/leclaudeur/hodi/releases/tag/v1.0.0-beta.1
