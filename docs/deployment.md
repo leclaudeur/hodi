@@ -88,7 +88,8 @@ there. Hodi then comes as a ready-made image, `ghcr.io/leclaudeur/hodi`, publish
 and ARM processors, and everything else happens in the browser:
 
 1. **Start it**: _Stacks › Add stack_, paste [`compose.image.yml`](../compose.image.yml), then _Deploy the stack_. The
-   image holds the feed list and the game's rules, so the stack needs no other file.
+   image holds the feed list and the game's rules, so the stack needs no other file. It leaves out `cap_drop` and
+   `security_opt`, which Portainer refuses to a user who is not its admin.
 2. **Choose the port**: in the stack's environment variables, `HODI_PORT` is the server's port (3000 by default), and
    `HODI_BIND=0.0.0.0` opens it to the network, for a reverse proxy on another machine or container. Without
    `HODI_BIND`, Hodi only answers on the server itself.

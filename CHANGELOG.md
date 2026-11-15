@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Portainer without admin rights.** `compose.image.yml` no longer sets `cap_drop` and `security_opt`, which
+  Portainer refuses to a user who is not its admin: the stack deploys as it is.
+
 ## [1.0.0-beta.1] - 2026-11-15
 
 The first beta of Hodi 1.0: accounts for everyone, the Serveur space, plugins and their SDK, Hodi's plugin list, and

@@ -31,10 +31,8 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
+    # No cap_drop nor security_opt, unlike compose.yml: Portainer refuses both to a user who is not its admin. The app
+    # still runs as the unprivileged node user.
     mem_limit: 256m
     pids_limit: 128
 
