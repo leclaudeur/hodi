@@ -1,6 +1,6 @@
 {
   "name": "@hodi-app/hodi",
-  "version": "1.0.0-beta.4",
+  "version": "1.0.0-beta.5",
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",

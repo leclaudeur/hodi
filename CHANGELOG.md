@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.5] - 2026-11-15
+
+The e-mail test works for a server's admin outside any household, and a failed e-mail leaves its cause in the log.
+
 ### Changed
 
 - **E-mail.** When a test or a message cannot be sent, the server's log gives the mail server's exact error.
@@ -320,7 +324,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.4...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.5...HEAD
+[1.0.0-beta.5]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.4...v1.0.0-beta.5
 [1.0.0-beta.4]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.3...v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.1...v1.0.0-beta.2
