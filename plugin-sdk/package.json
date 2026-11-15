@@ -8,7 +8,7 @@
     "url": "git+https://github.com/leclaudeur/hodi.git",
     "directory": "plugin-sdk"
   },
-  "homepage": "https://github.com/leclaudeur/hodi/tree/main/plugin-sdk#readme",
+  "homepage": "https://sdk.get-hodi.com",
   "type": "module",
   "bin": {
     "hodi-plugin": "dist/bin.mjs"

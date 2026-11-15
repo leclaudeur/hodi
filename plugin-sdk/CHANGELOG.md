@@ -10,6 +10,10 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Changed
+
+- The package's homepage on npm is the SDK's site, https://sdk.get-hodi.com.
+
 ## [1.0.0-beta.1] - 2026-11-15
 
 The API of Hodi 1.0, frozen until 1.0.0. It removes `publicPages` and `signedOutPage`; a plugin that used neither keeps
