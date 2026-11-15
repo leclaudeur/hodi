@@ -175,6 +175,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 
 ### Fixed
 
+- **Frandroid's articles instead of its newsletter form.** The reader showed the newsletter sign-up and its data
+  notice in place of a short article, or nothing at all: the sign-up is left out and the text column is read.
 - Serveur › Plugins lists a plugin whose version is a pre-release, such as 1.0.0-beta.1, and offers 1.0.0 to a server
   that has 1.0.0-beta.1, or beta.2 to one that has beta.1.
 - **Serveur › Vue d'ensemble with a keyboard.** The small curves of its figures no longer take a stop of their own
