@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Older processors.** Hodi now starts on a processor without x86-64-v2, such as a virtual machine with a generic
+  CPU: its pictures then go through a slower WebAssembly build instead of stopping the server at start.
+
 ## [1.0.0-beta.1] - 2026-11-15
 
 The first beta of Hodi 1.0: accounts for everyone, the Serveur space, plugins and their SDK, Hodi's plugin list, and
