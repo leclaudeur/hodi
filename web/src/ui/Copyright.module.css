@@ -1,0 +1,14 @@
+/* Held to the bottom of its screen, whatever the height of what is above. */
+.copyright {
+  position: absolute;
+  right: 0;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  left: 0;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+}

@@ -1,0 +1,219 @@
+/* react-day-picker drawn with Hodi's tokens. */
+.picker {
+  --rdp-accent-color: var(--rust);
+  --rdp-accent-background-color: color-mix(in srgb, var(--rust) 16%, transparent);
+  --rdp-range_middle-background-color: color-mix(in srgb, var(--rust) 14%, transparent);
+  --rdp-range_middle-color: var(--text);
+  --rdp-range_start-date-background-color: var(--rust);
+  --rdp-range_end-date-background-color: var(--rust);
+  --rdp-range_start-color: var(--bg);
+  --rdp-range_end-color: var(--bg);
+  --rdp-today-color: var(--rust);
+  --rdp-day-height: 32px;
+  /* The caption line is as tall as its 28px arrows, so the month's name sits level with them. */
+  --rdp-nav-height: 28px;
+  --rdp-day-width: 38px;
+  --rdp-day_button-height: 32px;
+  --rdp-day_button-width: 32px;
+  --rdp-selected-border: none;
+  --rdp-disabled-opacity: 0.35;
+  --rdp-outside-opacity: 0.4;
+  display: block;
+  margin: 0;
+  max-width: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.picker :global(.rdp-months) {
+  flex-wrap: nowrap;
+  /* The dialog's own gap, so the two months are as far apart as the dates are from them. */
+  gap: 14px;
+  width: 100%;
+  max-width: none;
+}
+
+/* The months take the dialog's whole width, each on a card like the dashboard's. */
+.picker :global(.rdp-month) {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px 8px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--column);
+}
+
+.picker :global(.rdp-month_grid) {
+  width: 100%;
+}
+
+.picker :global(.rdp-day),
+.picker :global(.rdp-weekday) {
+  width: auto;
+}
+
+.picker :global(.rdp-day_button) {
+  margin-inline: auto;
+}
+
+.picker :global(.rdp-month_caption) {
+  height: 28px;
+  margin-bottom: 8px;
+  padding-inline: 0;
+}
+
+.picker :global(.rdp-caption_label) {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.picker :global(.rdp-weekday) {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.picker :global(.rdp-chevron) {
+  fill: var(--text-2);
+}
+
+.picker :global(.rdp-selected) {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.picker :global(.rdp-range_middle) {
+  font-weight: 400;
+}
+
+.picker :global(.rdp-nav) {
+  top: 12px;
+  right: 14px;
+  gap: 6px;
+  height: 28px;
+}
+
+.ends {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* Two pills as far apart as the two months: each one sits over its month, with the same inner margin. */
+  gap: 14px;
+}
+
+.end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--column);
+  line-height: 1;
+}
+
+.endLabel {
+  padding-top: 1px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.endValue {
+  overflow: hidden;
+  min-width: 0;
+  color: var(--text);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The chosen days as one band behind the circles: round at each line's ends, cut at the period's ends so the
+   band never shows past the orange circle. */
+.picker :global(.rdp-range_start) {
+  background: linear-gradient(to right, transparent 50%, var(--rdp-range_middle-background-color) 50%);
+}
+
+.picker :global(.rdp-range_end) {
+  background: linear-gradient(to left, transparent 50%, var(--rdp-range_middle-background-color) 50%);
+}
+
+.picker :global(.rdp-range_start.rdp-range_end),
+.picker :global(td.rdp-range_start:last-child),
+.picker :global(td.rdp-range_start:has(+ td.rdp-hidden)),
+.picker :global(td.rdp-range_end:first-child),
+.picker :global(td.rdp-hidden + td.rdp-range_end) {
+  background: none;
+}
+
+.picker :global(td.rdp-range_middle:first-child),
+.picker :global(td.rdp-hidden + td.rdp-range_middle) {
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+}
+
+.picker :global(td.rdp-range_middle:last-child),
+.picker :global(td.rdp-range_middle:has(+ td.rdp-hidden)) {
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+}
+
+/* A day alone on its line: a circle, like the period's ends, not a stretched band. */
+.picker :global(td.rdp-range_middle:is(:first-child, .rdp-hidden + td):is(:last-child, :has(+ td.rdp-hidden))) {
+  background: none;
+}
+
+.picker
+  :global(
+    td.rdp-range_middle:is(:first-child, .rdp-hidden + td):is(:last-child, :has(+ td.rdp-hidden)) .rdp-day_button
+  ) {
+  border-radius: 50%;
+  background: var(--rdp-range_middle-background-color);
+}
+
+/* Today: an accent ring around the day, so it stands out among the others. */
+.picker :global(.rdp-today:not(.rdp-selected) .rdp-day_button) {
+  box-shadow: inset 0 0 0 1.5px var(--rust);
+  color: var(--rust);
+  font-weight: 600;
+}
+
+/* A month is six lines whatever the screen: the dialog grows to show it whole, without a scroll. */
+dialog.dialog {
+  max-height: min(92dvh, 760px);
+}
+
+/* The first and last columns touch the card's padding, so days, weekdays, the month and the dates line up on
+   both sides. */
+.picker :global(.rdp-weekday:first-child),
+.picker :global(.rdp-week > td:first-child) {
+  text-align: left;
+}
+
+.picker :global(.rdp-weekday:last-child),
+.picker :global(.rdp-week > td:last-child) {
+  text-align: right;
+}
+
+.picker :global(.rdp-week > td:first-child .rdp-day_button) {
+  margin-left: 0;
+}
+
+.picker :global(.rdp-week > td:last-child .rdp-day_button) {
+  margin-right: 0;
+}
+
+.picker :global(.rdp-weekday:first-child) {
+  padding-left: 9px;
+}
+
+.picker :global(.rdp-weekday:last-child) {
+  padding-right: 9px;
+}

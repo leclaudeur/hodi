@@ -1,0 +1,65 @@
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* A put-away card's title and "Annuler" line up with the rows' text. */
+.desktop {
+  --undo-gutter: 14px;
+}
+
+.divider {
+  height: 1px;
+  margin: 0 14px;
+  background: var(--divider);
+}
+
+/* A hovered card shows its surface: the lines on either side step aside, as for the open one. */
+@media (hover: hover) {
+  .divider:has(+ [data-card]:hover),
+  [data-card]:hover + .divider {
+    visibility: hidden;
+  }
+}
+
+.phone .divider {
+  margin: 0 var(--gutter);
+}
+
+/* On a phone the day separators sit flush with the cards' margins. */
+.phone [role='heading'] {
+  padding: 18px var(--gutter) 14px;
+}
+
+.phone section:first-child [role='heading'] {
+  padding-top: 24px;
+}
+
+/* Tablets held upright: the cards in two columns, a day's first article across both. */
+@media (min-width: 700px) {
+  .phone .items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+    padding: 0 var(--gutter);
+  }
+
+  .phone .items > .divider {
+    display: none;
+  }
+
+  /* A card, or the swipe around it, or the line that brings it back. */
+  .phone .items > :not(.divider) {
+    border-top: 1px solid var(--divider);
+  }
+
+  .phone .items [data-card] {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  /* The day's heading already draws a line above its first row of two cards. */
+  .phone .items > :nth-child(-n + 2 of :not(.divider)) {
+    border-top: 0;
+  }
+}

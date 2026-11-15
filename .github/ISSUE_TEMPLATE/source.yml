@@ -1,0 +1,21 @@
+name: Source suggestion
+description: Suggest a news site, YouTube channel or podcast for the default sources
+labels: [sources]
+body:
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: The site, or its RSS feed if you know it.
+    validations:
+      required: true
+  - type: input
+    id: theme
+    attributes:
+      label: Topic
+      description: Belgium, World, Tech, Science, Sports…
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this source?
+      description: What it covers that Hodi's sources do not, and how often it publishes.

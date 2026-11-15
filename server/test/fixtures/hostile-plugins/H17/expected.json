@@ -1,0 +1,51 @@
+{
+  "case": "H17",
+  "title": "PRAGMAs that change the file or the quota are refused",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/writable-schema",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/journal-off",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/quota",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/trusted-schema",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

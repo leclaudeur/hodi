@@ -1,0 +1,151 @@
+/* Built as a settings row in its card: the coloured square at the top left, the title and the description beside
+   it, the button at the end. The card and its square take the tone's colours. */
+.notice {
+  --button-height: 38px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-height: 66px;
+  padding: 14px;
+  border: 1px solid var(--notice-border);
+  border-radius: 16px;
+  background: var(--notice-surface);
+}
+
+.info {
+  --notice-surface: var(--info-surface);
+  --notice-border: var(--info-border);
+  --notice-mark: var(--info-mark);
+  --notice-icon: var(--info-icon);
+}
+
+/* The waiting colour, as the « Non vérifié » chip. */
+.warning {
+  --notice-surface: var(--topic-belgium-surface);
+  --notice-border: var(--topic-belgium-border);
+  --notice-mark: var(--topic-belgium-surface);
+  --notice-icon: var(--topic-belgium);
+}
+
+/* Something off or broken, in the red of the destructive buttons. The card is a lighter red than its square. */
+.error {
+  --notice-surface: color-mix(in srgb, var(--destructive) 55%, var(--column));
+  --notice-border: var(--destructive-border);
+  --notice-mark: var(--destructive);
+  --notice-icon: var(--destructive-text);
+}
+
+/* Clickable all over: a link under the content, the round buttons above it. */
+.linked {
+  position: relative;
+  transition: border-color var(--duration) var(--ease);
+}
+
+.linked:hover {
+  border-color: var(--notice-icon);
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.linked .main {
+  pointer-events: none;
+}
+
+.linked .side {
+  position: relative;
+}
+
+/* At the top, whatever the text's length: 44px, as the settings rows' squares. */
+.mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--notice-border);
+  border-radius: 12px;
+  background: var(--notice-mark);
+  color: var(--notice-icon);
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* A block, not a flex column: a link inside a sentence stays in its line. Paragraphs are spaced among themselves. */
+.text {
+  color: var(--text-3);
+  font-size: 14px;
+}
+
+.text p {
+  margin: 0;
+}
+
+.text p + p {
+  margin-top: 8px;
+}
+
+.text a {
+  color: var(--text-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* At the end, centred on the square. */
+.side {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.roundAction {
+  display: none;
+}
+
+/* A computer's or a tablet's line stops at the settings rows' length. */
+@media (min-width: 601px) {
+  .main {
+    max-width: 500px;
+    margin-right: auto;
+  }
+}
+
+/* A phone has no room for a labelled button beside the text: a round one, as the settings rows. */
+@media (max-width: 600px) {
+  .notice {
+    padding: 12px;
+  }
+
+  .wideAction {
+    display: none;
+  }
+
+  .roundAction {
+    display: inline-flex;
+  }
+}
+
+/* On a coloured card the usual button fades: a step lighter, with a firmer edge. */
+.side :is(a, button) {
+  border-color: var(--border-strong);
+  background: var(--raised);
+}

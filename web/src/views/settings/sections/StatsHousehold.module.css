@@ -1,0 +1,81 @@
+/* "La une de la semaine": one row per profile, as the profile sheet's badges. */
+.ranking {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.ranking > li {
+  border-top: 1px solid var(--divider);
+}
+
+/* A row to tap reaches past the card's text, so that its hover shade has room. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: calc(100% + 24px);
+  margin: 0 -12px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .row:hover {
+    background: var(--card-hover);
+  }
+
+  /* The lines above and under the hovered row step aside, as in the pickers. */
+  .ranking > li:has(.row:hover),
+  .ranking > li:has(.row:hover) + li {
+    border-top-color: transparent;
+  }
+}
+
+.rank {
+  flex-shrink: 0;
+  width: 16px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: center;
+}
+
+.rank[data-first] {
+  color: var(--rust-text);
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.meta {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.points {
+  flex-shrink: 0;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}

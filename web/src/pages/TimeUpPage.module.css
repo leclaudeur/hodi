@@ -1,0 +1,20 @@
+/* "À demain": the face, the goodbye and when it opens again, centred. */
+.content {
+  gap: 20px;
+  text-align: center;
+}
+
+.title {
+  text-wrap: balance;
+}
+
+.text {
+  max-width: 300px;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.switch {
+  margin-top: 12px;
+}

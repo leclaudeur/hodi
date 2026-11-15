@@ -1,0 +1,13 @@
+{
+  "id": "hostile-h31",
+  "name": "Hostile H31",
+  "version": "0.0.1",
+  "description": "fetchText refuses every internal address",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "network": [
+      "rebind.test"
+    ]
+  }
+}

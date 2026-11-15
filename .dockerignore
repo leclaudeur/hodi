@@ -1,0 +1,9 @@
+# Keep secrets, dependencies and local outputs out of the build context.
+.env
+.env.*
+.git
+node_modules
+dist
+docs
+scripts
+*.log

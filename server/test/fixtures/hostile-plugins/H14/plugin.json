@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h14",
+  "name": "Hostile H14",
+  "version": "0.0.1",
+  "description": "A log flood is capped",
+  "api": 2,
+  "audience": "admin"
+}

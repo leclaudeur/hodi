@@ -1,0 +1,35 @@
+{
+  "case": "H50",
+  "title": "moveDevice only to a household the account belongs to",
+  "setup": "Household 1 (the server admin's, who has a profile there, signed in as the test's admin) and household 2, made by the test, where that account has no profile.",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/move",
+      "body": {
+        "householdId": 2
+      },
+      "expect": {
+        "status": 200,
+        "headersAbsent": [
+          "set-cookie"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/move",
+      "body": {
+        "householdId": 1
+      },
+      "expect": {
+        "status": 200
+      }
+    }
+  ],
+  "afterInCore": "After the first request the adult's device is still on household 1 and its session is unchanged; the refusal is in the plugin's log.",
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ]
+}

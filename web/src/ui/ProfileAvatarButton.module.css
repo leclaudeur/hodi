@@ -1,0 +1,15 @@
+.button {
+  display: flex;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .button:hover {
+    opacity: 0.85;
+  }
+}

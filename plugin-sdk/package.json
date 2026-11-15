@@ -1,0 +1,74 @@
+{
+  "name": "@hodi-app/plugin-sdk",
+  "version": "1.0.0-beta.1",
+  "description": "Build and type plugins for Hodi, the self-hosted news reader for a household.",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leclaudeur/hodi.git",
+    "directory": "plugin-sdk"
+  },
+  "homepage": "https://github.com/leclaudeur/hodi/tree/main/plugin-sdk#readme",
+  "type": "module",
+  "bin": {
+    "hodi-plugin": "dist/bin.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/build.d.mts",
+      "default": "./dist/build.mjs"
+    },
+    "./server": {
+      "types": "./dist/server.d.mts"
+    },
+    "./web": {
+      "types": "./dist/web.d.mts"
+    },
+    "./hodi-sdk": {
+      "types": "./hodi-sdk.d.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.mts",
+      "default": "./dist/testing.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "hodi-sdk.d.ts",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "prepublishOnly": "tsdown"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "express-rate-limit": "8.7.1",
+    "node-sqlite3-wasm": "0.8.61",
+    "quickjs-emscripten": "0.32.0",
+    "sharp": "0.35.5",
+    "tar": "^7.5.22",
+    "undici": "8.12.3",
+    "vite": "^8.3.5"
+  },
+  "peerDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/express": {
+      "optional": true
+    },
+    "@types/node": {
+      "optional": true
+    },
+    "@types/react": {
+      "optional": true
+    }
+  }
+}

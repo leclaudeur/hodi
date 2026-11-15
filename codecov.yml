@@ -1,0 +1,10 @@
+# Codecov keeps the coverage shown by the README's badge. It never blocks a pull request and never comments on one.
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+comment: false

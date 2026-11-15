@@ -1,0 +1,25 @@
+{
+  "manifest": {
+    "name": "Hello world",
+    "description": "A sample plugin: a setting, a route and its own card."
+  },
+  "settings": {
+    "greeting": "Message",
+    "greetingHint": "What the plugin answers",
+    "loud": "In capitals",
+    "loudHint": "For big days"
+  },
+  "title": "Say hello",
+  "hint": "The plugin’s server answers with your message",
+  "say": "Say hello",
+  "count_one": "Said {{count}} time",
+  "count_other": "Said {{count}} times",
+  "failed": "The plugin didn’t answer.",
+  "server": {
+    "said": "Hellos said",
+    "intro": "How many times the household said hello with the plugin.",
+    "total": "In all",
+    "hint": "An example of a plugin section",
+    "period": "The dashboard shows {{from}} to {{to}}."
+  }
+}

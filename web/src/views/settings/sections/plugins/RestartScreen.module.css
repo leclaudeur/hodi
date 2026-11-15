@@ -1,0 +1,128 @@
+/* Over everything, on the page's own background: the app behind is about to reload. The rest is "À demain"'s page. */
+.screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  overflow: auto;
+  border: 0;
+  color: var(--text);
+}
+
+/* It fades in over whatever is open, without the dialogs' rise. */
+.screen[open] {
+  animation: appear var(--duration) var(--ease);
+}
+
+.screen::backdrop {
+  background: transparent;
+  animation: none;
+}
+
+.content {
+  gap: 20px;
+  text-align: center;
+}
+
+.progress {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.progress svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.track,
+.bar {
+  fill: none;
+  stroke-width: 4px;
+}
+
+.track {
+  stroke: var(--divider);
+}
+
+.bar {
+  stroke: var(--rust);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 200ms linear;
+}
+
+.percent {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.title {
+  text-wrap: balance;
+}
+
+.text {
+  max-width: 300px;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* One line where there is room: the sentence is short, a break in it looked like a mistake. */
+@media (min-width: 601px) {
+  .text {
+    max-width: none;
+    white-space: nowrap;
+  }
+}
+
+.step {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dots > span {
+  animation: dot 1.2s var(--ease) infinite;
+}
+
+.dots > span:nth-child(2) {
+  animation-delay: 200ms;
+}
+
+.dots > span:nth-child(3) {
+  animation-delay: 400ms;
+}
+
+.retry {
+  margin-top: 12px;
+}
+
+@keyframes dot {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots > span {
+    animation: none;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "case": "H4",
+  "title": "A busy loop is stopped and Hodi keeps answering",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/spin",
+      "expect": {
+        "status": 504,
+        "withinMs": 6000
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "whileRunning": "GET /health answers 200 in under 200 ms while /spin runs",
+  "after": "the plugin answers again after its thread was restarted (call it a second time: 504 again, not a hang)"
+}
