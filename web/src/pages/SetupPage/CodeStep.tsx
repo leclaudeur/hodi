@@ -26,9 +26,8 @@ const CodeNotice = () => {
   const { t } = useTranslation()
   return (
     <Notice icon={Terminal} title={t('setup.start.codeNoticeTitle')}>
-      <p>{t('setup.start.codeNoticeText')}</p>
       <p>
-        <code>docker compose logs app</code>
+        <RichText i18nKey="setup.start.codeNoticeText" />
       </p>
     </Notice>
   )
