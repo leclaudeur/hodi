@@ -7,7 +7,10 @@
 
 <p align="center">
   A self-hosted news reader for the whole household: news by theme, a clean reader view, videos,<br>
-  up to five profiles, and optional AI that only ever runs when you click.<br>
+  up to five profiles, and optional AI that only ever runs when you click.
+</p>
+
+<p align="center">
   <i>Hodi</i> comes from the Latin <i>hodie</i>, “today”, and sounds like the Swahili <i>“Hodi!”</i>,<br>
   what you call out when you knock at a home’s door: today’s news, for everyone under one roof.
 </p>
