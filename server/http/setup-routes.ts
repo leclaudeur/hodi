@@ -42,6 +42,8 @@ export interface HouseholdRoutesOptions {
   canResetByMail?: () => boolean
   // « Plus tard » at the household step: whether the server's admin left the household for later, and its change.
   householdLater?: { get: () => boolean; set: (later: boolean) => void }
+  // Serveur › Général: where a browser that never signed in here goes from the app's bare address.
+  publicHome?: () => string | null
   // « Plugins trouvés »: the plugins put in data/plugins before the first start, and their switch.
   setupPlugins?: SetupPlugins
 }
@@ -123,7 +125,7 @@ type SetupChecks = ReturnType<typeof setupChecks>
 
 const mountSetupStateRoutes = (
   router: express.Router,
-  { household, providers, accounts, canResetByMail, householdLater, setupPlugins }: SetupOptions,
+  { household, providers, accounts, canResetByMail, householdLater, setupPlugins, publicHome }: SetupOptions,
   { adminOf, codeOk, notNeeded }: SetupChecks
 ) => {
   // stage account: nobody has an account yet, the setup starts with "Ton compte". stage household: the server admin
@@ -131,12 +133,24 @@ const mountSetupStateRoutes = (
   router.get('/', (request, response) => {
     if (household.isSetUp()) {
       const { name, language } = household.get()
-      response.json({ needed: false, name, language, resetByMail: canResetByMail() })
+      response.json({
+        needed: false,
+        name,
+        language,
+        resetByMail: canResetByMail(),
+        publicHome: publicHome?.() ?? null
+      })
       return
     }
     // No household for now: Connexion, then /server for its admin, as on a set-up server.
     if (accounts?.any() && householdLater?.get()) {
-      response.json({ needed: false, name: null, language: household.get().language, resetByMail: canResetByMail() })
+      response.json({
+        needed: false,
+        name: null,
+        language: household.get().language,
+        resetByMail: canResetByMail(),
+        publicHome: publicHome?.() ?? null
+      })
       return
     }
     const providersOffered = providersList(providers)

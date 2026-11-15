@@ -3,6 +3,7 @@ import {
   ChartColumn,
   ChevronRight,
   Clock,
+  Globe,
   Heart,
   Mail,
   House,
@@ -66,6 +67,7 @@ const useGroups = (): { id: string; label: string; entries: Entry[] }[] => {
       id: 'settings',
       label: t('server.groups.settings'),
       entries: [
+        { id: 'general', label: t('server.titles.general'), hint: t('server.hints.general'), icon: Globe },
         { id: 'content', label: t('server.titles.content'), hint: t('server.hints.content'), icon: Clock },
         { id: 'backups', label: t('server.titles.backups'), hint: t('server.hints.backups'), icon: ArchiveRestore },
         { id: 'mail', label: t('server.titles.mail'), hint: t('server.hints.mail'), icon: Mail },

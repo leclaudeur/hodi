@@ -7,10 +7,8 @@ Hodi serves the app with strict HTTP headers, and runs in a container with as fe
 - **`Content-Security-Policy`**: `'self'` only, with no inline scripts and no framing.
 - **`Strict-Transport-Security`**: one year.
 - **`Referrer-Policy`**: `no-referrer`, so article links never leak the app's address.
-- **`X-Robots-Tag`**: `noindex, nofollow`, with a `robots.txt` that disallows everything. The only exception is a
-  plugin's [public pages](../../plugin-sdk/README.md#public-pages), such as Village's welcome page: once the admin has
-  given Hodi's address, those few addresses say `index, follow` to a signed-out visitor, and `robots.txt` and
-  `sitemap.xml` list them. Every other answer, the API included, keeps `noindex`.
+- **`X-Robots-Tag`**: `noindex, nofollow` on every answer, with a `robots.txt` that disallows everything: a
+  household's Hodi stays out of search engines. A public site, such as get-hodi.com, is a separate static site.
 - **`Cache-Control`**: `no-store` on every API response.
 
 `/health` is public, and only answers `{"status":"ok"}`.

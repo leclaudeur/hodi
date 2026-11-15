@@ -55,7 +55,7 @@ export const SecondStepForm = ({ login }: { login: Login }) => {
   return (
     <form className={styles.form} onSubmit={event => void login.submit(event)}>
       <h1 className={styles.title}>
-        <Logo size={72} />
+        <Logo size={72} centred />
       </h1>
       <p className={`${styles.subtitle} ${styles.stepTitle}`}>{t('twoFactor.login.title')}</p>
       <p className={styles.secondIntro}>{t(recovery ? 'twoFactor.login.recoveryIntro' : 'twoFactor.login.intro')}</p>
@@ -110,14 +110,14 @@ export const SecondStepForm = ({ login }: { login: Login }) => {
 const Status = ({ error, notice }: { error: string | null; notice: string | null }) => {
   if (error) {
     return (
-      <span id="login-error" className={styles.error}>
+      <span id="login-error" className={`${styles.error} ${styles.underField}`}>
         <StatusLine tone="error">{error}</StatusLine>
       </span>
     )
   }
   return (
     notice && (
-      <span className={styles.error}>
+      <span className={`${styles.error} ${styles.underField}`}>
         <StatusLine tone="info">{notice}</StatusLine>
       </span>
     )
@@ -142,7 +142,7 @@ export const SignInForm = ({ login, name, notice, resetByMail, onJoin, onForgot,
   return (
     <form className={styles.form} onSubmit={event => void login.submit(event)}>
       <h1 className={styles.title}>
-        <Logo size={72} />
+        <Logo size={72} centred />
       </h1>
       <p className={styles.subtitle}>{name ?? t('login.tagline')}</p>
 

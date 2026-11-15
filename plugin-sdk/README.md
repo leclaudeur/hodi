@@ -97,43 +97,6 @@ it, and only with the permissions it asked for.
 The **web part** is drawn with Hodi's own components, buttons and colours. The plugin looks like the rest of Hodi, in
 every theme and on every screen size.
 
-## Public pages
-
-A plugin that draws the signed-out screens (`permissions.publicRoutes` and a `web-public.js`) can open some addresses to
-search engines. List them in `plugin.json`, each with its language; a route's own `title`, `description` or `image`
-replaces the plugin's `defaults`, and a route with neither gets Hodi's own:
-
-```json
-"publicPages": {
-  "defaults": {
-    "title": "Hodi - The news for the whole family",
-    "description": "…",
-    "image": "assets/share.png"
-  },
-  "routes": [
-    {
-      "path": "/",
-      "lang": "fr"
-    },
-    {
-      "path": "/en",
-      "lang": "en"
-    },
-    {
-      "path": "/legal",
-      "lang": "fr",
-      "title": "Mentions légales"
-    }
-  ]
-}
-```
-
-Hodi writes these in the `<head>` it sends for those addresses only, with their links to each other's languages (`/en`
-is `/` in English, `/en/legal` is `/legal`), and lists them in `robots.txt` and `sitemap.xml`. The page itself is your
-signed-out page, as always. `defaults` is in `plugin.json`'s language; each locale file translates it in a
-`publicPages` object (`title`, `description`). The image is 1200 × 630. Nothing is indexed until the server's admin
-gives Hodi's address (_Server › E-mail_), and every other address stays out of search engines.
-
 ## Testing
 
 The SDK runs a plugin's server part as Hodi does: it builds the plugin, loads it in Hodi's own sandbox and calls its

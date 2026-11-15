@@ -15,13 +15,15 @@
 }
 
 .fieldRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
 }
 
-.fieldRow > :first-child {
-  flex: 1;
-  min-width: 0;
+/* A line about the field goes under it, never under its button. */
+.fieldRow > p {
+  grid-column: 1;
+  padding-left: 17px;
 }
 
 .keyField {
@@ -54,12 +56,12 @@
 }
 
 @media (max-width: 600px) {
+  /* Stacked: the field, the line about it, then the button. */
   .fieldRow {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  /* Stacked, the field keeps its own height instead of sharing the row's. */
-  .fieldRow > :first-child {
-    flex: none;
+  .fieldRow > button {
+    order: 1;
   }
 }

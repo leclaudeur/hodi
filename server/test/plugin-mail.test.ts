@@ -14,7 +14,7 @@ const SETTINGS: MailSettings = {
   appUrl: 'https://hodi.example.test',
   updatedAt: 0
 }
-const PLUGIN = { id: 'village', name: 'Village' }
+const PLUGIN = { id: 'club', name: 'Club' }
 const MESSAGE = { to: 'marie@example.test', subject: 'Ta place est prête', text: 'Bonjour Marie,\n\nTu peux entrer.' }
 
 describe('e-mails of plugins', () => {
@@ -63,12 +63,12 @@ describe('e-mails of plugins', () => {
       {
         to: 'marie@example.test',
         subject: 'Ta place est prête',
-        text: 'Bonjour Marie,\n\nTu peux entrer.\n\n-- \nEnvoyé par le plugin Village de Hodi, https://hodi.example.test'
+        text: 'Bonjour Marie,\n\nTu peux entrer.\n\n-- \nEnvoyé par le plugin Club de Hodi, https://hodi.example.test'
       },
       {
         to: 'marie@example.test',
         subject: 'Ta place est prête',
-        text: 'Bonjour Marie,\n\nTu peux entrer.\n\n-- \nSent by the Hodi plugin Village'
+        text: 'Bonjour Marie,\n\nTu peux entrer.\n\n-- \nSent by the Hodi plugin Club'
       }
     ])
   })
@@ -106,6 +106,6 @@ describe('e-mails of plugins', () => {
       log: line => lines.push(line)
     })
     await assert.rejects(mailer.send(PLUGIN, MESSAGE), /^Error: mail_failed$/)
-    assert.deepEqual(lines, ['[plugin village] e-mail not sent: mail auth'])
+    assert.deepEqual(lines, ['[plugin club] e-mail not sent: mail auth'])
   })
 })

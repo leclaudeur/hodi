@@ -63,6 +63,7 @@ export const householdOptionsOf = (
     householdLater: serverSettings
       ? { get: () => serverSettings.householdLater(), set: later => serverSettings.setHouseholdLater(later) }
       : undefined,
+    publicHome: serverSettings ? () => serverSettings.publicHome() : undefined,
     setupPlugins: setupPluginsOf(options),
     onSetUp: onSetUpOf(options)
   }

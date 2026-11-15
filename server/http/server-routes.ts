@@ -22,6 +22,7 @@ import { sendHouseholdPhoto } from './household-photo.ts'
 import { profileIdOf } from './profile-routes.ts'
 import { type CheckProof, accountAsking, askingWithProof } from './proof.ts'
 import { type Backups, mountBackupRoutes } from './server-backup-routes.ts'
+import { mountGeneralRoutes } from './server-general-routes.ts'
 
 // The server's own space (#/server), for its admin only: requireServerAdmin stands in front of these.
 
@@ -77,6 +78,7 @@ export const serverRoutes = (options: ServerRoutesOptions) => {
   mountInviteRoutes(router, options, helpers)
   mountDeletionRoutes(router, options, helpers)
   mountContentRoutes(router, options)
+  if (options.settings) mountGeneralRoutes(router, options.settings)
   const { settings, backups, accounts, profiles, checkProof, now } = options
   if (settings && backups && accounts && profiles)
     mountBackupRoutes(router, { settings, backups, accounts, checkProof, now }, helpers.twoFactorReady)

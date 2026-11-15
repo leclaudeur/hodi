@@ -232,15 +232,17 @@
   color: var(--rust);
 }
 
+/* The field takes the room the button leaves. */
 .fieldRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
 }
 
-/* The field takes the room the button leaves. */
-.fieldRow > :first-child {
-  flex: 1;
-  min-width: 0;
+/* A line about the field goes under it, never under its button. */
+.fieldRow > p {
+  grid-column: 1;
+  padding-left: 17px;
 }
 
 @media (max-width: 600px) {

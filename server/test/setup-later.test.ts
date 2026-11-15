@@ -287,7 +287,7 @@ describe('a code taken with an account that exists', () => {
   })
 })
 
-// Village's case: the first household left for later, and a household a plugin made for someone else.
+// A household plugin's case: the first household left for later, and a household a plugin made for someone else.
 describe('a household a plugin made while the first one is left for later', () => {
   it('lets its people sign in and read in it, while a device signed in with nothing still goes to Connexion', async () => {
     const { call, db, session, close } = await startServer()
@@ -301,7 +301,7 @@ describe('a household a plugin made while the first one is left for later', () =
       0
     )!
     new PluginHouseholdStore(db).create(
-      { name: 'Famille Lambert', language: 'fr', plugin: 'village', admin: { name: 'Claire', accountId: claire.id } },
+      { name: 'Famille Lambert', language: 'fr', plugin: 'club', admin: { name: 'Claire', accountId: claire.id } },
       0
     )
 

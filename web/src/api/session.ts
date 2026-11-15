@@ -1,5 +1,7 @@
 import { type Language as InterfaceLanguage, isLanguage } from '../lib/i18n.ts'
 import { type SignInRefusal, refusalOf } from '../lib/sign-in-refusal.ts'
+import { rememberSession } from '../lib/session-hint.ts'
+import { rememberSignedIn } from '../lib/public-home.ts'
 import { clearUserState } from '../lib/user-state.ts'
 import { sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
@@ -48,6 +50,7 @@ export const getSession = async (fresh = false): Promise<Session | null | 'setup
   }
 
   const body = (await response.json()) as Partial<Session>
+  rememberSignedIn()
   return {
     profileChosen: body.profileChosen === true,
     language: isLanguage(body.language) ? body.language : null,
@@ -116,6 +119,7 @@ export const DATA_CACHE = 'hodi-data-v1'
 export const logout = async () => {
   await fetch('/api/logout', { method: 'POST' })
   clearUserState()
+  rememberSession(false)
 
   // Nothing read here stays on the device after logging out.
   await clearDataCache()

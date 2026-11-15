@@ -165,14 +165,14 @@ describe('plugin sections of the server', () => {
   const page = () => null
   it('gives each active plugin with sections a group, keeping only valid sections once', () => {
     const plugins = [
-      plugin({ id: 'village', name: 'Village' }),
+      plugin({ id: 'club', name: 'Club' }),
       plugin({ id: 'off', enabled: false }),
       plugin({ id: 'broken', error: 'boom' }),
       plugin({ id: 'none' })
     ]
     const web = new Map([
       [
-        'village',
+        'club',
         {
           serverSections: [
             { id: 'signups', label: 'signups', page },
@@ -187,7 +187,7 @@ describe('plugin sections of the server', () => {
       ['none', {}]
     ])
     const groups = serverPluginGroups(plugins, web)
-    expect(groups.map(group => group.plugin.id)).toEqual(['village'])
+    expect(groups.map(group => group.plugin.id)).toEqual(['club'])
     expect(groups[0]!.sections.map(section => section.label)).toEqual(['signups', 'waitlist'])
   })
 })
@@ -196,10 +196,10 @@ describe('plugin cards on the overview', () => {
   const component = () => null
 
   it('lists the valid cards of active plugins, once each, in their order', () => {
-    const plugins = [plugin({ id: 'village' }), plugin({ id: 'off', enabled: false }), plugin({ id: 'hello' })]
+    const plugins = [plugin({ id: 'club' }), plugin({ id: 'off', enabled: false }), plugin({ id: 'hello' })]
     const web = new Map<string, WebPlugin>([
       [
-        'village',
+        'club',
         {
           overviewCards: [
             { id: 'households', size: 'full', component },
@@ -214,7 +214,7 @@ describe('plugin cards on the overview', () => {
       ['hello', { overviewCards: [{ id: 'said', size: 'narrow', component }] }]
     ])
     expect(overviewPluginCards(plugins, web).map(({ plugin, card }) => `${plugin.id}/${card.id}/${card.size}`)).toEqual(
-      ['village/households/full', 'village/accounts/narrow', 'hello/said/narrow']
+      ['club/households/full', 'club/accounts/narrow', 'hello/said/narrow']
     )
   })
 })
@@ -271,14 +271,14 @@ describe('plugin places around sign-in', () => {
       plugin({ id: 'second' })
     ]
     const web = new Map<string, WebPlugin>([
-      ['second', { signedOutPage: Page, whoIsReadingFooter: Footer }],
-      ['off', { signedOutPage: Page }],
+      ['second', { signInExtras: Page, whoIsReadingFooter: Footer }],
+      ['off', { signInExtras: Page }],
       ['broken', { whoIsReadingFooter: Footer }],
       ['quiet', {}],
       ['first', { whoIsReadingFooter: Footer, ageConsent: 'consent' }]
     ])
     expect(slotsOf({ plugins, web }, 'whoIsReadingFooter').map(slot => slot.id)).toEqual(['first', 'second'])
-    expect(slotsOf({ plugins, web }, 'signedOutPage')).toEqual([{ id: 'second', value: Page }])
+    expect(slotsOf({ plugins, web }, 'signInExtras')).toEqual([{ id: 'second', value: Page }])
     expect(slotsOf({ plugins, web }, 'ageConsent')).toEqual([{ id: 'first', value: 'consent' }])
     expect(slotsOf({ plugins, web }, 'avatarMenu')).toEqual([])
   })

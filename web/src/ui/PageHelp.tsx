@@ -2,7 +2,7 @@ import { Trans, useTranslation } from 'react-i18next'
 
 // A page's explanation, in the HelpButton beside its title: one text on a computer, another on a phone or a tablet,
 // one paragraph per entry of help.<page>.<layout>.
-export type HelpPage = 'feed' | 'followed' | 'shares' | 'videos'
+export type HelpPage = 'followed' | 'shares' | 'videos'
 
 const PageHelp = ({ page, layout }: { page: HelpPage; layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()

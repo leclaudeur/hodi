@@ -197,11 +197,9 @@ const AddSource = ({ topics, ...props }: AddSourceProps) => {
         <Button type="submit" look="primary" busy={searching} disabled={!link.trim()}>
           {t(searching ? 'addSource.searching' : 'addSource.search')}
         </Button>
+        {searching && <StatusLine tone="info">{t('addSource.trying')}</StatusLine>}
+        {found && found.status !== 'ok' && <StatusLine tone="error">{t(notFound(found.status))}</StatusLine>}
       </form>
-
-      {searching && <StatusLine tone="info">{t('addSource.trying')}</StatusLine>}
-
-      {found && found.status !== 'ok' && <StatusLine tone="error">{t(notFound(found.status))}</StatusLine>}
 
       {found?.status === 'ok' && <FoundSource found={found} topics={topics} state={state} />}
 

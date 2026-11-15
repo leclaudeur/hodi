@@ -2,6 +2,7 @@ import { AlertCircle, RefreshCw } from 'lucide-react'
 import { type ComponentProps, Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PROFILE_CLOSED, getSession, leaveProfile } from './api.ts'
+import { rememberSession } from './lib/session-hint.ts'
 import { isLinkedDevice, setLinkedDevice } from './lib/linked-device.ts'
 import { setServerOnly } from './lib/server-only.ts'
 import { setHouseholdLanguage, setProfileLanguage } from './lib/i18n.ts'
@@ -52,7 +53,8 @@ type Status = 'loading' | 'setup' | 'anonymous' | 'choosing' | 'authenticated' |
 // this browser: they share the profile cookie, so closing it here would close it under that tab's feet.
 const OPENED_KEY = 'hodi:opened'
 // true: the profile was closed, so the session preload.js asked for as the page loaded no longer holds.
-const leaveOnOpen = async () => {
+// profileOpen: false for a visitor, who has no profile to close, so no request for it.
+const leaveOnOpen = async (profileOpen: boolean) => {
   answerOtherTabs()
   try {
     if (sessionStorage.getItem(OPENED_KEY)) return false
@@ -60,7 +62,7 @@ const leaveOnOpen = async () => {
   } catch {
     return false
   }
-  if (await anotherTabOpen()) return false
+  if (!profileOpen || (await anotherTabOpen())) return false
   await leaveProfile().catch(() => {})
   return true
 }
@@ -72,6 +74,15 @@ const AfterSignInFailed = ({ done }: { done: () => void }) => {
 }
 
 type Session = Awaited<ReturnType<typeof getSession>>
+
+// The session as the app opens: the one preload.js asked for, then a fresh one if the profile it had was just closed.
+const openingSession = async () => {
+  const session = await getSession()
+  const signedIn = session !== null && session !== 'setup'
+  rememberSession(signedIn)
+  const left = await leaveOnOpen(signedIn && session.profileChosen)
+  return left ? getSession(true) : session
+}
 
 const statusOf = (session: Session): Status => {
   if (session === 'setup') return 'setup'
@@ -218,8 +229,7 @@ const App = () => {
   const { language } = usePreferences()
 
   const check = useCallback(() => {
-    leaveOnOpen()
-      .then(left => getSession(left))
+    openingSession()
       .then(session => {
         applySession(session)
         setStatus(statusOf(session))

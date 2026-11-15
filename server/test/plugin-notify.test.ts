@@ -32,7 +32,7 @@ const notifierWith = (pushed: { profileId: number; payload: AlertPayload }[], cl
     log: () => {}
   })
 
-const PLUGIN = { id: 'village', name: 'Village' }
+const PLUGIN = { id: 'club', name: 'Club' }
 
 describe('notifications of plugins', () => {
   it('takes short plain text, one person, and a path under its page', () => {
@@ -68,10 +68,10 @@ describe('notifications of plugins', () => {
       {
         profileId: 1,
         payload: {
-          title: 'Village · Bonjour',
+          title: 'Club · Bonjour',
           body: 'Un mot.',
-          url: '#/settings/plugin/village/inbox',
-          tag: 'plugin:village',
+          url: '#/settings/plugin/club/inbox',
+          tag: 'plugin:club',
           badge: null
         }
       }

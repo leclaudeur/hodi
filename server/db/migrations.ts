@@ -886,6 +886,30 @@ const MIGRATIONS: string[] = [
     count INTEGER NOT NULL,
     PRIMARY KEY (day, kind, id)
   );
+  `,
+  // Serveur › Général: Hodi's own address (for the links it sends, until now in server_mail, which only exists once
+  // e-mail is set) and the public site a browser that never signed in goes to from the app's bare address. The mail
+  // server is now set one row at a time, so its server and sender may wait for the others.
+  `
+  CREATE TABLE server_addresses (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    app_url TEXT,
+    public_home TEXT
+  );
+  INSERT INTO server_addresses (id, app_url) SELECT 1, app_url FROM server_mail WHERE id = 1 AND app_url IS NOT NULL;
+  CREATE TABLE server_mail_next (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    host TEXT,
+    port INTEGER NOT NULL DEFAULT 587,
+    security TEXT NOT NULL DEFAULT 'starttls',
+    user TEXT,
+    password TEXT,
+    sender TEXT,
+    updated_at INTEGER NOT NULL
+  );
+  INSERT INTO server_mail_next SELECT id, host, port, security, user, password, sender, updated_at FROM server_mail;
+  DROP TABLE server_mail;
+  ALTER TABLE server_mail_next RENAME TO server_mail;
   `
 ]
 

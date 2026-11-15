@@ -74,7 +74,7 @@ describe('plugin SDK', () => {
     writeFileSync(path.join(source, 'web', 'landing.css'), '.landing-page { color: var(--text); }\n')
     writeFileSync(
       path.join(source, 'web', 'public.tsx'),
-      "import { definePlugin } from 'hodi:sdk'\nimport './landing.css'\ndefinePlugin({ signedOutPage: () => 'welcome' })\n"
+      "import { definePlugin } from 'hodi:sdk'\nimport './landing.css'\ndefinePlugin({ signInExtras: () => 'welcome' })\n"
     )
     const built = await buildPlugin(source, { out: mkdtempSync(path.join(tmpdir(), 'hodi-sdk-')) })
     const into = path.join(mkdtempSync(path.join(tmpdir(), 'hodi-sdk-plugins-')), 'landing')

@@ -119,10 +119,6 @@ writes its answers itself. Only a signed plugin has its web part served, since t
 for _Server › Plugins › Available_. A plugin installed from it is downloaded from its GitHub release and checked
 against the registry's sha256, then installed like a file.
 
-A plugin that draws the signed-out screens can list public pages in its `plugin.json`. `plugins/public-pages.ts` reads
-them without running the plugin's code, and `http/public-pages.ts` serves them before the web app, with their `<head>`,
-`robots.txt` and `sitemap.xml`. It does so only once _Server › E-mail_ has Hodi's address.
-
 ## Data flow
 
 - **Profiles**: their state lives on the server and is copied in the browser, so the app works offline

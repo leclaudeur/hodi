@@ -27,15 +27,27 @@ export interface MailSettings {
 }
 
 interface MailRow {
-  host: string
+  host: string | null
   port: number
   security: string
   user: string | null
   password: string | null
-  sender: string
-  app_url: string | null
+  sender: string | null
   updated_at: number
 }
+
+// What Serveur › E-mail shows, filled one row at a time: Hodi sends nothing until the server and the sender are there.
+export interface MailState {
+  host: string | null
+  port: number
+  security: MailSecurity
+  user: string | null
+  password: string | null
+  sender: string | null
+}
+
+// One row's change: only the fields given move. A password needs a user name.
+export type MailChanges = Partial<Omit<MailState, 'password'>> & { password?: string | null }
 
 export const isMailSecurity = (value: unknown): value is MailSecurity =>
   typeof value === 'string' && (MAIL_SECURITY as readonly string[]).includes(value)
@@ -101,6 +113,25 @@ export const mailDraftOf = (body: Record<string, unknown>): MailDraft | null => 
   }
 }
 
+// The fields a request changes, or null when one is wrong or none is given.
+export const mailChangesOf = (body: Record<string, unknown>): MailChanges | null => {
+  const changes: MailChanges = {}
+  if (body.host !== undefined) changes.host = cleanHost(body.host) ?? undefined
+  if (body.sender !== undefined) changes.sender = cleanEmail(body.sender) ?? undefined
+  if (body.port !== undefined && isPort(body.port)) changes.port = body.port
+  if (body.security !== undefined && isMailSecurity(body.security)) changes.security = body.security
+  const user = typeof body.user === 'string' ? body.user.trim() : body.user
+  if (user === null || user === '') changes.user = null
+  else if (typeof user === 'string' && user.length <= MAX_USER_LENGTH) changes.user = user
+  const { password } = body
+  if (password === null) changes.password = null
+  else if (typeof password === 'string' && password.length > 0 && password.length <= MAX_MAIL_PASSWORD_LENGTH)
+    changes.password = password
+  const given = Object.keys(body).filter(key => body[key] !== undefined)
+  const kept = Object.keys(changes).filter(key => changes[key as keyof MailChanges] !== undefined)
+  return given.length > 0 && given.length === kept.length ? changes : null
+}
+
 export class MailSettingsStore {
   readonly #db: Database
 
@@ -108,11 +139,10 @@ export class MailSettingsStore {
     this.#db = db
   }
 
+  // The settings Hodi sends with, or null while the server or the sender is missing.
   get(): MailSettings | null {
-    const row = this.#db
-      .prepare('SELECT host, port, security, user, password, sender, app_url, updated_at FROM server_mail WHERE id = 1')
-      .get() as MailRow | undefined
-    if (!row || !isMailSecurity(row.security)) return null
+    const row = this.#row()
+    if (!row?.host || !row.sender || !isMailSecurity(row.security)) return null
     return {
       host: row.host,
       port: row.port,
@@ -120,32 +150,79 @@ export class MailSettingsStore {
       user: row.user,
       password: row.password,
       sender: row.sender,
-      appUrl: row.app_url,
+      appUrl: this.appUrl(),
       updatedAt: row.updated_at
     }
   }
 
+  // What is saved so far, complete or not; null before anything is.
+  state(): MailState | null {
+    const row = this.#row()
+    if (!row || !isMailSecurity(row.security)) return null
+    const { host, port, security, user, password, sender } = row
+    return { host, port, security, user, password, sender }
+  }
+
+  #row() {
+    return this.#db
+      .prepare('SELECT host, port, security, user, password, sender, updated_at FROM server_mail WHERE id = 1')
+      .get() as MailRow | undefined
+  }
+
+  // Serveur › Général keeps it, apart from the mail server: a plugin's links need it even without e-mail.
+  appUrl(): string | null {
+    const row = this.#db.prepare('SELECT app_url FROM server_addresses WHERE id = 1').get() as
+      { app_url: string | null } | undefined
+    return row?.app_url ?? null
+  }
+
   // « Mot de passe oublié » needs both: a way to send, and the address its link opens.
   canSendLinks() {
-    return this.get()?.appUrl != null
+    return this.get() !== null && this.appUrl() !== null
   }
 
   // The saved settings. Without a user name there is no password either.
   set(draft: MailDraft, now: number): MailSettings {
-    const saved = this.get()
-    const password =
-      draft.user === null ? null : draft.password === undefined ? (saved?.password ?? null) : draft.password
-    const appUrl = draft.appUrl ?? saved?.appUrl ?? null
+    // The address sent with the mail server is the page's own: it fills Serveur › Général only while that has none.
+    if (draft.appUrl != null && this.appUrl() === null)
+      this.#db
+        .prepare(
+          `INSERT INTO server_addresses (id, app_url) VALUES (1, ?)
+           ON CONFLICT (id) DO UPDATE SET app_url = excluded.app_url`
+        )
+        .run(draft.appUrl)
+    this.update(
+      { host: draft.host, port: draft.port, security: draft.security, user: draft.user, sender: draft.sender },
+      now
+    )
+    if (draft.password !== undefined) this.update({ password: draft.password }, now)
+    return this.get()!
+  }
+
+  // Some fields changed, the others as they were. Without a user name there is no password either.
+  update(changes: MailChanges, now: number): MailState {
+    const saved = this.state()
+    const next = {
+      host: saved?.host ?? null,
+      port: saved?.port ?? 587,
+      security: saved?.security ?? 'starttls',
+      user: saved?.user ?? null,
+      password: saved?.password ?? null,
+      sender: saved?.sender ?? null,
+      // A field left undefined keeps the one saved.
+      ...Object.fromEntries(Object.entries(changes).filter(([, value]) => value !== undefined))
+    }
+    const password = next.user === null ? null : next.password
     this.#db
       .prepare(
-        `INSERT INTO server_mail (id, host, port, security, user, password, sender, app_url, updated_at)
-         VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO server_mail (id, host, port, security, user, password, sender, updated_at)
+         VALUES (1, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (id) DO UPDATE SET host = excluded.host, port = excluded.port, security = excluded.security,
-           user = excluded.user, password = excluded.password, sender = excluded.sender, app_url = excluded.app_url,
+           user = excluded.user, password = excluded.password, sender = excluded.sender,
            updated_at = excluded.updated_at`
       )
-      .run(draft.host, draft.port, draft.security, draft.user, password, draft.sender, appUrl, now)
-    return this.get()!
+      .run(next.host, next.port, next.security, next.user, password, next.sender, now)
+    return this.state()!
   }
 
   clear() {

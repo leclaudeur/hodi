@@ -20,26 +20,29 @@ to the app.
 - **Delete**, at the end of both pages, asks for the server admin's password and app code. An account goes with its
   profile, and its household's admin role passes to the oldest other adult with an account. A household goes with its
   profiles and the accounts that read nowhere else. The server admin's own account goes from _Account and data_.
+- **General**: the server's addresses. **Hodi's address** is the one the e-mails' links open; it starts as the
+  address the page is open at, and _Forgot password_ needs it. The **public home page** is a site's address, such as
+  Hodi's presentation page. A browser that never signed in on this server, opening its bare address, goes there instead
+  of _Sign in_. Once it has signed in, or with an address of the app's own (`#/sign-in`, a code's or a reset's link),
+  _Sign in_ opens as usual. Empty by default.
 - **Content**: how long the server keeps what it fetches, for every household. An article stays in the lists 1 to 14
   days (3 by default), a video 7 to 180 days (60), and the text of a read article 1 to 30 days (7). It also caps the
   sources a household may follow.
 - **Backups**: the nightly copies of the database and of the plugins' data, 1 to 30 kept (7 by default). It makes a copy
   at once, and downloads or restores one with the account's password, since a copy holds everyone's data.
-- **E-mail**: the mail server Hodi sends through, with a test to the admin's address. Until it is set, Hodi sends no
-  e-mail at all. Once saved, the server's password is never shown again, not even to the admin.
+- **E-mail**: the mail server Hodi sends through, one row at a time: the server with its port and security, its user
+  name and password, and the sender. Until the server and the sender are both there, Hodi sends no e-mail at all. Once
+  saved, the server's password is never shown again, not even to the admin. A test goes to the admin's address.
 - **Plugins**: the server's admin adds, turns on and off, sets and removes them. _Available_ lists the plugins of
   [Hodi's registry](https://github.com/leclaudeur/hodi-plugin-registry), to install or update from there, and
-  **Install from a file** takes any other. A plugin can add its own group of sections to this sidebar, such as
-  Village's _Sign-ups_, and one made for every profile gets an entry in _Settings_.
+  **Install from a file** takes any other. A plugin can add its own group of sections to this sidebar, and one
+  made for every profile gets an entry in _Settings_.
 
 Restoring a copy first keeps a copy of how things are now, then restarts Hodi with the copy in place. The plugins' data
 goes back to the same moment, and what was deleted since the copy, such as an account or a household, is deleted again.
 
-Once _E-mail_ is set with Hodi's address, the sign-in page shows **Forgot password**. It always answers the same,
+Once _E-mail_ is set and _General_ has Hodi's address, the sign-in page shows **Forgot password**. It always answers the same,
 whether an account has that e-mail or not. The account gets a link valid for one hour, once, which signs out its other
 devices and opens its profile.
-
-That address also lets a plugin open its public pages to search engines, such as Village's welcome page and legal
-pages. Every other page of Hodi stays out of them.
 
 [← Back to the features](../features.md)

@@ -72,6 +72,11 @@
   margin-top: 10px;
 }
 
+/* Under the password, its icon lines up with the field's own. */
+.underField {
+  padding-left: 17px;
+}
+
 .submit {
   margin-top: 10px;
 }

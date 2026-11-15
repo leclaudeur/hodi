@@ -85,7 +85,7 @@ const ServerOverview = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const board = overview && <Board overview={overview} topics={topics} span={span} />
   if (layout === 'phone')
     return (
-      <SectionPage title={title} aside={periods} layout="phone">
+      <SectionPage title={title} intro={intro} aside={periods} layout="phone">
         {board}
       </SectionPage>
     )

@@ -41,6 +41,20 @@ export const isValidMaxSources = (value: unknown): value is number | null =>
   value === null ||
   (Number.isInteger(value) && (value as number) >= MAX_SOURCES.min && (value as number) <= MAX_SOURCES.max)
 
+// Serveur › Général: a site's address, https (http only for a local test), without a path's trailing slash. Null when
+// it is not one.
+export const cleanPublicHome = (value: unknown): string | null => {
+  if (typeof value !== 'string' || value.length > 200) return null
+  try {
+    const url = new URL(value.trim())
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
+    if (url.username || url.password || url.search || url.hash) return null
+    return `${url.origin}${url.pathname.replace(/\/+$/, '')}`
+  } catch {
+    return null
+  }
+}
+
 export class ServerSettingsStore {
   readonly #db: Database
   // Read on every list: kept in memory, written through.
@@ -106,6 +120,28 @@ export class ServerSettingsStore {
         )
         .run()
     else this.#db.prepare("DELETE FROM server_settings WHERE key = 'householdLater'").run()
+  }
+
+  // Serveur › Général: Hodi's own address and the public site, each null until the admin gives it.
+  addresses(): { appUrl: string | null; publicHome: string | null } {
+    const row = this.#db.prepare('SELECT app_url, public_home FROM server_addresses WHERE id = 1').get() as
+      { app_url: string | null; public_home: string | null } | undefined
+    return { appUrl: row?.app_url ?? null, publicHome: row?.public_home ?? null }
+  }
+
+  publicHome(): string | null {
+    return this.addresses().publicHome
+  }
+
+  setAddresses(changes: { appUrl?: string | null; publicHome?: string | null }) {
+    const next = { ...this.addresses(), ...changes }
+    this.#db
+      .prepare(
+        `INSERT INTO server_addresses (id, app_url, public_home) VALUES (1, ?, ?)
+         ON CONFLICT (id) DO UPDATE SET app_url = excluded.app_url, public_home = excluded.public_home`
+      )
+      .run(next.appUrl, next.publicHome)
+    return next
   }
 
   setContent(changes: Partial<ContentSettings>) {

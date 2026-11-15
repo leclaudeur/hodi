@@ -42,6 +42,7 @@ const KpiCard = ({ metric, days, previous, chosen, onChoose }: KpiCardProps) => 
       <span className={styles.spark} aria-hidden="true">
         <ResponsiveContainer width="100%" height={36}>
           <AreaChart
+            accessibilityLayer={false}
             data={days.map(day => ({ value: metric.pick(day) }))}
             margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
           >

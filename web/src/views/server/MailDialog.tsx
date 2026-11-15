@@ -1,7 +1,7 @@
-import { AtSign, Globe, Hash, KeyRound, Server, UserRound } from 'lucide-react'
+import { AtSign, Hash, KeyRound, Server, UserRound } from 'lucide-react'
 import { type FormEvent, type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { type MailSecurity, RequestError, type ServerMail as Mail, setServerMail } from '../../api.ts'
+import { type MailSecurity, RequestError, type ServerMail as Mail, changeServerMail, setServerMail } from '../../api.ts'
 import { showSaved } from '../../lib/toast.ts'
 import Button from '../../ui/Button.tsx'
 import Dialog from '../../ui/Dialog.tsx'
@@ -18,8 +18,11 @@ const SECURITIES: MailSecurity[] = ['starttls', 'tls', 'none']
 // The usual port of each kind of connection: a port the admin left at a usual one follows the choice.
 const USUAL_PORT: Record<MailSecurity, number> = { tls: 465, starttls: 587, none: 25 }
 
+// all: the whole form, as the setup wizard asks it; the others, one row of Serveur › E-mail.
+export type MailPart = 'all' | 'server' | 'login' | 'sender'
+
 // The form's answers, and their saving.
-const useMailForm = (mail: Mail | null, onClose: () => void, onSaved: (mail: Mail) => void) => {
+const useMailForm = (part: MailPart, mail: Mail | null, onClose: () => void, onSaved: (mail: Mail) => void) => {
   const { t } = useTranslation()
   const [host, setHost] = useState(mail?.host ?? '')
   const [security, setSecurity] = useState<MailSecurity>(mail?.security ?? 'starttls')
@@ -28,8 +31,6 @@ const useMailForm = (mail: Mail | null, onClose: () => void, onSaved: (mail: Mai
   // Empty: the saved password stays, if there is one.
   const [password, setPassword] = useState('')
   const [sender, setSender] = useState(mail?.sender ?? '')
-  // The address this page is open at, until the admin says another.
-  const [appUrl, setAppUrl] = useState(mail?.appUrl ?? window.location.origin)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,19 +44,20 @@ const useMailForm = (mail: Mail | null, onClose: () => void, onSaved: (mail: Mai
     setSaving(true)
     setError(null)
     const name = user.trim()
+    const server = { host: host.trim(), port: Number(port), security }
+    const login = { user: name || null, ...(name && password ? { password } : {}), ...(name ? {} : { password: null }) }
     try {
-      onSaved(
-        await setServerMail({
-          host: host.trim(),
-          port: Number(port),
-          security,
-          user: name || null,
-          ...(name && password ? { password } : {}),
-          ...(name ? {} : { password: null }),
-          sender: sender.trim(),
-          appUrl: appUrl.trim()
-        })
-      )
+      if (part === 'all')
+        onSaved(
+          await setServerMail({
+            ...server,
+            ...login,
+            sender: sender.trim(),
+            // Hodi's address, when Serveur › Général has none yet: the one this page is open at.
+            appUrl: window.location.origin
+          })
+        )
+      else onSaved(await changeServerMail({ server, login, sender: { sender: sender.trim() } }[part]))
       showSaved(t('server.mail.saved'))
       onClose()
     } catch (failure) {
@@ -70,7 +72,7 @@ const useMailForm = (mail: Mail | null, onClose: () => void, onSaved: (mail: Mai
 
   return {
     ...{ host, setHost, security, choose, port, setPort, user, setUser, password, setPassword },
-    ...{ sender, setSender, appUrl, setAppUrl, saving, error, submit }
+    ...{ sender, setSender, saving, error, submit }
   }
 }
 
@@ -128,10 +130,10 @@ const ServerFields = ({ form }: { form: MailForm }) => {
   )
 }
 
-// Its sign-in, the sender's address and the address the e-mails' links open.
-const SenderFields = ({ form, mail }: { form: MailForm; mail: Mail | null }) => {
+// Its sign-in: none when the server takes mail without one.
+const LoginFields = ({ form, mail }: { form: MailForm; mail: Mail | null }) => {
   const { t } = useTranslation()
-  const { user, setUser, password, setPassword, sender, setSender, appUrl, setAppUrl } = form
+  const { user, setUser, password, setPassword } = form
   return (
     <>
       <Field label={t('server.mail.user')}>
@@ -159,6 +161,16 @@ const SenderFields = ({ form, mail }: { form: MailForm; mail: Mail | null }) => 
           />
         </Field>
       )}
+    </>
+  )
+}
+
+// The address the e-mails come from.
+const SenderField = ({ form }: { form: MailForm }) => {
+  const { t } = useTranslation()
+  const { sender, setSender } = form
+  return (
+    <>
       <Field label={t('server.mail.sender')}>
         <TextField
           icon={AtSign}
@@ -171,40 +183,44 @@ const SenderFields = ({ form, mail }: { form: MailForm; mail: Mail | null }) => 
           onChange={event => setSender(event.target.value)}
         />
       </Field>
-      <Field label={t('server.mail.appUrl')}>
-        <TextField
-          icon={Globe}
-          type="url"
-          aria-label={t('server.mail.appUrl')}
-          placeholder="https://hodi.example.com"
-          required
-          maxLength={269}
-          value={appUrl}
-          onChange={event => setAppUrl(event.target.value)}
-        />
-      </Field>
     </>
   )
 }
 
-// The server, its sign-in and the sender's address, in one form: they only work together.
+const TITLES = {
+  all: 'server.mail.dialogTitle',
+  server: 'server.mail.host',
+  login: 'server.mail.user',
+  sender: 'server.mail.sender'
+} as const
+const INTROS = {
+  all: 'server.mail.dialogIntro',
+  server: 'server.mail.serverIntro',
+  login: 'server.mail.loginIntro',
+  sender: 'server.mail.senderIntro'
+} as const
+
+// The server, its sign-in and the sender's address: all of them in the setup wizard, one row's on the page.
 const MailDialog = ({
+  part = 'all',
   mail,
   onClose,
   onSaved
 }: {
+  part?: MailPart
   mail: Mail | null
   onClose: () => void
   onSaved: (mail: Mail) => void
 }) => {
   const { t } = useTranslation()
-  const form = useMailForm(mail, onClose, onSaved)
+  const form = useMailForm(part, mail, onClose, onSaved)
 
   return (
-    <Dialog open onClose={onClose} title={t('server.mail.dialogTitle')} intro={t('server.mail.dialogIntro')}>
+    <Dialog open onClose={onClose} title={t(TITLES[part])} intro={t(INTROS[part])}>
       <form className={householdStyles.form} onSubmit={event => void form.submit(event)}>
-        <ServerFields form={form} />
-        <SenderFields form={form} mail={mail} />
+        {(part === 'all' || part === 'server') && <ServerFields form={form} />}
+        {(part === 'all' || part === 'login') && <LoginFields form={form} mail={mail} />}
+        {(part === 'all' || part === 'sender') && <SenderField form={form} />}
         {form.error && <StatusLine tone="error">{form.error}</StatusLine>}
         <DialogActions>
           <Button type="button" onClick={onClose}>

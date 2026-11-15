@@ -8,7 +8,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
-## [1.0.0-beta.1] - 2026-11-14
+## [1.0.0-beta.1] - 2026-11-15
 
 The first beta of Hodi 1.0: accounts for everyone, the Serveur space, plugins and their SDK, Hodi's plugin list, and
 a ready-made image for servers without a shell. The plugin API is frozen until 1.0.
@@ -17,12 +17,14 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 
 - **Install without a shell.** Each version is published as the image `ghcr.io/leclaudeur/hodi`, for Intel or AMD and
   ARM processors, and `compose.image.yml` runs it on a server managed only through a web UI such as Portainer.
+- **« BETA » beside the logo.** A pre-release version (such as 1.0.0-beta.1) shows a small « BETA » beside the
+  logo everywhere in the app. It goes away by itself with the first plain version.
+- **Public home page.** In Serveur › Général, a site's address: a browser that never signed in, opening Hodi's bare
+  address, goes to that site instead of Connexion. Once it signed in, Connexion opens as before. Hodi's own address,
+  which the e-mails' links open, moves there from Serveur › E-mail, and every page of the Serveur space gets a fuller
+  introduction.
 - **Support Hodi.** A « Soutenir Hodi » link to Hodi's Patreon in Réglages › À propos and at the end of the Serveur
   space's menu. Hodi stays free, with no ads and nothing to pay.
-- **Public pages for search engines.** A plugin that draws the signed-out screens can open some addresses to search
-  engines (its home page, its legal pages, one per language). Hodi sends their title, description and share card, and
-  serves `robots.txt` and `sitemap.xml`, once Serveur › E-mail has Hodi's address. Every other address, and every
-  install without such a plugin, stays out of search engines as before.
 - **Plugins from Hodi's list.** Serveur › Plugins shows the plugins of Hodi's registry under « Disponibles »:
   « Installer » downloads one, checks it against the registry's sha256, then asks the same questions as a file. A
   newer version shows on the plugin's row and page, with « Mettre à jour ». « Installer depuis un fichier » still works.
@@ -119,6 +121,17 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 
 ### Changed
 
+- **A lighter first visit.** Someone who is not signed in no longer makes the ten requests a signed-in reader's
+  screens need (each one refused): Connexion, or a plugin's page, appears a little sooner.
+- **Le fil has no « ? » any more,** on a computer or a phone: the guided tour already explains it.
+- **Connexion shows at once.** No plugin draws a page in its place any more, so it no longer waits for the plugins. A
+  public welcome page and its signup form now live on their own static site (get-hodi.com for Hodi's public server).
+- **Messages under a field.** An error or a password hint starts where the field's icon does, and on a phone the
+  line about a field stays under it instead of going under its button.
+- **Serveur › E-mail, one row at a time.** The server, its user name and the sender each have their own row and
+  « Changer », as in Réglages, instead of one big form. Hodi sends once the server and the sender are both given.
+- **A refused field shows it.** Its border, background and text turn red, like the boxes of a wrong code, on
+  Connexion, in the settings and in every dialog.
 - **Hodi opens faster on a phone.** The server's space, the setup and the settings now download apart, so the app's
   first download is about a third smaller (353 KB down to 239 KB).
 - **Articles read faster.** Reading an article page takes about 20 % less time: the page is read twice instead of
@@ -164,6 +177,10 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 
 - Serveur › Plugins lists a plugin whose version is a pre-release, such as 1.0.0-beta.1, and offers 1.0.0 to a server
   that has 1.0.0-beta.1, or beta.2 to one that has beta.1.
+- **Serveur › Vue d'ensemble with a keyboard.** The small curves of its figures no longer take a stop of their own
+  while hidden from screen readers.
+- **Grey text easier to read in the Clair theme.** The secondary grey is a shade darker (#786a5d), so captions and
+  hints on the columns' background pass the 4.5:1 contrast that WCAG asks for.
 - **The app no longer piles up its old versions on each device.** After an update, the offline copy keeps only the
   files of the new version.
 - **Serveur › Foyers for a household made for someone else.** Until that person uses the code, the list and the

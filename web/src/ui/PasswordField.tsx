@@ -17,7 +17,7 @@ const PasswordField = ({ icon: Icon = Lock, invalid = false, lead, className = '
   const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
   return (
-    <div className={`${styles.field} ${invalid ? styles.invalid : ''} ${className}`}>
+    <div className={`${styles.field} ${invalid ? styles.invalid : ''} ${className}`} data-field>
       {lead ?? <Icon size={16} aria-hidden="true" />}
       <input
         className={styles.input}

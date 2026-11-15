@@ -23,6 +23,7 @@ import PluginsSection from '../settings/sections/plugins/PluginsSection.tsx'
 import { ServerHome, ServerSidebar, serverPluginKey } from './ServerNav.tsx'
 import ServerBackups from './ServerBackups.tsx'
 import ServerContent from './ServerContent.tsx'
+import ServerGeneral from './ServerGeneral.tsx'
 import ServerMail from './ServerMail.tsx'
 import ServerOverview from './ServerOverview.tsx'
 import AccountPage from './AccountPage.tsx'
@@ -44,6 +45,8 @@ const Page = ({ section, item, layout }: { section: ServerSection; item?: string
       return <ServerOverview layout={layout} />
     case 'backups':
       return <ServerBackups layout={layout} />
+    case 'general':
+      return <ServerGeneral layout={layout} />
     case 'content':
       return <ServerContent layout={layout} />
     case 'mail':

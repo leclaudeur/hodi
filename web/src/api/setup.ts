@@ -41,7 +41,14 @@ export type SetupState =
     }
   // resetByMail: « Mot de passe oublié » can send its link (Serveur › E-mail is set). name: null while the setup
   // left the household for later.
-  | { needed: false; name: string | null; language?: InterfaceLanguage; resetByMail?: boolean }
+  | {
+      needed: false
+      name: string | null
+      language?: InterfaceLanguage
+      resetByMail?: boolean
+      // Serveur › Général: where a browser that never signed in here goes from the app's bare address.
+      publicHome?: string | null
+    }
 
 export interface SetupPlugin {
   id: string

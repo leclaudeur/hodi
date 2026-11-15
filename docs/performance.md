@@ -4,19 +4,17 @@ Hodi is a news reader you open many times a day, often on a phone with a weak co
 
 ## Results
 
-Lighthouse 12 scored the 21 screens of the app at three sizes. The work ran in two rounds in November 2026: the first took a phone from 59 to 85, and the second, after Hodi gained personal accounts, the server space and plugins, from 85 to 92. The average performance score now:
+Lighthouse 12 scored the 21 screens of the app at three sizes. The work ran in two rounds in November 2026: the first took a phone from 59 to 85, and the second, after Hodi gained personal accounts, the server space and plugins, from 85 to 92. Measured again on 14 November 2026, the scores held, and the computer now reaches 100 on every screen. The average performance score now:
 
-- **Phone**: **92**, every screen between 87 and 94
+- **Phone**: **92**, every screen between 88 and 94
 - **Tablet**: **92**, every screen between 88 and 94
-- **Computer**: **99.8**, twenty screens out of 21 at 100
+- **Computer**: **100**, all 21 screens at 100
 
-Accessibility scores 95 to 100 and best practices 96 to 100. SEO stays at 54 to 58 on purpose, since a household's
-Hodi is private and asks search engines not to index it.
+Accessibility scores 92 to 100 (92 on the server's overview, whose small labels lack contrast) and best practices 96
+to 100. SEO stays at 54 to 58 on purpose, since a household's Hodi is private and asks search engines not to index
+it.
 
-A plugin's public pages are the exception. Village's welcome page and legal pages score **100** in SEO on a phone and on
-a computer, with their title, description, share card and languages. Their performance is 85 to 97 on a computer but
-only 53 to 69 on a phone, where the main picture or text (LCP) takes about 7 s: the app's code and the landing's own
-script both load before anything is drawn.
+Hodi's public welcome page is not part of the app: it is the static site get-hodi.com, measured on its own.
 
 _Feed_, the screen opened most often, on a phone, before and after the second round:
 
@@ -30,7 +28,7 @@ On a computer, its first text shows in 0.55 s and its main picture in 0.66 s.
 
 Each picture is the top of the Lighthouse report for one screen, from the last run.
 
-**Computer**: every screen but the server's overview scores 100.
+**Computer**: every screen scores 100, the server's overview included.
 
 ![Settings on a computer: performance 100](performance/desktop-reglages.png)
 ![An article on a computer: performance 100](performance/desktop-article.png)
@@ -39,13 +37,13 @@ Each picture is the top of the Lighthouse report for one screen, from the last r
 **Phone**: Lighthouse's default mobile profile, a mid-range phone on slow 4G with a CPU four times slower.
 
 ![Settings › Reading on a phone: performance 93](performance/mobile-lecture.png)
-![An article on a phone: performance 91](performance/mobile-article.png)
+![An article on a phone: performance 88](performance/mobile-article.png)
 ![The feed on a phone: performance 93](performance/mobile-fil.png)
 
 **Tablet**: the same network and CPU as the phone, on an 820 × 1180 screen.
 
 ![An article on a tablet: performance 93](performance/tablet-article.png)
-![The feed on a tablet: performance 93](performance/tablet-fil.png)
+![The feed on a tablet: performance 94](performance/tablet-fil.png)
 
 ## How it was measured
 

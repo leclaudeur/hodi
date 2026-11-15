@@ -258,7 +258,8 @@ describe('household', () => {
       name: 'Chez nous',
       language: 'fr',
       // No mail server here: Connexion offers no « Mot de passe oublié ».
-      resetByMail: false
+      resetByMail: false,
+      publicHome: null
     })
   })
 

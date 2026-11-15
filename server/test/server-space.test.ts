@@ -339,7 +339,7 @@ describe('server overview route', () => {
     assert.match(photo, /^\/api\/households\/\d+\/photo\?v=\d+$/)
     const id = Number(/households\/(\d+)/.exec(photo)![1])
 
-    // Its people see it, as Village's « Quel foyer ? » would.
+    // Its people see it, as a plugin's household picker would.
     const seen = await fetch(`${baseUrl}${photo}`, { headers: { cookie: memberCookie } })
     assert.equal(seen.status, 200)
     assert.equal(seen.headers.get('content-type'), 'image/png')
@@ -447,6 +447,42 @@ describe('server overview route', () => {
     assert.equal(((await back.json()) as { maxSources: { value: unknown } }).maxSources.value, null)
   })
 
+  it('sets the public site a first visit goes to, which Connexion learns before anyone signs in', async () => {
+    const home = async () =>
+      ((await (await fetch(`${baseUrl}/api/setup`)).json()) as { publicHome?: unknown }).publicHome
+    assert.equal(await home(), null)
+    assert.deepEqual(await (await call('/server/general', adminCookie)).json(), { appUrl: null, publicHome: null })
+
+    assert.equal(
+      (await call('/server/general', memberCookie, 'PUT', { publicHome: 'https://get-hodi.com' })).status,
+      403
+    )
+    for (const wrong of [
+      'get-hodi.com',
+      'ftp://get-hodi.com',
+      'https://get-hodi.com/?a=1',
+      'https://me:pw@get-hodi.com',
+      5
+    ])
+      assert.equal((await call('/server/general', adminCookie, 'PUT', { publicHome: wrong })).status, 400)
+    const set = await call('/server/general', adminCookie, 'PUT', { publicHome: ' https://GET-hodi.com/ ' })
+    assert.deepEqual(await set.json(), { appUrl: null, publicHome: 'https://get-hodi.com' })
+    assert.equal(await home(), 'https://get-hodi.com')
+
+    await call('/server/general', adminCookie, 'PUT', { publicHome: '' })
+    assert.equal(await home(), null)
+    assert.equal((await call('/server/general', adminCookie, 'PUT', {})).status, 400)
+  })
+
+  it("keeps Hodi's own address in Général, which the links of its e-mails open", async () => {
+    assert.equal((await call('/server/general', adminCookie, 'PUT', { appUrl: 'hodi.example.com' })).status, 400)
+    const set = await call('/server/general', adminCookie, 'PUT', { appUrl: 'https://Hodi.example.com/' })
+    assert.deepEqual(await set.json(), { appUrl: 'https://hodi.example.com', publicHome: null })
+
+    const removed = await call('/server/general', adminCookie, 'PUT', { appUrl: null })
+    assert.deepEqual(await removed.json(), { appUrl: null, publicHome: null })
+  })
+
   it('makes a copy at once, keeps as many as asked, and gives one only with the password', async () => {
     assert.equal((await call('/server/backups', memberCookie, 'POST')).status, 403)
     const made = await call('/server/backups', adminCookie, 'POST')
@@ -507,7 +543,7 @@ describe('server overview route', () => {
   it('puts the plugins’ data in each copy: a zip to download, set aside with the copy on restore', async () => {
     // A plugin's database, as it is on disk (no plugin runs here: it is copied as it is).
     const plugin = new DatabaseSync(
-      path.join(mkdirSync(path.join(pluginDataDir, 'village'), { recursive: true })!, 'plugin.db')
+      path.join(mkdirSync(path.join(pluginDataDir, 'club'), { recursive: true })!, 'plugin.db')
     )
     plugin.exec("CREATE TABLE waitlist (email TEXT); INSERT INTO waitlist VALUES ('marie@example.com')")
     plugin.close()
@@ -516,7 +552,7 @@ describe('server overview route', () => {
       copies: { name: string; bytes: number }[]
     }
     const [copy] = made.copies
-    const pluginBytes = statSync(path.join(pluginDataDir, 'village', 'plugin.db')).size
+    const pluginBytes = statSync(path.join(pluginDataDir, 'club', 'plugin.db')).size
     assert.equal(copy!.bytes, statSync(path.join(backupDir, copy!.name)).size + pluginBytes)
 
     const file = await call(`/server/backups/${copy!.name}/download`, adminCookie, 'POST', {
@@ -526,11 +562,11 @@ describe('server overview route', () => {
     assert.equal(file.headers.get('content-type'), 'application/zip')
     assert.match(file.headers.get('content-disposition') ?? '', /filename="hodi-[\d-]+\.zip"/)
     const entries = unzipSync(new Uint8Array(await file.arrayBuffer()))
-    assert.deepEqual(Object.keys(entries).sort(), [copy!.name, 'plugins/copy.json', 'plugins/village.db'].sort())
+    assert.deepEqual(Object.keys(entries).sort(), [copy!.name, 'plugins/copy.json', 'plugins/club.db'].sort())
     assert.equal(Buffer.from(entries[copy!.name]!).subarray(0, 15).toString(), 'SQLite format 3')
-    assert.equal(entries['plugins/village.db']!.length, pluginBytes)
+    assert.equal(entries['plugins/club.db']!.length, pluginBytes)
     assert.deepEqual(JSON.parse(Buffer.from(entries['plugins/copy.json']!).toString()), {
-      plugins: ['village'],
+      plugins: ['club'],
       missing: []
     })
 
@@ -540,9 +576,44 @@ describe('server overview route', () => {
     })
     assert.equal(done.status, 202)
     // The plugins' copies wait beside the core's for the next start.
-    assert.deepEqual(readdirSync(`${pendingRestore.replace(/\.db$/, '')}.plugins`).sort(), ['copy.json', 'village.db'])
+    assert.deepEqual(readdirSync(`${pendingRestore.replace(/\.db$/, '')}.plugins`).sort(), ['club.db', 'copy.json'])
     // With when it was made, from its name: the deletions since are done again at the next start.
     assert.equal(readRestoreTime(pendingRestore), copyTimeOf(copy!.name))
+  })
+
+  it('fills the mail server one row at a time, and sends nothing until the server and the sender are there', async () => {
+    await call('/server/mail', adminCookie, 'DELETE')
+    assert.equal((await call('/server/mail', memberCookie, 'PATCH', { host: 'smtp.example.com' })).status, 403)
+    assert.equal((await call('/server/mail', adminCookie, 'PATCH', {})).status, 400)
+    assert.equal((await call('/server/mail', adminCookie, 'PATCH', { host: 'http://x/y' })).status, 400)
+    assert.equal((await call('/server/mail', adminCookie, 'PATCH', { port: 0 })).status, 400)
+
+    const host = await call('/server/mail', adminCookie, 'PATCH', {
+      host: 'SMTP.example.com',
+      port: 465,
+      security: 'tls'
+    })
+    assert.deepEqual(await host.json(), {
+      mail: {
+        host: 'smtp.example.com',
+        port: 465,
+        security: 'tls',
+        user: null,
+        hasPassword: false,
+        sender: null,
+        ready: false
+      }
+    })
+    assert.equal((await call('/server/mail/test', adminCookie, 'POST')).status, 409)
+
+    // A password without a user name is dropped: the server takes mail without signing in.
+    await call('/server/mail', adminCookie, 'PATCH', { password: 'sk-test-alone' })
+    assert.equal(new MailSettingsStore(db).state()?.password, null)
+
+    const sender = await call('/server/mail', adminCookie, 'PATCH', { sender: 'Hodi@Example.com' })
+    assert.equal(((await sender.json()) as { mail: { ready: boolean } }).mail.ready, true)
+    assert.equal(new MailSettingsStore(db).get()?.host, 'smtp.example.com')
+    await call('/server/mail', adminCookie, 'DELETE')
   })
 
   it('keeps the mail server, never gives its password back, and sends a test to the admin', async () => {
@@ -570,7 +641,7 @@ describe('server overview route', () => {
       user: 'hodi@example.com',
       hasPassword: true,
       sender: 'hodi@example.com',
-      appUrl: null
+      ready: true
     }
     assert.deepEqual(await saved.json(), { mail: expected })
     assert.doesNotMatch(JSON.stringify(await (await call('/server/mail', adminCookie)).json()), /sk-test-mail/)

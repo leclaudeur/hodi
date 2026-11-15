@@ -273,10 +273,10 @@ describe('FollowedAlerts subscriptions', () => {
   it('tells a profile what a plugin sends, unless its « Plugins » switch is off', async () => {
     const { alerts, sent } = setup()
     const notice = {
-      title: 'Village · Bonjour',
+      title: 'Club · Bonjour',
       body: 'Un mot.',
-      url: '#/settings/plugin/village',
-      tag: 'plugin:village',
+      url: '#/settings/plugin/club',
+      tag: 'plugin:club',
       badge: null
     }
     alerts.register(settings({ profileId: 1 }))

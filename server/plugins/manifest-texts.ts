@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { PUBLIC_LIMITS } from './public-page.ts'
 import { localesOf } from './web-parts.ts'
 
 // A plugin's name and description in other languages: manifest.name and manifest.description in its
@@ -8,9 +7,6 @@ import { localesOf } from './web-parts.ts'
 export interface ManifestText {
   name?: string
   description?: string
-  // publicPages.title and publicPages.description: the default card of its public pages.
-  publicTitle?: string
-  publicDescription?: string
 }
 export type ManifestTranslations = Record<string, ManifestText>
 
@@ -24,12 +20,9 @@ const textOf = (file: string): ManifestText => {
   try {
     const parsed = JSON.parse(readFileSync(file, 'utf8')) as Record<string, Record<string, unknown> | undefined>
     const manifest = parsed.manifest ?? {}
-    const pages = parsed.publicPages ?? {}
     const texts = {
       name: clean(manifest.name, LIMITS.name),
-      description: clean(manifest.description, LIMITS.description),
-      publicTitle: clean(pages.title, PUBLIC_LIMITS.title),
-      publicDescription: clean(pages.description, PUBLIC_LIMITS.description)
+      description: clean(manifest.description, LIMITS.description)
     }
     return Object.fromEntries(Object.entries(texts).filter(([, text]) => text)) as ManifestText
   } catch {

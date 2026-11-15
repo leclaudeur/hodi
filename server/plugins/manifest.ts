@@ -1,6 +1,4 @@
 // What a plugin tells Hodi about itself, in the plugin.json at the root of its folder.
-import { type PublicPages, parsePublicPages } from './public-page.ts'
-
 // The version of the plugin API this Hodi speaks. A plugin written for another major version is not loaded.
 // API 2 runs a plugin's server part in its sandbox (sandbox/): its routes are a table of handlers, no longer an
 // Express router. An API 1 plugin is listed, with OUTDATED_API as its error, until it is updated.
@@ -82,8 +80,6 @@ export interface Manifest {
   feeds: PluginFeed[]
   // The memory its server part may use, in MiB; Hodi keeps it within its own ceiling (sandbox.ts).
   memoryMb: number | null
-  // The addresses it opens to search engines, with permissions.publicRoutes only (public-page.ts).
-  publicPages: PublicPages | null
 }
 
 // Lowercase letters, digits and dashes: the id names the plugin's folder, its routes and its tables.
@@ -284,7 +280,6 @@ export const parseManifest = (value: unknown): Manifest => {
   const permissions = parsePermissions(value.permissions ?? {})
   const feeds = parseFeeds(value.feeds ?? [], permissions.network)
   const memoryMb = parseMemory(value.memoryMb ?? null)
-  const publicPages = parsePublic(value.publicPages, permissions)
 
   return {
     id,
@@ -298,18 +293,7 @@ export const parseManifest = (value: unknown): Manifest => {
     settings,
     permissions,
     feeds,
-    memoryMb,
-    publicPages
-  }
-}
-
-const parsePublic = (value: unknown, permissions: Permissions) => {
-  try {
-    const pages = parsePublicPages(value)
-    if (pages && !permissions.publicRoutes) throw new Error('publicPages needs permissions.publicRoutes')
-    return pages
-  } catch (error) {
-    throw new ManifestError((error as Error).message)
+    memoryMb
   }
 }
 

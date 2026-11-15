@@ -3,6 +3,7 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type LoginResult, getSetup, login } from '../api.ts'
 import { setHouseholdLanguage } from '../lib/i18n.ts'
+import { publicHomeFor } from '../lib/public-home.ts'
 import { refusalText } from '../lib/sign-in-refusal.ts'
 
 type Refused = Extract<LoginResult, { ok: false }>
@@ -27,6 +28,9 @@ export const useSignInPage = () => {
   useEffect(() => {
     getSetup()
       .then(state => {
+        const home = state.needed ? null : publicHomeFor(state.publicHome, window.location.hash)
+        // Not ready: the site opens in its place, without Connexion showing first.
+        if (home) return window.location.replace(home)
         setReady(true)
         if (state.needed) return
         setName(state.name)

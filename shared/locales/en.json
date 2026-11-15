@@ -30,6 +30,7 @@
     }
   },
   "app": {
+    "preRelease": "BETA",
     "unreachableTitle": "Hodi can’t be reached",
     "unreachableText": "The server isn’t answering right now."
   },
@@ -109,7 +110,7 @@
       "repeat": "Avoid repeats and runs (aaa, abc).",
       "dates": "Avoid dates and years, easy to guess.",
       "common": "This password is too common: pick another.",
-      "word": "A single word or name is easy to guess: add more."
+      "word": "A single word is easy to guess: add more."
     },
     "gauge": "Password strength"
   },
@@ -766,17 +767,6 @@
     "search": "Search your history"
   },
   "help": {
-    "feed": {
-      "title": "Feed",
-      "desktop": [
-        "The last 3 days of articles from your topics, newest first. At the top, the Daily summary and the Headlines: today’s stories, to browse like stories.",
-        "“Pick up” keeps the articles you started; the cross removes them. A read article fades; hover a card to hide it. Press <b>?</b> for keyboard shortcuts."
-      ],
-      "phone": [
-        "One row per topic with today’s articles. At the top, the Daily summary and the Headlines, to browse like stories.",
-        "Pull down to refresh. Swipe left or right to go from one topic to the next. In a topic, swipe a card right to save it, left to hide it."
-      ]
-    },
     "followed": {
       "title": "Followed",
       "desktop": [
@@ -1529,7 +1519,6 @@
       "licenceHint": "Free software, AGPL-3.0 licence",
       "source": "Source code",
       "support": "Support Hodi",
-      "supportHint": "Free and ad-free",
       "supportHint": "Free and ad-free, thanks to those who give",
       "supportButton": "Patreon",
       "credits": "Credits",
@@ -2097,23 +2086,25 @@
       "overview": "Overview",
       "households": "Households",
       "accounts": "Accounts",
+      "general": "General",
       "content": "Content",
       "backups": "Backups",
       "mail": "E-mail",
       "plugins": "Plugins"
     },
-    "pluginsIntro": "More features, for the whole server. Each plugin runs apart, with its own data. Only verified plugins add pages to Hodi.",
+    "pluginsIntro": "More features, for the whole server, from Hodi’s registry or a file. Each plugin runs apart, with its own data. Only verified plugins add pages to Hodi.",
     "hints": {
       "overview": "Totals, who is online",
       "households": "Households and their profiles",
       "accounts": "E-mails and their household",
+      "general": "Hodi’s address and the home page",
       "content": "Durations and sources per household",
       "backups": "Copies of the whole database",
       "mail": "The server that sends e-mails"
     },
     "overview": {
-      "introOne": "The household in totals. Never what one person reads.",
-      "introSeveral": "Every household together, in totals. Never what one person reads.",
+      "introOne": "The household in totals, beside the period before. The server counts, it doesn’t look: never what a person reads.",
+      "introSeveral": "Every household together, in totals, beside the period before. The server counts, it doesn’t look: never what a person reads.",
       "period": "Period",
       "span": {
         "days": "{{count}} d",
@@ -2281,8 +2272,30 @@
       "oneTitle": "One household per server",
       "oneText": "This server has its own already. To read in it, ask its admin to invite you."
     },
+    "general": {
+      "intro": "Hodi’s address, which the e-mails’ links open, and the public home page. A browser that never opened Hodi lands on that site, for example your presentation page; everyone else lands on Sign in.",
+      "addresses": "Addresses",
+      "invalid": "Write a full address, with https://.",
+      "saved": "Address saved",
+      "failed": "The address could not be saved.",
+      "loadFailed": "These settings could not be loaded.",
+      "appUrl": {
+        "label": "Hodi’s address",
+        "none": "Not given yet",
+        "intro": "The address Hodi opens at, as people type it in a browser. The e-mails’ links lead there: without it, « Forgot password » doesn’t show on Sign in.",
+        "field": "Hodi’s address",
+        "placeholder": "https://hodi.example.com"
+      },
+      "publicHome": {
+        "label": "Public home page",
+        "none": "None: Sign in opens",
+        "intro": "Someone who never opened Hodi in their browser lands on this site, for example your presentation page. Leave it empty to open Sign in.",
+        "field": "Site address",
+        "placeholder": "https://example.com"
+      }
+    },
     "content": {
-      "intro": "How long the server keeps what it fetches, and how many sources each household may follow.",
+      "intro": "How long the server keeps what it fetches for every household, and how many sources each may follow. Short durations keep the database light; a saved article always keeps its text.",
       "durations": "Durations",
       "sources": "Sources",
       "less": "Less",
@@ -2316,7 +2329,7 @@
       }
     },
     "backups": {
-      "intro": "Copies of the whole database and of the plugins’ data, one every night. A single account’s copy is downloaded in Settings › Account and data.",
+      "intro": "Every night, a copy of the whole database and of the plugins’ data. It holds everyone’s data: your password protects it, and keeping one off the server is wise. A single account’s copy is in Settings › Account and data.",
       "settings": "Settings",
       "kept": "Copies kept",
       "keptValue_one": "{{count}} copy",
@@ -2352,7 +2365,7 @@
       "restoring": "Restoring the copy of {{date}} at {{time}}"
     },
     "mail": {
-      "intro": "The server Hodi sends its e-mails through, such as the « Forgot password » link. Until it is set, Hodi sends none and that link doesn’t show on Sign in.",
+      "intro": "The server Hodi sends its e-mails through: « Forgot password » and the plugins’ ones. Until it is set, Hodi sends none and that link doesn’t show on Sign in.",
       "server": "Mail server",
       "notSet": "Not set yet",
       "set": "Set up",
@@ -2372,10 +2385,10 @@
       "passwordKept": "Unchanged",
       "sender": "Sender",
       "dialogTitle": "Mail server",
-      "dialogIntro": "These settings come from your e-mail provider (Gmail, OVH, Infomaniak…). STARTTLS goes with port 587, TLS with 465. The e-mails’ links open Hodi at its address.",
+      "dialogIntro": "These settings come from your e-mail provider (Gmail, OVH, Infomaniak…). STARTTLS goes with port 587, TLS with 465.",
       "saved": "Settings saved",
       "saveFailed": "Couldn’t save the settings.",
-      "invalid": "A field isn’t valid: check the server, the port, the sender’s address and Hodi’s.",
+      "invalid": "A field isn’t valid: check the server, the port and the sender’s address.",
       "loadFailed": "Couldn’t load the settings.",
       "test": "Send a test",
       "testHint": "An e-mail to this account’s address",
@@ -2388,8 +2401,10 @@
       "removeHint": "Hodi forgets these settings",
       "removeButton": "Remove",
       "removed": "Settings removed",
-      "appUrl": "Hodi’s address",
-      "noAppUrl": "Not given yet"
+      "serverIntro": "The mail server’s address and its security, given by your e-mail provider (Gmail, OVH, Infomaniak…). STARTTLS goes with port 587, TLS with 465.",
+      "loginIntro": "The mail server’s user name and password, often your e-mail address and its password. Leave it empty if the server asks for none. Once saved, the password is never shown again.",
+      "senderIntro": "The address Hodi’s e-mails come from, for example no-reply@example.com. The mail server must accept it.",
+      "toFill": "To fill in"
     },
     "logout": "Sign out"
   },

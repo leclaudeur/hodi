@@ -135,14 +135,14 @@ describe('deletions done again after a restore', () => {
     const { dir, db, log } = server()
     const households = new PluginHouseholdStore(db)
     const { household } = households.create(
-      { name: 'Martin', language: 'fr', plugin: 'village', admin: { name: 'Jo', accountId: null } },
+      { name: 'Martin', language: 'fr', plugin: 'club', admin: { name: 'Jo', accountId: null } },
       clock
     )
     const copy = copyOf(db, dir)
     clock += HOUR
-    assert.ok(households.remove(household.id, 'village'))
+    assert.ok(households.remove(household.id, 'club'))
     // Another plugin's household, or the core's, is not its to remove: nothing is written down.
-    assert.equal(households.remove(1, 'village'), false)
+    assert.equal(households.remove(1, 'club'), false)
     assert.deepEqual(
       log.all().map(entry => entry.kind),
       ['household']

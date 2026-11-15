@@ -37,7 +37,16 @@ export type Route =
     }
 
 // The server's sections, in their order in its sidebar. Each comes with its page.
-export const SERVER_SECTIONS = ['overview', 'households', 'accounts', 'content', 'backups', 'mail', 'plugins'] as const
+export const SERVER_SECTIONS = [
+  'overview',
+  'households',
+  'accounts',
+  'general',
+  'content',
+  'backups',
+  'mail',
+  'plugins'
+] as const
 export type ServerSection = (typeof SERVER_SECTIONS)[number]
 const serverSectionOf = (slug: string) => SERVER_SECTIONS.find(section => section === slug) ?? null
 

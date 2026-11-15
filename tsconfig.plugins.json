@@ -11,6 +11,6 @@
     // A plugin's web part imports Hodi's SDK by this name; the build reads it from the page (plugin-sdk/build.ts).
     "paths": { "hodi:sdk": ["./web/src/plugins/sdk.ts"] }
   },
-  "include": ["plugin-sdk/**/*.ts", "plugin-sdk/**/*.tsx"],
+  "include": ["plugin-sdk/**/*.ts", "plugin-sdk/**/*.tsx", "web/src/vite-env.d.ts"],
   "exclude": ["plugin-sdk/**/dist/**", "plugin-sdk/hodi-sdk.d.ts", "plugin-sdk/testing.ts", "plugin-sdk/testing-*.ts"]
 }

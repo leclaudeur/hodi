@@ -1,8 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import { useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import PageHelp from '../ui/PageHelp.tsx'
-import HelpButton from '../ui/HelpButton.tsx'
 import type { SearchItem, TopicItem, TopicSummary } from '../api.ts'
 import { useResume } from '../lib/resume.ts'
 import { useDayFeed } from '../lib/day-feed.ts'
@@ -178,11 +176,6 @@ const MobileHome = ({ topics, onUnauthorized }: MobileHomeProps) => {
     <div className={styles.home} aria-busy={feed.waiting}>
       <PhoneHeader
         title={across ? t('feed.title') : <Logo />}
-        help={
-          <HelpButton id="feed" title={t('help.feed.title')} layout="phone">
-            <PageHelp page="feed" layout="phone" />
-          </HelpButton>
-        }
         meta={todayLabel()}
         actions={!across && <ProfileButton size={44} />}
         line

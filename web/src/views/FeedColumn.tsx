@@ -1,7 +1,5 @@
 import { AlertCircle, ArrowDown, Bookmark, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import PageHelp from '../ui/PageHelp.tsx'
-import HelpButton from '../ui/HelpButton.tsx'
 import { useResume } from '../lib/resume.ts'
 import { todayLabel } from '../lib/format.ts'
 import { useFrontPage, useFrontPageSettled } from '../lib/front-page.ts'
@@ -88,13 +86,6 @@ const FeedColumn = ({ topicId, title, activeId, onUnauthorized }: FeedColumnProp
       meta={isFeed ? todayLabel() : feed.meta}
       footer={footer || undefined}
       busy={feed.waiting}
-      help={
-        isFeed && (
-          <HelpButton id="feed" title={t('help.feed.title')} layout="desktop">
-            <PageHelp page="feed" layout="desktop" />
-          </HelpButton>
-        )
-      }
       pinned={
         isFeed &&
         !feed.failed &&

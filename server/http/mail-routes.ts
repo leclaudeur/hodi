@@ -1,5 +1,5 @@
 import express from 'express'
-import { type MailSettings, type MailSettingsStore, mailDraftOf } from '../db/mail-settings-store.ts'
+import { type MailSettingsStore, type MailState, mailChangesOf, mailDraftOf } from '../db/mail-settings-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
 import { textsIn } from '../i18n.ts'
 import { MailError, type SendMail } from '../mail/mailer.ts'
@@ -9,15 +9,16 @@ import { profileIdOf } from './profile-routes.ts'
 // Serveur › E-mail, for the server's admin only (requireServerAdmin stands in front): the mail server, and a test
 // e-mail to the admin's own address. The password is never sent back, only whether there is one.
 
-const publicSettings = (settings: MailSettings | null) =>
-  settings && {
-    host: settings.host,
-    port: settings.port,
-    security: settings.security,
-    user: settings.user,
-    hasPassword: settings.password !== null,
-    sender: settings.sender,
-    appUrl: settings.appUrl
+// ready: Hodi sends with them, once the server and the sender are both given.
+const publicSettings = (state: MailState | null) =>
+  state && {
+    host: state.host,
+    port: state.port,
+    security: state.security,
+    user: state.user,
+    hasPassword: state.password !== null,
+    sender: state.sender,
+    ready: state.host !== null && state.sender !== null
   }
 
 export const mailRoutes = ({
@@ -36,7 +37,7 @@ export const mailRoutes = ({
   const router = express.Router()
 
   router.get('/', (_request, response) => {
-    response.json({ mail: publicSettings(mail.get()) })
+    response.json({ mail: publicSettings(mail.state()) })
   })
 
   router.put('/', (request, response) => {
@@ -45,7 +46,18 @@ export const mailRoutes = ({
       response.status(400).json({ error: 'invalid_request' })
       return
     }
-    response.json({ mail: publicSettings(mail.set(draft, now())) })
+    mail.set(draft, now())
+    response.json({ mail: publicSettings(mail.state()) })
+  })
+
+  // One row of the page: only the fields given change.
+  router.patch('/', (request, response) => {
+    const changes = mailChangesOf((request.body ?? {}) as Record<string, unknown>)
+    if (!changes) {
+      response.status(400).json({ error: 'invalid_request' })
+      return
+    }
+    response.json({ mail: publicSettings(mail.update(changes, now())) })
   })
 
   // Hodi sends no e-mail any more: « Mot de passe oublié » goes away.

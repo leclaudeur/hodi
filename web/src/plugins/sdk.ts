@@ -14,8 +14,7 @@ export type {
   ReaderArticle,
   ServerSection,
   SetupStep,
-  SetupStepProps,
-  SignedOutPageProps
+  SetupStepProps
 } from './registry.ts'
 import { usePluginId } from './scope.ts'
 

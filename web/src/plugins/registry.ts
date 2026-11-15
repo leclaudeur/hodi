@@ -94,15 +94,6 @@ export type SetupStep =
     }
   | { id: string; core: 'mail' }
 
-// What the page a plugin draws in place of Connexion gets, on a device on no household.
-export interface SignedOutPageProps {
-  layout: 'desktop' | 'phone'
-  // Opens Hodi's Connexion (#/sign-in); the browser's back button comes back to the plugin's page.
-  showSignIn: () => void
-  // Once one of the plugin's public routes has answered with signIn: the app starts again, signed in.
-  signedIn: () => void
-}
-
 // What a plugin's step just after sign-in gets: done() lets the person in.
 export interface AfterSignInProps {
   layout: 'desktop' | 'phone'
@@ -147,8 +138,6 @@ export interface WebPlugin {
   overviewCards?: OverviewCardSlot[]
   // The screens around sign-in. Before a profile is open (Connexion, « J'ai un code », « Qui lit ? »), only a plugin whose
   // manifest may open pages without sign-in (permissions.publicRoutes) is loaded, so only such a plugin fills them there.
-  // On a device on no household, in place of Connexion: one plugin's page (the first one that has one).
-  signedOutPage?: ComponentType<SignedOutPageProps>
   // Under Connexion's form, after Hodi's links: one more way in (« Créer mon foyer », another sign-in).
   signInExtras?: ComponentType<{ layout: 'desktop' | 'phone'; signedIn: () => void }>
   // A step once signed in, before the app (« Quel foyer ? »): one plugin's (the first one that has one).

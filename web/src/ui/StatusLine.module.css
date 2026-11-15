@@ -26,3 +26,8 @@
 .error {
   color: var(--danger);
 }
+
+/* Under a field, its icon lines up with the field's own: past the pill's padding and border. */
+:global([data-field]) + .status {
+  padding-left: 17px;
+}

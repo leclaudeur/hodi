@@ -9,7 +9,6 @@ import { mountServerSpace } from './app/server-space.ts'
 import { mountSignedOut } from './app/signed-out.ts'
 import { wiringOf } from './app/wiring.ts'
 import { jsonBodies, sameSiteOnly } from './http/request-guards.ts'
-import { servePublicPages } from './http/public-pages.ts'
 import { requestLimit } from './http/request-limit.ts'
 import { securityHeaders } from './http/security-headers.ts'
 import { sessionGuards } from './http/session-guard.ts'
@@ -77,14 +76,6 @@ export const createApp = (config: Config, options: AppOptions) => {
   })
   app.use('/api', apiRouter(config, options))
 
-  const { plugins, serverMail, household, serverSettings } = options
-  if (plugins) {
-    servePublicPages(app, config.webDir, {
-      plugins,
-      appUrl: () => serverMail?.store.get()?.appUrl ?? null,
-      isOpen: () => household.isSetUp() || Boolean(serverSettings?.householdLater())
-    })
-  }
   serveWebApp(app, config.webDir)
   app.use(errorHandler)
   return app

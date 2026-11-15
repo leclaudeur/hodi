@@ -20,8 +20,8 @@ import path from 'node:path'
 // hodi-2026-11-08.db           the core's copy
 // hodi-2026-11-08.plugins/     the plugins' copies of that moment
 //   copy.json                  { plugins: ids Hodi kept data of, missing: ids whose copy failed }
-//   village.db                 one database per plugin
-//   village.db-journal         a journal left by a plugin that stopped mid-write, put back with it
+//   club.db                    one database per plugin
+//   club.db-journal            a journal left by a plugin that stopped mid-write, put back with it
 
 export const PLUGIN_ID = /^[a-z][a-z0-9-]{1,31}$/
 const MANIFEST = 'copy.json'

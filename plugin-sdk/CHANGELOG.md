@@ -10,10 +10,18 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
-## [1.0.0-beta.1] - 2026-11-14
+## [1.0.0-beta.1] - 2026-11-15
 
-The API of Hodi 1.0, frozen until 1.0.0: the same as 0.6.1, so a plugin built for 0.6.1 keeps working. It comes out
-with Hodi 1.0.0-beta.1, under npm's `beta` tag: `npm install @hodi-app/plugin-sdk@beta`.
+The API of Hodi 1.0, frozen until 1.0.0. It removes `publicPages` and `signedOutPage`; a plugin that used neither keeps
+working as with 0.6.1. It comes out with Hodi 1.0.0-beta.1, under npm's `beta` tag:
+`npm install @hodi-app/plugin-sdk@beta`.
+
+### Removed
+
+- `publicPages` in `plugin.json` and `signedOutPage` in `definePlugin()`, with `SignedOutPageProps`: no plugin draws
+  the signed-out screens any more, and Connexion shows at once, without waiting for the plugins. A public site (a
+  welcome page, legal pages, a signup form) is its own static site, which calls the plugin's `publicRoutes` through a
+  proxy on the same address. `signInExtras`, `afterSignIn`, `whoIsReadingFooter` and `ageConsent` stay.
 
 ## [0.6.1] - 2026-11-12
 
@@ -71,7 +79,7 @@ A fix for unsigned plugins, ahead of the next Hodi release. Nothing changes for 
 
 ## [0.5.1] - 2026-11-09
 
-What Village still needed once 0.5.0 was out, and a test kit that works in a plugin's own repository. Nothing changes
+What a plugin still needed once 0.5.0 was out, and a test kit that works in a plugin's own repository. Nothing changes
 for a plugin built for 0.5.0.
 
 ### Added
@@ -109,7 +117,7 @@ for a plugin built for 0.5.0.
 
 ## [0.5.0] - 2026-11-09
 
-Everything a plugin such as Village needs: pages before sign-in, accounts and households, e-mail, notifications,
+Everything a plugin that opens Hodi to the public needs: pages before sign-in, accounts and households, e-mail, notifications,
 scheduled work, its own feeds, the household's AI behind a click, the hooks to forget people and copy their data,
 `npx hodi-plugin dev` to try it in Hodi while writing it, and a test kit. Plugins built for 0.4.0 keep working: API 2
 does not change, but accounts, households, sign-ins, e-mail and notifications now need a signed plugin.

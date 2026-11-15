@@ -106,6 +106,17 @@ export const getServerContent = () => getJson<ServerContent>('/server/content')
 export const setServerContent = (changes: Partial<Record<ContentKey, number> & { maxSources: number | null }>) =>
   sendJson<ServerContent>('PATCH', '/server/content', changes)
 
+// Serveur › Général: Hodi's own address, for the links of its e-mails, and the public site a first visit goes to.
+export interface ServerGeneral {
+  appUrl: string | null
+  publicHome: string | null
+}
+
+export const getServerGeneral = () => getJson<ServerGeneral>('/server/general')
+
+export const setServerGeneral = (changes: Partial<ServerGeneral>) =>
+  sendJson<ServerGeneral>('PUT', '/server/general', changes)
+
 // Serveur › Sauvegardes: the copies of the whole database, the newest first.
 export interface ServerBackups {
   copies: { name: string; at: number; bytes: number }[]
@@ -145,14 +156,15 @@ export const downloadBackup = async (name: string, proof: AdminProof) => {
 // Serveur › E-mail: the mail server Hodi sends through. Its password never comes back, only whether there is one.
 export type MailSecurity = 'tls' | 'starttls' | 'none'
 
+// Filled one row at a time: ready once the server and the sender are both there.
 export interface ServerMail {
-  host: string
+  host: string | null
   port: number
   security: MailSecurity
   user: string | null
   hasPassword: boolean
-  sender: string
-  appUrl: string | null
+  sender: string | null
+  ready: boolean
 }
 
 export interface ServerMailDraft {
@@ -171,6 +183,10 @@ export const getServerMail = () => getJson<{ mail: ServerMail | null }>('/server
 
 export const setServerMail = (draft: ServerMailDraft) =>
   sendJson<{ mail: ServerMail }>('PUT', '/server/mail', draft).then(({ mail }) => mail)
+
+// One row of Serveur › E-mail: only the fields given change.
+export const changeServerMail = (changes: Partial<Omit<ServerMailDraft, 'appUrl'>>) =>
+  sendJson<{ mail: ServerMail }>('PATCH', '/server/mail', changes).then(({ mail }) => mail)
 
 export const removeServerMail = () => sendJson<{ mail: null }>('DELETE', '/server/mail')
 

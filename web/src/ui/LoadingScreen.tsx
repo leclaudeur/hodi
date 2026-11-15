@@ -9,7 +9,7 @@ const LoadingScreen = () => {
   const { t } = useTranslation()
   return (
     <div className={styles.screen} role="status" aria-label={t('common.loading')}>
-      <Logo size={48} breathing className={styles.logo} />
+      <Logo size={48} breathing centred className={styles.logo} />
     </div>
   )
 }

@@ -23,4 +23,3 @@ export type {
 } from '../server/plugins/api.ts'
 export type { PluginArticle } from '../server/plugins/articles.ts'
 export type { Manifest, Permissions, PluginFeed, SettingSpec, SettingValues } from '../server/plugins/manifest.ts'
-export type { PublicMeta, PublicPages, PublicRoute } from '../server/plugins/public-page.ts'

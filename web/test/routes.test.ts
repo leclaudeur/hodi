@@ -49,22 +49,20 @@ describe('hash routes', () => {
   })
 
   it("reads a plugin's own sections of the server's space and its screens under them", () => {
-    expect(serverPluginPageHref('village', 'waitlist')).toBe('#/server/plugin/village/waitlist')
-    expect(serverPluginPageHref('village', 'waitlist', 'été/2')).toBe(
-      '#/server/plugin/village/waitlist/%C3%A9t%C3%A9/2'
-    )
-    expect(parseRoute(serverPluginPageHref('village', 'waitlist', 'été/2'))).toEqual({
+    expect(serverPluginPageHref('club', 'waitlist')).toBe('#/server/plugin/club/waitlist')
+    expect(serverPluginPageHref('club', 'waitlist', 'été/2')).toBe('#/server/plugin/club/waitlist/%C3%A9t%C3%A9/2')
+    expect(parseRoute(serverPluginPageHref('club', 'waitlist', 'été/2'))).toEqual({
       name: 'server',
       section: null,
-      plugin: { id: 'village', section: 'waitlist', path: 'été/2' }
+      plugin: { id: 'club', section: 'waitlist', path: 'été/2' }
     })
-    expect(parseRoute(serverPluginPageHref('village', 'signups'))).toEqual({
+    expect(parseRoute(serverPluginPageHref('club', 'signups'))).toEqual({
       name: 'server',
       section: null,
-      plugin: { id: 'village', section: 'signups', path: '' }
+      plugin: { id: 'club', section: 'signups', path: '' }
     })
     // Without a section, the space opens.
-    expect(parseRoute('#/server/plugin/village')).toEqual({ name: 'server', section: null, item: 'village' })
+    expect(parseRoute('#/server/plugin/club')).toEqual({ name: 'server', section: null, item: 'club' })
   })
 
   it("reads a plugin's own screens under its page", () => {
