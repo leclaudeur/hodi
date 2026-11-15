@@ -10,6 +10,10 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+## [1.0.0-beta.3] - 2026-11-15
+
+Plugins can read the public site's address.
+
 ### Added
 
 - **Public site.** `ctx.serverSettings()` gives `publicHome`, the public site's address from the server's general settings,
@@ -250,6 +254,7 @@ was never published: its changes are in this one.
 - `hodi-plugin build`, the types of the server part and of `hodi:sdk`, and signing with `--key`.
 
 [unreleased]: https://www.npmjs.com/package/@hodi-app/plugin-sdk?activeTab=versions
+[1.0.0-beta.3]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.3
 [1.0.0-beta.2]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.2
 [1.0.0-beta.1]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.1
 [0.6.1]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/0.6.1
