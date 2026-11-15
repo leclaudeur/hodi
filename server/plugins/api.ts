@@ -48,8 +48,9 @@ export interface PluginContext {
     get: (id: string) => Promise<PluginArticle | null>
     page: (id: string) => Promise<{ url: string; html: string } | null>
   }
-  // Serveur › Contenu and Sauvegardes, read only, for every plugin: how many days an article, a video and a read text
-  // are kept, and how many nightly copies of the database. Legal pages say these numbers rather than writing them.
+  // Serveur › Contenu, Sauvegardes and Général, read only, for every plugin: how many days an article, a video and a
+  // read text are kept, how many nightly copies of the database, and the public site (publicHome, or null). Legal
+  // pages say these numbers rather than writing them; a link to the public site uses that address.
   serverSettings: () => Promise<PublicServerSettings>
   // With permissions.mail: an e-mail through Serveur › E-mail. available() is false until the admin set it up, and
   // send() then refuses. One plain address, a one-line subject and plain text: Hodi adds its footer naming the plugin,

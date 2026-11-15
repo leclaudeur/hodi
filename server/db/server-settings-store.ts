@@ -156,14 +156,16 @@ export class ServerSettingsStore {
 
 // What anyone may read of the server's settings, a plugin or a page signed in or not (legal pages say these numbers):
 // how long the server keeps what it fetches, how many nightly copies of the database it keeps, and how many sources a
-// household may follow (null: no limit).
+// household may follow (null: no limit), and the public site of Serveur › Général (null until the admin gives it).
 export interface PublicServerSettings extends ContentSettings {
   backupCopies: number
   maxSources: number | null
+  publicHome: string | null
 }
 
 export const publicServerSettings = (store: ServerSettingsStore): PublicServerSettings => ({
   ...store.content(),
   backupCopies: store.backupCopies(),
-  maxSources: store.maxSources()
+  maxSources: store.maxSources(),
+  publicHome: store.publicHome()
 })

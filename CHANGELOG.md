@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Plugins.** A plugin can read the public site's address from the server's general settings.
+
 ## [1.0.0-beta.5] - 2026-11-15
 
 The e-mail test works for a server's admin outside any household, and a failed e-mail leaves its cause in the log.
