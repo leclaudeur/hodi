@@ -13,6 +13,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Virtual machines with a generic CPU.** Hodi now starts on a processor without SSE4, such as Proxmox's kvm64: its
   pictures then show from their site, without a smaller copy, and a profile photo cannot be added there.
 
+### Removed
+
+- **sharp's WebAssembly build**, added in 1.0.0-beta.2: it needs SSE4.1, so it did not help the processors that lack
+  x86-64-v2, and it weighed 9 MB in the image.
+
 ## [1.0.0-beta.2] - 2026-11-15
 
 Hodi now installs on more servers: older processors and Portainer without admin rights.

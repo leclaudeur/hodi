@@ -112,8 +112,5 @@
   },
   "overrides": {
     "minimatch": "^11.0.5"
-  },
-  "optionalDependencies": {
-    "@img/sharp-wasm32": "^0.35.5"
   }
 }
