@@ -1,3 +1,4 @@
+import pLimit from 'p-limit'
 import type { NewsStore } from '../db/news-store.ts'
 import type { Source } from './catalog.ts'
 import type { FetchText } from './fetch-text.ts'
@@ -9,6 +10,9 @@ export const CACHE_TTL_MS = 15 * 60 * 1000
 export const ERROR_TTL_MS = 60 * 1000
 // "Tirer pour rafraîchir" fetches the feeds again, at most this often.
 const FORCED_REFRESH_MIN_MS = 60 * 1000
+// Feeds fetched at the same time. A hundred at once wait for one another (name lookups, parsing), and the quick ones
+// ran out of their 5 seconds before their turn came: they were logged as timeouts at every refresh.
+export const MAX_PARALLEL_FEEDS = 8
 
 export interface SourceEntry {
   startedAt: number
@@ -50,6 +54,7 @@ export const siteOf = (source: Source) => {
 export class FeedCache {
   readonly #options: FeedCacheOptions
   readonly #entries = new Map<string, SourceEntry>()
+  readonly #limit = pLimit(MAX_PARALLEL_FEEDS)
 
   constructor(options: FeedCacheOptions) {
     this.#options = options
@@ -93,7 +98,7 @@ export class FeedCache {
     if (source.url.startsWith('plugin:')) {
       return readPluginFeed?.(source) ?? Promise.reject(new Error('plugin_unavailable'))
     }
-    return fetchText(source.url).then(({ text }) => parseFeedEntries(text, source))
+    return this.#limit(() => fetchText(source.url)).then(({ text }) => parseFeedEntries(text, source))
   }
 
   #refresh(source: Source, fresh = false) {
