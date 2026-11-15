@@ -1,0 +1,11 @@
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 600px) {
+  .alert {
+    display: none;
+  }
+}

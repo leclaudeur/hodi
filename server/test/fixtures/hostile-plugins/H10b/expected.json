@@ -1,0 +1,19 @@
+{
+  "case": "H10b",
+  "title": "A response just over the cap is refused",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/big",
+      "expect": {
+        "status": 500
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "note": "Assumes a 1 MB response cap for JSON. Adjust to the cap chosen."
+}

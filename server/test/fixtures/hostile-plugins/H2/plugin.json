@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h2",
+  "name": "Hostile H2",
+  "version": "0.0.1",
+  "description": "The global object holds no host object",
+  "api": 2,
+  "audience": "admin"
+}

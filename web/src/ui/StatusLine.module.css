@@ -1,0 +1,33 @@
+/* "Hodi cherche…", "Ce code n'est pas le bon.": an icon, then the text, blue or red. */
+.status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* On the first line's middle. */
+.mark {
+  display: flex;
+  flex-shrink: 0;
+  height: 19.5px;
+  align-items: center;
+}
+
+.info {
+  color: var(--info-text);
+}
+
+.info .mark {
+  color: var(--info-icon);
+}
+
+.error {
+  color: var(--danger);
+}
+
+/* Under a field, its icon lines up with the field's own: past the pill's padding and border. */
+:global([data-field]) + .status {
+  padding-left: 17px;
+}

@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h7",
+  "name": "Hostile H7",
+  "version": "0.0.1",
+  "description": "A recursive SQL query never blocks the main thread",
+  "api": 2,
+  "audience": "admin"
+}

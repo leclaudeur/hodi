@@ -1,0 +1,14 @@
+/* The subjects, to see one at a time: the search's filter row, held under the header between two lines. */
+.filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 18px 12px 16px;
+  border-bottom: 2px solid var(--control);
+  scroll-padding: 0 12px;
+  scroll-snap-type: x mandatory;
+}
+
+.filters > * {
+  scroll-snap-align: start;
+}

@@ -1,0 +1,23 @@
+{
+  "case": "H39",
+  "title": "mail: 50 per hour per plugin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/flood",
+      "body": {},
+      "expect": {
+        "status": 200,
+        "body": {
+          "sent": 50,
+          "refused": "mail_limit"
+        }
+      }
+    }
+  ],
+  "afterInCore": "The fake transport recorded exactly 50 messages. The plugin's log says the limit was reached (once, not 10 times). After a restart of the plugin's thread the count is unchanged: the limit lives in the main thread, not in the worker.",
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ]
+}

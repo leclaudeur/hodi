@@ -1,0 +1,11 @@
+{
+  "id": "hostile-h36",
+  "name": "Hostile H36",
+  "version": "0.0.1",
+  "description": "publicRoutes refuse a request from another site",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "publicRoutes": true
+  }
+}

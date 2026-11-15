@@ -1,0 +1,103 @@
+/* The server's space: the app's layout and Réglages' lists, with its own sidebar and no profile anywhere. */
+
+/* Its first level on a phone, a page of its own with no tab bar under it. */
+.home {
+  min-height: 100dvh;
+  background: var(--column);
+}
+
+/* A household's or an account's initial, where Réglages' entries have their icon. */
+.mark {
+  overflow: hidden;
+  color: var(--text-nav);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* A household's photo fills its square, as the initial's place. */
+.markPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Under the search's line, the list starts as far down as the field sits under its own (ListTools: 14px). */
+.phoneRows {
+  padding-top: 14px;
+}
+
+/* A list of the same things (Foyers, Comptes) on a computer: a line between rows, as between articles (ArticleList),
+   and the article rows' hover. The lines beside a hovered or open row step aside. */
+.lined {
+  gap: 0;
+}
+
+.lined li + li::before {
+  display: block;
+  height: 1px;
+  margin: 0 10px;
+  background: var(--divider);
+  content: '';
+}
+
+.lined li:has(> [aria-current='page'])::before,
+.lined li:has(> [aria-current='page']) + li::before {
+  visibility: hidden;
+}
+
+@media (hover: hover) {
+  .lined li:has(> a:hover)::before,
+  .lined li:has(> a:hover) + li::before {
+    visibility: hidden;
+  }
+
+  .lined a:not([aria-current='page']):hover {
+    border-color: var(--divider);
+    background: var(--card-hover);
+  }
+}
+
+/* Serveur › E-mail: the server's name, and its port beside it, narrow. */
+.hostRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 10px;
+}
+
+/* « Créer mon foyer » and « Créer un foyer », one under the other, as wide as the wider. */
+.createChoices {
+  display: inline-grid;
+  gap: 8px;
+}
+
+/* Foyers: one household per server, said above the list. The card takes the rows' padding and corners, so its
+   square lines up with the households' initials; its text keeps 14px on the right so it doesn't run into the edge. */
+.oneNote {
+  padding: 18px 0 0;
+}
+
+/* Then a line, as between the groups of the first column. */
+.oneNote::after {
+  display: block;
+  height: 1px;
+  margin: 18px 4px 0;
+  background: var(--divider);
+  content: '';
+}
+
+.oneNote > aside {
+  min-height: 0;
+  padding: 10px 14px 10px 10px;
+  border-radius: 14px;
+}
+
+@media (max-width: 1023px) {
+  .oneNote {
+    padding: 4px var(--gutter) 12px;
+  }
+
+  .oneNote > aside {
+    padding: 10px 14px 10px 10px;
+    border-radius: 16px;
+  }
+}

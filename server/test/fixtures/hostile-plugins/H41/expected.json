@@ -1,0 +1,19 @@
+{
+  "case": "H41",
+  "title": "An API 1 plugin is never imported by Node",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/x",
+      "expect": {
+        "status": 404
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "expect": "/tmp/hostile-h41-ran does not exist after start. Serveur › Plugins lists the plugin as « À mettre à jour ». A static check in the test: no import( of a plugin path remains in server/plugins/."
+}

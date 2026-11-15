@@ -1,0 +1,40 @@
+{
+  "case": "H2",
+  "title": "The global object holds no host object",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/globals",
+      "expect": {
+        "status": 200,
+        "body": {
+          "present": []
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/ctx-keys",
+      "expect": {
+        "status": 200,
+        "bodyKeysSubsetOf": [
+          "id",
+          "db",
+          "files",
+          "settings",
+          "log",
+          "fetchText",
+          "http",
+          "articles",
+          "serverSettings"
+        ]
+      },
+      "note": "Only what the manifest asked for. This plugin declares no permission: no accounts, households, session, mail, network. serverSettings (read only, the same for every plugin: Serveur › Contenu and Sauvegardes) is given without a permission."
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

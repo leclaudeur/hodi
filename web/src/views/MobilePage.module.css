@@ -1,0 +1,36 @@
+.page {
+  min-height: var(--screen-height, 100dvh);
+  padding-bottom: calc(140px + env(safe-area-inset-bottom));
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.actions:empty {
+  display: none;
+}
+
+.footer {
+  position: fixed;
+  z-index: 10;
+  right: 0;
+  /* 12px above the navigation bar (a tablet held across has none, and its sidebar on the left). */
+  bottom: var(--screen-footer-bottom, calc(max(24px, env(safe-area-inset-bottom) + 8px) + 56px));
+  left: var(--screen-left, 0);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.footer > * {
+  pointer-events: auto;
+}
+
+/* Empty until a section puts its "?" there. */
+.help {
+  display: contents;
+}

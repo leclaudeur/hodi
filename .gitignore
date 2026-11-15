@@ -1,0 +1,35 @@
+# Machine-specific Compose changes and the files they use
+compose.override.yml
+local/
+
+# Secrets / environment variables
+.env
+.env.*
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+coverage-*.lcov
+
+# End-to-end test results and report
+test-results/
+playwright-report/
+
+# Local database (production uses a Docker volume)
+data/
+
+# Logs
+*.log
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea
+
+# Agents: personal settings and notes (AGENTS.md, CLAUDE.md and .claude/skills/ are shared)
+CLAUDE.local.md
+.claude/settings.local.json
+

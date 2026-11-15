@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h46",
+  "name": "Hostile H46",
+  "version": "0.0.1",
+  "description": "An upload over its route limit never reaches the sandbox",
+  "api": 2,
+  "audience": "admin"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h10",
+  "name": "Hostile H10",
+  "version": "0.0.1",
+  "description": "A huge response is refused by the core",
+  "api": 2,
+  "audience": "admin"
+}

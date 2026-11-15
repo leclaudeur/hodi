@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h43",
+  "name": "Hostile H43",
+  "version": "0.0.1",
+  "description": "An unsigned plugin is installed without its web part",
+  "api": 2,
+  "audience": "admin"
+}
