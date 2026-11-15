@@ -104,13 +104,9 @@ ol {
   list-style: none;
 }
 
-/* A command to type in a terminal, inside a sentence: mono on a small tile, as the full commands to copy, and never
-   cut over two lines. */
+/* A command to type in a terminal, inside a sentence: mono in the text's colour, with no tile behind it, and never cut
+   over two lines. */
 code {
-  padding: 1px 6px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--tile);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 0.9em;

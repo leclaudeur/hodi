@@ -23,18 +23,13 @@
 .boxes {
   position: relative;
   display: flex;
+  /* Not stretched: each box keeps its own square height when the row narrows. */
+  align-items: flex-start;
   max-width: 100%;
-  gap: 10px;
-}
-
-/* Eight boxes, in two groups of four: narrower, with a wider gap in the middle to read the code out. */
-.grouped {
   gap: 8px;
 }
 
-.grouped .box {
-  width: 44px;
-}
+/* Eight boxes, in two groups of four: a wider gap in the middle to read the code out. */
 
 .grouped .box:nth-of-type(4) {
   margin-right: 10px;
@@ -63,10 +58,10 @@
   align-items: center;
   flex: 0 1 auto;
   justify-content: center;
-  /* Six boxes still fit a phone's width: they narrow rather than overflow. */
-  width: 52px;
+  /* Always a square, of the app's 44px: on a narrow phone the boxes shrink together rather than overflow. */
+  width: 44px;
   min-width: 0;
-  height: 60px;
+  aspect-ratio: 1;
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--control);

@@ -211,14 +211,12 @@
       "kicker": "Bienvenue dans Hodi",
       "title": "L’actu de toute la maison",
       "lead": "Tes sites d’info préférés, <b>rangés par thème</b>, et lus <b>sans pub ni pistage</b>. Chacun a son profil, et le foyer se partage ce qui vaut la peine d’être lu.",
-      "codeHelpTitle": "Le code d’installation",
-      "codeHelpWhy": "Ce serveur est joignable depuis Internet : pour que personne d’autre ne l’installe, Hodi demande le code de 8 lettres et chiffres écrit dans son journal au démarrage. Chaque redémarrage en tire un nouveau : prends le dernier.",
-      "codeHelpServer": "Sur le serveur :",
-      "codeHelpLocal": "Depuis l’ordinateur du serveur ou le même réseau local, aucun code n’est demandé.",
+      "codeNoticeTitle": "Le code est dans le journal du serveur",
+      "codeNoticeText": "Hodi en écrit un nouveau à chaque démarrage, sur la ligne « Setup code » : prends le dernier.",
+      "codeNoticeCommand": "Dans un terminal :",
       "code": "Code d’installation",
       "button": "Installer Hodi",
-      "length": "Quelques minutes · tout dans le navigateur",
-      "codeWhere": "Il est écrit dans le journal du serveur."
+      "length": "Quelques minutes · tout dans le navigateur"
     },
     "account": {
       "title": "Compte",

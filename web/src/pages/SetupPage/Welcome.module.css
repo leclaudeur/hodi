@@ -73,18 +73,15 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  max-width: 372px;
+  /* The eight boxes' width: the notice under them is as wide. */
+  max-width: 418px;
 }
 
-.code > :first-child {
+.code > * {
   align-self: stretch;
 }
 
-.codeWhere {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  color: var(--text-3);
-  font-size: 14px;
+/* The notice reads from its left, in the centred welcome. */
+.code > aside {
+  text-align: left;
 }
