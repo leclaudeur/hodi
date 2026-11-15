@@ -1,0 +1,25 @@
+{
+  "case": "H40",
+  "title": "SDK objects not declared in the manifest do not exist",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/ctx",
+      "expect": {
+        "status": 200,
+        "body": {
+          "accounts": "undefined",
+          "households": "undefined",
+          "session": "undefined",
+          "mail": "undefined",
+          "fetchText": "function"
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

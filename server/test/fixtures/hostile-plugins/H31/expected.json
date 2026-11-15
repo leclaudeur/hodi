@@ -1,0 +1,22 @@
+{
+  "case": "H31",
+  "title": "fetchText refuses every internal address",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/ssrf",
+      "expect": {
+        "status": 200,
+        "everyItem": {
+          "ok": false
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "setup": "The test DNS resolves rebind.test to 10.0.0.1 (and a public host that redirects to 127.0.0.1 is added like in fetch-text.test.ts). Each URL is also tried with the network permission listing it."
+}

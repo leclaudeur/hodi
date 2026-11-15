@@ -1,0 +1,82 @@
+/* Two hours in one pill, in the UI font, with the icon of what they set. */
+.field {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  height: var(--button-height);
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--control);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.field:focus-within {
+  border-color: var(--border-strong);
+}
+
+.icon,
+.arrow {
+  flex-shrink: 0;
+}
+
+.arrow {
+  color: var(--text-3);
+}
+
+.time {
+  display: inline-flex;
+}
+
+/* The hour, its minutes and (on 12 hours) AM/PM, each typed or stepped with the arrow keys. */
+.input {
+  display: inline-flex;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.segment {
+  padding: 2px 1px;
+  border-radius: 4px;
+  outline: none;
+  caret-color: transparent;
+}
+
+.segment[data-type='literal'] {
+  padding: 0;
+}
+
+.segment[data-type='dayPeriod'] {
+  margin-left: 3px;
+}
+
+.segment[data-focused] {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.segment[data-placeholder] {
+  color: var(--text-3);
+}
+
+/* In a dialog: the whole width, at the controls' height as the Stepper. The icon at the far left, the two hours
+   and their arrow centred in the field. */
+.large {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  font-size: 15px;
+}
+
+.large .icon {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+}

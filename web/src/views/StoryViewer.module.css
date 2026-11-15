@@ -1,0 +1,277 @@
+/* Desktop: in the main panel, from the charter's "Desktop : À la une" board. */
+.desktop {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px 0 40px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--button-height);
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kicker,
+.count {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.kicker {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.topic {
+  color: var(--topic);
+}
+
+.bars {
+  display: flex;
+  gap: 6px;
+}
+
+.bar {
+  flex-grow: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+
+.bar.done {
+  background: var(--text);
+}
+
+.figure {
+  position: relative;
+  height: 380px;
+  overflow: hidden;
+  border: 1px solid var(--divider);
+  border-radius: 18px;
+  background: linear-gradient(150deg, var(--raised), var(--control) 60%, var(--card));
+}
+
+.figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 80px 28px 26px;
+  background: linear-gradient(to top, color-mix(in srgb, var(--card) 95%, transparent), transparent);
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: 36px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.05;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepper .count {
+  min-width: 34px;
+  text-align: center;
+}
+
+.summary {
+  color: var(--text-strong);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.age {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Phone: full screen over everything, from the charter's "Mobile : stories" board. */
+.phone {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  background: linear-gradient(170deg, var(--raised) 0%, var(--control) 40%, var(--bg) 75%);
+  color: var(--text);
+  user-select: none;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Taps anywhere but on the buttons. */
+.tapArea {
+  position: absolute;
+  inset: 0;
+  touch-action: manipulation;
+}
+
+.top {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: calc(14px + env(safe-area-inset-top)) 14px 40px;
+  background: linear-gradient(to bottom, var(--scrim), transparent);
+  pointer-events: none;
+}
+
+.phoneBars {
+  display: flex;
+  gap: 4px;
+}
+
+.phoneBar {
+  flex: 1;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text) 30%, transparent);
+}
+
+.fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--text);
+}
+
+/* The current story's bar fills up, then the next story comes. */
+.running {
+  animation-name: fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fill {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.phoneSource {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--image-button-border);
+  border-radius: 50%;
+  background: var(--scrim);
+  color: var(--text);
+  pointer-events: auto;
+}
+
+.close:hover {
+  color: var(--text);
+}
+
+.bottom {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 150px 24px calc(30px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg) 52%, transparent);
+  pointer-events: none;
+}
+
+.phoneTopic {
+  display: flex;
+}
+
+.phoneTitle {
+  font-family: var(--font-title);
+  font-size: 34px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.04;
+}
+
+.phoneSummary {
+  color: var(--text-nav);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.phoneActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  pointer-events: auto;
+}

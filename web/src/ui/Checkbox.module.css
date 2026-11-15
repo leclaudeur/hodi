@@ -1,0 +1,40 @@
+/* A square check with rounded corners, as in "Partager à" (reader/ShareToButton), with its statement beside it.
+   Square, so it never reads as a radio button. */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  /* The whole line answers a tap, as tall as a button, though the check itself is small. */
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.check {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 6px;
+  transition:
+    background var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.on {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.label {
+  font-size: 14px;
+  line-height: 1.4;
+}

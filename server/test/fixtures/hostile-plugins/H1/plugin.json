@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h1",
+  "name": "Hostile H1",
+  "version": "0.0.1",
+  "description": "Node modules and process are out of reach",
+  "api": 2,
+  "audience": "admin"
+}

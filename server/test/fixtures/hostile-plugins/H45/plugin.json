@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h45",
+  "name": "Hostile H45",
+  "version": "0.0.1",
+  "description": "A download name cannot inject a header",
+  "api": 2,
+  "audience": "admin"
+}

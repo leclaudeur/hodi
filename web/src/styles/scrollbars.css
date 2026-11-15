@@ -1,0 +1,75 @@
+/* Floating scrollbars (OverlayScrollbars): thin, rounded, shown while scrolling or hovering, over the content. */
+.os-theme-hodi {
+  --os-size: 10px;
+  --os-padding-perpendicular: 3px;
+  --os-padding-axis: 4px;
+  --os-track-border-radius: 999px;
+  --os-handle-border-radius: 999px;
+  --os-handle-bg: color-mix(in srgb, var(--text-2) 35%, transparent);
+  --os-handle-bg-hover: color-mix(in srgb, var(--text-2) 55%, transparent);
+  --os-handle-bg-active: color-mix(in srgb, var(--text-2) 70%, transparent);
+  --os-handle-min-size: 40px;
+}
+
+/* Native scrollbars elsewhere (phones already float theirs) follow the same colours. */
+* {
+  scrollbar-color: color-mix(in srgb, var(--text-2) 35%, transparent) transparent;
+}
+
+/* Rows that scroll sideways never show a scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* A row that scrolls sideways fades out on the side where more is hidden, rather than cutting a capsule
+   short: nothing on the left at the start, nothing on the right at the end, nothing at all when it all fits.
+   Driven by its own scroll (no script); a browser without scroll timelines keeps the plain edge. */
+@property --fade-start {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --fade-end {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@supports (animation-timeline: scroll()) {
+  .edge-fade {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fade-start),
+      #000 calc(100% - var(--fade-end)),
+      transparent
+    );
+    animation: edge-fade linear both;
+    animation-timeline: scroll(self inline);
+  }
+}
+
+@keyframes edge-fade {
+  0% {
+    --fade-start: 0px;
+    --fade-end: 40px;
+  }
+
+  12% {
+    --fade-start: 40px;
+  }
+
+  88% {
+    --fade-end: 40px;
+  }
+
+  100% {
+    --fade-start: 40px;
+    --fade-end: 0px;
+  }
+}

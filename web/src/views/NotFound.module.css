@@ -1,0 +1,80 @@
+.page {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100dvh - 20px);
+  padding: 24px var(--gutter) 120px;
+}
+
+.header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 420px;
+  text-align: center;
+}
+
+.code {
+  font-family: var(--font-title);
+  font-size: 96px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: 32px;
+  font-stretch: 75%;
+  font-weight: 650;
+  line-height: 1.05;
+}
+
+.text {
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.path {
+  padding-top: 12px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+/* A computer: the line of text holds on one line. */
+@media (min-width: 1024px) {
+  .content {
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 600px) {
+  .code {
+    font-size: 80px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+}

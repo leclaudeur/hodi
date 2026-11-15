@@ -1,0 +1,80 @@
+/* A teen's request: the source as a row of the sources list, a line of text, the theme it goes under. */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--divider);
+}
+
+/* A channel has no theme to choose: the footer's line is the only one under the source. */
+.source:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.sourceText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.host {
+  overflow: hidden;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.topics {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* As the settings' group labels. */
+.label {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.capsules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The chosen theme and "Changer" side by side: the same height (the compact button's). */
+.collapsed {
+  align-items: center;
+}
+
+.collapsed > * {
+  height: 34px;
+}

@@ -1,0 +1,220 @@
+/* The player, from the charter's "Écouter & Regarder" board: a 16:9 card, "Lire" in the middle, a thin bar below. */
+
+.player {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: linear-gradient(160deg, #3c4652, #1d2127 70%);
+  color: #f4f1ea;
+  isolation: isolate;
+}
+
+.player > iframe,
+.player > audio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* YouTube shows its title, logo and suggestions on hover: it never gets the pointer, the player's controls do. */
+.player > iframe {
+  pointer-events: none;
+}
+
+.poster {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+}
+
+.video .poster {
+  background: linear-gradient(160deg, #3c4652, #1d2127 70%);
+}
+
+.poster[hidden] {
+  display: none;
+}
+
+.poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* No cover for an episode: its sound wave on a warm tile. */
+.wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(150deg, #8a5a3a, #3b2a20 75%);
+  color: rgb(255 255 255 / 18%);
+}
+
+.audio .poster::after,
+.video .poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(0 0 0 / 55%), transparent 45%);
+}
+
+.start {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--button-height);
+  padding: 0 18px 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgb(20 20 22 / 80%);
+  color: #f4f1ea;
+  font-size: 14px;
+  font-weight: 600;
+  translate: -50% -50%;
+}
+
+.start[hidden] {
+  display: none;
+}
+
+@media (hover: hover) {
+  .start:hover {
+    background: rgb(20 20 22 / 92%);
+  }
+}
+
+.controls {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(to top, rgb(0 0 0 / 60%), transparent);
+  transition: opacity var(--duration) var(--ease);
+}
+
+/* Shown while paused, on activity, or with focus inside; YouTube's picture alone otherwise. */
+.controls:not([data-visible]):not(:has(:focus-visible)) {
+  opacity: 0;
+}
+
+.control {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+}
+
+@media (hover: hover) {
+  .control:hover {
+    background: rgb(255 255 255 / 12%);
+    color: inherit;
+  }
+}
+
+.time {
+  flex-shrink: 0;
+  min-width: 36px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+.time[data-type='duration'] {
+  text-align: right;
+}
+
+/* No duration yet: the charter's "--:--". */
+.time[data-type='duration'][data-unavailable] {
+  font-size: 0;
+}
+
+.time[data-type='duration'][data-unavailable]::before {
+  content: '--:--';
+  font-size: 10px;
+}
+
+.slider {
+  position: relative;
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  height: 20px;
+  cursor: pointer;
+}
+
+.track {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 22%);
+}
+
+.slider[data-interactive] .track {
+  height: 5px;
+}
+
+.buffer,
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: inherit;
+}
+
+.buffer {
+  width: var(--media-slider-buffer);
+  background: rgb(255 255 255 / 30%);
+}
+
+.fill {
+  width: var(--media-slider-fill);
+  background: #f4f1ea;
+}
+
+.thumb {
+  position: absolute;
+  left: var(--media-slider-fill);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f4f1ea;
+  opacity: 0;
+  translate: -50% 0;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.slider[data-interactive] .thumb {
+  opacity: 1;
+}
+
+.thumb:focus-visible {
+  outline: 2px solid var(--rust);
+  outline-offset: 2px;
+}

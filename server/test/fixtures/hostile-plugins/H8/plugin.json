@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h8",
+  "name": "Hostile H8",
+  "version": "0.0.1",
+  "description": "A memory bomb stops at the plugin limit",
+  "api": 2,
+  "audience": "admin"
+}

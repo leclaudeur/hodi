@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h17",
+  "name": "Hostile H17",
+  "version": "0.0.1",
+  "description": "PRAGMAs that change the file or the quota are refused",
+  "api": 2,
+  "audience": "admin"
+}

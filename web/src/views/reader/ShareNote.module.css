@@ -1,0 +1,108 @@
+/* A shared article: who sent it and their word, a band as wide as the article and rounded as its AI cards. */
+.note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 20px 12px 12px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--card);
+}
+
+.noteText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.note .who {
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.who b {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.when {
+  color: var(--text-3);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.quote {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* After the article: one row, the emojis on the right; under the question on a narrow screen. */
+.reply {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.reply .who {
+  font-size: 15px;
+}
+
+/* On a phone: the question above, the emojis under it, everything centred. */
+@media (max-width: 600px) {
+  .reply {
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.reactions {
+  display: flex;
+  gap: 8px;
+}
+
+.reaction {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--control);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.reaction[aria-pressed='true'] {
+  border-color: var(--text);
+  background: var(--raised);
+}
+
+@media (hover: hover) {
+  .reaction:hover {
+    background: var(--card-hover);
+  }
+}

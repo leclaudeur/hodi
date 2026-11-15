@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h15",
+  "name": "Hostile H15",
+  "version": "0.0.1",
+  "description": "ATTACH never opens Hodi database, whatever the path",
+  "api": 2,
+  "audience": "admin"
+}

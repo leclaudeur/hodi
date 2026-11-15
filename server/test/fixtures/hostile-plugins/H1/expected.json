@@ -1,0 +1,51 @@
+{
+  "case": "H1",
+  "title": "Node modules and process are out of reach",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/require",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/import",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/process",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/global-process",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

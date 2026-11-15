@@ -1,0 +1,258 @@
+/* A profile: round, ringed in its colour, as À la une's stories (see StoriesRow's .ring). */
+
+.avatar {
+  display: inline-block;
+  flex-shrink: 0;
+  /* Whole pixels: a 1.5px ring blurs on a circle. */
+  padding: 2px;
+  border: 2px solid var(--topic);
+  border-radius: 50%;
+  user-select: none;
+}
+
+.avatar[data-game] {
+  position: relative;
+  /* The ring is drawn instead, at the border's place. */
+  border-color: transparent;
+}
+
+.face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--topic-surface);
+  color: var(--topic);
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A drawn avatar stands on a light gradient of the profile's colour, the same in every theme. */
+.drawn {
+  background: radial-gradient(
+    circle at 50% 18%,
+    color-mix(in srgb, var(--topic) 15%, white) 0%,
+    color-mix(in srgb, var(--topic) 90%, white) 105%
+  );
+}
+
+/* Bebas' capitals sit high in their line: brought down to the middle. */
+.initial {
+  padding-top: 0.12em;
+}
+
+/* Where the browser can, the line is cut to the capital's own height: the letter is in the middle whatever the
+   system's font metrics (Windows rounds them differently, and the padding above then left it low). */
+@supports (text-box: trim-both cap alphabetic) {
+  .initial {
+    padding-top: 0;
+    text-box: trim-both cap alphabetic;
+  }
+}
+
+/* The household game's level: the profile's colour, filling up to the next level. */
+.ring {
+  position: absolute;
+  inset: -2px;
+  /* The global svg max-width (100% of the face's box) would make it narrower than tall, off centre. */
+  max-width: none;
+  transform: rotate(-90deg);
+  fill: none;
+  pointer-events: none;
+}
+
+/* In the profile's colour, dimmed: a new profile at 0 points keeps a ring that says whose it is. */
+.track {
+  stroke: color-mix(in srgb, var(--topic) 30%, transparent);
+}
+
+/* Filling from empty when it appears, and from one value to the next when the points change: slow enough to be
+   seen. */
+.progress {
+  stroke: var(--topic);
+  stroke-linecap: round;
+  transition: stroke-dashoffset calc(var(--duration) * 5) var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress {
+    transition: none;
+  }
+}
+
+/* The badge the profile wears, in its tier's colours, cut out of what is behind. */
+.pin {
+  position: absolute;
+  right: var(--pin-offset);
+  bottom: var(--pin-offset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--tier) 40%, transparent);
+  border-radius: 50%;
+  background: var(--tier-surface);
+  box-shadow: 0 0 0 2px var(--bg);
+  color: var(--tier);
+}
+
+.pin[data-tier='bronze'] {
+  --tier: var(--bronze);
+  --tier-surface: var(--bronze-surface);
+}
+
+.pin[data-tier='silver'] {
+  --tier: var(--silver);
+  --tier-surface: var(--silver-surface);
+}
+
+.pin[data-tier='gold'] {
+  --tier: var(--gold);
+  --tier-surface: var(--gold-surface);
+}
+
+/* Something new since the sheet was last opened: a sparkle in the badge's place, in the profile's colour. */
+.fresh {
+  border: 0;
+  background: var(--topic);
+  color: var(--on-topic);
+}
+
+/* A new level, while the app is open: the ring fills, then goes back to the level. A badge alone leaves the ring as it
+   is (it shows the points). Either way the pin changes for the sparkle, with a burst of colours. */
+[data-celebrating='level'] .progress {
+  animation: ring-full 2400ms var(--ease) both;
+}
+
+[data-celebrating] .leaving {
+  animation: pin-out 250ms var(--ease) both;
+}
+
+[data-celebrating] .fresh {
+  animation: pin-in 400ms var(--ease) 2000ms both;
+}
+
+[data-celebrating='badge'] .fresh {
+  animation-delay: 250ms;
+}
+
+/* More news while the sparkle shows: it stays and bursts again, a small pop as it does. */
+[data-celebrating][data-again] .fresh {
+  animation: pin-pop 400ms var(--ease) 2000ms both;
+}
+
+[data-celebrating='badge'][data-again] .fresh {
+  animation-delay: 0ms;
+}
+
+[data-celebrating='badge'][data-again] .burst i {
+  animation-delay: 100ms;
+}
+
+/* Small dots flying out from the sparkle's centre, as it lands. */
+.burst {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  pointer-events: none;
+}
+
+.burst i {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color);
+  opacity: 0;
+  /* forwards, not both: while waiting for its delay, a dot stays hidden rather than showing around the sparkle. */
+  animation: spark 700ms cubic-bezier(0.2, 0.7, 0.3, 1) 2250ms forwards;
+}
+
+[data-celebrating='badge'] .burst i {
+  animation-delay: 500ms;
+}
+
+@keyframes spark {
+  0% {
+    opacity: 1;
+    transform: translate(calc(cos(var(--angle)) * var(--from)), calc(sin(var(--angle)) * var(--from))) scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(cos(var(--angle)) * var(--distance)), calc(sin(var(--angle)) * var(--distance)))
+      scale(0.4);
+  }
+}
+
+/* Full, then emptied clockwise (its tail runs round to the top), then the new level's share from the top: never
+   wound back. */
+@keyframes ring-full {
+  0% {
+    stroke-dashoffset: var(--offset);
+  }
+  /* The emptying after it: slow, fast, slow (the hold before it has nothing to ease). */
+  30%,
+  55% {
+    stroke-dashoffset: 0;
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  82% {
+    stroke-dashoffset: var(--emptied);
+  }
+  82.01% {
+    stroke-dashoffset: var(--empty);
+  }
+  100% {
+    stroke-dashoffset: var(--offset);
+  }
+}
+
+@keyframes pin-out {
+  to {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+@keyframes pin-pop {
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes pin-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-celebrating] .progress,
+  [data-celebrating] .fresh {
+    animation: none;
+  }
+
+  .burst {
+    display: none;
+  }
+}

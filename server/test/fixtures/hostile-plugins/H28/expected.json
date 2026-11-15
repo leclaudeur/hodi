@@ -1,0 +1,36 @@
+{
+  "case": "H28",
+  "title": "A request carries no cookie, header or session",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/look",
+      "expect": {
+        "status": 200,
+        "body": {
+          "keys": [
+            "body",
+            "method",
+            "params",
+            "path",
+            "query",
+            "who"
+          ],
+          "headers": "undefined",
+          "cookies": "undefined",
+          "session": "undefined"
+        }
+      },
+      "headers": {
+        "Cookie": "sent by a signed-in profile",
+        "Authorization": "Bearer x"
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "note": "If path params are added (request.params), the expected keys gain \"params\"."
+}

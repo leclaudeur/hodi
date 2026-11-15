@@ -1,0 +1,50 @@
+{
+  "case": "H51",
+  "title": "publicRoutes: who is null and the body is capped",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/who",
+      "anonymous": true,
+      "body": {
+        "a": 1
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "who": null,
+          "size": 7
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/who",
+      "asCookieOf": "admin",
+      "body": {
+        "a": 1
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "who": null,
+          "size": 7
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/who",
+      "anonymous": true,
+      "bodyBytes": 70000,
+      "expect": {
+        "status": 413
+      }
+    }
+  ],
+  "note": "Even with the admin's cookie, a public route gets who: null: it must never learn who is signed in on the device.",
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ]
+}

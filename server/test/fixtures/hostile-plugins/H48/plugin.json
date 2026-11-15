@@ -1,0 +1,11 @@
+{
+  "id": "hostile-h48",
+  "name": "Hostile H48",
+  "version": "0.0.1",
+  "description": "ctx.accounts never returns a secret",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "accounts": true
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "case": "H16",
+  "title": "VACUUM INTO writes no file anywhere",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/over-hodi",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/beside",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/own-dir",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "note": "Refused even into its own folder: VACUUM INTO is off the statement whitelist."
+}

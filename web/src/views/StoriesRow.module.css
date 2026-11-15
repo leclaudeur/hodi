@@ -1,0 +1,158 @@
+.desktop {
+  position: relative;
+  /* Edge to edge, with a line under it as under the header. */
+  padding: 14px 0;
+  border-bottom: 2px solid var(--control);
+}
+
+/* The row fades out on the right while it scrolls on; at its end, the last circle shows whole. */
+.desktop::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 48px;
+  background: linear-gradient(to left, var(--column), transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.desktop.more::after {
+  opacity: 1;
+}
+
+.row {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.desktop .row {
+  gap: 12px;
+  padding: 2px 22px 4px;
+  scroll-padding: 0 22px;
+}
+
+.phone .row {
+  gap: 14px;
+  /* As much room under the header's line as above the filters. */
+  padding: 16px var(--gutter);
+  scroll-padding: 0 var(--gutter);
+}
+
+.story {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  scroll-snap-align: start;
+}
+
+/* Round, ringed in the topic's colour (rust for a section that isn't a topic). */
+.ring {
+  display: block;
+  /* Whole pixels: a 1.5px ring blurs on a circle. */
+  padding: 2px;
+  border: 2px solid var(--topic, var(--rust));
+  border-radius: 50%;
+}
+
+.desktop .ring {
+  width: 56px;
+  height: 56px;
+}
+
+.phone .ring {
+  width: 62px;
+  height: 62px;
+}
+
+.picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  background: linear-gradient(150deg, var(--raised), var(--control) 60%, var(--card));
+}
+
+.picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.label {
+  color: var(--text-nav);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: normal;
+}
+
+.seen .ring {
+  border-color: var(--border-strong);
+}
+
+/* Seen: the picture in black and white and dimmed, so the new ones stand out. */
+.seen .picture {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.seen .label {
+  color: var(--text-3);
+}
+
+/* "Résumé du jour": the AI's violet, its spark in place of a picture. */
+.dailySummary .ring {
+  border-color: var(--ai);
+}
+
+.dailySummaryFace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ai-surface);
+  color: var(--ai-text);
+}
+
+.dailySummary .label {
+  color: var(--ai-text-2);
+}
+
+/* Read: grey as a topic seen, its spark dimmed too. */
+.dailySummary.seen .ring {
+  border-color: var(--border-strong);
+}
+
+.dailySummary.seen .label {
+  color: var(--text-3);
+}
+
+/* Being written: the ring turns, a dash of violet going round. */
+.writing .ring {
+  border-color: var(--ai-border);
+  border-top-color: var(--ai);
+  animation: spin 1s linear infinite;
+}
+
+.writing .dailySummaryFace {
+  animation: spin 1s linear infinite reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .writing .ring,
+  .writing .dailySummaryFace {
+    animation-duration: 3s;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

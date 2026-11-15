@@ -1,0 +1,32 @@
+/* "Suggérer des sources": the violet line, then the sites proposed (SiteList) with what the AI says of each. */
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* A language's separator, in the dialog's flow: no sticky band, the dialog's own background. */
+.box .separator {
+  padding: 8px 0 0;
+  background: none;
+}
+
+.box .separator:first-child {
+  padding-top: 0;
+}
+
+.reason {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sample {
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

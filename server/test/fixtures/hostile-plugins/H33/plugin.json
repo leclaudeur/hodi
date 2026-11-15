@@ -1,0 +1,13 @@
+{
+  "id": "hostile-h33",
+  "name": "Hostile H33",
+  "version": "0.0.1",
+  "description": "signIn only for an account this call created or checked",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "accounts": true,
+    "publicRoutes": true,
+    "signIn": true
+  }
+}

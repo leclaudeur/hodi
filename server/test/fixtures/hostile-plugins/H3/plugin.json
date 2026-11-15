@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h3",
+  "name": "Hostile H3",
+  "version": "0.0.1",
+  "description": "No WebAssembly, SharedArrayBuffer or Atomics inside the sandbox",
+  "api": 2,
+  "audience": "admin"
+}

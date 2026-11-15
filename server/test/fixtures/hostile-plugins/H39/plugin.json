@@ -1,0 +1,11 @@
+{
+  "id": "hostile-h39",
+  "name": "Hostile H39",
+  "version": "0.0.1",
+  "description": "mail: 50 per hour per plugin",
+  "api": 2,
+  "audience": "admin",
+  "permissions": {
+    "mail": true
+  }
+}

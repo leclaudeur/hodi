@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h9",
+  "name": "Hostile H9",
+  "version": "0.0.1",
+  "description": "Five memory bombs at once stay inside the global budget",
+  "api": 2,
+  "audience": "admin"
+}

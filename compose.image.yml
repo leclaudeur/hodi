@@ -1,0 +1,59 @@
+name: hodi
+
+# Hodi from a ready-made image, for a server reached only through a web UI such as Portainer: paste this file as a
+# stack. It needs no file from the repository: the feed list and the game's rules are those built into the image.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+services:
+  app:
+    # A version's tag, such as 0.2.0, or latest. Change it to update: Hodi applies database changes on its own at start.
+    image: ghcr.io/leclaudeur/hodi:latest
+    container_name: hodi-app
+
+    # Only on this machine by default (HODI_BIND=127.0.0.1). HODI_BIND=0.0.0.0 opens it to the network, for a reverse
+    # proxy on another machine or container: do that only behind a firewall or a reverse proxy with HTTPS.
+    ports:
+      - '${HODI_BIND:-127.0.0.1}:${HODI_PORT:-3000}:3000'
+
+    environment:
+      NODE_ENV: production
+      HOST: '0.0.0.0'
+      PORT: '3000'
+
+    volumes:
+      - hodi-data:/app/data
+
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    pids_limit: 128
+
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --tries=1
+        - --spider
+        - http://127.0.0.1:3000/health
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    logging: *logging
+
+    restart: unless-stopped
+
+volumes:
+  hodi-data:
