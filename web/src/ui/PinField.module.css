@@ -21,29 +21,29 @@
 }
 
 .boxes {
-  --box: 44px;
-  --gap: 8px;
-  --radius: 14px;
+  /* Six digits: four gaps inside the groups, then the dash and the gap on each of its sides. */
+  --n: 6;
+  --spaces: calc(4 * 8px + 26px);
   position: relative;
   display: flex;
   align-items: center;
-  /* The two groups at the field's two edges, as wide as the fields above them, a dash between. */
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  max-width: 360px;
+  gap: 8px;
+  /* Boxes of 44 px at most, narrower in a narrower place. A set width: a container's width never follows its
+     content, so it would be 0 in a place as wide as what it holds. */
+  width: calc(var(--n) * 44px + var(--spaces));
+  max-width: 100%;
+  container-type: inline-size;
 }
 
-/* Eight characters: smaller boxes of the same shape, the same size everywhere, so they fit a phone. */
+/* Eight characters: two more boxes and two more gaps. */
 .long {
-  --box: 32px;
-  --gap: 6px;
-  --radius: 10px;
+  --n: 8;
+  --spaces: calc(6 * 8px + 26px);
 }
 
 .group {
   display: flex;
-  gap: var(--gap);
+  gap: 8px;
 }
 
 .dash {
@@ -75,13 +75,14 @@
   position: relative;
   display: flex;
   align-items: center;
+  /* The boxes and the dash fill the field's width; each box keeps the 44 × 60 shape, its corners in proportion. */
+  --box: calc((100cqw - var(--spaces)) / var(--n));
   flex: none;
   justify-content: center;
-  /* 44 × 60, or 32 × 44 for eight characters: the same shape, the same size wherever the field is. */
   width: var(--box);
   aspect-ratio: 44 / 60;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: calc(var(--box) * 14 / 44);
   background: var(--control);
   transition:
     border-color 160ms,
@@ -105,7 +106,8 @@
 .shown .box {
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: calc(var(--box) / 2);
+  /* The text follows the box, between a size still easy to read and the one of a 44 px box. */
+  font-size: clamp(14px, calc(var(--box) / 2), 22px);
 }
 
 .wrong.shown .box {
