@@ -70,10 +70,7 @@
 
 /* Under the button, as wide as a notice's text wants, over the page. */
 .bubble {
-  position: absolute;
-  z-index: 30;
-  top: calc(100% + 10px);
-  left: -12px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 8px;

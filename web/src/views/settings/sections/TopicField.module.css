@@ -66,12 +66,7 @@
 }
 
 .options {
-  position: absolute;
-  z-index: 5;
-  top: calc(100% + 6px);
-  right: 0;
-  left: 0;
-  max-height: 248px;
+  box-sizing: border-box;
   overflow-y: auto;
   margin: 0;
   padding: 6px;

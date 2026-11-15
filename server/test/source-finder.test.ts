@@ -28,7 +28,7 @@ const finder = (responses: Record<string, FakeResponse>, youtube: Record<string,
 describe('source finder', () => {
   it('finds the feed a site names, and tries three articles in the reader', async () => {
     const { find } = finder({
-      'https://blog.example/': `<html><head><link rel="alternate" type="application/rss+xml" href="/flux.xml"></head></html>`,
+      'https://blog.example/': `<html><head><meta property="og:site_name" content="Le Blog"><link rel="alternate" type="application/rss+xml" href="/flux.xml"></head></html>`,
       'https://blog.example/flux.xml': blogFeed,
       ...articles
     })
@@ -36,8 +36,9 @@ describe('source finder', () => {
     const result = await find('blog.example')
 
     assert.equal(result.status, 'ok')
+    // The feed calls itself "Feed": the site's own name is used.
     assert.deepEqual(result.status === 'ok' && result.source, {
-      name: 'Feed',
+      name: 'Le Blog',
       url: 'https://blog.example/flux.xml',
       kind: 'article',
       lang: 'fr',

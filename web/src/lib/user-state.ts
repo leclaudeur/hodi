@@ -126,41 +126,49 @@ export const subscribeUserState = (listener: () => void) => {
   return () => listeners.delete(listener)
 }
 
+// One change to the server; null when the network is away, and the change is kept here and leaves with the network.
+const sendChange = async (change: (typeof outbox)[number]) => {
+  try {
+    return await fetch(`/api/me${change.path}`, {
+      method: change.method,
+      headers: change.body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: change.body === undefined ? undefined : JSON.stringify(change.body)
+    })
+  } catch {
+    // Once per time offline.
+    if (!navigator.onLine && !toldOffline) {
+      toldOffline = true
+      showInfo(t('sync.offline'))
+    }
+    return null
+  }
+}
+
+const afterSent = async (change: (typeof outbox)[number], response: Response) => {
+  if (change.setting) showSaved()
+  const { revision } = (await response.json().catch(() => ({}))) as { revision?: number }
+  // Exactly one change since our copy: it is ours, and our copy is up to date.
+  if (typeof revision === 'number' && revision === state.revision + 1) commit({ ...state, revision })
+  else lastRefresh = 0
+}
+
 // Sends the waiting changes in order. A change the server refuses is dropped; a network error keeps it for later.
 const sendOutbox = async () => {
   let sent = false
   while (outbox.length > 0) {
     const change = outbox[0]!
-    let response: Response
-    try {
-      response = await fetch(`/api/me${change.path}`, {
-        method: change.method,
-        headers: change.body === undefined ? undefined : { 'Content-Type': 'application/json' },
-        body: change.body === undefined ? undefined : JSON.stringify(change.body)
-      })
-    } catch {
-      // Once per time offline: the change is kept here and leaves with the network.
-      if (!navigator.onLine && !toldOffline) {
-        toldOffline = true
-        showInfo(t('sync.offline'))
-      }
-      return
-    }
+    const response = await sendChange(change)
     // Logged out: the changes wait for the next session.
-    if (response.status === 401) return
+    if (!response || response.status === 401) return
 
     outbox = outbox.slice(1)
     writeJson(OUTBOX_KEY, outbox)
-    if (!response.ok) showError(t('sync.refused'), undefined, 'sync-refused')
-
-    if (response.ok) {
-      sent = true
-      if (change.setting) showSaved()
-      const { revision } = (await response.json().catch(() => ({}))) as { revision?: number }
-      // Exactly one change since our copy: it is ours, and our copy is up to date.
-      if (typeof revision === 'number' && revision === state.revision + 1) commit({ ...state, revision })
-      else lastRefresh = 0
+    if (!response.ok) {
+      showError(t('sync.refused'), undefined, 'sync-refused')
+      continue
     }
+    sent = true
+    await afterSent(change, response)
   }
   if (sent) sentListeners.forEach(listener => listener())
 }

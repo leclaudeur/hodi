@@ -12,7 +12,7 @@ import {
 } from '../api.ts'
 import { usePreferences } from './preferences.ts'
 import { useProfiles } from './profiles.ts'
-import { isRead, isReadAndClosed, useReadState } from './read-state.ts'
+import { isRead, useReadState } from './read-state.ts'
 import { sendPendingChanges } from './user-state.ts'
 
 // "Partages": the articles the household's other profiles sent here. The list and the counter beside
@@ -53,15 +53,8 @@ export const refreshShares = (onUnauthorized?: () => void): Promise<void> => {
     )
     .then(([{ items }, found]) => {
       reactions = found
-      // Read, a share is gone from the server; the one open in the reader keeps its place until it closes, as in
-      // the other lists.
-      const kept = (entries ?? []).filter(
-        entry =>
-          isRead(entry.item.id) &&
-          !isReadAndClosed(entry.item.id) &&
-          !items.some(other => other.item.id === entry.item.id)
-      )
-      entries = [...items, ...kept].sort((a, b) => b.sharedAt - a.sharedAt)
+      // Read ones too: "Partages" hides them under "Masquer les articles lus", as the other lists do.
+      entries = items
       failed = false
     })
     .catch((error: unknown) => {

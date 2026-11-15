@@ -1,0 +1,22 @@
+{
+  "case": "H35",
+  "title": "households: remove or suspend what the plugin did not create",
+  "setup": "The setup household (id 1, the server admin's) and a second household made by the core (Serveur › Foyers).",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/wipe",
+      "body": {},
+      "expect": {
+        "status": 200
+      }
+    }
+  ],
+  "expectBody": "Every 'suspend <id>' and 'remove <id>' for a household the plugin did not create has ok: false. 'remove own' has ok: true.",
+  "afterInCore": "Both core households still exist, not suspended, with all their profiles. The plugin-made household is removed (soft delete if the core keeps one).",
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ],
+  "decision": "Antho 2026-11-08 11:35: suspend and resume, like remove, only for households the plugin created."
+}

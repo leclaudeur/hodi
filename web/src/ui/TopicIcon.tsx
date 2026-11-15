@@ -28,28 +28,28 @@ import {
 
 // Each topic's icon (the charter's), shown with its colour (styles/tokens.css, data-topic).
 const ICONS: Record<string, LucideIcon> = {
-  belgique: Landmark,
-  monde: Globe,
+  belgium: Landmark,
+  world: Globe,
   tech: Cpu,
   science: FlaskConical,
-  'films-series': Clapperboard,
-  'jeux-video': Gamepad2,
-  ia: Bot,
+  'film-tv': Clapperboard,
+  gaming: Gamepad2,
+  ai: Bot,
   broadcast: Radio,
   lifestyle: Coffee,
-  'auto-moto': Car,
+  motoring: Car,
   sport: Trophy,
-  'argent-conso': Wallet,
-  sante: HeartPulse,
-  cuisine: CookingPot,
-  voyage: Plane,
-  musique: Music,
+  money: Wallet,
+  health: HeartPulse,
+  food: CookingPot,
+  travel: Plane,
+  music: Music,
   culture: Palette,
-  'maison-deco': Sofa,
-  famille: Baby,
-  'mode-beaute': Shirt,
-  climat: Leaf,
-  animaux: PawPrint
+  home: Sofa,
+  family: Baby,
+  fashion: Shirt,
+  climate: Leaf,
+  animals: PawPrint
 }
 
 // A topic's icon, decorative: the topic's name is always written beside it.

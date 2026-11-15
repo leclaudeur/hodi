@@ -1,19 +1,38 @@
+/* Built as a settings row in its card: the coloured square at the top left, the title and the description beside
+   it, the button at the end. The card and its square take the tone's colours. */
 .notice {
+  --button-height: 38px;
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   gap: 14px;
-  /* Folded, as tall and as round as an accordion of the settings (66px, 16px). */
-  padding: 16px 20px;
-  border: 1px solid var(--info-border);
+  min-height: 66px;
+  padding: 14px;
+  border: 1px solid var(--notice-border);
   border-radius: 16px;
-  background: var(--info-surface);
+  background: var(--notice-surface);
 }
 
-/* With round buttons at the right: the title and text beside them. */
-.withSide {
-  flex-direction: row;
-  align-items: center;
-  gap: 16px;
+.info {
+  --notice-surface: var(--info-surface);
+  --notice-border: var(--info-border);
+  --notice-mark: var(--info-mark);
+  --notice-icon: var(--info-icon);
+}
+
+/* The waiting colour, as the « Non vérifié » chip. */
+.warning {
+  --notice-surface: var(--topic-belgium-surface);
+  --notice-border: var(--topic-belgium-border);
+  --notice-mark: var(--topic-belgium-surface);
+  --notice-icon: var(--topic-belgium);
+}
+
+/* Something off or broken, in the red of the destructive buttons. The card is a lighter red than its square. */
+.error {
+  --notice-surface: color-mix(in srgb, var(--destructive) 55%, var(--column));
+  --notice-border: var(--destructive-border);
+  --notice-mark: var(--destructive);
+  --notice-icon: var(--destructive-text);
 }
 
 /* Clickable all over: a link under the content, the round buttons above it. */
@@ -23,7 +42,7 @@
 }
 
 .linked:hover {
-  border-color: var(--info-icon);
+  border-color: var(--notice-icon);
 }
 
 .cover {
@@ -40,97 +59,39 @@
   position: relative;
 }
 
+/* At the top, whatever the text's length: 44px, as the settings rows' squares. */
+.mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--notice-border);
+  border-radius: 12px;
+  background: var(--notice-mark);
+  color: var(--notice-icon);
+}
+
 .main {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 14px;
+  gap: 2px;
   min-width: 0;
 }
 
-.side {
-  display: flex;
-  flex-shrink: 0;
-  gap: 8px;
-}
-
-.heading {
-  font: inherit;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Folding: the whole header opens it, its chevron in a 34px round as its mark. */
-button.header {
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-}
-
-.chevron {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  margin-left: auto;
-  border: 1px solid var(--info-border);
-  border-radius: 50%;
-  background: var(--info-mark);
-  color: var(--info-icon);
-}
-
-.chevron svg {
-  transition: transform var(--duration) var(--ease);
-}
-
-.header[aria-expanded='true'] .chevron svg {
-  transform: rotate(180deg);
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.content[hidden] {
-  display: none;
-}
-
-.mark {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--info-border);
-  border-radius: 50%;
-  background: var(--info-mark);
-  color: var(--info-icon);
-}
-
 .title {
+  margin: 0;
   color: var(--text);
-  font-size: 16px;
-  font-weight: 600;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-/* Flush with the mark, as in the AI cards. A block, not a flex column: a link inside a sentence stays in
-   its line. Paragraphs are spaced among themselves. */
+/* A block, not a flex column: a link inside a sentence stays in its line. Paragraphs are spaced among themselves. */
 .text {
-  color: var(--info-text);
+  color: var(--text-3);
   font-size: 14px;
-  line-height: 1.6;
 }
 
 .text p {
@@ -138,17 +99,53 @@ button.header {
 }
 
 .text p + p {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .text a {
-  color: var(--info-icon);
+  color: var(--text-2);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.actions {
+/* At the end, centred on the square. */
+.side {
   display: flex;
-  flex-wrap: wrap;
+  flex-shrink: 0;
+  align-items: center;
   gap: 8px;
+  min-height: 44px;
+}
+
+.roundAction {
+  display: none;
+}
+
+/* A computer's or a tablet's line stops at the settings rows' length. */
+@media (min-width: 601px) {
+  .main {
+    max-width: 500px;
+    margin-right: auto;
+  }
+}
+
+/* A phone has no room for a labelled button beside the text: a round one, as the settings rows. */
+@media (max-width: 600px) {
+  .notice {
+    padding: 12px;
+  }
+
+  .wideAction {
+    display: none;
+  }
+
+  .roundAction {
+    display: inline-flex;
+  }
+}
+
+/* On a coloured card the usual button fades: a step lighter, with a firmer edge. */
+.side :is(a, button) {
+  border-color: var(--border-strong);
+  background: var(--raised);
 }

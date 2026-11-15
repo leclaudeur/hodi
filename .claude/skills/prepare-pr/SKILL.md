@@ -36,9 +36,15 @@ npm run build
 
 Conventional Commits, in English: `feat(web): …`, `fix(server): …`, `docs: …`, `refactor: …`, `test: …`. The subject says what changes for the user when it can.
 
-## 4. Description
+## 4. Changelog
 
-Fill in `.github/pull_request_template.md`:
+Add a line under « Unreleased » in `CHANGELOG.md` for what a user or an installer would notice, and in
+`plugin-sdk/CHANGELOG.md` for what a plugin author would. Never raise the SDK's `version` here: a release pull request
+does it.
+
+## 5. Description
+
+Fill in `.github/PULL_REQUEST_TEMPLATE.md`:
 
 - **Summary**: what changes and why, in a few sentences.
 - **How it was tested**: the commands run and what was checked by hand.

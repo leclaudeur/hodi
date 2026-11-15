@@ -16,8 +16,6 @@ points:
   # A day with at least reading_day_articles articles read.
   reading_day: 10
   reading_day_articles: 3
-  # Nothing earns more than this in one day; the weekly challenge's bonus comes on top.
-  daily_cap: 100
 
 # The points needed to reach each level, from 0. Each level costs twice the one before.
 levels:

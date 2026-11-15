@@ -1,7 +1,7 @@
 import { typesAtOnce } from '../../lib/use-media.ts'
 import { Check, Search } from 'lucide-react'
 import { type ReactNode, useMemo, useState } from 'react'
-import { foldText as fold } from '../../lib/word-match.ts'
+import { foldText as fold } from '../../../../shared/word-match.ts'
 import Dialog from '../../ui/Dialog.tsx'
 import TextField from '../../ui/TextField.tsx'
 import { useTranslation } from 'react-i18next'

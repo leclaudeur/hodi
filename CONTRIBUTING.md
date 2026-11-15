@@ -1,48 +1,70 @@
 # Contributing
 
-Thanks for your interest in Hodi! Bug reports, source suggestions and pull requests are welcome.
+Thanks for your interest in Hodi! Bug reports, source suggestions and pull requests are all welcome. This page explains
+how a contribution goes, the rules every change follows and how to run Hodi on your own machine.
 
 ## How contributions work
 
-- Every change goes through a pull request against `main`. Hodi has a single maintainer, who reviews and merges every pull request; nobody else can merge.
-- For anything bigger than a small fix, **open an issue first** so we can agree on the approach before you spend time on it. Pull requests that change the product's direction without a prior discussion may be closed.
-- For a news source, use the **Source suggestion** issue template, or edit `sources.yml` (see [docs/sources.md](docs/sources.md)).
-- For a security problem, do not open an issue: see [SECURITY.md](SECURITY.md).
+Every change goes through a pull request against `main`. Hodi has a single maintainer, who reviews and merges every
+pull request: nobody else can merge. For anything bigger than a small fix, **open an issue first**, so we agree on the
+approach before you spend time on it. A pull request that changes the product's direction without a prior discussion
+may be closed.
+
+> [!IMPORTANT]
+> Never report a security problem in an issue: follow [SECURITY.md](SECURITY.md) instead.
 
 ## Adding sources
 
-[docs/source-list.md](docs/source-list.md) lists every source Hodi knows, by topic, with its language. If a site you read is missing, add it:
+[docs/source-list.md](docs/source-list.md) lists every source Hodi knows, by topic, with its language and its site. If a
+site you read is missing, open an issue with the **Source suggestion** template, or add it yourself in four steps:
 
-1. Add it to `sources.yml` under its topic, with `lang: en` for an English site (the comment at the top of the file describes every field).
-2. Check it from an install running your copy: `docker compose exec app node dist/server/cli/check-sources.js`. The install reads `sources.yml` from its folder, so the check sees your edit. Your source should list articles that open in the reader, or be marked `reader: false`.
-3. Run `npm run sources:list` to update `docs/source-list.md`; a test fails when the list is out of date.
-4. Open a pull request and paste what the check printed for your source.
+1. Add it to `sources.yml` under its topic, with `lang: en` for a site in English. Every field is described in
+   [docs/sources.md](docs/sources.md).
+2. Check it from an install of your copy. Its articles should open in the reader, unless it is marked `reader: false`:
 
-Sources in English are especially welcome: many topics still have only French ones.
+   ```bash
+   docker compose exec app node dist/server/cli/check-sources.js
+   ```
+
+3. Run `npm run sources:list` to update the source list: a test fails when it is out of date.
+4. Open a pull request, and paste what the check printed for your source.
+
+> [!TIP]
+> Sources in English are especially welcome: many topics still have only French ones.
+
+## Improving the reader
+
+An article that shows wrong in the reader, with a paragraph missing or a leftover "Follow us", is worth a report. Open an
+issue with the **Reader problem** template, or fix it yourself with a test made from the real page.
+[docs/reader.md](docs/reader.md) explains how the reader works, where each of its rules lives and how to test a fix.
 
 ## Project rules
 
-- The interface is in **French** (informal "tu") and **English**: every text lives in `shared/locales/fr.json` and `en.json`, never in a component. Code, comments, commits and docs are in **English**.
-- **No AI call ever runs without an explicit click.** Never add an automatic, background or prefetched AI request: users pay for every call.
-- No new configuration file or environment variable for something a user should choose: settings belong in the browser (Réglages), so the install stays `git clone` + `docker compose up`.
-- No secrets in the repository, in issues or in pull requests.
-- Prefer an established package to hand-written code. Compare weekly downloads, open issues and last release in the pull request that adds it.
+Every change follows these rules, written for AI agents too in [AGENTS.md](AGENTS.md). How the code itself is written
+is in [docs/conventions.md](docs/conventions.md).
 
-AI coding agents follow the same rules: see [AGENTS.md](AGENTS.md).
+- **Small modules**: at most 300 lines per file, 80 per function or component and a complexity under 15, or `npm run lint` fails.
+- **Interface texts in the locale files**, in French (with "tu") and English; everything else in English.
+- **No AI call without a click**: never an automatic, background or prefetched request, as users pay for each one.
+- **Settings in the browser**, never in a configuration file or an environment variable.
+- **No secrets** in the repository, in issues or in pull requests.
+- **An established package before hand-written code**, compared with the alternatives in the pull request.
 
 ## Development
 
-You need Node.js 24. Or, without Node.js, Docker: the `scripts/` run the tooling in a `node:24-alpine` container.
+You need Node.js 24 or later. Without Node.js, Docker works too: the scripts in `scripts/` run the tooling in a
+`node:24-alpine` container.
 
 ```bash
 npm ci
 npm run build && npm start    # http://localhost:3000, data in ./data
-npm run dev:web               # web app with hot reload on http://localhost:5173, API from the server above
+npm run dev:web               # the web app with hot reload on http://localhost:5173, API from the server above
 ```
 
-The first visit shows the setup screens; no `.env` is needed. To start again from scratch, stop the server and delete `./data`.
+The first visit shows the setup screens, with no `.env` to write. To start again from scratch, stop the server and
+delete the `data` folder.
 
-Before opening a pull request, all of these must pass (CI runs them too):
+Before you open a pull request, all of these must pass, and CI runs them too:
 
 ```bash
 npm run typecheck
@@ -52,16 +74,27 @@ npm test
 npm run build
 ```
 
-Without Node.js: `./scripts/test.sh`, `./scripts/lint.sh` and `./scripts/format.sh`.
+> [!TIP]
+> Without Node.js, the same checks run in Docker:
+>
+> ```bash
+> ./scripts/test.sh
+> ./scripts/lint.sh
+> ./scripts/format.sh
+> ```
 
 ## Pull requests
 
-- One topic per pull request, small enough to review in one sitting.
-- Commit messages and the pull request title follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `refactor:`…).
-- Fill in the pull request template: what changes and why, how you tested it, and what to check after merging.
-- A visible change comes with screenshots at the three sizes: computer (1440 × 900), tablet (820 × 1180) and phone (390 × 844).
-- Server changes come with tests in `server/test/`; changes to the web utilities (`web/src/lib/`) with tests in `web/test/`. A change to a key journey (the list is in [AGENTS.md](AGENTS.md#end-to-end-tests)) keeps `e2e/` passing: `npm run test:e2e` (the first time, `npx playwright install chromium`).
-- Update the docs (`README.md`, `docs/`) when behaviour changes.
-- Database changes are new migrations at the end of `server/db/migrations.ts`, never edits of existing ones.
+- **One topic per pull request**, small enough to review in one sitting.
+- **[Conventional Commits](https://www.conventionalcommits.org/)** for the commits and the title: `feat:`, `fix:`, `docs:`…
+- **The template filled in**: what changes and why, how you tested it, what to check after merging.
+- **Screenshots of a visible change**: computer (1440 × 900), tablet (820 × 1180) and phone (390 × 844).
+- **Tests with the change**, in `server/test/` for the server and `web/test/` for the web utilities.
+- **The key journeys green**: `npm run test:e2e` passes ([AGENTS.md](AGENTS.md#end-to-end-tests) lists them).
+- **New migrations only**, at the end of `server/db/migrations.ts`, never an edit of an existing one.
+- **Docs up to date** when behaviour changes, in `README.md` or `docs/`.
+- **A changelog line** under « Unreleased » in [CHANGELOG.md](CHANGELOG.md), or [the SDK's](plugin-sdk/CHANGELOG.md) for plugins.
 
-By contributing, you agree that your contributions are licensed under the [AGPL-3.0](LICENSE).
+## License
+
+By contributing, you agree that your contributions are licensed under the [AGPL-3.0](LICENSE), like the rest of Hodi.

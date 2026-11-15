@@ -1,0 +1,26 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "server/index.ts",
+    "server/start.ts",
+    "server/plugins/sandbox/worker.ts",
+    "server/news/extract-worker.ts",
+    "server/cli/*.ts",
+    "server/test/**/*.test.ts",
+    "web/test/**/*.test.ts",
+    "e2e/**/*.ts",
+    "plugin-sdk/{bin,build,server,web,testing,dev,cli,check-package}.ts",
+    "plugin-sdk/test/**/*.{ts,tsx}",
+    "plugin-sdk/tsdown.config.ts"
+  ],
+  "project": [
+    "server/**/*.ts",
+    "web/src/**/*.{ts,tsx}",
+    "web/test/**/*.ts",
+    "shared/**/*.ts",
+    "plugin-sdk/**/*.{ts,tsx}",
+    "e2e/**/*.ts"
+  ],
+  "ignoreDependencies": ["hodi"],
+  "ignoreExportsUsedInFile": true
+}

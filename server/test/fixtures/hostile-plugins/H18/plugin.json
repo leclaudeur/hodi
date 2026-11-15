@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h18",
+  "name": "Hostile H18",
+  "version": "0.0.1",
+  "description": "No SQLite extension loads",
+  "api": 2,
+  "audience": "admin"
+}

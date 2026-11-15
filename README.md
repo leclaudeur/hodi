@@ -19,6 +19,7 @@
   <a href="LICENSE"><img alt="Licence: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue"></a>
   <img alt="Node.js 24 or later" src="https://img.shields.io/badge/node-%E2%89%A524-339933?logo=nodedotjs&logoColor=white">
   <img alt="Runs with Docker Compose" src="https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white">
+  <a href="https://www.patreon.com/cw/LeClaudeur"><img alt="Patreon" src="https://img.shields.io/badge/Patreon-Le%20Claudeur-F96854?logo=patreon&logoColor=white"></a>
 </p>
 
 <p align="center">
@@ -26,10 +27,9 @@
   <a href="#features"><b>Features</b></a> ·
   <a href="#screenshots"><b>Screenshots</b></a> ·
   <a href="#documentation"><b>Documentation</b></a> ·
-  <a href="#contributing"><b>Contributing</b></a>
+  <a href="#contributing"><b>Contributing</b></a> ·
+  <a href="#sponsor"><b>Sponsor</b></a>
 </p>
-
-<p align="center"><b>English</b> · <a href="README.fr.md">Français</a></p>
 
 <p align="center">
   <img alt="Hodi on a computer: the feed with an article open in the reader" src="docs/assets/screenshots/desktop.png" width="100%">
@@ -106,6 +106,7 @@ Here you will find **how to run Hodi** and **how it works**.
 4. [Security](docs/security.md) - sign-in, secrets, the container and outgoing requests
 5. [Architecture](docs/architecture.md) - how the code is organized, for contributors
 6. [Performance](docs/performance.md) - Lighthouse scores, how they are measured, and what keeps Hodi fast
+7. [Code conventions](docs/conventions.md) - names, file sizes and comments, for contributors
 
 ## Contributing
 
@@ -129,6 +130,14 @@ Hodi has a single maintainer, who reviews and merges every pull request. For any
 > [SECURITY.md](SECURITY.md).
 
 Thanks for taking the time to make Hodi better!
+
+## Sponsor
+
+Hodi is free and open source, with no ads and nothing to pay.\
+If it is useful to you, you can support its work on Patreon. The link is also in Réglages › À propos and in the
+Serveur space.
+
+[![Support Hodi on Patreon](https://img.shields.io/badge/Support%20Hodi-Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/cw/LeClaudeur)
 
 ## License
 

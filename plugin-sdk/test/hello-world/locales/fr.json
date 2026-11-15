@@ -1,0 +1,25 @@
+{
+  "manifest": {
+    "name": "Hello world",
+    "description": "Un exemple de plugin : un réglage, une route et sa propre carte."
+  },
+  "settings": {
+    "greeting": "Message",
+    "greetingHint": "Ce que le plugin répond",
+    "loud": "En majuscules",
+    "loudHint": "Pour les grands jours"
+  },
+  "title": "Dire bonjour",
+  "hint": "Le serveur du plugin répond avec ton message",
+  "say": "Dire bonjour",
+  "count_one": "Dit {{count}} fois",
+  "count_other": "Dit {{count}} fois",
+  "failed": "Le plugin n’a pas répondu.",
+  "server": {
+    "said": "Bonjours dits",
+    "intro": "Combien de fois le foyer a dit bonjour avec le plugin.",
+    "total": "Au total",
+    "hint": "Un exemple de section de plugin",
+    "period": "Le tableau de bord montre du {{from}} au {{to}}."
+  }
+}

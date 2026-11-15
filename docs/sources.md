@@ -1,48 +1,58 @@
 # Sources
 
+Hodi's news comes from the RSS and Atom feeds listed in [`sources.yml`](../sources.yml): the themes, their sources, and
+the YouTube channels and podcasts of the _Videos_ page. This page explains how Hodi uses that file and what each of its
+fields does, then how to check the feeds and how to suggest a new source for everyone.
+
 ## How sources work
 
-[`sources.yml`](../sources.yml) lists the themes, their suggested sources and the video channels and podcasts. It fills an empty database when the household is set up; after that, the database holds the household's sources and editing the file's feeds changes nothing for an existing install.
+The file fills an empty database once, when the household is set up. After that, the database holds the household's
+sources, so editing the file's feeds changes nothing on an existing install. A renamed theme is the exception: it shows
+after a restart.
 
-- **Base sources** (`base: [fr]`, `base: [en]`) are the only ones a new household and a new profile start with, in the household's language (chosen at setup). Each is written in that language (`lang`). They can be hidden, not deleted.
-- The other sources are **suggestions**: a profile adds them from Réglages > Sources, or adds any site, feed or YouTube channel by link. A source added by a profile can be deleted by that profile or by the admin, for the whole household.
-- A source may belong to several themes. A theme with no source is hidden.
-- A theme's name (`label`) is the same in every language (`Tech`), or given per language (`{ fr: Monde, en: World }`); each profile sees it in its own language. Unlike the feeds, a renamed theme shows after a restart, even on an existing install.
-- Feeds mixing French and English keep only the articles in the source's language.
+**Base sources** are the only ones a new household and a new profile start with, in the household's language. They
+can be hidden, never deleted. Every other source is a **suggestion**: a profile adds it from _Settings › Sources_, or
+adds any site, feed or YouTube channel with its link. A source a profile added can be deleted by that profile or by
+the admin, for the whole household.
 
-Every source in the file is listed, by topic, in [source-list.md](source-list.md).
+A source may belong to several themes, and a theme with no source is hidden. Each profile sees a theme's name in its
+own language. In a feed that mixes French and English, only the articles in the source's language are kept.
+
+> [!TIP]
+> Every source in the file is listed by theme in [source-list.md](source-list.md).
 
 ## Fields
 
-`sources.yml` has two lists: `topics`, the themes of the feed, and `listen`, the sections of "Écouter et regarder".
+`sources.yml` holds two lists: `topics`, the themes of the feed, and `listen`, the sections of the _Videos_ page. The
+server checks the file when it starts, and names the field at fault (`topics[0].sources[2].domains`) when one is wrong.
 
-### A theme (`topics`) or a section (`listen`)
+### A theme or a section
 
-| Field     | Required | What it does                                                                                                                            |
-| --------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`      | yes      | Lowercase letters, digits and dashes, unique among themes (or sections).                                                                |
-| `label`   | yes      | Its name: the same in every language (`Tech`), or one per language (`{ fr: Monde, en: World }`).                                        |
-| `young`   | no       | Themes only. The kinds of young profiles that see the theme: `[teen]`, `[child]` or `[teen, child]`. Missing, no young profile sees it. |
-| `sources` | yes      | Its sources, below.                                                                                                                     |
+- **`id`** (required): lowercase letters, digits and dashes, unique among the themes, or among the sections.
+- **`label`** (required): its name, the same in every language (`Tech`) or one per language (`{ fr: Monde, en: World }`).
+- **`young`**: themes only, the young profiles that see it: `[teen]`, `[child]` or both. Missing, they see none.
+- **`sources`** (required): its sources, described below.
 
 ### A source
 
-| Field        | Required     | Default                                    | What it does                                                                                                                                                                                                                          |
-| ------------ | ------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`         | yes          |                                            | Lowercase letters, digits and dashes, unique in the whole file: a source sits in one theme here, and profiles add it to more themes in the app.                                                                                       |
-| `name`       | yes          |                                            | The name shown on its cards.                                                                                                                                                                                                          |
-| `url`        | yes          |                                            | Its RSS or Atom feed, in `https`. For a YouTube channel: `https://www.youtube.com/feeds/videos.xml?channel_id=…`.                                                                                                                     |
-| `kind`       | no           | `article` in `topics`, `video` in `listen` | `article`, `video` or `podcast`. `listen` takes only `video` and `podcast`.                                                                                                                                                           |
-| `lang`       | no           | `fr`                                       | The language it writes in: `fr` or `en`. In a feed that mixes both, the articles in the other language are left out.                                                                                                                  |
-| `domains`    | for articles |                                            | The hosts Hodi may fetch article pages from (subdomains included), to show them in its reader. An article that does not open there (subscriber-only, too short) is hidden. Not needed with `reader: false`.                           |
-| `reader`     | no           | `true`                                     | `false` when the articles never open in the reader (a consent page, a bot wall): every article is listed with its feed summary and a link to the site.                                                                                |
-| `skip`       | no           |                                            | Paths whose pages are not articles (`/fr/vidéo/`): their items are left out, never fetched.                                                                                                                                           |
-| `base`       | no           |                                            | `[fr]`, `[en]` or both: a base source for a household set up in that language. A new household and every new profile start with it, and it can be hidden but not deleted. Every other source is only suggested in Réglages > Sources. |
-| `young`      | no           |                                            | `[teen]`, `[child]` or both: the source is in the catalogue of these young profiles, for their parents to turn on in Réglages > Profils > Gérer > Sources. Only shown in a theme those profiles see (the theme's `young`).            |
-| `young_base` | no           |                                            | `[teen]`, `[child]` or both: these young profiles start with the source turned on. It is then in their catalogue too, so `young` need not repeat it.                                                                                  |
-| `adults`     | no           |                                            | `false`: a source made for young readers (JDE), never suggested to the adults. Use it with `young`.                                                                                                                                   |
+- **`id`** (required): lowercase letters, digits and dashes, unique in the whole file.
+- **`name`** (required): the name shown on its cards.
+- **`url`** (required): its feed in `https`. A YouTube channel's is `https://www.youtube.com/feeds/videos.xml?channel_id=…`.
+- **`kind`**: `article` (the default in `topics`), `video` (the default in `listen`) or `podcast`.
+- **`lang`**: the language it writes in, `fr` (the default) or `en`.
+- **`domains`**: for articles, the hosts Hodi may fetch article pages from, subdomains included.
+- **`reader`**: `false` when articles never open in Hodi's reader; each one then shows its summary and a link.
+- **`skip`**: paths whose pages are not articles (`/fr/vidéo/`), left out without being fetched.
+- **`base`**: `[fr]`, `[en]` or both, a base source for a household set up in that language.
+- **`young`**: `[teen]`, `[child]` or both, in the catalogue their parents turn on in _Settings › Profiles › Manage_.
+- **`young_base`**: `[teen]`, `[child]` or both, turned on for these profiles from the start.
+- **`adults`**: `false` for a source made for young readers, never suggested to adults. Use it with `young`.
 
-For example, a source every French household starts with, that teens also start with:
+An article that does not open from its `domains`, because it is for subscribers only or too short, is hidden. A source
+marked `reader: false` needs no `domains`, and an install that already follows it switches to the summary and link at
+its next start. A young profile only sees a source in a theme it sees, through the theme's `young` field.
+
+For example, a source every French household starts with, and teens too:
 
 ```yaml
 - id: rtl-info
@@ -54,29 +64,30 @@ For example, a source every French household starts with, that teens also start 
   young_base: [teen]
 ```
 
-The server checks the file when it starts and names the field at fault (`topics[0].sources[2].domains`) when one is wrong.
-
 ## Check the sources
 
-From the install's folder:
+From the install's folder, this command checks every feed in the file:
 
 ```bash
 docker compose exec app node dist/server/cli/check-sources.js
 ```
 
-Each line shows a feed, its item count, its newest item and, for articles, how many of the latest three open in the reader ("link only" for sources marked `reader: false`). A failing feed only leaves its theme without that source.
+Each line shows a feed, its item count and its newest item. For articles, it adds how many of the latest three open
+in the reader, or "link only" for a source marked `reader: false`. A failing feed only leaves its theme without it.
 
-To check the suggestions offered in "Ajouter une source" the way their "Ajouter" button looks them up, without adding any:
+This one checks the suggestions of _Add a source_ the way its **Add** button looks them up, without adding any:
 
 ```bash
 docker compose exec app node dist/server/cli/check-proposals.js
 ```
 
-A `FAIL` line names the suggestion and why; its site often still has a feed: give that feed's address as its `url` in `sources.yml`.
+A `FAIL` line names the suggestion and why. Its site often still has a feed: give that feed's address as its `url`.
 
 ## Suggest a source
 
-Open an issue with the **Source suggestion** template, or a pull request that edits `sources.yml` and runs `npm run sources:list` to update [source-list.md](source-list.md) (see [CONTRIBUTING.md](../CONTRIBUTING.md)). A good source:
+Open an issue with the **Source suggestion** template. You can also open a pull request that edits `sources.yml` and
+runs `npm run sources:list` to update [source-list.md](source-list.md), as [CONTRIBUTING.md](../CONTRIBUTING.md)
+explains. A good source:
 
 - has a working RSS or Atom feed;
 - publishes articles that open without a subscription, so they show in the reader;

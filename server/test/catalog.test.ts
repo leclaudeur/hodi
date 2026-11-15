@@ -110,7 +110,7 @@ describe('parseCatalog', () => {
   it('loads the sources.yml shipped with the app, with base sources in each language', () => {
     const catalog = loadCatalog(path.resolve(import.meta.dirname, '../../sources.yml'))
 
-    assert.ok(catalog.topics.some(topic => topic.id === 'ia'))
+    assert.ok(catalog.topics.some(topic => topic.id === 'ai'))
     assert.ok(catalog.listen.some(section => section.sources.length > 0))
     for (const language of ['fr', 'en'] as const) {
       const base = catalog.topics.flatMap(topic => topic.sources.filter(source => source.base?.includes(language)))

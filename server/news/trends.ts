@@ -50,6 +50,16 @@ interface Candidate {
 const bump = (map: Map<string, number>, key: string) => map.set(key, (map.get(key) ?? 0) + 1)
 const mostCommon = (map: Map<string, number>) => [...map.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? ''
 
+// A phrase that may name a subject: it starts and ends with a significant word, and a single word is a name or
+// holds a digit ("Bruxelles", "2027", not "budget"), without being a number alone.
+const couldTrend = (phrase: ReturnType<typeof wordsOf>) => {
+  const first = phrase[0]
+  const last = phrase[phrase.length - 1]
+  if (!first || !last || !significant(first.key) || !significant(last.key)) return false
+  if (phrase.length > 1) return true
+  return (/^\p{Lu}/u.test(first.text) || /\d/.test(first.text)) && !/^\d+$/.test(first.text)
+}
+
 export const trendsOf = (titles: TrendTitle[], limit = 5): Trend[] => {
   const candidates = new Map<string, Candidate>()
 
@@ -58,13 +68,7 @@ export const trendsOf = (titles: TrendTitle[], limit = 5): Trend[] => {
     for (let start = 0; start < words.length; start++) {
       for (let length = 1; length <= MAX_WORDS && start + length <= words.length; length++) {
         const phrase = words.slice(start, start + length)
-        const first = phrase[0]
-        const last = phrase[phrase.length - 1]
-        if (!first || !last || !significant(first.key) || !significant(last.key)) continue
-        // A single word must be a name or hold a digit: "Bruxelles", "2027", not "budget".
-        if (length === 1 && !/^\p{Lu}/u.test(first.text) && !/\d/.test(first.text)) continue
-        // A digit alone is never a trend.
-        if (length === 1 && /^\d+$/.test(first.text)) continue
+        if (!couldTrend(phrase)) continue
 
         const key = phrase.map(word => word.key).join(' ')
         const candidate = candidates.get(key) ?? { forms: new Map(), topics: new Map(), articles: new Set() }

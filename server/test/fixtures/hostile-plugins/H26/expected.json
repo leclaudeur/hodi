@@ -1,0 +1,24 @@
+{
+  "case": "H26",
+  "title": "An HTML string is served as JSON, never run",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/html",
+      "expect": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-content-type-options": "nosniff"
+        },
+        "cspContains": "sandbox"
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "browserCheck": "Optional e2e: open the route URL in Chromium; document.title of Hodi never changes and no script runs."
+}

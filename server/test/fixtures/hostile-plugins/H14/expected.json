@@ -1,0 +1,20 @@
+{
+  "case": "H14",
+  "title": "A log flood is capped",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/log",
+      "expect": {
+        "status": 504,
+        "withinMs": 6000
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "expect": "Lines kept for this plugin stay under the log cap (size and rate); the rest are counted as dropped. Same with console.log if it exists."
+}

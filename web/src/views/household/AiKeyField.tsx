@@ -60,12 +60,12 @@ const AiKeyField = ({ provider, value, onChange, result, onResult, check, onUnau
         <Button icon={ShieldCheck} busy={checking} disabled={!value.trim()} onClick={() => void verify()}>
           {t('aiKey.check')}
         </Button>
+        {failed ? (
+          <StatusLine tone="error">{t('aiKey.failed')}</StatusLine>
+        ) : (
+          result && <StatusLine tone={TONES[result]}>{t(`aiKey.${result}`)}</StatusLine>
+        )}
       </div>
-      {failed ? (
-        <StatusLine tone="error">{t('aiKey.failed')}</StatusLine>
-      ) : (
-        result && <StatusLine tone={TONES[result]}>{t(`aiKey.${result}`)}</StatusLine>
-      )}
       <a className={styles.keysLink} href={provider.keysUrl} target="_blank" rel="noopener noreferrer">
         {t('aiKey.console', { provider: provider.name.replace(/ \(.*\)$/, '') })}
         <ExternalLink size={14} aria-hidden="true" />

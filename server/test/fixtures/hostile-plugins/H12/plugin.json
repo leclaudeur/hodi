@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h12",
+  "name": "Hostile H12",
+  "version": "0.0.1",
+  "description": "A slow onArticle never slows reading down",
+  "api": 2,
+  "audience": "admin"
+}

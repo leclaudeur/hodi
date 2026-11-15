@@ -1,0 +1,90 @@
+/* The setup's welcome, as the landing page's hero: no card, the glows of the page behind it. */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  /* As wide as the page allows, so the title wraps and the code's boxes fit a phone. */
+  width: 100%;
+  min-width: 0;
+  max-width: 720px;
+  text-align: center;
+}
+
+.kicker,
+.small {
+  color: var(--text-3);
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The landing page's live dot, before « Bienvenue dans Hodi ». */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kicker::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rust);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--rust) 20%, transparent);
+  content: '';
+}
+
+.title {
+  margin: 0;
+  color: var(--text);
+  font: 400 clamp(48px, 7vw, 92px) / 0.92 var(--font-display);
+  text-wrap: balance;
+}
+
+/* The logo's accent dot, as the landing page's title ends. */
+.dot {
+  display: inline-block;
+  width: 0.13em;
+  height: 0.13em;
+  margin-left: 0.06em;
+  border-radius: 50%;
+  background: var(--rust);
+}
+
+.lead {
+  max-width: 34em;
+  margin: 0;
+  color: var(--text-2);
+  font-size: clamp(16px, 1.5vw, 18px);
+  line-height: 1.55;
+}
+
+.lead strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* The setup code, when the device is away from the server: its boxes, as wide as a step's card, then where to
+   find it. */
+.code {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 372px;
+}
+
+.code > :first-child {
+  align-self: stretch;
+}
+
+.codeWhere {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-3);
+  font-size: 14px;
+}

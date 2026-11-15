@@ -4,11 +4,12 @@ import { OverlayScrollbars } from 'overlayscrollbars'
 import App from './App.tsx'
 import { loadSanitizer, warmDeferred } from './lib/deferred.ts'
 import { languageReady } from './lib/i18n.ts'
+import { loadSettingsPanel } from './pages/settings-loader.ts'
 import ConfirmDialog from './ui/ConfirmDialog.tsx'
 import Toaster from './ui/Toaster.tsx'
 import './styles/index.ts'
 
-warmDeferred()
+warmDeferred([loadSettingsPanel])
 // Opened on an article: its sanitizer comes now, with the article's text, rather than once the reader asks.
 if (location.hash.startsWith('#/article/')) void loadSanitizer().catch(() => {})
 

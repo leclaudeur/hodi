@@ -1,27 +1,21 @@
 import { typesAtOnce } from '../../lib/use-media.ts'
-import { Camera, KeyRound, Trash2 } from 'lucide-react'
-import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react'
+import { Trash2 } from 'lucide-react'
+import { type FormEvent, type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   MAX_PROFILE_NAME_LENGTH,
   PROFILE_AVATARS,
-  PROFILE_COLORS,
   type Profile,
   type ProfileAvatarName,
   type ProfileColor,
-  type ProfileKind,
-  profilePhotoUrl
+  type ProfileKind
 } from '../../api.ts'
-import { avatarUrl } from '../../lib/avatars.ts'
-import { MAX_PICKED_PHOTO_BYTES, dataUrlOf, makePhoto, PHOTO_ACCEPT, useProfiles } from '../../lib/profiles.ts'
+import { useProfiles } from '../../lib/profiles.ts'
 import Button from '../../ui/Button.tsx'
-import ColorSwatches from '../../ui/ColorSwatches.tsx'
 import ProfileAvatar from '../../ui/ProfileAvatar.tsx'
-import Segmented from '../../ui/Segmented.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
-import SettingRow from '../settings/SettingRow.tsx'
-import settingsStyles from '../settings/Settings.module.css'
 import styles from './ProfileForm.module.css'
+import { AccountRows, AvatarPicker, ColorField, KindField, PhotoPicker, useProfilePhoto } from './ProfileFormParts.tsx'
 
 export interface ProfileDraft {
   name: string
@@ -53,13 +47,131 @@ interface ProfileFormProps {
   // Shown on an existing profile that is not the household's last.
   onDelete?: () => void
   // The admin, on a member's private profile: takes its forgotten code off.
-  onResetPin?: () => void
+  // The admin, on an adult profile without an account: a code for its person ("Connecter un appareil").
+  onConnect?: () => void
+  // An adult's forgotten password, for the admin: a code to choose a new one.
+  onResetPassword?: () => void
+  // « Passer le rôle d'admin »: from the household's admin, to another adult with an account.
+  onMakeAdmin?: () => void
+  // A new profile from « Qui lit ? »: picking Adulte invites one with a code instead, so that it has its account.
+  onInvite?: () => void
+}
+
+interface ActionsProps {
+  saving: boolean
+  disabled: boolean
+  label: ReactNode
+  cancelLabel?: ReactNode
+  onCancel?: () => void
+  onDelete?: () => void
+}
+
+// Under a line: Supprimer first, away from Enregistrer, then Annuler; the primary action alone on the right.
+const FormActions = ({ saving, disabled, label, cancelLabel, onCancel, onDelete }: ActionsProps) => {
+  const { t } = useTranslation()
+  return (
+    <div className={styles.actions}>
+      {onDelete && (
+        <Button
+          look="danger"
+          icon={Trash2}
+          className={styles.compact}
+          onClick={onDelete}
+          aria-label={t('profileForm.deleteProfile')}
+        >
+          <span className={styles.compactLabel}>{t('profileForm.delete')}</span>
+        </Button>
+      )}
+      {onCancel && <Button onClick={onCancel}>{cancelLabel ?? t('common.cancel')}</Button>}
+      <span className={styles.spacer} />
+      <Button type="submit" look="primary" busy={saving} disabled={disabled}>
+        {label}
+      </Button>
+    </div>
+  )
+}
+
+// The name, read-only on a young profile's own form.
+const NameField = ({
+  name,
+  isNew,
+  fixed,
+  onName
+}: {
+  name: string
+  isNew: boolean
+  fixed: boolean
+  onName: (name: string) => void
+}) => {
+  const { t } = useTranslation()
+  return (
+    <label className={styles.field}>
+      <span className={styles.label}>{t('profileForm.name')}</span>
+      <input
+        type="text"
+        value={name}
+        onChange={event => onName(event.target.value)}
+        maxLength={MAX_PROFILE_NAME_LENGTH}
+        autoComplete="off"
+        autoFocus={isNew && typesAtOnce()}
+        readOnly={fixed}
+        required
+        placeholder={t('profileForm.namePlaceholder')}
+      />
+    </label>
+  )
+}
+
+interface PictureProps {
+  profile?: Profile
+  name: string
+  color: ProfileColor
+  // A child's: it has no photo.
+  avatar: ProfileAvatarName | null
+  photo: ReturnType<typeof useProfilePhoto>
+}
+
+const ProfilePicture = ({ profile, name, color, avatar, photo }: PictureProps) =>
+  avatar ? (
+    // A child has no photo: its avatar, picked beside, shows here.
+    <div className={styles.photo}>
+      <ProfileAvatar
+        profile={{ id: profile?.id ?? 0, name: name || '?', color, photoVersion: null, avatar }}
+        size={88}
+        plain
+      />
+    </div>
+  ) : (
+    <PhotoPicker
+      profile={profile}
+      name={name}
+      color={color}
+      preview={photo.preview}
+      hasPhoto={photo.hasPhoto}
+      onPick={file => void photo.pick(file)}
+      onRemove={photo.remove}
+    />
+  )
+
+// A new child starts with an avatar nobody wears.
+const firstAvatar = (profile: Profile | undefined, others: Profile[]): ProfileAvatarName =>
+  profile?.avatar ?? PROFILE_AVATARS.find(name => !others.some(other => other.avatar === name)) ?? 'fox'
+
+// The type picked, and what it leads to: an adult invited, a new child waiting, or a child with its avatar.
+const useKind = (profile: Profile | undefined, kinds: ProfileKind[], canInvite: boolean) => {
+  const [kind, setKind] = useState<ProfileKind>(profile?.kind ?? (canInvite ? 'teen' : kinds[0]) ?? 'adult')
+  // An adult is invited, not made here: only the type and what happens next show.
+  const invite = !profile && canInvite && kind === 'adult'
+  // The Enfant interface is being redone: a new child profile waits for it, one already made keeps working.
+  const soon = kind === 'child' && profile?.kind !== 'child'
+  const child = kind === 'child' && !soon
+  return { kind, setKind, invite, soon, child }
 }
 
 // A profile's name, type, colour and photo, or a child's drawn avatar: to add one, or change it.
 const ProfileForm = ({
   profile,
-  defaultColor = 'monde',
+  defaultColor = 'world',
   kinds = [],
   nameFixed = false,
   initial,
@@ -69,52 +181,27 @@ const ProfileForm = ({
   onSave,
   onCancel,
   onDelete,
-  onResetPin
+  onConnect,
+  onResetPassword,
+  onMakeAdmin,
+  onInvite
 }: ProfileFormProps) => {
   const { t } = useTranslation()
   const [name, setName] = useState(profile?.name ?? initial?.name ?? '')
   const [color, setColor] = useState<ProfileColor>(profile?.color ?? initial?.color ?? defaultColor)
-  const [kind, setKind] = useState<ProfileKind>(profile?.kind ?? kinds[0] ?? 'adult')
+  const { kind, setKind, invite, soon, child } = useKind(profile, kinds, Boolean(onInvite))
   const others = useProfiles()?.profiles.filter(other => other.id !== profile?.id) ?? []
-  // A new child starts with an avatar nobody wears.
-  const [avatar, setAvatar] = useState<ProfileAvatarName>(
-    profile?.avatar ?? PROFILE_AVATARS.find(name => !others.some(other => other.avatar === name)) ?? 'fox'
-  )
-  // The Enfant interface is being redone: a new child profile waits for it, one already made keeps working.
-  const soon = kind === 'child' && profile?.kind !== 'child'
-  const child = kind === 'child' && !soon
-  const [photo, setPhoto] = useState<Blob | null | undefined>(initial?.photo ?? undefined)
-  // What the avatar shows: the photo picked, none, or (undefined) the one kept on the server.
-  const [preview, setPreview] = useState<string | null | undefined>(undefined)
+  const [avatar, setAvatar] = useState<ProfileAvatarName>(() => firstAvatar(profile, others))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const input = useRef<HTMLInputElement>(null)
-
-  // A photo picked before going back: shown again.
-  useEffect(() => {
-    if (initial?.photo) void dataUrlOf(initial.photo).then(setPreview)
-  }, [initial?.photo])
-
-  const hasPhoto = preview === undefined ? Boolean(profile && profilePhotoUrl(profile)) : preview !== null
-
-  const pick = async (file: File | undefined) => {
-    if (!file) return
-    setError(null)
-    if (file.size > MAX_PICKED_PHOTO_BYTES) {
-      setError(t('profileForm.photoTooBig'))
-      return
-    }
-    try {
-      const made = await makePhoto(file)
-      setPhoto(made)
-      setPreview(await dataUrlOf(made))
-    } catch {
-      setError(t('profileForm.photoUnreadable'))
-    }
-  }
+  const photo = useProfilePhoto(profile, initial?.photo, setError)
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
+    if (invite) {
+      onInvite?.()
+      return
+    }
     const trimmed = name.replace(/\s+/g, ' ').trim()
     if (!trimmed || soon) return
     setSaving(true)
@@ -125,7 +212,7 @@ const ProfileForm = ({
         color,
         kind: kinds.length > 1 ? kind : undefined,
         avatar: child ? avatar : undefined,
-        photo: child ? undefined : photo
+        photo: child ? undefined : photo.photo
       })
     } catch {
       setError(t('profileForm.saveFailed'))
@@ -133,184 +220,33 @@ const ProfileForm = ({
     }
   }
 
-  const removePhoto = () => {
-    setPhoto(profile?.photoVersion == null ? undefined : null)
-    setPreview(null)
-  }
-
   return (
     <form className={`${styles.form} ${className}`} onSubmit={submit}>
       <div className={styles.layout}>
-        {child ? (
-          // A child has no photo: its avatar, picked beside, shows here.
-          <div className={styles.photo}>
-            <ProfileAvatar
-              profile={{ id: profile?.id ?? 0, name: name || '?', color, photoVersion: null, avatar }}
-              size={88}
-              plain
-            />
-          </div>
-        ) : (
-          // The avatar is the photo's button: its camera badge says so.
-          <div className={styles.photo}>
-            <button
-              type="button"
-              className={styles.avatarButton}
-              aria-label={hasPhoto ? t('profileForm.changePhoto') : t('profileForm.addPhoto')}
-              onClick={() => input.current?.click()}
-            >
-              <ProfileAvatar
-                profile={{
-                  id: profile?.id ?? 0,
-                  name: name || '?',
-                  color,
-                  photoVersion: profile?.photoVersion ?? null
-                }}
-                size={88}
-                preview={preview}
-                plain
-              />
-              <span className={styles.badge} aria-hidden="true">
-                <Camera size={16} />
-              </span>
-            </button>
-            <span className={styles.photoHint}>
-              JPEG, PNG ou WebP<span className={styles.hintDot}> · </span>
-              <span className={styles.hintSize}>{t('profileForm.photoMax')}</span>
-            </span>
-            {hasPhoto && (
-              <Button look="danger" compact icon={Trash2} onClick={removePhoto}>
-                {t('profileForm.removePhoto')}
-              </Button>
-            )}
-            <input
-              ref={input}
-              type="file"
-              accept={PHOTO_ACCEPT}
-              hidden
-              onChange={event => {
-                void pick(event.target.files?.[0])
-                event.target.value = ''
-              }}
-            />
-          </div>
+        {!invite && (
+          <ProfilePicture profile={profile} name={name} color={color} avatar={child ? avatar : null} photo={photo} />
         )}
-
         <div className={styles.fields}>
-          <label className={styles.field}>
-            <span className={styles.label}>{t('profileForm.name')}</span>
-            <input
-              type="text"
-              value={name}
-              onChange={event => setName(event.target.value)}
-              maxLength={MAX_PROFILE_NAME_LENGTH}
-              autoComplete="off"
-              autoFocus={!profile && typesAtOnce()}
-              readOnly={nameFixed}
-              required
-              placeholder={t('profileForm.namePlaceholder')}
-            />
-          </label>
-
+          {!invite && <NameField name={name} isNew={!profile} fixed={nameFixed} onName={setName} />}
           {kinds.length > 1 && (
-            <div className={styles.field}>
-              <span className={styles.label}>{t('profileForm.type')}</span>
-              <Segmented
-                label={t('profileForm.type')}
-                value={kind}
-                onChange={setKind}
-                wide
-                options={kinds.map(option => ({ value: option, label: t(`profileForm.kinds.${option}`) }))}
-              />
-              {soon ? (
-                <div className={styles.soon}>
-                  <span className={styles.soonAvatar} data-topic={color}>
-                    <img src={avatarUrl('fox') ?? undefined} alt="" />
-                  </span>
-                  <span className={styles.soonText}>
-                    <b>{t('profileForm.childSoon.title')}</b>
-                    <span>{t('profileForm.childSoon.text')}</span>
-                  </span>
-                </div>
-              ) : (
-                <StatusLine tone="info">{t(`profileForm.kindHints.${kind}`)}</StatusLine>
-              )}
-            </div>
+            <KindField kinds={kinds} kind={kind} color={color} soon={soon} invite={invite} onKind={setKind} />
           )}
-
-          {child && (
-            <fieldset className={styles.colors}>
-              <legend className={styles.label}>{t('profileForm.avatar')}</legend>
-              <div className={styles.avatars} role="group" aria-label={t('profileForm.avatar')} data-topic={color}>
-                {PROFILE_AVATARS.map(option => (
-                  <button
-                    key={option}
-                    type="button"
-                    className={styles.avatarOption}
-                    aria-pressed={option === avatar}
-                    aria-label={t(`profileForm.avatars.${option}`)}
-                    title={t(`profileForm.avatars.${option}`)}
-                    onClick={() => setAvatar(option)}
-                  >
-                    <img src={avatarUrl(option) ?? undefined} alt="" />
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-          )}
-
-          <fieldset className={styles.colors}>
-            <legend className={styles.label}>{t('profileForm.color')}</legend>
-            <ColorSwatches
-              row
-              label={t('profileForm.color')}
-              value={color}
-              options={PROFILE_COLORS.map(option => ({
-                value: option,
-                name: t(`profileForm.colors.${option}`),
-                color: `var(--topic-${option})`
-              }))}
-              onChange={setColor}
-            />
-          </fieldset>
-
-          {onResetPin && (
-            // The same row as the Sécurité card of one's own profile: the state, and what the admin can do.
-            <div className={styles.field}>
-              <span className={styles.label}>{t('profileForm.security')}</span>
-              <div className={settingsStyles.card}>
-                <SettingRow label={t('profileForm.private')} hint={t('profileForm.privateHint')}>
-                  <Button icon={KeyRound} onClick={onResetPin}>
-                    {t('profileForm.removePin')}
-                  </Button>
-                </SettingRow>
-              </div>
-            </div>
-          )}
+          {child && !invite && <AvatarPicker avatar={avatar} color={color} onAvatar={setAvatar} />}
+          {!invite && <ColorField color={color} onColor={setColor} />}
+          <AccountRows onConnect={onConnect} onResetPassword={onResetPassword} onMakeAdmin={onMakeAdmin} />
         </div>
       </div>
-
       {error && <StatusLine tone="error">{error}</StatusLine>}
-
-      {/* Under a line: Supprimer first, away from Enregistrer, then Annuler; the primary action alone on the right. */}
-      <div className={styles.actions}>
-        {onDelete && (
-          <Button
-            look="danger"
-            icon={Trash2}
-            className={styles.compact}
-            onClick={onDelete}
-            aria-label={t('profileForm.deleteProfile')}
-          >
-            <span className={styles.compactLabel}>{t('profileForm.delete')}</span>
-          </Button>
-        )}
-        {onCancel && <Button onClick={onCancel}>{cancelLabel ?? t('common.cancel')}</Button>}
-        <span className={styles.spacer} />
-        <Button type="submit" look="primary" busy={saving} disabled={!name.trim() || soon}>
-          {submitLabel ?? (profile ? t('common.save') : t('profileForm.create'))}
-        </Button>
-      </div>
+      <FormActions
+        saving={saving}
+        disabled={!invite && (!name.trim() || soon)}
+        label={
+          invite ? t('profileForm.invite') : (submitLabel ?? (profile ? t('common.save') : t('profileForm.create')))
+        }
+        cancelLabel={cancelLabel}
+        onCancel={onCancel}
+        onDelete={onDelete}
+      />
     </form>
   )
 }

@@ -34,26 +34,28 @@ describe('Partages', () => {
     assert.deepEqual(lea.shares(0), [])
   })
 
-  it('drops a share once it is read: clearing the history does not bring it back, a new share does', () => {
+  it('keeps a share once read, for the app to hide or not; put away, it leaves until marked unread again', () => {
     const db = openDatabase(':memory:')
     const second = new ProfileStore(db).create('Léa', 'science', NOW)
     assert.ok(second)
     const antho = new UserStore(db)
     const lea = new UserStore(db, second.id)
 
-    antho.shareTo(second.id, { id: 'read', title: 'Lu' }, NOW)
     antho.shareTo(second.id, { id: 'left', title: 'Pas lu' }, NOW)
+    antho.shareTo(second.id, { id: 'hidden', title: 'Masqué' }, NOW + 1)
+    antho.shareTo(second.id, { id: 'read', title: 'Lu' }, NOW + 2)
     lea.markRead(['read'], NOW + 1000)
-    lea.clearRead(NOW + 2000)
-    assert.deepEqual(
-      lea.shares(0).map(share => share.item.id),
-      ['left']
-    )
-
-    antho.shareTo(second.id, { id: 'read', title: 'Lu' }, NOW + 3000)
+    lea.markRead(['hidden'], NOW + 1000, true)
     assert.deepEqual(
       lea.shares(0).map(share => share.item.id),
       ['read', 'left']
+    )
+
+    // Back to unread from the history: the article put away is back too.
+    lea.markUnread(['hidden'], NOW + 2000)
+    assert.deepEqual(
+      lea.shares(0).map(share => share.item.id),
+      ['read', 'hidden', 'left']
     )
   })
 
@@ -87,7 +89,10 @@ describe('Partages', () => {
 
     antho.shareTo(second.id, { id: 'a', title: 'A' }, NOW)
     lea.markRead(['a'], NOW + 1000)
-    assert.deepEqual(lea.shares(0), [])
+    assert.deepEqual(
+      lea.shares(0).map(share => share.item.id),
+      ['a']
+    )
 
     assert.equal(lea.react('a', 1, '❤️', NOW + 2000)?.changed, true)
     assert.equal(lea.react('a', 1, '❤️', NOW + 2500)?.changed, false)

@@ -1,0 +1,8 @@
+{
+  "id": "hostile-h19",
+  "name": "Hostile H19",
+  "version": "0.0.1",
+  "description": "Filling the disk stops at the quota",
+  "api": 2,
+  "audience": "admin"
+}

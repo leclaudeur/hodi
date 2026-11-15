@@ -11,20 +11,18 @@ import PhoneHeader from '../ui/PhoneHeader.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import pickerStyles from './ProfilePicker.module.css'
 import styles from './TimeUpPage.module.css'
-
-// "8:00" (or "8:00 AM"): the hour without its leading zero.
-const timeOf = (at: number) => clockTime(at).replace(/^0(\d)/, '$1')
+import { isLinkedDevice } from '../lib/linked-device.ts'
 
 // "À demain": a young profile whose time of the day is spent, or outside the hours its parents set. The same calm
 // page as "Qui lit ?": the logo, its face, one sentence, one button. No menu and no way back: "Changer de profil"
-// opens "Qui lit ?", where the adults ask for the Code parental.
+// opens "Qui lit ?", where every adult asks for a password.
 const TimeUpPage = ({ limits }: { limits: YouthLimits }) => {
   const { t } = useTranslation()
   const phone = useIsPhone()
   const profile = useCurrentProfile()
   if (!profile) return null
   const child = profile.kind === 'child'
-  const time = limits.opensAt === null ? '' : timeOf(limits.opensAt)
+  const time = limits.opensAt === null ? '' : clockTime(limits.opensAt)
   const later = limits.access === 'before'
   const title = later
     ? t(child ? 'limits.laterChild' : 'limits.laterTeen', { name: profile.name })
@@ -46,9 +44,12 @@ const TimeUpPage = ({ limits }: { limits: YouthLimits }) => {
         <ProfileAvatar profile={profile} size={phone ? 112 : 128} plain />
         <h1 className={`${pickerStyles.title} ${styles.title}`}>{title}</h1>
         <p className={styles.text}>{text}</p>
-        <Button icon={Users} href={PROFILES_HREF} className={styles.switch}>
-          {t('limits.switch')}
-        </Button>
+        {/* Its own device, linked by a parent: no other profile to open. */}
+        {!isLinkedDevice() && (
+          <Button icon={Users} href={PROFILES_HREF} className={styles.switch}>
+            {t('limits.switch')}
+          </Button>
+        )}
       </div>
       <Copyright />
     </main>

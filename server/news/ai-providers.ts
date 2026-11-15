@@ -1,9 +1,10 @@
 import Anthropic, { AuthenticationError, PermissionDeniedError } from '@anthropic-ai/sdk'
 import { createDailySummaryWriter } from './daily-summary.ts'
-import type { AiTools } from './news-service.ts'
+import type { AiTools } from './news-types.ts'
 import {
   DEFAULT_SUMMARY_MODEL,
   createAiClient,
+  createPluginAsker,
   createQuestionAnswerer,
   createSourceSuggester,
   createSummarizer
@@ -60,7 +61,8 @@ const anthropic: AiProvider = {
       summarize: createSummarizer(ai),
       writeDailySummary: createDailySummaryWriter(ai),
       answerQuestion: createQuestionAnswerer(ai),
-      suggestSources: createSourceSuggester(ai)
+      suggestSources: createSourceSuggester(ai),
+      askForPlugin: createPluginAsker(ai)
     }
   }
 }

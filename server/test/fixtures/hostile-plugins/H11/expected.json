@@ -1,0 +1,23 @@
+{
+  "case": "H11",
+  "title": "Many calls at once queue, then overflow",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/slow",
+      "expect": {
+        "concurrent": 100,
+        "statusCounts": {
+          "200": "at least the queue size",
+          "503": "the rest"
+        },
+        "maxRunningAtOnce": "N, the per-plugin concurrency limit"
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

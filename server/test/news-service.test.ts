@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { parseCatalog } from '../news/catalog.ts'
-import { AI_CAPS, NewsService, TOPIC_PAGE_SIZE, profileCap } from '../news/news-service.ts'
+import { NewsService, TOPIC_PAGE_SIZE } from '../news/news-service.ts'
+import { type AiTools } from '../news/news-types.ts'
+import { AI_CAPS, profileCap } from '../news/ai-ledger.ts'
 import type { DailySummaryStory } from '../news/daily-summary.ts'
 import { type SummaryInput, SummaryRefusedError, articleText } from '../news/summarizer.ts'
 import { itemId } from '../news/text.ts'
 import { parseVideoDuration } from '../news/video-durations.ts'
 import { openDatabase } from '../db/database.ts'
+import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
 import { NewsStore } from '../db/news-store.ts'
 import { type FakeResponse, articleBody, articlePage, fakeFetch, rssFeed } from './helpers/news.ts'
 
@@ -14,7 +17,7 @@ const NOW = Date.UTC(2026, 9, 23, 12)
 
 const catalog = parseCatalog(`
 topics:
-  - id: monde
+  - id: world
     label: Monde
     sources:
       - id: alpha
@@ -68,7 +71,7 @@ describe('NewsService', () => {
       log: () => {}
     })
 
-    await news.getTopic('monde')
+    await news.getTopic('world')
 
     assert.deepEqual(fake.calls.filter(isFeed), ['https://alpha.example/feed'])
   })
@@ -80,13 +83,13 @@ describe('NewsService', () => {
       'https://beta.example/elections': articlePage('Élections')
     })
 
-    const first = await news.getTopic('monde')
+    const first = await news.getTopic('world')
 
     assert.deepEqual(first?.items, [])
     assert.equal(first?.checking, 4)
 
     await news.whenChecksIdle()
-    const topic = await news.getTopic('monde')
+    const topic = await news.getTopic('world')
 
     // Newest first, no old item, no link outside the domains. Alpha's "Sommet" does not open.
     assert.deepEqual(
@@ -100,7 +103,7 @@ describe('NewsService', () => {
     assert.equal(topic?.hasMore, false)
 
     // "Charger plus": a page of the given size, and whether more articles follow.
-    const page = await news.getTopic('monde', 1)
+    const page = await news.getTopic('world', 1)
     assert.deepEqual(
       page?.items.map(item => item.title),
       ['Sommet Européen !']
@@ -165,7 +168,7 @@ describe('NewsService', () => {
 
     // The reader opens the topic: what the pass still had queued starts at once
     // (the link outside the source's domains needs no request).
-    await news.getTopic('monde')
+    await news.getTopic('world')
     assert.deepEqual(started.at(-1), 'https://beta.example/elections')
     assert.equal(started.length, 3)
 
@@ -183,9 +186,9 @@ describe('NewsService', () => {
       'https://beta.example/elections': articlePage('Élections')
     })
 
-    await news.getTopic('monde')
+    await news.getTopic('world')
     await news.whenChecksIdle()
-    const topic = await news.getTopic('monde')
+    const topic = await news.getTopic('world')
 
     assert.deepEqual(
       topic?.items.map(item => [item.title, item.image]),
@@ -204,9 +207,9 @@ describe('NewsService', () => {
       'https://beta.example/elections': articlePage('Élections')
     })
 
-    await news.getTopic('monde')
+    await news.getTopic('world')
     await news.whenChecksIdle()
-    const topic = await news.getTopic('monde')
+    const topic = await news.getTopic('world')
 
     assert.deepEqual(
       topic?.items.map(item => [item.title, item.related.map(related => [related.sourceName, related.access])]),
@@ -234,7 +237,7 @@ describe('NewsService', () => {
     })
 
     const first = await news.getFrontPage()
-    assert.deepEqual(first.sections, [{ id: 'monde', label: 'Monde', items: [], checking: 4 }])
+    assert.deepEqual(first.sections, [{ id: 'world', label: 'Monde', items: [], checking: 4 }])
 
     await news.whenChecksIdle()
     const page = await news.getFrontPage()
@@ -262,9 +265,9 @@ describe('NewsService', () => {
       'https://beta.example/elections': '<html><body><p>Abonnez-vous pour lire la suite.</p></body></html>'
     })
 
-    await news.getTopic('monde')
+    await news.getTopic('world')
     await news.whenChecksIdle()
-    const topic = await news.getTopic('monde')
+    const topic = await news.getTopic('world')
 
     assert.deepEqual(topic?.items, [])
     // The failed article waits for its retry: it is not reported as being checked.
@@ -272,7 +275,7 @@ describe('NewsService', () => {
 
     advance(2 * 60 * 1000)
     // Both "Sommet" articles failed (Alpha's page is missing): both are checked again.
-    assert.equal((await news.getTopic('monde'))?.checking, 2)
+    assert.equal((await news.getTopic('world'))?.checking, 2)
     await news.whenChecksIdle()
     assert.equal((await news.getArticle(idOf('https://beta.example/sommet'))).status, 'failed')
   })
@@ -280,7 +283,7 @@ describe('NewsService', () => {
   it('lists sources without reader as links, without fetching their articles', async () => {
     const linkOnly = parseCatalog(`
 topics:
-  - id: monde
+  - id: world
     label: Monde
     sources:
       - id: beta
@@ -291,7 +294,7 @@ topics:
 `)
     const fake = fakeFetch(feeds)
     const news = new NewsService(linkOnly, { fetchText: fake.fetchText, now: () => NOW, log: () => {} })
-    const topic = await news.getTopic('monde')
+    const topic = await news.getTopic('world')
 
     assert.deepEqual(
       topic?.items.map(item => [item.title, item.access]),
@@ -320,7 +323,7 @@ topics:
       ['https://beta.example/elections']
     )
 
-    await news.getTopic('monde')
+    await news.getTopic('world')
     await news.whenChecksIdle()
 
     // Case and accents do not matter; every word must match.
@@ -345,25 +348,25 @@ topics:
   it('serves feeds from memory for 15 minutes', async () => {
     const { news, calls, advance } = setup(feeds)
 
-    await news.getTopic('monde')
+    await news.getTopic('world')
     advance(14 * 60 * 1000)
-    await news.getTopic('monde')
+    await news.getTopic('world')
     assert.equal(calls.filter(isFeed).length, 2)
 
     advance(2 * 60 * 1000)
-    await news.getTopic('monde')
+    await news.getTopic('world')
     assert.equal(calls.filter(isFeed).length, 4)
   })
 
   it('fetches the feeds again on demand, at most once a minute', async () => {
     const { news, calls, advance } = setup(feeds)
 
-    await news.getTopic('monde')
-    await news.getTopic('monde', TOPIC_PAGE_SIZE, { fresh: true })
+    await news.getTopic('world')
+    await news.getTopic('world', TOPIC_PAGE_SIZE, { fresh: true })
     assert.equal(calls.filter(isFeed).length, 2)
 
     advance(61 * 1000)
-    await news.getTopic('monde', TOPIC_PAGE_SIZE, { fresh: true })
+    await news.getTopic('world', TOPIC_PAGE_SIZE, { fresh: true })
     assert.equal(calls.filter(isFeed).length, 4)
   })
 
@@ -371,11 +374,11 @@ topics:
     const responses: Record<string, FakeResponse> = { ...feeds }
     const { news, advance } = setup(responses)
 
-    await news.getTopic('monde')
+    await news.getTopic('world')
     responses['https://alpha.example/feed'] = new Error('HTTP 503')
     advance(16 * 60 * 1000)
 
-    const topic = await news.getTopic('monde')
+    const topic = await news.getTopic('world')
     const alpha = topic?.sources.find(source => source.id === 'alpha')
 
     assert.equal(alpha?.ok, false)
@@ -385,12 +388,56 @@ topics:
 
   it('opens articles listed by a feed in reader mode', async () => {
     const { news } = setup({ ...feeds, 'https://beta.example/elections': articlePage('Élections') })
-    await news.getTopic('monde')
+    await news.getTopic('world')
 
     const result = await news.getArticle(idOf('https://beta.example/elections'))
 
     assert.equal(result.status, 'ok')
     assert.match(result.status === 'ok' ? result.article.contentHtml : '', /Paragraph 8/)
+  })
+
+  it('tells its listener of each article read from its site, once', async () => {
+    const { news } = setup({ ...feeds, 'https://beta.example/elections': articlePage('Élections') })
+    const heard: string[] = []
+    news.setArticleListener(result => heard.push(result.status))
+    await news.getTopic('world')
+    await news.whenChecksIdle()
+    heard.length = 0
+
+    const id = idOf('https://beta.example/elections')
+    news.setArticleListener(result => heard.push(`${result.status} ${'item' in result ? result.item.id : ''}`))
+    await news.getArticle(id)
+    await news.getArticle(id)
+
+    // Read in the background already: the reader's second look tells nothing new.
+    assert.deepEqual(heard, [])
+    assert.deepEqual(await news.getArticle('AAAAAAAAAAAAAAAA'), { status: 'unknown' })
+    assert.deepEqual(heard, [])
+  })
+
+  it('tells its listener of an article the reader opens first, and a failing listener changes nothing', async () => {
+    const { news } = setup({ ...feeds, 'https://beta.example/elections': articlePage('Élections') })
+    const heard: string[] = []
+    news.setArticleListener(result => {
+      heard.push(result.status)
+      throw new Error('a plugin went wrong')
+    })
+    await news.getTopic('world')
+    const result = await news.getArticle(idOf('https://beta.example/elections'))
+
+    assert.equal(result.status, 'ok')
+    assert.ok(heard.includes('ok'))
+  })
+
+  it('fetches an article page again for plugins, only from its source', async () => {
+    const { news } = setup({ ...feeds, 'https://beta.example/elections': articlePage('Élections') })
+    await news.getTopic('world')
+
+    const page = await news.fetchArticlePage(idOf('https://beta.example/elections'))
+    assert.equal(page?.url, 'https://beta.example/elections')
+    assert.match(page?.html ?? '', /Paragraph 8/)
+    assert.equal(await news.fetchArticlePage(idOf('https://other.example/x')), null)
+    assert.equal(await news.fetchArticlePage('AAAAAAAAAAAAAAAA'), null)
   })
 
   it('takes out the blocks a source repeats in its other stored articles', async () => {
@@ -407,7 +454,7 @@ topics:
     const store = new NewsStore(openDatabase(':memory:'))
     let clock = NOW
     const news = new NewsService(catalog, { fetchText: fake.fetchText, store, now: () => clock, log: () => {} })
-    await news.getTopic('monde')
+    await news.getTopic('world')
     await news.whenChecksIdle()
     // Past the articles kept in memory by the checks, so each one is served from the store.
     clock += 60 * 60 * 1000
@@ -427,7 +474,7 @@ topics:
     const named = parseCatalog(
       `
 topics:
-  - id: monde
+  - id: world
     label: { fr: Monde, en: World }
     sources:
       - id: alpha
@@ -439,9 +486,9 @@ topics:
     const fake = fakeFetch({ ...feeds, 'https://alpha.example/sommet': articlePage('Sommet') })
     const news = new NewsService(named, { fetchText: fake.fetchText, now: () => NOW, log: () => {} })
 
-    assert.equal((await news.getTopic('monde'))?.label, 'Monde')
+    assert.equal((await news.getTopic('world'))?.label, 'Monde')
     await news.whenChecksIdle()
-    assert.equal((await news.getTopic('monde', undefined, { language: 'en' }))?.label, 'World')
+    assert.equal((await news.getTopic('world', undefined, { language: 'en' }))?.label, 'World')
     assert.equal((await news.getFrontPage(undefined, undefined, 'en')).sections[0]?.label, 'World')
     const day = await news.getDay('2026-10-23', 'Europe/Brussels', null, 'en')
     assert.ok(day && day.items.length > 0 && day.items.every(item => item.topicLabel === 'World'))
@@ -467,7 +514,7 @@ topics:
         inputs.push(input)
         return ['Un point.', 'Un autre.']
       })
-      await news.getTopic('monde')
+      await news.getTopic('world')
       const id = idOf('https://beta.example/elections')
 
       const [first, second] = await Promise.all([news.getSummary(id), news.getSummary(id)])
@@ -496,7 +543,7 @@ topics:
         now: () => NOW,
         log: () => {}
       })
-      await news.getTopic('monde')
+      await news.getTopic('world')
       const id = idOf('https://beta.example/elections')
 
       assert.deepEqual(await news.getSummary(id, 1), { status: 'ok', points: ['Un point.'] })
@@ -520,7 +567,7 @@ topics:
         calls++
         throw calls === 1 ? new SummaryRefusedError('no') : new Error('API down')
       })
-      await news.getTopic('monde')
+      await news.getTopic('world')
       const id = idOf('https://beta.example/elections')
 
       assert.deepEqual(await news.getSummary('AAAAAAAAAAAAAAAA'), { status: 'unknown' })
@@ -555,7 +602,7 @@ topics:
         calls++
         throw new Error('API down')
       })
-      await news.getTopic('monde')
+      await news.getTopic('world')
       const id = idOf('https://beta.example/elections')
       const household = AI_CAPS.summary
       const profile = capOf('summary')
@@ -591,7 +638,7 @@ topics:
       const news = dailySummarySetup(async () => {
         throw new Error('API down')
       })
-      await news.getTopic('monde')
+      await news.getTopic('world')
       const id = idOf('https://beta.example/elections')
       const summaries = (profileId: number) => news.aiUsage(profileId).kinds.find(kind => kind.kind === 'summary')!
 
@@ -611,6 +658,54 @@ topics:
       assert.equal(summaries(1).used, 0)
       assert.equal(summaries(2).used, 0)
       assert.equal(summaries(1).householdUsed, 0)
+    })
+
+    it("keeps each household's AI key and caps to itself", async () => {
+      let dupontCalls = 0
+      let read = 0
+      const fake = fakeFetch({ ...feeds, 'https://beta.example/elections': articlePage('Élections') })
+      const unused = async () => {
+        throw new Error('unused')
+      }
+      // The Duponts' key fails; the Martins (household 2, one profile: 10) have their own, which works.
+      const news = new NewsService(catalog, {
+        fetchText: fake.fetchText,
+        summarize: async () => {
+          dupontCalls++
+          throw new Error('API down')
+        },
+        aiOf: () => {
+          read++
+          return {
+            summarize: async () => ['Un point.'],
+            writeDailySummary: unused,
+            answerQuestion: unused,
+            suggestSources: unused
+          }
+        },
+        households: () => [1, 2],
+        profiles: () => (currentHouseholdId() === 2 ? [{ id: 10, admin: true }] : HOUSEHOLD()),
+        now: () => NOW,
+        log: () => {}
+      })
+      await news.getTopic('world')
+      const id = idOf('https://beta.example/elections')
+      const summaries = (profileId: number) => news.aiUsage(profileId).kinds.find(kind => kind.kind === 'summary')!
+
+      for (let attempt = 0; attempt < capOf('summary'); attempt++) await news.getSummary(id, 1)
+      assert.deepEqual(await news.getSummary(id, 1), { status: 'limited' })
+      assert.equal(dupontCalls, capOf('summary'))
+
+      assert.deepEqual(await inHousehold(2, () => news.getSummary(id, 10)), { status: 'ok', points: ['Un point.'] })
+      assert.equal(dupontCalls, capOf('summary'))
+      assert.equal(inHousehold(2, () => summaries(10)).householdUsed, 1)
+      assert.equal(summaries(1).householdUsed, capOf('summary'))
+
+      // The Martins' « Remettre à 0 » leaves the Duponts' count alone.
+      inHousehold(2, () => news.resetAiUsage({}))
+      assert.equal(inHousehold(2, () => summaries(10)).householdUsed, 0)
+      assert.equal(summaries(1).householdUsed, capOf('summary'))
+      assert.equal(read, 1)
     })
 
     it('sends the article as plain text, one paragraph per block', () => {
@@ -636,7 +731,7 @@ topics:
         now: () => NOW,
         log: () => {}
       })
-      await news.getTopic('monde')
+      await news.getTopic('world')
       const id = idOf('https://beta.example/elections')
 
       assert.deepEqual(await news.answerQuestion(id, 'Qui ?'), {
@@ -654,6 +749,66 @@ topics:
     })
   })
 
+  describe('plugin questions', () => {
+    const QUESTION = { system: '', prompt: 'Résume', maxTokens: 100 }
+
+    it('asks for a plugin within the plugin caps, and counts each plugin', async () => {
+      const asked: unknown[] = []
+      const db = openDatabase(':memory:')
+      const news = new NewsService(catalog, {
+        fetchText: fakeFetch(feeds).fetchText,
+        profiles: HOUSEHOLD,
+        store: new NewsStore(db),
+        now: () => NOW,
+        log: () => {}
+      })
+      assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'unavailable' })
+      assert.equal(news.pluginAiLeft(1), false)
+
+      news.setAi({
+        askForPlugin: async (question: unknown) => {
+          asked.push(question)
+          return 'Oui.'
+        }
+      } as unknown as AiTools)
+      assert.equal(news.pluginAiLeft(1), true)
+      assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'ok', text: 'Oui.' })
+      assert.deepEqual(asked, [QUESTION])
+      for (let call = 1; call < capOf('plugin'); call++) await news.askForPlugin('other', 1, QUESTION)
+      assert.equal(news.pluginAiLeft(1), false)
+      assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'limited' })
+      assert.equal(asked.length, capOf('plugin'))
+      assert.deepEqual(news.pluginAiCalls(), { helper: 1, other: capOf('plugin') - 1 })
+      // Recorded with the plugin that asked, across a restart.
+      assert.deepEqual(
+        new NewsStore(db)
+          .aiCalls(0)
+          .filter(call => call.kind === 'plugin')
+          .map(call => call.pluginId)
+          .slice(0, 2),
+        ['helper', 'other']
+      )
+    })
+
+    it('tells a refusal from a failure', async () => {
+      const news = new NewsService(catalog, {
+        fetchText: fakeFetch(feeds).fetchText,
+        profiles: HOUSEHOLD,
+        now: () => NOW,
+        log: () => {}
+      })
+      let error: Error = new SummaryRefusedError()
+      news.setAi({
+        askForPlugin: async () => {
+          throw error
+        }
+      } as unknown as AiTools)
+      assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'refused' })
+      error = new Error('overloaded')
+      assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'failed' })
+    })
+  })
+
   describe('source suggestions', () => {
     it('asks for sites in a topic, within a small daily cap', async () => {
       const asked: { topic: string; replacing: string | null }[] = []
@@ -668,7 +823,7 @@ topics:
         log: () => {}
       })
 
-      assert.deepEqual(await news.suggestSources('monde', 1, { current: ['Alpha'], replacing: 'Beta' }), {
+      assert.deepEqual(await news.suggestSources('world', 1, { current: ['Alpha'], replacing: 'Beta' }), {
         status: 'ok',
         sites: [{ name: 'Gamma', url: 'https://gamma.example/', reason: 'Sérieux.' }]
       })
@@ -676,8 +831,8 @@ topics:
       assert.deepEqual(await news.suggestSources('nope', 1, { current: [], replacing: null }), { status: 'not_found' })
 
       for (let call = 1; call < capOf('sources'); call++)
-        await news.suggestSources('monde', 1, { current: [], replacing: null })
-      assert.deepEqual(await news.suggestSources('monde', 1, { current: [], replacing: null }), { status: 'limited' })
+        await news.suggestSources('world', 1, { current: [], replacing: null })
+      assert.deepEqual(await news.suggestSources('world', 1, { current: [], replacing: null }), { status: 'limited' })
       assert.equal(asked.length, capOf('sources'))
     })
 
@@ -697,8 +852,8 @@ topics:
         log: () => {}
       })
 
-      await news.suggestSources('monde', 1, { current: [], replacing: null })
-      await news.suggestSources('monde', 2, { current: [], replacing: null })
+      await news.suggestSources('world', 1, { current: [], replacing: null })
+      await news.suggestSources('world', 2, { current: [], replacing: null })
       assert.deepEqual(asked, [
         { language: 'fr', languages: ['fr'] },
         { language: 'en', languages: ['en', 'fr'] }
@@ -814,7 +969,7 @@ topics:
       assert.deepEqual(first, {
         status: 'ok',
         points: [
-          { topic: 'Monde', topicId: 'monde', text: 'Version 1.' },
+          { topic: 'Monde', topicId: 'world', text: 'Version 1.' },
           { topic: 'Ailleurs', topicId: null, text: 'Hors liste.' }
         ],
         generatedAt: new Date(NOW).toISOString()
@@ -825,8 +980,8 @@ topics:
       assert.deepEqual(
         calls[0]?.map(story => [story.topicId, story.topic, story.title, story.coverage]),
         [
-          ['monde', 'Monde', 'Sommet Européen !', 1],
-          ['monde', 'Monde', 'Élections', 1]
+          ['world', 'Monde', 'Sommet Européen !', 1],
+          ['world', 'Monde', 'Élections', 1]
         ]
       )
 
@@ -854,7 +1009,7 @@ topics:
         if (calls > 1) throw new Error('API down')
         return [{ topic: 'Monde', text: 'Le seul.' }]
       })
-      await news.getTopic('monde')
+      await news.getTopic('world')
       await news.whenChecksIdle()
 
       const first = await news.writeDailySummary()
@@ -875,7 +1030,7 @@ topics:
 
   it('never fetches unknown ids or links outside the source domains', async () => {
     const { news, calls } = setup(feeds)
-    await news.getTopic('monde')
+    await news.getTopic('world')
     await news.whenChecksIdle()
 
     assert.deepEqual(await news.getArticle('AAAAAAAAAAAAAAAA'), { status: 'unknown' })
@@ -891,7 +1046,7 @@ topics:
       ...feeds,
       'https://beta.example/elections': { redirectTo: 'https://paywall.example/login', text: articlePage('Login') }
     })
-    await news.getTopic('monde')
+    await news.getTopic('world')
 
     assert.equal((await news.getArticle(idOf('https://beta.example/elections'))).status, 'unreadable')
   })
@@ -902,7 +1057,7 @@ topics:
       'https://beta.example/elections': '<html><body><p>Abonnez-vous pour lire la suite.</p></body></html>',
       'https://beta.example/sommet': new Error('timeout')
     })
-    await news.getTopic('monde')
+    await news.getTopic('world')
 
     assert.equal((await news.getArticle(idOf('https://beta.example/elections'))).status, 'unreadable')
     assert.equal((await news.getArticle(idOf('https://beta.example/sommet'))).status, 'failed')
@@ -929,7 +1084,7 @@ topics:
       'https://beta.example/feed': rssFeed([])
     })
     const news = new NewsService(catalog, { fetchText: fake.fetchText, now: () => NOW, log: () => {} })
-    await news.getTopic('monde')
+    await news.getTopic('world')
 
     const blocked = await news.getArticle(idOf('https://alpha.example/bloque'))
 
@@ -970,6 +1125,29 @@ listen:
       listen.sections.map(section => [section.label, section.items.map(item => item.title)]),
       [['Science', ['Récente', 'Il y a 50 jours']]]
     )
+  })
+
+  it('keeps videos as many days as Serveur › Contenu says', async () => {
+    const fake = fakeFetch({
+      'https://www.youtube.com/feeds/videos.xml?channel_id=UC123': `<?xml version="1.0"?>
+        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:yt="http://www.youtube.com/xml/schemas/2015">
+          ${entry('aaaaaaaaaaa', 'Récente', '2026-10-20T10:00:00+00:00')}
+          ${entry('bbbbbbbbbbb', 'Il y a 50 jours', '2026-09-03T10:00:00+00:00')}
+          ${entry('ccccccccccc', 'Il y a 90 jours', '2026-08-01T10:00:00+00:00')}
+        </feed>`
+    })
+    let videoDays = 30
+    const news = new NewsService(listenCatalog, {
+      fetchText: fake.fetchText,
+      windows: () => ({ articleDays: 3, videoDays }),
+      now: () => NOW,
+      log: () => {}
+    })
+    const titles = async () =>
+      (await news.getListen()).sections.flatMap(section => section.items.map(item => item.title))
+    assert.deepEqual(await titles(), ['Récente'])
+    videoDays = 120
+    assert.deepEqual(await titles(), ['Récente', 'Il y a 50 jours', 'Il y a 90 jours'])
   })
 
   it('adds the lengths read from the video pages on the next visit, and leaves out short ones', async () => {

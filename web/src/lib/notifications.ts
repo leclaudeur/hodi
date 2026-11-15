@@ -20,6 +20,8 @@ export interface NotificationSettings {
   shares: boolean
   // Someone reacting to an article this profile sent them.
   reactions: boolean
+  // What a plugin of the household sends (a reminder, an answer to a request).
+  plugins: boolean
 }
 
 const DEFAULTS: NotificationSettings = {
@@ -29,7 +31,8 @@ const DEFAULTS: NotificationSettings = {
   quietEnd: '07:00',
   silentWords: [],
   shares: true,
-  reactions: true
+  reactions: true,
+  plugins: true
 }
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/
@@ -46,7 +49,8 @@ const load = (): NotificationSettings => {
         ? stored.silentWords.filter((word): word is string => typeof word === 'string')
         : [],
       shares: stored.shares !== false,
-      reactions: stored.reactions !== false
+      reactions: stored.reactions !== false,
+      plugins: stored.plugins !== false
     }
   } catch {
     return DEFAULTS
@@ -120,7 +124,8 @@ const register = async (subscription: PushSubscription) => {
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     badge: settings.badge,
     shares: settings.shares,
-    reactions: settings.reactions
+    reactions: settings.reactions,
+    plugins: settings.plugins
   })
 }
 

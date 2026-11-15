@@ -55,7 +55,14 @@ export default defineConfig({
   },
   build: {
     outDir: '../dist/web',
-    emptyOutDir: true
+    emptyOutDir: true,
+    rolldownOptions: {
+      output: {
+        // The code every start needs in one file: split in two dozen small ones, a browser on plain HTTP (6
+        // connections) waits for them in turns. Screens loaded on demand keep their own files.
+        codeSplitting: { groups: [{ name: 'app', tags: ['$initial'] }] }
+      }
+    }
   },
   server: {
     // Forward API calls to a locally running server during development.

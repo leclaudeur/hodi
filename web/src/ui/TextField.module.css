@@ -16,6 +16,17 @@
   border-color: var(--rust-border);
 }
 
+/* Refused (aria-invalid): the colours of the danger chips and of a wrong code's boxes, text and icon included. */
+.field:has(input[aria-invalid='true']) {
+  border-color: var(--destructive-border);
+  background: var(--destructive);
+  color: var(--destructive-text);
+}
+
+.field:has(input[aria-invalid='true']) input {
+  color: var(--destructive-text);
+}
+
 .field input {
   flex: 1;
   min-width: 0;

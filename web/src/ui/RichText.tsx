@@ -6,10 +6,11 @@ interface RichTextProps {
   values?: Record<string, string | number>
 }
 
-// A locale text with its <b> and <i>: what matters in a sentence read once, before a click that can't be undone.
+// A locale text with its <b> and <i> (what matters in a sentence read once, before a click that can't be undone) and
+// its <code> (a command to type in a terminal).
 const RichText = ({ i18nKey, values }: RichTextProps) => (
   // The key is checked above: Trans's own typing of it, crossed with its other props, is too large for TypeScript.
-  <Trans i18nKey={i18nKey as never} values={values} components={{ b: <strong />, i: <em /> }} />
+  <Trans i18nKey={i18nKey as never} values={values} components={{ b: <strong />, i: <em />, code: <code /> }} />
 )
 
 export default RichText

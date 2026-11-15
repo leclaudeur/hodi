@@ -1,88 +1,76 @@
-import { ChevronDown, CircleHelp, type LucideIcon } from 'lucide-react'
-import { type ReactNode, useId, useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
+import Button from './Button.tsx'
 import styles from './Notice.module.css'
+import RoundButton from './RoundButton.tsx'
 
-// Blue: how a screen works, what a setting does, why an article opens elsewhere. Built like the AI cards
-// (round mark, title, text below); the AI keeps violet, errors their own colour.
-// Without an icon, it is context: a "?" mark, folded under its title until opened, as the accordions. With one
-// (an article that opens elsewhere, notifications this browser lacks), it says what is going on: always open.
+export type NoticeTone = 'info' | 'warning' | 'error'
+
+export interface NoticeAction {
+  label: string
+  icon: LucideIcon
+  onClick?: () => void
+  href?: string
+}
+
+// A card that says what is going on, built as a settings row: a coloured square with its icon at the top left, a
+// title, a description, and maybe one button at the end (a round one on a phone). Blue for information, yellow for
+// a warning (a plugin nobody checked), red for an error (a plugin off because it is too old). The AI keeps violet.
 const Notice = ({
   title,
-  icon,
-  actions,
+  icon: Icon,
+  tone = 'info',
+  action,
   side,
   href,
   children
 }: {
   title: string
-  icon?: LucideIcon
-  // Buttons under the text.
-  actions?: ReactNode
-  // Round buttons at the right of the title and text, centred on them.
+  icon: LucideIcon
+  tone?: NoticeTone
+  // One button at the end.
+  action?: NoticeAction
+  // Round buttons at the end, instead of a labelled one.
   side?: ReactNode
   // The whole notice opens this page, in a new tab (its round button says where, for the keyboard).
   href?: string
   children: ReactNode
-}) => {
-  const [open, setOpen] = useState(false)
-  const body = useId()
-  const Icon = icon ?? CircleHelp
-  const folding = !icon
-  const mark = (
+}) => (
+  <aside className={`${styles.notice} ${styles[tone]} ${href ? styles.linked : ''}`}>
+    {href && (
+      <a
+        className={styles.cover}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+    )}
     <span className={styles.mark} aria-hidden="true">
-      <Icon size={14} />
+      <Icon size={20} />
     </span>
-  )
-
-  const main = (
-    <>
-      {folding ? (
-        <h3 className={styles.heading}>
-          <button
-            type="button"
-            className={styles.header}
-            aria-expanded={open}
-            aria-controls={body}
-            onClick={() => setOpen(!open)}
-          >
-            {mark}
-            <span className={styles.title}>{title}</span>
-            <span className={styles.chevron} aria-hidden="true">
-              <ChevronDown size={16} />
-            </span>
-          </button>
-        </h3>
-      ) : (
-        <div className={styles.header}>
-          {mark}
-          <h3 className={styles.title}>{title}</h3>
-        </div>
-      )}
-      <div id={body} className={`${styles.content} ${folding ? 'appear' : ''}`} hidden={folding && !open}>
-        <div className={styles.text}>{children}</div>
-        {actions && <div className={styles.actions}>{actions}</div>}
-      </div>
-    </>
-  )
-
-  return side ? (
-    <aside className={`${styles.notice} ${styles.withSide} ${href ? styles.linked : ''}`}>
-      {href && (
-        <a
-          className={styles.cover}
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          tabIndex={-1}
-          aria-hidden="true"
+    <div className={styles.main}>
+      <h3 className={styles.title}>{title}</h3>
+      <div className={styles.text}>{children}</div>
+    </div>
+    {action && (
+      <div className={styles.side}>
+        <Button className={styles.wideAction} icon={action.icon} onClick={action.onClick} href={action.href}>
+          {action.label}
+        </Button>
+        <RoundButton
+          className={styles.roundAction}
+          icon={action.icon}
+          label={action.label}
+          size={38}
+          onClick={action.onClick}
+          href={action.href}
         />
-      )}
-      <div className={styles.main}>{main}</div>
-      <div className={styles.side}>{side}</div>
-    </aside>
-  ) : (
-    <aside className={styles.notice}>{main}</aside>
-  )
-}
+      </div>
+    )}
+    {side && <div className={styles.side}>{side}</div>}
+  </aside>
+)
 
 export default Notice

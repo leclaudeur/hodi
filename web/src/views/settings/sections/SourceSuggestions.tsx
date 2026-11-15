@@ -47,9 +47,8 @@ interface SourceSuggestionsProps {
   onUnauthorized: () => void
 }
 
-// "Suggérer des sources": a violet button, one AI call, a few sites for a topic. Each comes with what it
-// brings, a link to look at it, and its feed already found and tried, ready to add.
-const SourceSuggestions = ({ topic, replacing = null, onAdded, onUnauthorized }: SourceSuggestionsProps) => {
+// The AI's suggestions for a topic, and adding one of them.
+const useSuggestions = ({ topic, replacing = null, onAdded, onUnauthorized }: SourceSuggestionsProps) => {
   const { t } = useTranslation()
   const capped = useAiCapped('sources')
   const [loading, setLoading] = useState(false)
@@ -96,6 +95,65 @@ const SourceSuggestions = ({ topic, replacing = null, onAdded, onUnauthorized }:
     }
   }
 
+  return { capped, loading, result, adding, added, addError, suggest, add }
+}
+
+interface SuggestionGroupsProps {
+  suggestions: Suggestion[]
+  added: Record<string, string>
+  adding: string | null
+  onAdd: (link: string) => void
+}
+
+// The sites found, by language, each with what it brings and its last title.
+const SuggestionGroups = ({ suggestions, added, adding, onAdd }: SuggestionGroupsProps) => {
+  const { t } = useTranslation()
+  return groupsOf(suggestions).map((group, _index, groups) => (
+    <Fragment key={group.lang}>
+      {(groups.length > 1 || group.lang !== getLanguage()) && (
+        <DaySeparator
+          label={t(`settings.proposals.inLanguage.${group.lang}`)}
+          count={group.suggestions.length}
+          unit="source"
+          still
+          className={suggestStyles.separator}
+        />
+      )}
+      <SiteList tone="ai">
+        {group.suggestions.map(({ link, reason, source }) => (
+          <SiteRow
+            key={link}
+            name={source.name}
+            link={link}
+            added={link in added}
+            adding={adding === link}
+            busy={adding !== null}
+            onAdd={() => onAdd(link)}
+          >
+            <span className={suggestStyles.reason}>{reason}</span>
+            <span className={styles.rowHint}>{readingLine(source)}</span>
+            {source.samples[0] && (
+              <span className={suggestStyles.sample}>{t('suggest.last', { title: source.samples[0] })}</span>
+            )}
+          </SiteRow>
+        ))}
+      </SiteList>
+    </Fragment>
+  ))
+}
+
+const offerKey = (capped: boolean, topic: TopicSummary | null) => {
+  if (capped) return 'suggest.capped'
+  return topic ? 'suggest.offer' : 'suggest.pickTopic'
+}
+
+// "Suggérer des sources": a violet button, one AI call, a few sites for a topic. Each comes with what it
+// brings, a link to look at it, and its feed already found and tried, ready to add.
+const SourceSuggestions = (props: SourceSuggestionsProps) => {
+  const { t } = useTranslation()
+  const { topic } = props
+  const { capped, loading, result, adding, added, addError, suggest, add } = useSuggestions(props)
+
   return (
     // The tour's last step, when the topic has no proposal left.
     <div className={suggestStyles.box} data-tour="add-sites">
@@ -104,9 +162,7 @@ const SourceSuggestions = ({ topic, replacing = null, onAdded, onUnauthorized }:
         <span className={`${aiStyles.mark} ${aiStyles.offerMark}`}>
           <SparkleIcon size={16} />
         </span>
-        <span className={aiStyles.offerText}>
-          {capped ? t('suggest.capped') : topic ? t('suggest.offer', { topic: topic.label }) : t('suggest.pickTopic')}
-        </span>
+        <span className={aiStyles.offerText}>{t(offerKey(capped, topic), { topic: topic?.label })}</span>
         <Button look="ai" icon={SparkleIcon} busy={loading} disabled={!topic || capped} onClick={() => void suggest()}>
           {t('suggest.button')}
         </Button>
@@ -116,43 +172,17 @@ const SourceSuggestions = ({ topic, replacing = null, onAdded, onUnauthorized }:
 
       {result && result.status !== 'ok' && <StatusLine tone="error">{t(`suggest.errors.${result.status}`)}</StatusLine>}
 
-      {result?.status === 'ok' &&
-        (result.suggestions.length === 0 ? (
-          <StatusLine tone="error">{t('suggest.noFeed')}</StatusLine>
-        ) : (
-          groupsOf(result.suggestions).map((group, _index, groups) => (
-            <Fragment key={group.lang}>
-              {(groups.length > 1 || group.lang !== getLanguage()) && (
-                <DaySeparator
-                  label={t(`settings.proposals.inLanguage.${group.lang}`)}
-                  count={group.suggestions.length}
-                  unit="source"
-                  still
-                  className={suggestStyles.separator}
-                />
-              )}
-              <SiteList tone="ai">
-                {group.suggestions.map(({ link, reason, source }) => (
-                  <SiteRow
-                    key={link}
-                    name={source.name}
-                    link={link}
-                    added={link in added}
-                    adding={adding === link}
-                    busy={adding !== null}
-                    onAdd={() => void add(link)}
-                  >
-                    <span className={suggestStyles.reason}>{reason}</span>
-                    <span className={styles.rowHint}>{readingLine(source)}</span>
-                    {source.samples[0] && (
-                      <span className={suggestStyles.sample}>{t('suggest.last', { title: source.samples[0] })}</span>
-                    )}
-                  </SiteRow>
-                ))}
-              </SiteList>
-            </Fragment>
-          ))
-        ))}
+      {result?.status === 'ok' && result.suggestions.length === 0 && (
+        <StatusLine tone="error">{t('suggest.noFeed')}</StatusLine>
+      )}
+      {result?.status === 'ok' && result.suggestions.length > 0 && (
+        <SuggestionGroups
+          suggestions={result.suggestions}
+          added={added}
+          adding={adding}
+          onAdd={link => void add(link)}
+        />
+      )}
 
       {addError && <StatusLine tone="error">{addError}</StatusLine>}
     </div>

@@ -5,12 +5,12 @@ const COUNT = 80
 // The app's colours: the rust, the topics', the AI's violet.
 const COLORS = [
   '--rust',
-  '--topic-belgique',
-  '--topic-monde',
+  '--topic-belgium',
+  '--topic-world',
   '--topic-tech',
   '--topic-science',
-  '--topic-films-series',
-  '--topic-jeux-video',
+  '--topic-film-tv',
+  '--topic-gaming',
   '--ai'
 ]
 

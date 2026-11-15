@@ -23,8 +23,7 @@ export const TimeZonePicker = ({ open, value, onPick, onClose }: PickerProps<str
             meta: timeZoneOffset(timeZone)
           }))
         : [],
-    // The offsets are written in the interface's language.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the offsets are written in the interface's language
     [open, i18n.language]
   )
   return (

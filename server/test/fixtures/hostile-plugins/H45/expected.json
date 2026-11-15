@@ -1,0 +1,54 @@
+{
+  "case": "H45",
+  "title": "A download name cannot inject a header",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/crlf",
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "headersAbsent": [
+          "set-cookie"
+        ],
+        "ifServed": "Content-Disposition is attachment, filename only [A-Za-z0-9._-], no path"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/inline",
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "headersAbsent": [
+          "set-cookie"
+        ],
+        "ifServed": "Content-Disposition is attachment, filename only [A-Za-z0-9._-], no path"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/quotes",
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "headersAbsent": [
+          "set-cookie"
+        ],
+        "ifServed": "Content-Disposition is attachment, filename only [A-Za-z0-9._-], no path"
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ],
+  "note": "Best: the plugin gives a file name and the core writes the header itself."
+}

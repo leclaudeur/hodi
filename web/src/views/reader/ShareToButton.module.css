@@ -55,14 +55,15 @@
   font-weight: 500;
 }
 
+/* The app's check (ui/Checkbox): a square with rounded corners, so it never reads as a radio button. */
 .check {
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
   border: 1.5px solid var(--border-strong);
-  border-radius: 50%;
+  border-radius: 6px;
 }
 
 .on {

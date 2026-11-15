@@ -20,6 +20,8 @@
 
 .avatar:has(img) {
   border-color: transparent;
+  /* A transparent icon (a black logo) stays legible in the dark themes. */
+  background: var(--icon-tile);
 }
 
 .size18 {

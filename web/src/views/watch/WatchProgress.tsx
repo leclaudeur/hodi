@@ -12,20 +12,73 @@ const MINUTE_S = 60
 
 const hundredths = (fraction: number) => Math.round(fraction * 100) / 100
 
+interface Tracked {
+  tracked: boolean
+  furthest: number
+  position: number
+  playedS: number
+  // When it started playing, while it plays.
+  since: number | null
+  done: boolean
+  // The last progress sent, to send each change once.
+  last: string
+}
+
+// The progress to send, from the time played and how far it went; null while it is not tracked.
+const progressOf = (tracked: Tracked | null, lengthS: number): ReadingProgress | null => {
+  if (!tracked?.tracked) return null
+  const running = tracked.since === null ? 0 : (performance.now() - tracked.since) / 1000
+  const total = lengthS / MINUTE_S
+  const minutes = (tracked.playedS + running) / MINUTE_S
+  return {
+    minutes: Math.round((total > 0 ? Math.min(total * MAX_TIME, minutes) : minutes) * 10) / 10,
+    progress: hundredths(tracked.furthest),
+    position: hundredths(tracked.position),
+    done: tracked.done,
+    // The player's own length: "Il reste" in Reprendre counts from it.
+    ...(total > 0 ? { estimate: Math.round(total * 10) / 10 } : {})
+  }
+}
+
+// Adds the time played since it started to the total; false when it was not playing.
+const stopClock = (tracked: Tracked) => {
+  if (tracked.since === null) return false
+  tracked.playedS += (performance.now() - tracked.since) / 1000
+  tracked.since = null
+  return true
+}
+
+// Counted once it shows, and picked up where an earlier showing left it.
+const startTracking = (item: FeedItem): Tracked => {
+  recordReading({
+    id: item.id,
+    sourceId: item.sourceId,
+    sourceName: item.sourceName,
+    minutes: 0,
+    kind: item.kind === 'podcast' ? 'podcast' : 'video',
+    estimate: (item.media?.durationSeconds ?? 0) / MINUTE_S,
+    done: false,
+    progress: 0,
+    position: 0
+  })
+  const entry = getReadings().find(other => other.id === item.id)
+  return {
+    tracked: entry?.done !== undefined,
+    furthest: entry?.progress ?? 0,
+    position: entry?.position ?? 0,
+    playedS: (entry?.minutes ?? 0) * MINUTE_S,
+    since: null,
+    done: entry?.done === true,
+    last: ''
+  }
+}
+
 // As an article's reading, for a video or an episode: counted in the stats once it shows, then what was really
 // played of it (the time it played, how far it went), sent when it is seen for good, paused, hidden or left.
 const WatchProgress = ({ item }: { item: FeedItem }) => {
   const time = usePlayer(selectTime)
   const playback = usePlayer(selectPlayback)
-  const state = useRef<{
-    tracked: boolean
-    furthest: number
-    position: number
-    playedS: number
-    since: number | null
-    done: boolean
-    last: string
-  } | null>(null)
+  const state = useRef<Tracked | null>(null)
   // Opened from "Reprendre": played from where it was left, once its length is known.
   const resume = useRef<number | null>(null)
   const duration = time?.duration ?? 0
@@ -36,21 +89,7 @@ const WatchProgress = ({ item }: { item: FeedItem }) => {
   }, [duration])
   const playing = playback ? playback.started && !playback.paused && !playback.ended : false
 
-  const current = (): ReadingProgress | null => {
-    const tracked = state.current
-    if (!tracked?.tracked) return null
-    const running = tracked.since === null ? 0 : (performance.now() - tracked.since) / 1000
-    const total = length.current / MINUTE_S
-    const minutes = (tracked.playedS + running) / MINUTE_S
-    return {
-      minutes: Math.round((total > 0 ? Math.min(total * MAX_TIME, minutes) : minutes) * 10) / 10,
-      progress: hundredths(tracked.furthest),
-      position: hundredths(tracked.position),
-      done: tracked.done,
-      // The player's own length: "Il reste" in Reprendre counts from it.
-      ...(total > 0 ? { estimate: Math.round(total * 10) / 10 } : {})
-    }
-  }
+  const current = () => progressOf(state.current, length.current)
 
   const send = () => {
     const change = current()
@@ -65,27 +104,7 @@ const WatchProgress = ({ item }: { item: FeedItem }) => {
   useEffect(() => {
     resume.current = resumePositionOf(item.id)
     forgetResumePosition()
-    recordReading({
-      id: item.id,
-      sourceId: item.sourceId,
-      sourceName: item.sourceName,
-      minutes: 0,
-      kind: item.kind === 'podcast' ? 'podcast' : 'video',
-      estimate: (item.media?.durationSeconds ?? 0) / MINUTE_S,
-      done: false,
-      progress: 0,
-      position: 0
-    })
-    const entry = getReadings().find(other => other.id === item.id)
-    state.current = {
-      tracked: entry?.done !== undefined,
-      furthest: entry?.progress ?? 0,
-      position: entry?.position ?? 0,
-      playedS: (entry?.minutes ?? 0) * MINUTE_S,
-      since: null,
-      done: entry?.done === true,
-      last: ''
-    }
+    state.current = startTracking(item)
     state.current.last = JSON.stringify(current())
 
     const hidden = () => {
@@ -94,15 +113,10 @@ const WatchProgress = ({ item }: { item: FeedItem }) => {
     document.addEventListener('visibilitychange', hidden)
     return () => {
       document.removeEventListener('visibilitychange', hidden)
-      const tracked = state.current
-      if (tracked && tracked.since !== null) {
-        tracked.playedS += (performance.now() - tracked.since) / 1000
-        tracked.since = null
-      }
+      if (state.current) stopClock(state.current)
       send()
     }
-    // The item's id says which video; its other fields come with it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the item's id says which video; its other fields come with it
   }, [item.id])
 
   // Played time: counted between play and pause; a pause sends it.
@@ -113,13 +127,8 @@ const WatchProgress = ({ item }: { item: FeedItem }) => {
       tracked.since ??= performance.now()
       return
     }
-    if (tracked.since !== null) {
-      tracked.playedS += (performance.now() - tracked.since) / 1000
-      tracked.since = null
-      send()
-    }
-    // send reads the latest state through refs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (stopClock(tracked)) send()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- send reads the latest state through refs
   }, [playing])
 
   // How far it went; seen for good is said at once.
@@ -139,8 +148,7 @@ const WatchProgress = ({ item }: { item: FeedItem }) => {
       tracked.done = true
       send()
     }
-    // send reads the latest state through refs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- send reads the latest state through refs
   }, [at, duration, ended])
 
   return null

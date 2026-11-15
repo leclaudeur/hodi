@@ -80,6 +80,35 @@ const cacheFirst = async request => {
   return response
 }
 
+// The app's entry file: a new name means a new version of the app.
+const ENTRY = /\/assets\/index-[\w-]+\.js/
+
+// After an update, the files of the previous version are never asked for again: they leave the cache, or every
+// update would add its files to the device's storage for good. The new version's own files come back as the app
+// loads them.
+const pruneAssets = async (cache, before, after) => {
+  const entry = ENTRY.exec(after)?.[0]
+  if (!entry || entry === ENTRY.exec(before)?.[0]) return
+  const keys = await cache.keys()
+  const stale = keys.filter(request => {
+    const { pathname } = new URL(request.url)
+    return pathname.startsWith('/assets/') && !after.includes(pathname)
+  })
+  await Promise.all(stale.map(request => cache.delete(request)))
+}
+
+// Every page is the same app: one saved copy of it serves them all.
+const navigate = async event => {
+  const cache = await caches.open(SHELL_CACHE)
+  const previous = await cache.match('/')
+  const response = await networkFirst(event.request, SHELL_CACHE, '/')
+  if (previous && response.ok) {
+    const [before, after] = await Promise.all([previous.text(), response.clone().text()])
+    event.waitUntil(pruneAssets(cache, before, after))
+  }
+  return response
+}
+
 self.addEventListener('fetch', event => {
   const { request } = event
   const url = new URL(request.url)
@@ -87,8 +116,7 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET' || url.origin !== self.location.origin) return
 
   if (request.mode === 'navigate') {
-    // Every page is the same app: one saved copy of it serves them all.
-    event.respondWith(networkFirst(request, SHELL_CACHE, '/'))
+    event.respondWith(navigate(event))
   } else if (url.pathname === '/theme.js') {
     event.respondWith(networkFirst(request, SHELL_CACHE))
   } else if (url.pathname.startsWith('/assets/')) {

@@ -1,12 +1,135 @@
 .wrap {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100%;
   padding: 24px var(--gutter);
+  overflow: hidden;
+}
+
+.wrap > :not(.glows, .grain) {
+  position: relative;
+}
+
+/* A fine grain over the halo: a screen has too few shades of a dark colour for a soft gradient, so it shows bands.
+   Light and dark specks, a shade or two each, break them up (dithering) without lightening the card. */
+.grain {
+  position: absolute;
+  inset: 0;
+  background: var(--grain);
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000 60%, transparent);
+  mask-image: radial-gradient(closest-side, #000 60%, transparent);
 }
 
 .hint {
   color: var(--text-3);
   font-size: 10px;
+}
+
+/* Five blurs of the theme's colours, a halo around the text, each on its own slow path. The lengths share no
+   rhythm, so together they never repeat in a way the eye catches. */
+.glows {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(520px, 80%);
+  height: 380px;
+  translate: -50% -50%;
+  opacity: var(--glow-strength);
+  filter: blur(56px) saturate(1.1);
+  pointer-events: none;
+}
+
+.glows i {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  left: var(--x);
+  top: var(--y);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--colour), transparent);
+  animation: drift var(--length) ease-in-out infinite alternate;
+  /* Started part way along its path (--start, 0 to 1, drawn at random). */
+  animation-delay: calc(var(--start) * var(--length) * -1);
+}
+
+.glows i:nth-child(1) {
+  --colour: var(--glow-1);
+  --size: 55%;
+  --x: 5%;
+  --y: 10%;
+  --length: 26s;
+}
+
+.glows i:nth-child(2) {
+  --colour: var(--glow-2);
+  --size: 45%;
+  --x: 45%;
+  --y: 0%;
+  --length: 34s;
+  animation-name: drift-2;
+}
+
+.glows i:nth-child(3) {
+  --colour: var(--glow-3);
+  --size: 50%;
+  --x: 40%;
+  --y: 35%;
+  --length: 30s;
+}
+
+.glows i:nth-child(4) {
+  --colour: var(--glow-4);
+  --size: 40%;
+  --x: 15%;
+  --y: 45%;
+  --length: 38s;
+  animation-name: drift-2;
+}
+
+.glows i:nth-child(5) {
+  --colour: var(--glow-5);
+  --size: 35%;
+  --x: 58%;
+  --y: 18%;
+  --length: 23s;
+}
+
+/* Slow but visible: a glow wanders about a third of its size around the text. */
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(34%, 20%, 0) scale(1.12);
+  }
+  66% {
+    transform: translate3d(-24%, 30%, 0) scale(0.9);
+  }
+  100% {
+    transform: translate3d(18%, -24%, 0) scale(1.05);
+  }
+}
+
+@keyframes drift-2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  40% {
+    transform: translate3d(-34%, 16%, 0) scale(0.92);
+  }
+  75% {
+    transform: translate3d(22%, 28%, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(-14%, -26%, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glows i {
+    animation: none;
+  }
 }

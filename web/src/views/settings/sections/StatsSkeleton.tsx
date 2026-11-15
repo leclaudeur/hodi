@@ -35,6 +35,7 @@ const Chart = () => (
     <Bar width={220} height={10} />
     <div className={styles.bars}>
       {BARS.map((height, index) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- placeholder bars, fixed
         <Bar key={index} width="100%" height={(height / 100) * 180} radius={6} className={styles.bar} />
       ))}
     </div>

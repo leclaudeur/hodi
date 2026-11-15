@@ -1,13 +1,14 @@
 import { AlertCircle, History, SearchX, Trash2, Undo2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { type MouseEvent, useEffect, useState } from 'react'
+import { groupByDay } from '../lib/day-groups.ts'
+import { type MouseEvent, type ReactNode, useEffect, useState } from 'react'
 import { type HistoryEntry, type TopicInfo, type TopicItem, UnauthorizedError, getHistory } from '../api.ts'
 import { matchesWords, searchWords } from '../lib/find.ts'
 import { dayOfItem } from '../lib/format.ts'
 import { clearRead, closeArticle, isRead, markUnread, useReadState } from '../lib/read-state.ts'
 import { askToConfirm } from '../lib/confirm.ts'
 import { showDone } from '../lib/toast.ts'
-import { CLOSE_READER, HISTORY_HREF, settingsHref } from '../lib/use-hash-route.ts'
+import { CLOSE_READER, HISTORY_HREF, SETTINGS_HREF } from '../lib/use-hash-route.ts'
 import EmptyState from '../ui/EmptyState.tsx'
 import Button from '../ui/Button.tsx'
 import RoundButton, { CARD_BUTTON } from '../ui/RoundButton.tsx'
@@ -49,22 +50,16 @@ const UnreadButton = ({ item, open }: { item: TopicItem; open: boolean }) => {
       window.location.hash = HISTORY_HREF
     }
   }
-  const label = t(`history.unread.${item.kind === 'video' ? 'video' : item.kind === 'podcast' ? 'podcast' : 'article'}`)
+  const kind = item.kind === 'video' || item.kind === 'podcast' ? item.kind : 'article'
+  const label = t(`history.unread.${kind}`)
 
   return <RoundButton icon={Undo2} label={label} size={28} className={CARD_BUTTON} onClick={handleClick} />
 }
 
-// "Historique": the articles read and videos seen in the last 7 days, under the day they were read, last read first.
-// One can go back to the list as unread, or the whole history be forgotten.
-const HistoryScreen = ({ layout, topics, activeId = null, onUnauthorized }: HistoryScreenProps) => {
-  const { t } = useTranslation()
+// The last 7 days read, from the server.
+const useHistory = (onUnauthorized: () => void) => {
   const [entries, setEntries] = useState<HistoryEntry[] | null>(null)
   const [error, setError] = useState(false)
-  const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<ListFilter>({ kind: 'all' })
-  const words = searchWords(query)
-  useReadState()
-
   useEffect(() => {
     let cancelled = false
     getHistory()
@@ -78,18 +73,67 @@ const HistoryScreen = ({ layout, topics, activeId = null, onUnauthorized }: Hist
       cancelled = true
     }
   }, [onUnauthorized])
+  return { entries, error }
+}
+
+interface ContentProps {
+  error: boolean
+  // The entries still read, null while they load.
+  shown: HistoryEntry[] | null
+  // None is left by the search or the filter.
+  unmatched: boolean
+  query: string
+  layout: 'desktop' | 'phone'
+  children: ReactNode
+}
+
+// The history that failed or is on its way, empty, with nothing matching, or the list.
+const HistoryContent = ({ error, shown, unmatched, query, layout, children }: ContentProps) => {
+  const { t } = useTranslation()
+  if (error)
+    return (
+      <EmptyState tone="danger" icon={<AlertCircle size={28} />} title={t('history.loadFailed')}>
+        {t('common.serverDown')}
+      </EmptyState>
+    )
+  if (shown === null) return <ListSkeleton layout={layout} />
+  if (shown.length === 0)
+    return (
+      <EmptyState icon={<History size={28} />} title={t('history.empty')}>
+        {t('history.emptyText')}
+      </EmptyState>
+    )
+  if (unmatched)
+    return (
+      <EmptyState
+        icon={<SearchX size={28} />}
+        title={searchWords(query).length > 0 ? t('lists.nothingFor', { query: query.trim() }) : t('lists.nothingHere')}
+      >
+        {t('history.noMatch')}
+      </EmptyState>
+    )
+  return children
+}
+
+// "Historique": the articles read and videos seen in the last 7 days, under the day they were read, last read first.
+// One can go back to the list as unread, or the whole history be forgotten.
+const HistoryScreen = ({ layout, topics, activeId = null, onUnauthorized }: HistoryScreenProps) => {
+  const { t } = useTranslation()
+  const { entries, error } = useHistory(onUnauthorized)
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<ListFilter>({ kind: 'all' })
+  const words = searchWords(query)
+  useReadState()
 
   // Marked unread here or on another device: it leaves the list at once.
   const shown = entries?.filter(entry => isRead(entry.item.id)) ?? null
   const found = shown?.filter(entry => matchesWords(entry.item, words)) ?? []
   const listed = found.filter(entry => passesFilter(entry.item, filter, topics))
-  const groups: DayGroup[] = []
-  for (const { item, readAt } of listed) {
-    const day = dayOfItem(new Date(readAt).toISOString())
-    const group = groups.at(-1)
-    if (group?.day === day) group.items.push(item)
-    else groups.push({ day, items: [item] })
-  }
+  const groups: DayGroup[] = groupByDay(
+    listed,
+    entry => dayOfItem(new Date(entry.readAt).toISOString()),
+    entry => entry.item
+  )
 
   const clear = () =>
     askToConfirm({
@@ -107,33 +151,18 @@ const HistoryScreen = ({ layout, topics, activeId = null, onUnauthorized }: Hist
       {t('history.clear')}
     </Button>
   )
-  const content = error ? (
-    <EmptyState tone="danger" icon={<AlertCircle size={28} />} title={t('history.loadFailed')}>
-      {t('common.serverDown')}
-    </EmptyState>
-  ) : shown === null ? (
-    <ListSkeleton layout={layout} />
-  ) : shown.length === 0 ? (
-    <EmptyState icon={<History size={28} />} title={t('history.empty')}>
-      {t('history.emptyText')}
-    </EmptyState>
-  ) : listed.length === 0 ? (
-    <EmptyState
-      icon={<SearchX size={28} />}
-      title={words.length > 0 ? t('lists.nothingFor', { query: query.trim() }) : t('lists.nothingHere')}
-    >
-      {t('history.noMatch')}
-    </EmptyState>
-  ) : (
-    <ArticleList
-      groups={groups}
-      highlight={words}
-      layout={layout}
-      activeId={activeId}
-      action={item => <UnreadButton item={item} open={item.id === activeId} />}
-      dismissible={false}
-      fadeRead={false}
-    />
+  const content = (
+    <HistoryContent error={error} shown={shown} unmatched={listed.length === 0} query={query} layout={layout}>
+      <ArticleList
+        groups={groups}
+        highlight={words}
+        layout={layout}
+        activeId={activeId}
+        action={item => <UnreadButton item={item} open={item.id === activeId} />}
+        dismissible={false}
+        fadeRead={false}
+      />
+    </HistoryContent>
   )
 
   const search = shown && shown.length > 0 && (
@@ -156,7 +185,7 @@ const HistoryScreen = ({ layout, topics, activeId = null, onUnauthorized }: Hist
   ) : (
     <MobilePage
       title={t('nav.history')}
-      backHref={settingsHref('reading')}
+      backHref={SETTINGS_HREF}
       backLabel={t('nav.backToSettings')}
       footer={footer || undefined}
       busy={shown === null && !error}

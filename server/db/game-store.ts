@@ -1,10 +1,13 @@
 import { dayOf } from '../news/days.ts'
+import { currentHouseholdId } from './household-scope.ts'
 import type { Language } from '../../shared/i18n.ts'
 import { type BadgeId, type GameRules, type LevelProgress, levelOf, nameIn } from '../game/rules.ts'
 import { type Database, transaction } from './database.ts'
+import { badgeCounts } from './game-badges.ts'
+import { DAY_MS } from '../../shared/time.ts'
 
 // The household game's points: one row per thing that earned them, kept for good (the readings themselves are
-// pruned after a year). A thing earns once (its kind and ref), and a day earns at most the daily cap.
+// pruned after a year). A thing earns once (its kind and ref).
 
 export type GameEventKind =
   | 'article_read'
@@ -15,7 +18,7 @@ export type GameEventKind =
   | 'reaction_received'
   // A notification of a followed subject opened: no points, it counts for its badge.
   | 'alert_opened'
-  // The household reached its weekly challenge: the bonus, past the daily cap.
+  // The household reached its weekly challenge: the bonus.
   | 'challenge'
 
 export interface GameSummary extends LevelProgress {
@@ -64,21 +67,17 @@ export interface WeeklyChallenge {
   reached: boolean
 }
 
-// The topic the globetrotter badge counts.
-const WORLD_TOPIC = 'monde'
-const EARLY_HOUR = 7
-const LATE_HOUR = 23
-const DAY_MS = 24 * 60 * 60 * 1000
 // How late a reading made offline may reach the server and still earn on its own day.
 const LATE_SYNC_MS = 7 * DAY_MS
 // What one profile counts in a day, at most: far more than anyone reads, so only a script sending made-up readings or
-// alerts meets it. Past it, nothing counts, neither for points nor for the badges, which have no daily cap otherwise.
+// alerts meets it (120 articles is six hours at three minutes each). Past it, nothing counts, neither for points nor
+// for the badges.
 export const DAILY_COUNT_LIMITS: Partial<Record<GameEventKind, number>> = {
-  article_read: 60,
-  video_watched: 60,
-  alert_opened: 20,
-  share_sent: 20,
-  reaction_received: 20
+  article_read: 120,
+  video_watched: 120,
+  alert_opened: 40,
+  share_sent: 40,
+  reaction_received: 40
 }
 
 // What the server itself knows of an article or a video: the client's word is not taken for its kind, its theme or
@@ -128,28 +127,27 @@ export class GameStore {
         .get(profileId, day, earning.kind) as { counted: number }
       if (counted >= limit) return false
     }
-    const { today } = this.#db
-      .prepare(
-        "SELECT COALESCE(SUM(points), 0) AS today FROM game_events WHERE profile_id = ? AND day = ? AND kind != 'challenge'"
-      )
-      .get(profileId, day) as { today: number }
-    // Past the cap it still counts (for the badges), for no points; the challenge's bonus comes on top.
-    const points =
-      earning.kind === 'challenge'
-        ? earning.points
-        : Math.min(earning.points, Math.max(0, this.#rules.points.dailyCap - today))
     const result = this.#db
       .prepare(
         `INSERT OR IGNORE INTO game_events (profile_id, kind, ref, points, at, day, hour, topic_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(profileId, earning.kind, earning.ref, points, now, day, hourOf(now, timeZone), earning.topicId ?? null)
+      .run(
+        profileId,
+        earning.kind,
+        earning.ref,
+        earning.points,
+        now,
+        day,
+        hourOf(now, timeZone),
+        earning.topicId ?? null
+      )
     return result.changes > 0
   }
 
   // Articles and videos whose reading changed: each earns once it counts as read (opened before the reading
   // was tracked, or read far enough), never when only skimmed. readAt: when the device says it happened, for a
-  // reading made offline and sent later. It then earns on that day, under that day's cap; a time in the future or
+  // reading made offline and sent later. It then earns on that day, within that day's counts; a time in the future or
   // from too long ago counts as now.
   // facts: what the server knows of each one; an id it does not know earns nothing.
   recordReads(
@@ -174,44 +172,43 @@ export class GameStore {
           { kind: string; topic_id: string | null; done: number | null } | undefined
         if (!stored || stored.done === 0) continue
         const row = known ? { ...stored, kind: known.kind, topic_id: known.topicId } : stored
-        const { points } = this.#rules
-        if (row.kind !== 'article') {
-          this.#earn(profileId, { kind: 'video_watched', ref: id, points: points.videoWatched }, when)
-          continue
-        }
-        if (
-          !this.#earn(
-            profileId,
-            { kind: 'article_read', ref: id, points: points.articleRead, topicId: row.topic_id },
-            when
-          )
-        ) {
-          continue
-        }
-        const day = dayOf(when, this.#timeZone())
-        if (row.topic_id) {
-          this.#earn(
-            profileId,
-            {
-              kind: 'first_of_theme',
-              ref: `${day}:${row.topic_id}`,
-              points: points.firstOfThemeToday,
-              topicId: row.topic_id
-            },
-            when
-          )
-        }
-        const { read } = this.#db
-          .prepare(
-            "SELECT COUNT(*) AS read FROM game_events WHERE profile_id = ? AND day = ? AND kind = 'article_read'"
-          )
-          .get(profileId, day) as { read: number }
-        if (read >= points.readingDayArticles) {
-          this.#earn(profileId, { kind: 'reading_day', ref: day, points: points.readingDay }, when)
-        }
-        this.#checkChallenge(when)
+        this.#earnRead(profileId, id, row, when)
       }
     })
+  }
+
+  // One article or video counted as read: its points, and the bonuses it unlocks that day.
+  #earnRead(profileId: number, id: string, row: { kind: string; topic_id: string | null }, when: number) {
+    const { points } = this.#rules
+    if (row.kind !== 'article') {
+      this.#earn(profileId, { kind: 'video_watched', ref: id, points: points.videoWatched }, when)
+      return
+    }
+    if (
+      !this.#earn(profileId, { kind: 'article_read', ref: id, points: points.articleRead, topicId: row.topic_id }, when)
+    ) {
+      return
+    }
+    const day = dayOf(when, this.#timeZone())
+    if (row.topic_id) {
+      this.#earn(
+        profileId,
+        {
+          kind: 'first_of_theme',
+          ref: `${day}:${row.topic_id}`,
+          points: points.firstOfThemeToday,
+          topicId: row.topic_id
+        },
+        when
+      )
+    }
+    const { read } = this.#db
+      .prepare("SELECT COUNT(*) AS read FROM game_events WHERE profile_id = ? AND day = ? AND kind = 'article_read'")
+      .get(profileId, day) as { read: number }
+    if (read >= points.readingDayArticles) {
+      this.#earn(profileId, { kind: 'reading_day', ref: day, points: points.readingDay }, when)
+    }
+    this.#checkChallenge(when)
   }
 
   // The week's goal reached: every profile gets the bonus, once a week.
@@ -219,7 +216,9 @@ export class GameStore {
     const challenge = this.challenge(now)
     if (!challenge.reached) return
     const monday = mondayOf(dayOf(now, this.#timeZone()))
-    const profiles = this.#db.prepare('SELECT id FROM profiles').all() as { id: number }[]
+    const profiles = this.#db.prepare('SELECT id FROM profiles WHERE account_id = ?').all(currentHouseholdId()) as {
+      id: number
+    }[]
     for (const { id } of profiles) {
       this.#earn(id, { kind: 'challenge', ref: monday, points: this.#rules.weeklyChallenge.bonus }, now)
     }
@@ -262,43 +261,7 @@ export class GameStore {
 
   // topicIds: the themes the all-rounder badge asks for, each of them. Named in the reader's language.
   badges(profileId: number, topicIds: string[], language: Language = 'fr'): BadgeProgress[] {
-    const row = this.#db
-      .prepare(
-        `SELECT
-           COUNT(CASE WHEN kind = 'article_read' THEN 1 END) AS articles,
-           COUNT(CASE WHEN kind = 'article_read' AND hour < ? THEN 1 END) AS early,
-           COUNT(CASE WHEN kind = 'article_read' AND hour >= ? THEN 1 END) AS late,
-           COUNT(CASE WHEN kind = 'article_read' AND topic_id = ? THEN 1 END) AS world,
-           COUNT(CASE WHEN kind = 'reading_day' THEN 1 END) AS days,
-           COUNT(CASE WHEN kind = 'share_sent' THEN 1 END) AS shares,
-           COUNT(CASE WHEN kind = 'reaction_received' THEN 1 END) AS reactions,
-           COUNT(CASE WHEN kind = 'alert_opened' THEN 1 END) AS alerts,
-           COUNT(CASE WHEN kind = 'challenge' THEN 1 END) AS challenges
-         FROM game_events WHERE profile_id = ?`
-      )
-      .get(EARLY_HOUR, LATE_HOUR, WORLD_TOPIC, profileId) as Record<string, number>
-    const byTopic = new Map(
-      (
-        this.#db
-          .prepare(
-            `SELECT topic_id, COUNT(*) AS read FROM game_events
-             WHERE profile_id = ? AND kind = 'article_read' AND topic_id IS NOT NULL GROUP BY topic_id`
-          )
-          .all(profileId) as { topic_id: string; read: number }[]
-      ).map(entry => [entry.topic_id, entry.read])
-    )
-    const counts: Record<BadgeId, number> = {
-      'early-bird': row.early ?? 0,
-      'night-owl': row.late ?? 0,
-      faithful: row.days ?? 0,
-      globetrotter: row.world ?? 0,
-      'all-rounder': topicIds.length > 0 ? Math.min(...topicIds.map(id => byTopic.get(id) ?? 0)) : 0,
-      postman: row.shares ?? 0,
-      'crowd-pleaser': row.reactions ?? 0,
-      sleuth: row.alerts ?? 0,
-      encyclopedia: row.articles ?? 0,
-      'team-player': row.challenges ?? 0
-    }
+    const counts = badgeCounts(this.#db, profileId, topicIds)
     return this.#rules.badges.map(badge => {
       const count = counts[badge.id]
       const tier = badge.tiers.filter(needed => count >= needed).length as BadgeProgress['tier']
@@ -378,12 +341,13 @@ export class GameStore {
 
   // false: the admin turned the game off for the household; nothing shows, points still count.
   enabled(): boolean {
-    const row = this.#db.prepare('SELECT game FROM accounts LIMIT 1').get() as { game: number } | undefined
+    const row = this.#db.prepare('SELECT game FROM accounts WHERE id = ?').get(currentHouseholdId()) as
+      { game: number } | undefined
     return row?.game !== 0
   }
 
   setEnabled(enabled: boolean) {
-    this.#db.prepare('UPDATE accounts SET game = ?').run(enabled ? 1 : 0)
+    this.#db.prepare('UPDATE accounts SET game = ? WHERE id = ?').run(enabled ? 1 : 0, currentHouseholdId())
   }
 
   // The grades named in the reader's language.

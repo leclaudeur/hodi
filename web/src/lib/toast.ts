@@ -31,9 +31,25 @@ export const useToasterWanted = () =>
 
 export const toasterMounted = () => mounted()
 
+// The toasts sit in a popover, in the browser's top layer. A modal dialog opened after it would cover it: putting it
+// back on top, after each dialog and before each toast, keeps the toasts in front of every dialog.
+let layer: HTMLElement | null = null
+
+export const setToastLayer = (element: HTMLElement | null) => {
+  layer = element
+  raiseToasts()
+}
+
+export const raiseToasts = () => {
+  if (!layer?.isConnected) return
+  if (layer.matches(':popover-open')) layer.hidePopover()
+  layer.showPopover()
+}
+
 const toast = async () => {
   want()
   const [{ toast: sonner }] = await Promise.all([loadSonner(), ready])
+  raiseToasts()
   return sonner
 }
 

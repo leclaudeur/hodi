@@ -1,7 +1,7 @@
 import express from 'express'
 import { z } from 'zod'
 import { LANGUAGES } from '../../shared/i18n.ts'
-import { PROFILE_COLORS } from '../db/profile-store.ts'
+import { OLD_PROFILE_COLOR_NAMES, PROFILE_COLORS } from '../db/profile-store.ts'
 import {
   READING_KINDS,
   type Reading,
@@ -21,10 +21,22 @@ const MAX_IMPORT_SAVED = 500
 const MAX_IMPORT_READ = 5000
 const MAX_IMPORT_READINGS = 5000
 const MAX_ARTICLE_HTML = 400_000
-const THEMES = ['system', 'light', 'dark', 'poudre'] as const
-// The accent colour: the theme's own, or one of the profile colours. The names before them are still taken, from
-// devices that have not updated yet.
-const ACCENTS = ['auto', ...PROFILE_COLORS, 'rose', 'corail', 'ocre', 'vert', 'turquoise', 'bleu', 'lavande'] as const
+// Poudré was named poudre before every id was English: devices that have not updated yet still send it.
+const THEMES = ['system', 'light', 'dark', 'powder', 'poudre'] as const
+// The accent colour: the theme's own, or one of the profile colours. The names before them (and before the topics'
+// ids were English) are still taken, from devices that have not updated yet.
+const ACCENTS = [
+  'auto',
+  ...PROFILE_COLORS,
+  ...OLD_PROFILE_COLOR_NAMES,
+  'rose',
+  'corail',
+  'ocre',
+  'vert',
+  'turquoise',
+  'bleu',
+  'lavande'
+] as [string, ...string[]]
 const TEXT_SIZES = 5
 
 // Body size per route: an import brings a whole device's state, the rest is small.
@@ -55,7 +67,12 @@ const preferencesSchema = z.object({
   mutedWords: z.array(text()).max(MAX_LIST).optional(),
   followedWords: z.array(text()).max(MAX_LIST).optional(),
   hideRead: z.boolean().optional(),
-  theme: z.enum(THEMES).optional(),
+  // The cards' swipe has been shown once, on a touch screen.
+  swipeHinted: z.boolean().optional(),
+  theme: z
+    .enum(THEMES)
+    .transform(theme => (theme === 'poudre' ? 'powder' : theme))
+    .optional(),
   accent: z.enum(ACCENTS).optional(),
   // "Partages": on unless turned off; the profiles whose shares are not wanted, by id.
   sharing: z.boolean().optional(),
@@ -133,13 +150,7 @@ const parseProgress = (value: unknown): ReadingProgress | null => parsed(progres
 const parseList = <T>(value: unknown, max: number, parse: (entry: unknown) => T | null): T[] | null =>
   Array.isArray(value) ? value.slice(0, max).flatMap(entry => parse(entry) ?? []) : value === undefined ? [] : null
 
-// users: the store of the profile the request is for.
-export const userRoutes = ({
-  users,
-  now,
-  onRead = () => {},
-  lock = () => null
-}: {
+interface UserRoutesOptions {
   users: (response: express.Response) => UserStore
   now: () => number
   // Readings added or moved on: the household game looks at whether they now count as read. readAt: when the
@@ -147,9 +158,22 @@ export const userRoutes = ({
   onRead?: (response: express.Response, ids: string[], readAt: (id: string) => number | undefined) => void
   // What stays hidden whatever the profile sends: a young profile's sources and themes its parents did not turn on.
   lock?: (response: express.Response) => { hiddenSources: string[]; hiddenTopics: string[] } | null
-}) => {
-  const router = express.Router()
+}
 
+type ResolvedOptions = Required<UserRoutesOptions>
+
+// users: the store of the profile the request is for.
+export const userRoutes = ({ onRead = () => {}, lock = () => null, ...options }: UserRoutesOptions) => {
+  const router = express.Router()
+  const resolved = { ...options, onRead, lock }
+  mountStateRoutes(router, resolved)
+  mountSavedRoutes(router, resolved)
+  mountReadingRoutes(router, resolved)
+  return router
+}
+
+// The whole state, the preferences, and a device's state from before the database.
+const mountStateRoutes = (router: express.Router, { users, now, lock }: ResolvedOptions) => {
   // The lists sent, with what the parents keep off added back.
   const locked = (response: express.Response, preferences: Record<string, unknown>) => {
     const kept = lock(response)
@@ -180,6 +204,43 @@ export const userRoutes = ({
     response.json({ revision: users(response).setPreferences(locked(response, preferences), now()) })
   })
 
+  // A device's state from before the database: merged once, nothing on the server is replaced.
+  router.post('/import', (request, response) => {
+    const body = (request.body ?? {}) as Record<string, unknown>
+    const preferences = body.preferences === undefined ? null : parsePreferences(body.preferences)
+    const saved = parseList(
+      body.saved,
+      MAX_IMPORT_SAVED,
+      (entry): (SavedEntry & { article: SavedArticleText | null }) | null => {
+        const value = entry as { item?: unknown; article?: unknown; savedAt?: unknown } | null
+        const item = parseItem(value?.item)
+        if (!item) return null
+        return {
+          item,
+          article: value?.article ? parseArticle(value.article) : null,
+          savedAt: typeof value?.savedAt === 'string' ? value.savedAt : new Date(now()).toISOString()
+        }
+      }
+    )
+    const read = parseList(body.read, MAX_IMPORT_READ, entry => (isItemId(entry) ? entry : null))
+    const readings = parseList(body.readings, MAX_IMPORT_READINGS, parseReading)
+
+    if ((body.preferences !== undefined && !preferences) || !saved || !read || !readings) {
+      response.status(400).json({ error: 'bad_request' })
+      return
+    }
+
+    response.json({
+      revision: users(response).importState(
+        { preferences: preferences && locked(response, preferences), saved, read, readings },
+        now()
+      )
+    })
+  })
+}
+
+// Enregistrés, and what was read or looked at.
+const mountSavedRoutes = (router: express.Router, { users, now }: ResolvedOptions) => {
   router.put('/saved/:id', (request, response) => {
     const item = parseItem(request.body?.item)
     if (!item || item.id !== request.params.id) {
@@ -230,7 +291,10 @@ export const userRoutes = ({
   router.delete('/read', (_request, response) => {
     response.json({ revision: users(response).clearRead(now()) })
   })
+}
 
+// Historique and Reprendre.
+const mountReadingRoutes = (router: express.Router, { users, now, onRead }: ResolvedOptions) => {
   router.post('/readings', (request, response) => {
     const readings = parseList(request.body?.readings, MAX_LIST, parseReading)
     if (!readings || readings.length === 0) {
@@ -273,40 +337,4 @@ export const userRoutes = ({
   router.delete('/readings', (_request, response) => {
     response.json({ revision: users(response).clearReadings(now()) })
   })
-
-  // A device's state from before the database: merged once, nothing on the server is replaced.
-  router.post('/import', (request, response) => {
-    const body = (request.body ?? {}) as Record<string, unknown>
-    const preferences = body.preferences === undefined ? null : parsePreferences(body.preferences)
-    const saved = parseList(
-      body.saved,
-      MAX_IMPORT_SAVED,
-      (entry): (SavedEntry & { article: SavedArticleText | null }) | null => {
-        const value = entry as { item?: unknown; article?: unknown; savedAt?: unknown } | null
-        const item = parseItem(value?.item)
-        if (!item) return null
-        return {
-          item,
-          article: value?.article ? parseArticle(value.article) : null,
-          savedAt: typeof value?.savedAt === 'string' ? value.savedAt : new Date(now()).toISOString()
-        }
-      }
-    )
-    const read = parseList(body.read, MAX_IMPORT_READ, entry => (isItemId(entry) ? entry : null))
-    const readings = parseList(body.readings, MAX_IMPORT_READINGS, parseReading)
-
-    if ((body.preferences !== undefined && !preferences) || !saved || !read || !readings) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-
-    response.json({
-      revision: users(response).importState(
-        { preferences: preferences && locked(response, preferences), saved, read, readings },
-        now()
-      )
-    })
-  })
-
-  return router
 }

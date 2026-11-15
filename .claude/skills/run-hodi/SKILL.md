@@ -22,12 +22,13 @@ Wait until `curl -s -m 5 http://localhost:3999/health` answers `{"status":"ok"}`
 With Playwright (Chromium), on `http://localhost:3999/`:
 
 1. "Commencer".
-2. Household name in `input[aria-label="Nom du foyer"]`, a password of 12+ characters in `Mot de passe` and `Confirme le mot de passe`, then "Continuer".
-3. A first name in `input[placeholder="Ex. Léa"]`, then "Continuer".
-4. "Sans IA" (never use a real API key), then "Continuer".
-5. "Entrer dans Hodi".
+2. "Compte": an address in `E-mail`, a password of 12+ characters in `Mot de passe` and `Confirme le mot de passe`, then "Continuer".
+3. Household name in `input[aria-label="Nom du foyer"]`, then "Continuer".
+4. A first name in `input[placeholder="Ex. Léa"]`, then "Continuer".
+5. "Sans IA" (never use a real API key), then "Continuer".
+6. "Entrer dans Hodi".
 
-The browser is then signed in on the admin profile. Another browser context signs in with the same password, then picks the profile.
+The browser is then signed in on the admin profile. Another browser context signs in with the same e-mail and password, which opens the admin profile; another profile is picked from `#/profiles`.
 
 ## 3. Screenshots
 
@@ -39,7 +40,7 @@ Take each screen at:
 | Tablet   | 820 × 1180 | `isMobile: true, hasTouch: true` |
 | Phone    | 390 × 844  | `isMobile: true, hasTouch: true` |
 
-- Settings pages have hash routes, such as `#/reglages/foyer` or `#/reglages/ia`.
+- Settings pages have hash routes, such as `#/settings/household` or `#/settings/ai`.
 - Use `colorScheme: 'dark'` and `'light'` when the change touches colours.
 - Use `serviceWorkers: 'block'` if you mock API routes with `page.route`.
 - Write screenshots to a temporary folder, never into the repository.

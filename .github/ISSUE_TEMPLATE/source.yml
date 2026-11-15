@@ -12,9 +12,10 @@ body:
   - type: input
     id: theme
     attributes:
-      label: Theme
-      description: Belgique, Monde, Tech, Science, Sport…
+      label: Topic
+      description: Belgium, World, Tech, Science, Sports…
   - type: textarea
     id: why
     attributes:
       label: Why this source?
+      description: What it covers that Hodi's sources do not, and how often it publishes.

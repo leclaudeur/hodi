@@ -2,7 +2,7 @@ import { EyeOff, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useDayFeed } from '../../../lib/day-feed.ts'
 import { updatePreferences, usePreferences } from '../../../lib/preferences.ts'
-import { foldText, wordPattern } from '../../../lib/word-match.ts'
+import { foldText, wordPattern } from '../../../../../shared/word-match.ts'
 import EmptyCard from '../EmptyCard.tsx'
 import SectionPage from '../SectionPage.tsx'
 import SettingRow from '../SettingRow.tsx'
@@ -59,7 +59,7 @@ const MutedSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
               >
                 <RoundButton
                   icon={X}
-                  size={34}
+                  size={38}
                   label={t('settings.muted.unmute', { word: muted })}
                   onClick={() => updatePreferences({ mutedWords: mutedWords.filter(other => other !== muted) })}
                 />

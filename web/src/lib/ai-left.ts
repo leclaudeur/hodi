@@ -39,3 +39,11 @@ export const useAiCapped = (kind: AiKind) => {
   }, [])
   return useSyncExternalStore(subscribe, () => aiLeft(kind) === 0)
 }
+
+// Whether the household has AI at all; null while not known.
+export const useAiAvailable = () => {
+  useEffect(() => {
+    void refreshAiUsage()
+  }, [])
+  return useSyncExternalStore(subscribe, () => usage?.available ?? null)
+}

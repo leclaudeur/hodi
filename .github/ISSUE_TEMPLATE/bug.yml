@@ -18,6 +18,7 @@ body:
     id: install
     attributes:
       label: Install
+      description: Where Hodi runs.
       options:
         - Docker on a computer
         - Docker on a server (VPS…)

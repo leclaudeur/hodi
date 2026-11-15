@@ -20,8 +20,9 @@ const CONTENT_SECURITY_POLICY = [
   // Feed and article images come from the news sites themselves.
   "img-src 'self' data: https:",
   "connect-src 'self'",
-  // YouTube videos play in its privacy-enhanced player; podcasts stream from their hosts.
-  'frame-src https://www.youtube-nocookie.com',
+  // YouTube videos play in its privacy-enhanced player. A plugin's own pages (its assets/*.html, sandboxed by their
+  // own policy in plugin-routes.ts) show in frames too.
+  "frame-src 'self' https://www.youtube-nocookie.com",
   // Podcasts stream from their hosts.
   "media-src 'self' https:",
   "base-uri 'none'",

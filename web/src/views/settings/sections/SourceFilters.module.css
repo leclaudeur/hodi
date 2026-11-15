@@ -54,8 +54,10 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+  box-sizing: border-box;
+  /* As tall as the search beside it: its 32px tags and opener, with 2px around. */
   min-height: var(--button-height);
-  padding: 5px 6px;
+  padding: 2px;
   border: 1px solid var(--border);
   border-radius: 22px;
   background: var(--control);

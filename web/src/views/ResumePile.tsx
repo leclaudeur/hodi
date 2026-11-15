@@ -20,6 +20,28 @@ interface ResumePileProps {
   activeId?: string | null
 }
 
+interface PileCardProps {
+  entry: ResumeEntry
+  layout: 'desktop' | 'phone'
+  onRemove: (event: MouseEvent) => void
+  onOpen: () => void
+}
+
+// A card of the pile: the time left to read and a cross to put it away.
+const PileCard = ({ entry, layout, onRemove, onOpen }: PileCardProps) => {
+  const { t } = useTranslation()
+  return (
+    <ArticleCard
+      item={entry.item}
+      variant={layout === 'desktop' ? 'row' : 'compact'}
+      plain
+      note={<span className={styles.left}>{t('resume.left', { count: entry.minutesLeft })}</span>}
+      action={<RoundButton icon={X} label={t('resume.remove')} size={28} className={CARD_BUTTON} onClick={onRemove} />}
+      onOpen={onOpen}
+    />
+  )
+}
+
 // "Reprendre", on top of Le fil (its list asks for it with useResume): the articles started and left, newest first, piled like notifications.
 // Its cross or opening it sends the front card away; the last one goes at once.
 const ResumePile = ({ layout, activeId = null }: ResumePileProps) => {
@@ -87,20 +109,10 @@ const ResumePile = ({ layout, activeId = null }: ResumePileProps) => {
               style={isLeaving ? { height: leaving.height } : { zIndex: SHOWN + 1 - depth }}
               inert={depth > 0 || isLeaving}
             >
-              <ArticleCard
-                item={entry.item}
-                variant={layout === 'desktop' ? 'row' : 'compact'}
-                plain
-                note={<span className={styles.left}>{t('resume.left', { count: entry.minutesLeft })}</span>}
-                action={
-                  <RoundButton
-                    icon={X}
-                    label={t('resume.remove')}
-                    size={28}
-                    className={CARD_BUTTON}
-                    onClick={event => putAway(event, entry.item.id)}
-                  />
-                }
+              <PileCard
+                entry={entry}
+                layout={layout}
+                onRemove={event => putAway(event, entry.item.id)}
                 onOpen={() => open(entry)}
               />
               <div className={styles.bar} aria-hidden="true">

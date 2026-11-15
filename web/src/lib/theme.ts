@@ -5,7 +5,7 @@ import { type Accent, type Theme, usePreferences } from './preferences.ts'
 // <html> (see styles/tokens.css); public/theme.js applies them before the first paint.
 
 // The browser's bar matches the top of the page.
-const BAR_COLOURS = { dark: '#131314', light: '#F3EEE4', poudre: '#191215' }
+const BAR_COLOURS = { dark: '#131314', light: '#F3EEE4', powder: '#191215' }
 
 const apply = (theme: Theme, accent: Accent) => {
   const root = document.documentElement

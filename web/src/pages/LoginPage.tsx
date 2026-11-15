@@ -1,96 +1,93 @@
-import { ArrowRight } from 'lucide-react'
-import { type FormEvent, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getSetup, login } from '../api.ts'
-import { setHouseholdLanguage } from '../lib/i18n.ts'
-import Button from '../ui/Button.tsx'
 import Copyright from '../ui/Copyright.tsx'
-import Logo from '../ui/Logo.tsx'
-import PasswordField from '../ui/PasswordField.tsx'
-import StatusLine from '../ui/StatusLine.tsx'
+import PageGlows from '../ui/PageGlows.tsx'
+import ForgotPage, { RESET_LINK } from './ForgotPage.tsx'
+import JoinPage, { CODE_LINK } from './JoinPage.tsx'
+import { SecondStepForm, SignInForm } from './LoginForms.tsx'
 import styles from './LoginPage.module.css'
+import { useLogin, useSignInPage } from './use-login.ts'
 
 interface LoginPageProps {
   onLoggedIn: () => void
 }
 
-// The only way in, from the charter's "Connexion" boards: the household's password, remembered on this device.
+// The only way in, from the charter's "Connexion" boards: the person's e-mail and password, remembered on this
+// device.
 const LoginPage = ({ onLoggedIn }: LoginPageProps) => {
   const { t } = useTranslation()
-  const [password, setPassword] = useState('')
-  // The household's name, under the logo once known.
-  const [name, setName] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    getSetup()
-      .then(state => {
-        if (state.needed) return
-        setName(state.name)
-        if (state.language) setHouseholdLanguage(state.language)
-      })
-      .catch(() => {})
-  }, [])
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setSubmitting(true)
-    setError(null)
-
-    try {
-      const result = await login(password)
-
-      if (result.ok) {
-        onLoggedIn()
-        return
-      }
-
-      if (result.reason === 'invalid_password') {
-        setError(t('login.wrongPassword'))
-      } else if (result.reason === 'too_many_attempts') {
-        setError(t('common.tooManyAttempts', { minutes: Math.ceil(result.retryAfterSeconds / 60) }))
-      } else {
-        setError(t('login.failed'))
-      }
-    } catch {
-      setError(t('common.unreachable'))
-    } finally {
-      setSubmitting(false)
+  const { ready, name, resetByMail } = useSignInPage()
+  const login = useLogin(onLoggedIn)
+  // "J'ai un code": open from the button, or at once from a code's link, filled in.
+  const [joining, setJoining] = useState(() => CODE_LINK.test(window.location.hash))
+  const [linkCode] = useState(() => CODE_LINK.exec(window.location.hash)?.[1])
+  // « Mot de passe oublié »: open from the link under the form, or at once from the e-mail's link.
+  const [resetToken] = useState(() => RESET_LINK.exec(window.location.hash)?.[1])
+  const [forgot, setForgot] = useState(resetToken !== undefined)
+  // Back from « J'ai un code » or a new password, for an account that asks for its app's code: it signs in here.
+  const [notice, setNotice] = useState<string | null>(null)
+  const done = (signedIn: boolean) => {
+    window.history.replaceState(null, '', '/')
+    if (signedIn) {
+      onLoggedIn()
+      return
     }
+    setJoining(false)
+    setForgot(false)
+    setNotice(t('twoFactor.login.signInNow'))
   }
+
+  if (forgot) {
+    return (
+      <ForgotPage
+        token={resetToken}
+        onBack={() => {
+          setForgot(false)
+          if (RESET_LINK.test(window.location.hash)) window.history.replaceState(null, '', '/')
+        }}
+        onDone={done}
+      />
+    )
+  }
+
+  if (joining) {
+    return (
+      <JoinPage
+        initialCode={linkCode}
+        onBack={() => {
+          setJoining(false)
+          if (CODE_LINK.test(window.location.hash)) window.history.replaceState(null, '', '/')
+        }}
+        // The app opens on its first page, not on the code's link.
+        onDone={done}
+      />
+    )
+  }
+
+  // The page's background alone for the moment the server takes to say what it asks, so no field jumps in.
+  if (!ready)
+    return (
+      <main className={styles.page}>
+        <PageGlows />
+      </main>
+    )
 
   return (
     <main className={styles.page}>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <h1 className={styles.title}>
-          <Logo size={72} />
-        </h1>
-        <p className={styles.subtitle}>{name ?? t('login.tagline')}</p>
-
-        <PasswordField
-          className={styles.field}
-          autoComplete="current-password"
-          autoFocus
-          required
-          value={password}
-          onChange={event => setPassword(event.target.value)}
-          aria-label={t('login.password')}
-          invalid={error !== null}
-          aria-describedby={error ? 'login-error' : undefined}
+      <PageGlows />
+      {login.secondStep ? (
+        <SecondStepForm login={login} />
+      ) : (
+        <SignInForm
+          login={login}
+          name={name}
+          notice={notice}
+          resetByMail={resetByMail}
+          onJoin={() => setJoining(true)}
+          onForgot={() => setForgot(true)}
+          onLoggedIn={onLoggedIn}
         />
-
-        {error && (
-          <span id="login-error" className={styles.error}>
-            <StatusLine tone="error">{error}</StatusLine>
-          </span>
-        )}
-
-        <Button type="submit" look="primary" wide busy={submitting} className={styles.submit}>
-          {submitting ? t('login.signingIn') : t('login.enter')}
-          {!submitting && <ArrowRight size={16} aria-hidden="true" />}
-        </Button>
-      </form>
+      )}
       <Copyright />
     </main>
   )

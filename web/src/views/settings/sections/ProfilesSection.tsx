@@ -1,27 +1,30 @@
-import { Plus, Users } from 'lucide-react'
+import { Plus, UserPlus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MAX_PROFILES, PROFILE_COLORS, type Profile, type ProfileKind, getYouthRules } from '../../../api.ts'
-import { addProfile, changePin, editProfile, isYoung, removeProfile, useProfiles } from '../../../lib/profiles.ts'
-import { askToConfirm } from '../../../lib/confirm.ts'
-import { showError, showSaved } from '../../../lib/toast.ts'
-import { PROFILES_HREF, youngProfileHref } from '../../../lib/use-hash-route.ts'
+import { MAX_PROFILES, PROFILE_COLORS, type Profile, getYouthRules } from '../../../api.ts'
+import { isYoung, useProfiles } from '../../../lib/profiles.ts'
+import { PROFILES_HREF } from '../../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../../lib/use-media.ts'
 import Button from '../../../ui/Button.tsx'
-import Chip from '../../../ui/Chip.tsx'
-import Dialog from '../../../ui/Dialog.tsx'
-import ProfileAvatarButton from '../../../ui/ProfileAvatarButton.tsx'
-import ProfileForm from '../../profiles/ProfileForm.tsx'
-import RichText from '../../../ui/RichText.tsx'
+import CodeDialog from '../../profiles/CodeDialog.tsx'
 import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
 import styles from '../Settings.module.css'
 import profileStyles from './ProfilesSection.module.css'
-import { formatMinutes } from './young/format.ts'
+import {
+  EditProfileDialog,
+  type Giving,
+  NewProfileDialog,
+  editActionsOf,
+  ProfileRow,
+  hintOf,
+  kindsOf,
+  profileConfirms
+} from './ProfilesParts.tsx'
 
 // Each young profile's time a day (null: no limit), once its rules come.
 const useDailyMinutes = (ids: number[]) => {
-  const [daily, setDaily] = useState(new Map<number, number | null>())
+  const [daily, setDaily] = useState(() => new Map<number, number | null>())
   const key = ids.join(',')
   useEffect(() => {
     let cancelled = false
@@ -39,14 +42,49 @@ const useDailyMinutes = (ids: number[]) => {
   return daily
 }
 
+interface AddButtonsProps {
+  parent: boolean
+  room: boolean
+  adding: boolean
+  withAccounts: boolean
+  onAdd: () => void
+  onInvite: () => void
+}
+
+// Under the list: a new profile, an invitation for an adult, and changing profile off a computer.
+const AddButtons = ({ parent, room, adding, withAccounts, onAdd, onInvite }: AddButtonsProps) => {
+  const { t } = useTranslation()
+  const desktop = useIsDesktop()
+  return (
+    <div className={profileStyles.actions}>
+      {parent && room && !adding && (
+        <Button icon={Plus} onClick={onAdd}>
+          {t('settings.profiles.add')}
+        </Button>
+      )}
+      {parent && withAccounts && room && (
+        <Button icon={UserPlus} onClick={onInvite}>
+          {t('profiles.code.invite')}
+        </Button>
+      )}
+      {/* On a computer, the sidebar's selector changes profile. */}
+      {!desktop && (
+        <Button icon={Users} href={PROFILES_HREF}>
+          {t('profiles.switch')}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 // The household's profiles: each reader's name, colour and photo. The admin adds, changes and removes them;
 // a member changes its own. Each one has its own "Enregistrés", reads, stats, followed subjects and settings.
 const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
   const value = useProfiles({ fresh: true })
-  const desktop = useIsDesktop()
   // The profile being changed, 'new' for one being added.
   const [editing, setEditing] = useState<number | 'new' | null>(null)
+  const [giving, setGiving] = useState<Giving>(undefined)
   // Its parents see a young profile's time a day under its name.
   const viewer = value?.profiles.find(profile => profile.id === value.current)
   const daily = useDailyMinutes(
@@ -68,144 +106,59 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const admin = own?.role === 'admin'
   // Every adult is a parent: it adds and changes the young profiles.
   const parent = own?.kind === 'adult'
+  // Codes come with personal accounts: on an install still on the household's password, its admin moves first.
+  const withAccounts = own?.hasAccount === true
   const mayEdit = (profile: Profile) => admin || profile.id === current || (parent && isYoung(profile))
-  // The types one may give: the admin any (its own profile stays an adult), a parent the young ones.
-  const kindsFor = (profile?: Profile): ProfileKind[] =>
-    profile?.role === 'admin' || (profile && profile.id === current && !admin)
-      ? []
-      : admin
-        ? ['adult', 'teen', 'child']
-        : ['teen', 'child']
   const edited = typeof editing === 'number' ? profiles.find(profile => profile.id === editing) : undefined
-  const freeColor = PROFILE_COLORS.find(color => !profiles.some(profile => profile.color === color))
-
-  const hintOf = (profile: Profile) => {
-    if (parent && isYoung(profile)) {
-      const minutes = daily.get(profile.id)
-      return minutes === undefined
-        ? t(`profileForm.kinds.${profile.kind}`)
-        : minutes === null
-          ? t('young.noLimit')
-          : t('young.perDay', { time: formatMinutes(minutes) })
-    }
-    return `${profile.role === 'admin' ? t('settings.roles.admin') : t(`profileForm.kinds.${profile.kind}`)}${profile.locked ? ` · ${t('profiles.private')}` : ''}`
-  }
-
-  const remove = (id: number, name: string) =>
-    askToConfirm({
-      title: t('confirm.deleteProfile.title'),
-      message: <RichText i18nKey="confirm.deleteProfile.message" values={{ name }} />,
-      label: t('confirm.deleteProfile.button'),
-      onConfirm: () => {
-        // Asked over its form: the form goes with the profile.
-        setEditing(null)
-        void removeProfile(id)
-          .then(() => showSaved(t('settings.profiles.deleted', { name })))
-          .catch(() => showError(t('settings.profiles.deleteFailed')))
-      }
-    })
+  const confirms = profileConfirms({ t, onEditing: setEditing, onGiving: setGiving })
+  const editActions = editActionsOf(edited, { admin, current, withAccounts, confirms, onGiving: setGiving })
 
   return (
     <SectionPage title={title} intro={intro} layout={layout}>
       <ul className={styles.card}>
         {profiles.map(profile => (
-          <li key={profile.id} className={styles.row}>
-            <ProfileAvatarButton profile={profile} size={44} />
-            <span className={styles.rowText}>
-              <span className={styles.rowLabel}>{profile.name}</span>
-              <span className={styles.rowHint}>{hintOf(profile)}</span>
-            </span>
-            {profile.id === current && (
-              <Chip tone="success" size="row">
-                {t('settings.profiles.active')}
-              </Chip>
-            )}
-            {/* A parent manages a young profile on its own page. */}
-            {parent && isYoung(profile) ? (
-              <>
-                <Chip size="row">{t(`profileForm.kinds.${profile.kind}`)}</Chip>
-                <Button
-                  compact
-                  href={youngProfileHref(profile.id)}
-                  aria-label={t('young.manageLabel', { name: profile.name })}
-                >
-                  {t('young.manage')}
-                </Button>
-              </>
-            ) : (
-              mayEdit(profile) && (
-                <Button
-                  compact
-                  onClick={() => setEditing(profile.id)}
-                  aria-label={t('settings.editName', { name: profile.name })}
-                >
-                  {t('settings.edit')}
-                </Button>
-              )
-            )}
-          </li>
+          <ProfileRow
+            key={profile.id}
+            profile={profile}
+            active={profile.id === current}
+            managed={parent && isYoung(profile)}
+            editable={mayEdit(profile)}
+            hint={hintOf(profile, parent, daily, t)}
+            onEdit={() => setEditing(profile.id)}
+          />
         ))}
       </ul>
 
-      <div className={profileStyles.actions}>
-        {parent && profiles.length < MAX_PROFILES && editing !== 'new' && (
-          <Button icon={Plus} onClick={() => setEditing('new')}>
-            {t('settings.profiles.add')}
-          </Button>
-        )}
-        {/* On a computer, the sidebar's selector changes profile. */}
-        {!desktop && (
-          <Button icon={Users} href={PROFILES_HREF}>
-            {t('profiles.switch')}
-          </Button>
-        )}
-      </div>
+      <AddButtons
+        parent={parent}
+        room={profiles.length < MAX_PROFILES}
+        adding={editing === 'new'}
+        withAccounts={withAccounts}
+        onAdd={() => setEditing('new')}
+        onInvite={() => setGiving(null)}
+      />
 
       {/* Adding and changing a profile happen in a dialog, as every action in Réglages. */}
-      <Dialog open={editing === 'new'} onClose={() => setEditing(null)} title={t('profiles.new')}>
-        {editing === 'new' && (
-          <ProfileForm
-            defaultColor={freeColor}
-            kinds={kindsFor()}
-            onCancel={() => setEditing(null)}
-            onSave={async ({ name, color, photo, kind, avatar }) => {
-              await addProfile(name, color, photo ?? null, { kind, avatar })
-              setEditing(null)
-              showSaved(t('profiles.added', { name }))
-            }}
-          />
-        )}
-      </Dialog>
-      <Dialog open={edited !== undefined} onClose={() => setEditing(null)} title={t('settings.editProfileTitle')}>
-        {edited && (
-          <ProfileForm
-            profile={edited}
-            kinds={kindsFor(edited)}
-            onCancel={() => setEditing(null)}
-            onDelete={admin && edited.role !== 'admin' ? () => remove(edited.id, edited.name) : undefined}
-            // A member's forgotten code: the admin takes it off, the member sets a new one.
-            onResetPin={
-              admin && edited.id !== current && edited.locked
-                ? () =>
-                    askToConfirm({
-                      title: t('confirm.removePin.title'),
-                      message: <RichText i18nKey="confirm.removePin.message" values={{ name: edited.name }} />,
-                      label: t('confirm.removePin.button'),
-                      onConfirm: () =>
-                        void changePin(edited.id, null)
-                          .then(() => showSaved(t('settings.profiles.pinRemoved', { name: edited.name })))
-                          .catch(() => showError(t('settings.profiles.pinRemoveFailed')))
-                    })
-                : undefined
-            }
-            onSave={async ({ name, color, photo, kind, avatar }) => {
-              await editProfile(edited.id, { name, color, kind, avatar }, photo)
-              setEditing(null)
-              showSaved(t('settings.profileSaved'))
-            }}
-          />
-        )}
-      </Dialog>
+      <NewProfileDialog
+        open={editing === 'new'}
+        defaultColor={PROFILE_COLORS.find(color => !profiles.some(profile => profile.color === color))}
+        kinds={kindsOf(undefined, current, admin)}
+        onClose={() => setEditing(null)}
+      />
+      <EditProfileDialog
+        edited={edited}
+        kinds={kindsOf(edited, current, admin)}
+        onClose={() => setEditing(null)}
+        {...editActions}
+      />
+      {/* Remade at each opening: a new code, nothing left of the one before. Opened from the profile's dialog, it takes
+          that one's place as the same card, with a way back to it (lib/dialog-stack.ts). */}
+      <CodeDialog
+        key={giving === undefined ? 'closed' : (giving?.id ?? 'invite')}
+        target={giving}
+        make={giving?.made ? () => Promise.resolve(giving.made!) : undefined}
+        onClose={() => setGiving(undefined)}
+      />
     </SectionPage>
   )
 }

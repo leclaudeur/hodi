@@ -16,6 +16,7 @@ import NotFound from '../NotFound.tsx'
 import ShareMenu from '../reader/ShareMenu.tsx'
 import { ShareNote, ShareReply } from '../reader/ShareNote.tsx'
 import ShareToButton from '../reader/ShareToButton.tsx'
+import { contentDays } from '../../lib/content-days.ts'
 import styles from './WatchPanel.module.css'
 
 // Video.js and its YouTube adapter load with the first video opened, not with the app.
@@ -24,6 +25,39 @@ const WatchPlayer = lazy(() => import('./WatchPlayer.tsx'))
 const hasMedia = (item: FeedItem): item is FeedItem & { media: ItemMedia } => item.media !== null
 
 const PlayerPlaceholder = () => <div className={styles.placeholder} aria-hidden="true" />
+
+// The panel's place while the list comes.
+const WatchSkeleton = ({ layout }: { layout: 'desktop' | 'phone' }) => (
+  <div className={`${styles.panel} ${styles[layout]}`} aria-busy="true">
+    <div className={styles.bar}>
+      <Bar width={120} height={14} />
+    </div>
+    <PlayerPlaceholder />
+    <div className={styles.header}>
+      <Bar width="80%" height={30} />
+      <Bar width="50%" height={30} />
+    </div>
+  </div>
+)
+
+// Save, send to someone of the household, share, and open it where it comes from.
+const WatchActions = ({ item, size }: { item: FeedItem; size: 34 | 44 }) => {
+  const { t } = useTranslation()
+  return (
+    <span className={styles.actions}>
+      <BookmarkButton item={asSaved(item)} variant="round" size={size} />
+      <ShareToButton articleId={item.id} size={size} />
+      <ShareMenu url={item.link} title={item.title} kind={item.kind} size={size} />
+      <RoundButton
+        icon={ExternalLink}
+        label={t(item.media?.type === 'youtube' ? 'videos.openYouTube' : 'videos.openSite')}
+        href={item.link}
+        external
+        size={size}
+      />
+    </span>
+  )
+}
 
 interface WatchPanelProps {
   itemId: string
@@ -50,36 +84,13 @@ const WatchPanel = ({ itemId, layout, onBack, onUnauthorized }: WatchPanelProps)
   }, [itemId])
 
   if (!item) {
-    if (feed || error) return <NotFound title={t('videos.gone')}>{t('videos.goneText')}</NotFound>
+    if (feed || error)
+      return <NotFound title={t('videos.gone')}>{t('videos.goneText', { count: contentDays().videoDays })}</NotFound>
 
-    return (
-      <div className={`${styles.panel} ${styles[layout]}`} aria-busy="true">
-        <div className={styles.bar}>
-          <Bar width={120} height={14} />
-        </div>
-        <PlayerPlaceholder />
-        <div className={styles.header}>
-          <Bar width="80%" height={30} />
-          <Bar width="50%" height={30} />
-        </div>
-      </div>
-    )
+    return <WatchSkeleton layout={layout} />
   }
 
-  const actions = (
-    <span className={styles.actions}>
-      <BookmarkButton item={asSaved(item)} variant="round" size={isPhone ? 44 : 34} />
-      <ShareToButton articleId={item.id} size={isPhone ? 44 : 34} />
-      <ShareMenu url={item.link} title={item.title} kind={item.kind} size={isPhone ? 44 : 34} />
-      <RoundButton
-        icon={ExternalLink}
-        label={t(item.media?.type === 'youtube' ? 'videos.openYouTube' : 'videos.openSite')}
-        href={item.link}
-        external
-        size={isPhone ? 44 : 34}
-      />
-    </span>
-  )
+  const actions = <WatchActions item={item} size={isPhone ? 44 : 34} />
 
   return (
     <article className={`${styles.panel} ${styles[layout]}`} aria-label={item.title}>
@@ -102,7 +113,7 @@ const WatchPanel = ({ itemId, layout, onBack, onUnauthorized }: WatchPanelProps)
       )}
 
       <header className={styles.header}>
-        {found && found.sectionId !== 'divers' && (
+        {found && found.sectionId !== 'other' && (
           <TopicCapsule topicId={found.sectionId} label={found.sectionLabel} href={null} />
         )}
         <h1 className={styles.title}>{item.title}</h1>

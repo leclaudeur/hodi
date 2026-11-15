@@ -30,14 +30,14 @@ describe('daily summary writer', () => {
   it('asks for a paragraph per story, every topic required, and returns them in order', async () => {
     const { ai, requests } = fakeAi({
       tech: ['Paragraphe puce.'],
-      belgique: [' Paragraphe budget. ', 'Paragraphe grève.']
+      belgium: [' Paragraphe budget. ', 'Paragraphe grève.']
     })
     const write = createDailySummaryWriter(ai)
 
     const points = await write(
       [
-        story('belgique', 'Belgique', 'Budget'),
-        story('belgique', 'Belgique', 'Grève'),
+        story('belgium', 'Belgique', 'Budget'),
+        story('belgium', 'Belgique', 'Grève'),
         story('tech', 'Tech', 'Nouvelle puce')
       ],
       'fr'
@@ -49,9 +49,9 @@ describe('daily summary writer', () => {
       { topic: 'Tech', text: 'Paragraphe puce.' }
     ])
     const config = requests[0]?.output_config as { format: { schema: { required: string[] } } }
-    assert.deepEqual(config.format.schema.required, ['belgique', 'tech'])
+    assert.deepEqual(config.format.schema.required, ['belgium', 'tech'])
     const prompt = (requests[0]?.messages as { content: string }[])[0]?.content ?? ''
-    assert.match(prompt, /<topic field="belgique" name="Belgique">[\s\S]*Budget[\s\S]*Grève[\s\S]*<\/topic>/)
+    assert.match(prompt, /<topic field="belgium" name="Belgique">[\s\S]*Budget[\s\S]*Grève[\s\S]*<\/topic>/)
   })
 
   it("asks in the reader's language", async () => {
@@ -64,11 +64,11 @@ describe('daily summary writer', () => {
   })
 
   it('leaves out empty paragraphs and fails when there is none', async () => {
-    const stories = [story('belgique', 'Belgique', 'Budget'), story('tech', 'Tech', 'Puce')]
+    const stories = [story('belgium', 'Belgique', 'Budget'), story('tech', 'Tech', 'Puce')]
 
-    assert.deepEqual(await createDailySummaryWriter(fakeAi({ belgique: ['Ok.', ''], tech: [' '] }).ai)(stories, 'fr'), [
+    assert.deepEqual(await createDailySummaryWriter(fakeAi({ belgium: ['Ok.', ''], tech: [' '] }).ai)(stories, 'fr'), [
       { topic: 'Belgique', text: 'Ok.' }
     ])
-    await assert.rejects(createDailySummaryWriter(fakeAi({ belgique: [], tech: [''] }).ai)(stories, 'fr'))
+    await assert.rejects(createDailySummaryWriter(fakeAi({ belgium: [], tech: [''] }).ai)(stories, 'fr'))
   })
 })

@@ -55,7 +55,7 @@ const RequestAnswers = ({ answers }: { answers: SourceAnswer[] }) => {
                 </span>
               </span>
             </a>
-            <RoundButton icon={X} label={t('shares.dismiss')} size={34} onClick={() => seeSourceAnswers([answer.id])} />
+            <RoundButton icon={X} label={t('shares.dismiss')} size={38} onClick={() => seeSourceAnswers([answer.id])} />
           </div>
         )
       })}

@@ -1,22 +1,31 @@
-import { AlertCircle, ArrowDown, Inbox, RefreshCw } from 'lucide-react'
+import { ArrowDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TopicSummary } from '../api.ts'
 import { usePullRefresh } from '../lib/pull-to-refresh.ts'
 import { FRONT_PAGE_HREF } from '../lib/use-hash-route.ts'
-import EmptyState from '../ui/EmptyState.tsx'
 import Button from '../ui/Button.tsx'
-import OfflineSaved from './OfflineSaved.tsx'
 import PullIndicator from '../ui/PullIndicator.tsx'
 import { ListSkeleton } from '../ui/Skeleton.tsx'
 import ArticleList from './ArticleList.tsx'
+import { FeedEmpty, PhoneFeedFailed } from './FeedStates.tsx'
 import MobileFilterRow from './MobileFilterRow.tsx'
 import MobilePage from './MobilePage.tsx'
 import { useFeedView } from './use-feed-view.ts'
+
+type FeedView = ReturnType<typeof useFeedView>
 
 interface MobileTopicProps {
   topic: TopicSummary
   topics: TopicSummary[]
   onUnauthorized: () => void
+}
+
+// A topic's days once they loaded or while they load.
+const TopicBody = ({ feed }: { feed: FeedView }) => {
+  const { t } = useTranslation()
+  if (feed.waiting) return <ListSkeleton layout="phone" />
+  if (feed.groups.length > 0) return <ArticleList groups={feed.groups} layout="phone" />
+  return <FeedEmpty allHidden={feed.allHidden} nothing={t('feed.nothingInTopic')} />
 }
 
 // A topic on a phone: its days, the first article of each one large.
@@ -47,30 +56,9 @@ const MobileTopic = ({ topic, topics, onUnauthorized }: MobileTopicProps) => {
       }
     >
       {feed.failed ? (
-        <>
-          <EmptyState
-            compact
-            tone="danger"
-            icon={<AlertCircle size={28} />}
-            title={t('feed.loadTopicFailed', { topic: topic.label })}
-            actions={
-              <Button look="primary" onClick={feed.refresh} icon={RefreshCw}>
-                {t('common.retry')}
-              </Button>
-            }
-          >
-            {t('feed.savedOffline')}
-          </EmptyState>
-          <OfflineSaved />
-        </>
-      ) : feed.waiting ? (
-        <ListSkeleton layout="phone" />
-      ) : feed.groups.length > 0 ? (
-        <ArticleList groups={feed.groups} layout="phone" />
+        <PhoneFeedFailed title={t('feed.loadTopicFailed', { topic: topic.label })} onRetry={feed.refresh} />
       ) : (
-        <EmptyState icon={<Inbox size={28} />} title={t(feed.allHidden ? 'feed.allRead' : 'feed.nothingNew')}>
-          {t(feed.allHidden ? 'feed.allReadText' : 'feed.nothingInTopic')}
-        </EmptyState>
+        <TopicBody feed={feed} />
       )}
     </MobilePage>
   )

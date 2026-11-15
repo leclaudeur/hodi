@@ -2,12 +2,12 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { type MyLimits, type YouthLimits, getMyLimits, sendHeartbeat } from '../api.ts'
 import { t } from './i18n.ts'
 import { showInfo } from './toast.ts'
+import { HEARTBEAT_MS } from '../../../shared/time.ts'
 
 // A young profile's time a day and hours, set by its parents. The server counts the time and knows the household's
 // clock: the app only says it is on screen, every 30 seconds while it is visible, and shows "À demain" when the
 // server says it is closed. Changing the device's clock or reloading changes nothing.
 
-const HEARTBEAT_MS = 30_000
 // "Plus que 5 minutes": once a day, when the time left goes under it.
 const WARNING_SECONDS = 5 * 60
 

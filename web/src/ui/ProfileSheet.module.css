@@ -750,3 +750,20 @@ button.card {
     min-height: 40px;
   }
 }
+
+/* A plugin's entry (« Changer de foyer ») beside « Changer de profil »: two buttons do not fit side by side on a
+   phone, so they go one under the other, across the sheet, « Changer de profil » first. A tablet keeps the row. */
+@media (max-width: 600px) {
+  .stackedActions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stackedActions > * {
+    width: 100%;
+  }
+
+  .stackedActions .switchProfile {
+    order: -1;
+  }
+}

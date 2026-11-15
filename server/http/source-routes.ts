@@ -3,10 +3,13 @@ import type { SourceStore } from '../db/source-store.ts'
 import type { Source } from '../news/catalog.ts'
 import type { NewsService } from '../news/news-service.ts'
 import type { FindResult } from '../news/source-finder.ts'
+import { isPluginFeed } from '../plugins/feeds.ts'
 import { isAdminOf, profileIdOf } from './profile-routes.ts'
+import { newSuggestions } from './source-suggestions.ts'
 
 // "Ajouter une source": a profile pastes a link, sees what it would follow, picks its topics, adds it to the
-// household's catalogue; or adds one of sources.yml's proposals. The household holds up to maxSources; each
+// household's catalogue; or adds one of sources.yml's proposals. The household holds up to Serveur › Contenu's limit, if
+// the server set one; each
 // profile removes only its own, the admin any. A source added shows for the profile that added it: the others
 // find it off, in "Ajoutées par le foyer".
 
@@ -31,27 +34,35 @@ const siteOf = (source: Source) => {
   return `https://${host}/`
 }
 
-export const sourceRoutes = ({
-  news,
-  sources,
-  find,
-  proposals,
-  maxSources,
-  onAdded,
-  now
-}: {
+interface SourceRoutesOptions {
   news: NewsService
   sources: SourceStore
   find: (link: string) => Promise<FindResult>
   // sources.yml's sources not in the catalogue, with their topic.
   proposals: () => { source: Source; topicId: string }[]
-  maxSources: number
+  // Serveur › Contenu's limit, read at each request; null: no limit.
+  maxSources: () => number | null
   // Turned off for the household's other profiles.
   onAdded: (sourceId: string, profileId: number) => void
   now: () => number
-}) => {
+}
+
+export const sourceRoutes = (options: SourceRoutesOptions) => {
   const router = express.Router()
+  const helpers = sourceHelpers(options)
+  mountFindRoutes(router, options, helpers)
+  mountProposalRoutes(router, options, helpers)
+  mountAddRoute(router, options, helpers)
+  mountEditRoutes(router, options, helpers)
+  return router
+}
+
+const sourceHelpers = ({ news, sources, find, maxSources, onAdded, now }: SourceRoutesOptions) => {
   const found = new Map<string, { at: number; result: Promise<FindResult> }>()
+  const full = () => {
+    const limit = maxSources()
+    return limit !== null && sources.count() >= limit
+  }
 
   const lookUp = (link: string) => {
     for (const [key, entry] of found) if (now() - entry.at > FOUND_TTL_MS) found.delete(key)
@@ -68,79 +79,6 @@ export const sourceRoutes = ({
     const link: unknown = request.body?.url
     return typeof link === 'string' && link.trim() && link.length <= MAX_LINK_LENGTH ? link.trim() : null
   }
-
-  router.post('/find', async (request, response) => {
-    const link = linkOf(request)
-    if (!link) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    const result = await lookUp(link)
-    const followed = result.status === 'ok' ? sources.findByUrl(result.source.url) : null
-    response.json({
-      ...result,
-      // Already in the catalogue: nothing to add.
-      followed: followed ? { id: followed.id, name: followed.name } : null,
-      added: sources.count(),
-      limit: maxSources
-    })
-  })
-
-  // "Suggérer des sources": sites the AI names for a topic (one call, within its daily cap), each looked
-  // for a feed and tried in the reader, the ones already followed left out.
-  router.post('/suggest', async (request, response) => {
-    const topicId: unknown = request.body?.topicId
-    const replacingId: unknown = request.body?.replacing
-    const topic = news.catalog.topics.find(candidate => candidate.id === topicId)
-    if (!topic || (replacingId !== undefined && replacingId !== null && typeof replacingId !== 'string')) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    const replacing = topic.sources.find(source => source.id === replacingId)?.name ?? null
-    const result = await news.suggestSources(topic.id, profileIdOf(response), {
-      current: topic.sources.map(source => source.name),
-      replacing
-    })
-    if (result.status !== 'ok') {
-      response.json(result)
-      return
-    }
-
-    // A site already in the catalogue, by its domain (feeds.lesoir.be is lesoir.be), is not offered again.
-    const hostOf = (link: string) => {
-      try {
-        return new URL(link).hostname.toLowerCase().split('.').slice(-2).join('.')
-      } catch {
-        return null
-      }
-    }
-    const followedHosts = new Set(
-      [...news.catalog.topics, ...news.catalog.listen].flatMap(section =>
-        section.sources.flatMap(source =>
-          [hostOf(source.url), ...source.domains.map(hostOf)].filter(host => host !== null)
-        )
-      )
-    )
-    const checked = await Promise.all(
-      result.sites
-        .filter(site => !followedHosts.has(hostOf(site.url) ?? ''))
-        .map(async site => ({ site, found: await lookUp(site.url) }))
-    )
-    const suggestions = checked.flatMap(({ site, found }) =>
-      found.status === 'ok' &&
-      found.source.kind === 'article' &&
-      !sources.findByUrl(found.source.url) &&
-      !followedHosts.has(hostOf(found.source.url) ?? '')
-        ? [{ link: site.url, reason: site.reason, source: found.source }]
-        : []
-    )
-    response.json({
-      status: 'ok',
-      suggestions: suggestions.slice(0, MAX_SUGGESTIONS),
-      added: sources.count(),
-      limit: maxSources
-    })
-  })
 
   // The topics of a source added: a list of known topic ids, one at least; "sectionId" alone still works.
   const topicIdsOf = (request: express.Request) => {
@@ -169,6 +107,68 @@ export const sourceRoutes = ({
     response.status(201).json({ id: source.id, name: source.name })
   }
 
+  return { full, lookUp, linkOf, topicIdsOf, save }
+}
+
+type SourceHelpers = ReturnType<typeof sourceHelpers>
+
+const mountFindRoutes = (
+  router: express.Router,
+  { news, sources, maxSources }: SourceRoutesOptions,
+  { lookUp, linkOf }: SourceHelpers
+) => {
+  router.post('/find', async (request, response) => {
+    const link = linkOf(request)
+    if (!link) {
+      response.status(400).json({ error: 'bad_request' })
+      return
+    }
+    const result = await lookUp(link)
+    const followed = result.status === 'ok' ? sources.findByUrl(result.source.url) : null
+    response.json({
+      ...result,
+      // Already in the catalogue: nothing to add.
+      followed: followed ? { id: followed.id, name: followed.name } : null,
+      added: sources.count(),
+      limit: maxSources()
+    })
+  })
+
+  // "Suggérer des sources": sites the AI names for a topic (one call, within its daily cap), each looked
+  // for a feed and tried in the reader, the ones already followed left out.
+  router.post('/suggest', async (request, response) => {
+    const topicId: unknown = request.body?.topicId
+    const replacingId: unknown = request.body?.replacing
+    const topic = news.catalog.topics.find(candidate => candidate.id === topicId)
+    if (!topic || (replacingId !== undefined && replacingId !== null && typeof replacingId !== 'string')) {
+      response.status(400).json({ error: 'bad_request' })
+      return
+    }
+    const replacing = topic.sources.find(source => source.id === replacingId)?.name ?? null
+    const result = await news.suggestSources(topic.id, profileIdOf(response), {
+      current: topic.sources.map(source => source.name),
+      replacing
+    })
+    if (result.status !== 'ok') {
+      response.json(result)
+      return
+    }
+
+    const suggestions = await newSuggestions({ news, sources }, result.sites, lookUp)
+    response.json({
+      status: 'ok',
+      suggestions: suggestions.slice(0, MAX_SUGGESTIONS),
+      added: sources.count(),
+      limit: maxSources()
+    })
+  })
+}
+
+const mountProposalRoutes = (
+  router: express.Router,
+  { sources, proposals }: SourceRoutesOptions,
+  { full, lookUp, topicIdsOf, save }: SourceHelpers
+) => {
   // "Sources proposées": sources.yml's sources a profile adds in one tap, by topic.
   router.get('/proposals', (_request, response) => {
     response.json({
@@ -188,8 +188,18 @@ export const sourceRoutes = ({
       response.status(404).json({ error: 'not_found' })
       return
     }
-    if (sources.count() >= maxSources) {
+    if (full()) {
       response.status(409).json({ error: 'limit' })
+      return
+    }
+    // A plugin's feed has no address to look at: its plugin answers for it.
+    if (isPluginFeed(proposal.source)) {
+      save(
+        { ...proposal.source, addedBy: profileIdOf(response) },
+        'topic',
+        topicIdsOf(request) ?? [proposal.topicId],
+        response
+      )
       return
     }
     // Its site looked at first, as a link pasted: the feed found and tried, so a proposal whose site changed
@@ -211,7 +221,13 @@ export const sourceRoutes = ({
       response
     )
   })
+}
 
+const mountAddRoute = (
+  router: express.Router,
+  { sources }: SourceRoutesOptions,
+  { full, lookUp, linkOf, topicIdsOf, save }: SourceHelpers
+) => {
   router.post('/', async (request, response) => {
     const link = linkOf(request)
     const section: unknown = request.body?.section
@@ -221,7 +237,7 @@ export const sourceRoutes = ({
       response.status(400).json({ error: 'bad_request' })
       return
     }
-    if (sources.count() >= maxSources) {
+    if (full()) {
       response.status(409).json({ error: 'limit' })
       return
     }
@@ -242,8 +258,11 @@ export const sourceRoutes = ({
       return
     }
 
-    let id = `p${profileId}-${slug(found.name)}`
-    for (let suffix = 2; sources.has(id); suffix++) id = `p${profileId}-${slug(found.name)}-${suffix}`
+    // A feed another household already follows keeps its id: it is fetched once for both.
+    let id = sources.feedOf(found.url)?.id ?? `p${profileId}-${slug(found.name)}`
+    for (let suffix = 2; !sources.feedOf(found.url) && sources.isTaken(id); suffix++) {
+      id = `p${profileId}-${slug(found.name)}-${suffix}`
+    }
     const source: Source & { addedBy: number } = {
       id,
       name: found.name,
@@ -257,7 +276,13 @@ export const sourceRoutes = ({
     }
     save(source, section, sectionIds, response)
   })
+}
 
+const mountEditRoutes = (
+  router: express.Router,
+  { news, sources }: SourceRoutesOptions,
+  { topicIdsOf }: SourceHelpers
+) => {
   // A source's topics, changed by the profile that added it or the admin.
   router.patch('/:id', (request, response) => {
     const source = news.getSourceStatuses().find(candidate => candidate.id === request.params.id)
@@ -301,6 +326,4 @@ export const sourceRoutes = ({
     news.removeSource(source.id)
     response.status(204).end()
   })
-
-  return router
 }

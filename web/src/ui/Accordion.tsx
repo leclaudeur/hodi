@@ -31,7 +31,7 @@ const Accordion = ({
   intro?: ReactNode
   children: ReactNode
 }) => {
-  const body = useId()
+  const bodyId = useId()
   return (
     <section className={styles.accordion}>
       <h2 className={styles.heading}>
@@ -39,7 +39,7 @@ const Accordion = ({
           type="button"
           className={styles.header}
           aria-expanded={open}
-          aria-controls={body}
+          aria-controls={bodyId}
           onClick={onToggle}
           data-tour={tour}
         >
@@ -52,7 +52,7 @@ const Accordion = ({
         </button>
         {action && <span className={styles.action}>{action}</span>}
       </h2>
-      <div id={body} className={`${styles.body} appear`} hidden={!open}>
+      <div id={bodyId} className={`${styles.body} appear`} hidden={!open}>
         {intro && <p className={styles.intro}>{intro}</p>}
         {children}
       </div>

@@ -1,5 +1,5 @@
 import { parseHTML } from 'linkedom'
-import { TEXT_CREDIT } from './extract.ts'
+import { TEXT_CREDIT } from './extract/page-cleanup.ts'
 
 type Element = ReturnType<ReturnType<typeof parseHTML>['document']['createElement']>
 
@@ -50,13 +50,9 @@ const blockKeys = (root: Element) =>
       .map(keyOf)
   )
 
-export const removeSiteTemplate = (html: string, others: string[]) => {
-  if (others.length === 0) return html
-
-  const root = bodyOf(html)
-  const own = blockKeys(root)
-  if (own.size === 0) return html
-
+// The blocks the article shares with the source's other articles: the site's own. An article that shares most of
+// its blocks with another is the same text, not a template.
+const sharedKeys = (own: Set<string>, others: string[]) => {
   const seen = new Set<string>()
   for (const other of others) {
     const keys = blockKeys(bodyOf(other))
@@ -64,6 +60,28 @@ export const removeSiteTemplate = (html: string, others: string[]) => {
     if (shared.length / Math.min(own.size, keys.size) > MAX_SHARED_SHARE) continue
     for (const key of shared) seen.add(key)
   }
+  return seen
+}
+
+const footerOf = (blocks: Element[], seen: Set<string>, isSites: (block: Element) => boolean) => {
+  // In the repeated blocks the text ends with, everything from the first one that is plainly the site's is its
+  // footer: its labels ("Merci, et à bientôt.", "Information !") and its teasers. The repeated blocks before it
+  // ("The research was published in Nature.") are the text's.
+  let start = blocks.length
+  while (start > 0 && seen.has(keyOf(textOf(blocks[start - 1]!)))) start--
+  const first = blocks.slice(start).findIndex(isSites)
+  // A credit for the text itself stays, whatever follows it: a licence, a republication, a translation.
+  return new Set(first === -1 ? [] : blocks.slice(start + first).filter(block => !TEXT_CREDIT.test(textOf(block))))
+}
+
+export const removeSiteTemplate = (html: string, others: string[]) => {
+  if (others.length === 0) return html
+
+  const root = bodyOf(html)
+  const own = blockKeys(root)
+  if (own.size === 0) return html
+
+  const seen = sharedKeys(own, others)
   if (seen.size === 0) return html
 
   const blocks = [...root.querySelectorAll(TEXT_BLOCKS)].filter(block => textOf(block) !== '')
@@ -72,22 +90,12 @@ export const removeSiteTemplate = (html: string, others: string[]) => {
     return ABOUT_THE_SITE.test(text) || linkShare(block, text) >= MIN_LINK_SHARE
   }
 
-  // In the repeated blocks the text ends with, everything from the first one that is plainly the site's is its
-  // footer: its labels ("Merci, et à bientôt.", "Information !") and its teasers. The repeated blocks before it
-  // ("The research was published in Nature.") are the text's.
-  let start = blocks.length
-  while (start > 0 && seen.has(keyOf(textOf(blocks[start - 1]!)))) start--
-  const first = blocks.slice(start).findIndex(isSites)
-  // A credit for the text itself stays, whatever follows it: a licence, a republication, a translation.
-  const sites = new Set(
-    first === -1 ? [] : blocks.slice(start + first).filter(block => !TEXT_CREDIT.test(textOf(block)))
-  )
+  const sites = footerOf(blocks, seen, isSites)
 
   let removed = false
   for (const block of blocks) {
     // Already gone with a list or a quote around it.
-    if (!block.isConnected) continue
-    if (!seen.has(keyOf(textOf(block)))) continue
+    if (!block.isConnected || !seen.has(keyOf(textOf(block)))) continue
     if (sites.has(block) || isSites(block)) {
       block.remove()
       removed = true

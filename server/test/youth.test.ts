@@ -5,7 +5,6 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
 import { createApp } from '../app.ts'
-import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
@@ -17,6 +16,9 @@ import { FollowedAlerts } from '../news/followed-alerts.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { parseRules } from '../http/youth-routes.ts'
+import { hashPassword } from '../auth/password.ts'
+import type { UserAccountStore } from '../db/user-account-store.ts'
+import { ADMIN_EMAIL, withAdminAccount } from './helpers/accounts.ts'
 import { articlePage, fakeFetch, rssFeed } from './helpers/news.ts'
 import { itemId } from '../news/text.ts'
 
@@ -142,6 +144,10 @@ describe('youth api', () => {
   let baseUrl = ''
   let close = () => {}
   let session = ''
+  let adminProfile = ''
+  let accounts: UserAccountStore
+  // The signed profile cookies of the adults opened with their password, beside the admin's.
+  const opened = new Map<number, string>()
   const db = openDatabase(':memory:')
   const profiles = new ProfileStore(db)
   const youth = new YouthStore(db, () => ZONE)
@@ -150,7 +156,11 @@ describe('youth api', () => {
   const call = (method: string, route: string, profileId: number, body?: unknown) =>
     fetch(`${baseUrl}/api${route}`, {
       method,
-      headers: { cookie: `${session}; hodi_profile=${profileId}`, 'Content-Type': 'application/json' },
+      headers: {
+        // An adult profile opens with its account's password (the admin's at sign-in); a young one with nothing.
+        cookie: `${session}; ${profileId === 1 ? adminProfile : (opened.get(profileId) ?? `hodi_profile=${profileId}`)}`,
+        'Content-Type': 'application/json'
+      },
       body: body === undefined ? undefined : JSON.stringify(body)
     })
 
@@ -166,21 +176,22 @@ describe('youth api', () => {
       databaseFile: ':memory:',
       backupDir: 'unused-backups',
       timeZone: ZONE,
-      maxSources: 200,
       vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
     }
     household.setUp(
       {
         name: 'Foyer',
-        passwordHash: await hashPassword(PASSWORD, { N: 2 ** 10, r: 8, p: 1 }),
         timeZone: ZONE,
         country: null,
         ai: null
       },
       clock
     )
-    const catalog = parseCatalog('topics:\n  - id: monde\n    label: Monde\n    sources: []\n')
+    const catalog = parseCatalog('topics:\n  - id: world\n    label: Monde\n    sources: []\n')
+    const adminStores = await withAdminAccount(db, profiles, PASSWORD, clock)
+    accounts = adminStores.accounts
     const server = createApp(config, {
+      ...adminStores,
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles,
       users: profileId => new UserStore(db, profileId),
@@ -194,16 +205,23 @@ describe('youth api', () => {
     const login = await fetch(`${baseUrl}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: PASSWORD })
+      body: JSON.stringify({ email: ADMIN_EMAIL, password: PASSWORD })
     })
-    session = login.headers.get('set-cookie')?.split(';')[0] ?? ''
+    ;[session = '', adminProfile = ''] = login.headers.getSetCookie().map(cookie => cookie.split(';')[0]!)
   })
 
   after(() => close())
 
   it('lets the parents set a young profile’s rules, and closes its lists when its time is up', async () => {
     const sam = profiles.create('Sam', 'tech', clock)!
-    const zoe = profiles.create('Zoé', 'musique', clock, { kind: 'teen' })!
+    const zoe = profiles.create('Zoé', 'music', clock, { kind: 'teen' })!
+    // Sam is a parent with an account: this device opens his profile with his password.
+    const hash = await hashPassword('la phrase de Sam', { N: 2 ** 10, r: 8, p: 1 })
+    accounts.linkProfile(accounts.create('sam@example.com', hash, clock)!.id, sam.id)
+    const openSam = await call('PUT', '/profiles/current', 1, { id: sam.id, password: 'la phrase de Sam' })
+    assert.equal(openSam.status, 200)
+    const samCookie = openSam.headers.getSetCookie().find(cookie => cookie.startsWith('hodi_profile='))
+    opened.set(sam.id, samCookie!.split(';')[0]!)
 
     // An adult has no limits; a young profile none until its parents set some.
     assert.deepEqual(await (await call('GET', '/me/limits', 1)).json(), { limited: false })
@@ -278,6 +296,7 @@ describe('youth sources api', () => {
   let baseUrl = ''
   let close = () => {}
   let session = ''
+  let adminProfile = ''
   const db = openDatabase(':memory:')
   const profiles = new ProfileStore(db)
   const youth = new YouthStore(db, () => ZONE)
@@ -300,14 +319,18 @@ describe('youth sources api', () => {
   const call = (method: string, route: string, profileId: number, body?: unknown) =>
     fetch(`${baseUrl}/api${route}`, {
       method,
-      headers: { cookie: `${session}; hodi_profile=${profileId}`, 'Content-Type': 'application/json' },
+      headers: {
+        // The admin's own profile opens with its account's password, signed at sign-in; a young one with nothing.
+        cookie: `${session}; ${profileId === 1 ? adminProfile : `hodi_profile=${profileId}`}`,
+        'Content-Type': 'application/json'
+      },
       body: body === undefined ? undefined : JSON.stringify(body)
     })
 
   // The household follows RTL info and Le Monde; the file adds the young readers' JDE.
   const file = parseCatalog(`
 topics:
-  - id: monde
+  - id: world
     label: Monde
     young: [teen, child]
     sources:
@@ -348,13 +371,11 @@ topics:
       databaseFile: ':memory:',
       backupDir: 'unused-backups',
       timeZone: ZONE,
-      maxSources: 200,
       vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
     }
     household.setUp(
       {
         name: 'Foyer',
-        passwordHash: await hashPassword(PASSWORD, { N: 2 ** 10, r: 8, p: 1 }),
         timeZone: ZONE,
         country: null,
         ai: null
@@ -363,7 +384,7 @@ topics:
     )
     const catalog = parseCatalog(`
 topics:
-  - id: monde
+  - id: world
     label: Monde
     sources:
       - id: rtl
@@ -378,7 +399,7 @@ topics:
     label: Économie
     sources: []
 listen:
-  - id: divers
+  - id: other
     label: Divers
     sources: []
 `)
@@ -390,6 +411,7 @@ listen:
       now: () => clock
     })
     const server = createApp(config, {
+      ...(await withAdminAccount(db, profiles, PASSWORD, clock)),
       // The suite's clock, so the articles stay in the news window whatever the real date.
       news: new NewsService(catalog, { fetchText: feeds.fetchText, log: () => {}, now: () => clock }),
       alerts,
@@ -444,9 +466,9 @@ listen:
     const login = await fetch(`${baseUrl}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: PASSWORD })
+      body: JSON.stringify({ email: ADMIN_EMAIL, password: PASSWORD })
     })
-    session = login.headers.get('set-cookie')?.split(';')[0] ?? ''
+    ;[session = '', adminProfile = ''] = login.headers.getSetCookie().map(cookie => cookie.split(';')[0]!)
   })
 
   after(() => close())
@@ -464,7 +486,7 @@ listen:
     // Only the themes for teens, only the sources for teens: Le Monde is not in its catalogue.
     assert.deepEqual(
       teen.topics.map(topic => topic.id),
-      ['monde']
+      ['world']
     )
     assert.deepEqual(teen.topics[0]!.sources, [
       { id: 'rtl', name: 'RTL info', site: 'https://rtl.example/', on: true },
@@ -501,11 +523,11 @@ listen:
     assert.deepEqual(prefs.hiddenTopics, ['economie'])
 
     // Its parents turn a theme off; one it may not see stays out of their list.
-    const topics = await call('PUT', `/profiles/${zoe.id}/topics`, 1, { hidden: ['monde', 'economie'] })
+    const topics = await call('PUT', `/profiles/${zoe.id}/topics`, 1, { hidden: ['world', 'economie'] })
     assert.deepEqual(((await topics.json()) as { topics: unknown[] }).topics, [
-      { id: 'monde', label: 'Monde', on: false }
+      { id: 'world', label: 'Monde', on: false }
     ])
-    assert.deepEqual(youth.hiddenTopics(zoe.id), ['monde'])
+    assert.deepEqual(youth.hiddenTopics(zoe.id), ['world'])
     await call('PUT', `/profiles/${zoe.id}/topics`, 1, { hidden: [] })
   })
 
@@ -528,7 +550,7 @@ listen:
     const ids = (body: unknown) => ((body as { items: { id: string }[] }).items ?? []).map(item => item.id).sort()
 
     // The feeds read once, and each article checked readable.
-    await call('GET', '/topics/monde?fresh=1', 1)
+    await call('GET', '/topics/world?fresh=1', 1)
     await call('GET', `/articles/${rtl}`, 1)
     await call('GET', `/articles/${lemonde}`, 1)
 
@@ -537,7 +559,7 @@ listen:
     assert.deepEqual(ids(await (await call('GET', '/search?q=pluie', zoe.id)).json()), [rtl])
     const day = `/feed?tz=${encodeURIComponent(ZONE)}`
     assert.deepEqual(ids(await (await call('GET', day, zoe.id)).json()), [rtl])
-    assert.deepEqual(ids(await (await call('GET', '/topics/monde', zoe.id)).json()), [rtl])
+    assert.deepEqual(ids(await (await call('GET', '/topics/world', zoe.id)).json()), [rtl])
     // A theme its parents did not give it does not answer.
     assert.equal((await call('GET', '/topics/economie', zoe.id)).status, 404)
 
@@ -647,7 +669,7 @@ listen:
     const request = (await asked.json()) as { id: number }
     // Its section is one of "Vidéos", not a theme.
     assert.equal(
-      (await call('POST', `/source-requests/${request.id}`, 1, { accept: true, topicIds: ['monde'] })).status,
+      (await call('POST', `/source-requests/${request.id}`, 1, { accept: true, topicIds: ['world'] })).status,
       400
     )
     assert.equal((await call('POST', `/source-requests/${request.id}`, 1, { accept: true })).status, 200)

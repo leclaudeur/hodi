@@ -1,8 +1,21 @@
-import { type Language, isLanguage } from '../../shared/i18n.ts'
+import type { Language } from '../../shared/i18n.ts'
 import type { ExtractedArticle } from '../news/extract.ts'
 import type { FeedEntry, FeedItem } from '../news/feed-parser.ts'
-import { foldText, romanNumeral } from '../news/word-match.ts'
+import { foldText, romanNumeral } from '../../shared/word-match.ts'
 import { type Database, transaction } from './database.ts'
+import {
+  type AiCall,
+  type AiCallKind,
+  type AiCleared,
+  type StoredDailySummary,
+  aiCalls,
+  clearAiCalls,
+  latestDailySummaries,
+  recordAiCall,
+  saveDailySummary
+} from './ai-queries.ts'
+
+import { type StoredIcon, getIcon, getVideoDurations, saveIcon, saveVideoDuration } from './media-queries.ts'
 
 // Readability verdict of an article, as NewsService keeps it, with what its card shows once it is read.
 export interface StoredVerdict {
@@ -15,37 +28,6 @@ export interface StoredVerdict {
 export interface StoredItem {
   item: FeedItem
   verdict: StoredVerdict | null
-}
-
-export interface StoredDailySummary<Point> {
-  points: Point[]
-  generatedAt: string
-  createdAt: number
-  // The language it is written in.
-  language: Language
-}
-
-export type AiCallKind = 'summary' | 'question' | 'dailySummary' | 'sources'
-
-// One call to the API, by the profile whose click asked for it.
-export interface AiCall {
-  kind: AiCallKind
-  at: number
-  profileId: number
-  // Put back to 0 by the admin: 'profile', it no longer counts for its profile but still for the household;
-  // 'all', for no one.
-  cleared?: AiCleared
-}
-
-export type AiCleared = 'profile' | 'all'
-
-const CLEARED_LEVELS = { profile: 1, all: 2 } as const
-
-// A source's icon; data null when its site has none.
-export interface StoredIcon {
-  contentType: string | null
-  data: Uint8Array | null
-  fetchedAt: number
 }
 
 // The reader mode text and the feed's full HTML are dropped after this; the article row stays.
@@ -118,8 +100,12 @@ const ftsTerm = (word: string) => {
 export class NewsStore {
   readonly #db: Database
 
-  constructor(db: Database) {
+  // How long a dropped article keeps its text (and its pictures): Serveur › Contenu, 7 days by default.
+  readonly #retention: () => number
+
+  constructor(db: Database, retention: () => number = () => CONTENT_RETENTION_MS) {
     this.#db = db
+    this.#retention = retention
   }
 
   // A feed's current items: new ones are added, known ones refreshed (the title or image may change).
@@ -286,108 +272,44 @@ export class NewsStore {
   }
 
   // Each profile's last Résumé du jour.
-  latestDailySummaries<Point>(): Map<number, StoredDailySummary<Point>> {
-    const rows = this.#db
-      .prepare(
-        `SELECT profile_id, points, generated_at, language, MAX(created_at) AS created_at
-         FROM daily_summaries GROUP BY profile_id`
-      )
-      .all() as { profile_id: number; points: string; generated_at: string; language: string; created_at: number }[]
-
-    return new Map(
-      rows.map(row => [
-        row.profile_id,
-        {
-          points: JSON.parse(row.points) as Point[],
-          generatedAt: row.generated_at,
-          createdAt: row.created_at,
-          language: isLanguage(row.language) ? row.language : 'fr'
-        }
-      ])
-    )
+  latestDailySummaries<Point>() {
+    return latestDailySummaries<Point>(this.#db)
   }
 
   saveDailySummary<Point>(dailySummary: StoredDailySummary<Point>, profileId = 1) {
-    this.#db
-      .prepare(
-        'INSERT INTO daily_summaries (points, generated_at, created_at, profile_id, language) VALUES (?, ?, ?, ?, ?)'
-      )
-      .run(
-        JSON.stringify(dailySummary.points),
-        dailySummary.generatedAt,
-        dailySummary.createdAt,
-        profileId,
-        dailySummary.language
-      )
+    saveDailySummary(this.#db, dailySummary, profileId)
   }
 
   recordAiCall(call: AiCall) {
-    this.#db
-      .prepare('INSERT INTO ai_calls (kind, at, profile_id) VALUES (?, ?, ?)')
-      .run(call.kind, call.at, call.profileId)
+    recordAiCall(this.#db, call)
   }
 
   // The calls made since the given time, oldest first.
-  aiCalls(since: number): AiCall[] {
-    const rows = this.#db
-      .prepare('SELECT kind, at, profile_id, cleared FROM ai_calls WHERE at > ? ORDER BY at')
-      .all(since) as unknown as { kind: AiCallKind; at: number; profile_id: number; cleared: number }[]
-
-    return rows.map(row => ({
-      kind: row.kind,
-      at: row.at,
-      profileId: row.profile_id,
-      ...(row.cleared === CLEARED_LEVELS.all
-        ? { cleared: 'all' as const }
-        : row.cleared === CLEARED_LEVELS.profile
-          ? { cleared: 'profile' as const }
-          : {})
-    }))
+  aiCalls(since: number) {
+    return aiCalls(this.#db, since)
   }
 
   // "Remettre à 0": the calls since then, of one kind or all, of one profile or all, cleared to that level (never
   // lowered).
   clearAiCalls(since: number, level: AiCleared, kind: AiCallKind | null, profileId: number | null) {
-    this.#db
-      .prepare(
-        `UPDATE ai_calls SET cleared = ? WHERE at > ? AND cleared < ?
-         AND (? IS NULL OR kind = ?) AND (? IS NULL OR profile_id = ?)`
-      )
-      .run(CLEARED_LEVELS[level], since, CLEARED_LEVELS[level], kind, kind, profileId, profileId)
+    clearAiCalls(this.#db, since, level, kind, profileId)
   }
 
-  getIcon(sourceId: string): StoredIcon | null {
-    const row = this.#db
-      .prepare('SELECT content_type, data, fetched_at FROM source_icons WHERE source_id = ?')
-      .get(sourceId) as { content_type: string | null; data: Uint8Array | null; fetched_at: number } | undefined
-
-    return row ? { contentType: row.content_type, data: row.data, fetchedAt: row.fetched_at } : null
+  getIcon(sourceId: string) {
+    return getIcon(this.#db, sourceId)
   }
 
   saveIcon(sourceId: string, icon: StoredIcon) {
-    this.#db
-      .prepare('INSERT OR REPLACE INTO source_icons (source_id, content_type, data, fetched_at) VALUES (?, ?, ?, ?)')
-      .run(sourceId, icon.contentType, icon.data, icon.fetchedAt)
+    saveIcon(this.#db, sourceId, icon)
   }
 
   // Known lengths, and the videos last asked about since then (not found, or not at all yet: absent).
-  getVideoDurations(videoIds: string[], retryAfter: number): Map<string, number | null> {
-    const found = new Map<string, number | null>()
-    const select = this.#db.prepare('SELECT seconds, fetched_at FROM video_durations WHERE video_id = ?')
-    for (const id of videoIds) {
-      const row = select.get(id) as { seconds: number | null; fetched_at: number } | undefined
-      if (row && (row.seconds !== null || row.fetched_at >= retryAfter)) found.set(id, row.seconds)
-    }
-    return found
+  getVideoDurations(videoIds: string[], retryAfter: number) {
+    return getVideoDurations(this.#db, videoIds, retryAfter)
   }
 
   saveVideoDuration(videoId: string, seconds: number | null, now: number) {
-    this.#db
-      .prepare(
-        `INSERT INTO video_durations (video_id, seconds, fetched_at) VALUES (?, ?, ?)
-         ON CONFLICT (video_id) DO UPDATE SET seconds = excluded.seconds, fetched_at = excluded.fetched_at`
-      )
-      .run(videoId, seconds, now)
+    saveVideoDuration(this.#db, videoId, seconds, now)
   }
 
   // How many articles are known, and how many keep their reader text.
@@ -422,7 +344,7 @@ export class NewsStore {
   // Drops what is no longer worth its space; the article rows themselves stay for search and history,
   // and saved articles keep their text.
   prune(now: number) {
-    const contentLimit = now - CONTENT_RETENTION_MS
+    const contentLimit = now - this.#retention()
 
     transaction(this.#db, () => {
       this.#db

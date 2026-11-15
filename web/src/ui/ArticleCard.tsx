@@ -1,7 +1,7 @@
-import { AudioLines, Check, ExternalLink, EyeOff, Layers, Play } from 'lucide-react'
+import { AudioLines, Check, ExternalLink, EyeOff, Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { type MouseEvent, type ReactNode, useState } from 'react'
-import type { RelatedItem, TopicItem } from '../api.ts'
+import { type MouseEvent, type ReactNode } from 'react'
+import type { TopicItem } from '../api.ts'
 import { useArticleImage } from '../lib/article-image.ts'
 import { fadeIn } from '../lib/fade-in.ts'
 import { formatDuration, shortAgo } from '../lib/format.ts'
@@ -16,6 +16,7 @@ import ReadingTime from './ReadingTime.tsx'
 import RoundButton, { CARD_BUTTON } from './RoundButton.tsx'
 import SourceAvatar from './SourceAvatar.tsx'
 import LanguageChip from './LanguageChip.tsx'
+import AlsoOn from './AlsoOn.tsx'
 
 // row: the desktop lists. compact: a mobile row with its square picture. slide: a card in a horizontal slider.
 export type CardVariant = 'row' | 'compact' | 'slide'
@@ -129,50 +130,114 @@ const DismissButton = ({ label, onDismiss }: { label: string; onDismiss: () => v
   )
 }
 
-// The other sources on the same story: their avatars, and their list on a click.
-const AlsoOn = ({ related, compact }: { related: RelatedItem[]; compact: boolean }) => {
+// One or two markers at most: English, then the reading time or "on the site".
+const Markers = ({
+  item,
+  read,
+  offline,
+  compact
+}: {
+  item: TopicItem
+  read: boolean
+  offline: boolean
+  compact: boolean
+}) => {
   const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
-  const label = t('card.alsoOn', { count: related.length })
-
-  if (compact)
+  if (offline) {
     return (
-      <span className={styles.alsoOnLine}>
-        <Layers size={14} aria-hidden="true" />
-        {label}
-      </span>
+      <Chip tone="success">
+        <Check size={12} aria-hidden="true" />
+        {t('card.offline')}
+      </Chip>
     )
-
+  }
+  if (read) {
+    return isDismissed(item.id) ? (
+      <Chip>
+        <EyeOff size={12} aria-hidden="true" />
+        {stateWords(item).hidden}
+      </Chip>
+    ) : (
+      <Chip>
+        <Check size={12} aria-hidden="true" />
+        {stateWords(item).read}
+      </Chip>
+    )
+  }
+  const isLink = item.access === 'link' && !isPlayable(item)
   return (
-    <div className={styles.alsoOn}>
-      <button type="button" className={styles.alsoOnButton} aria-expanded={open} onClick={() => setOpen(!open)}>
-        <Layers size={14} aria-hidden="true" />
-        <span className={styles.alsoOnLabel}>{label}</span>
-        <span className={styles.alsoOnAvatars} aria-hidden="true">
-          {related.slice(0, 3).map(other => (
-            <SourceAvatar key={other.id} sourceId={sourceIdOf(other)} sourceName={other.sourceName} />
-          ))}
-        </span>
-      </button>
-      {open && (
-        <ul className={styles.alsoOnList}>
-          {related.map(other => (
-            <li key={other.id}>
-              <a href={articleHref(other.id)}>
-                <SourceAvatar sourceId={sourceIdOf(other)} sourceName={other.sourceName} />
-                <span className={styles.alsoOnSource}>{other.sourceName}</span>
-                <span className={styles.alsoOnTitle}>{other.title}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
+    <>
+      <LanguageChip lang={item.lang} />
+      {isLink ? (
+        <Chip label={t('card.onSite')}>
+          <ExternalLink size={12} aria-hidden="true" />
+          {!compact && t('card.onSite')}
+        </Chip>
+      ) : (
+        item.readingMinutes != null && <ReadingTime minutes={item.readingMinutes} />
       )}
-    </div>
+    </>
   )
 }
 
-// Saved before related items had a source id: their initials show.
-const sourceIdOf = (related: RelatedItem) => related.sourceId ?? ''
+type TitleProps = Pick<ArticleCardProps, 'item' | 'onOpen' | 'shortcut' | 'active' | 'highlight'>
+
+// The title, a link to the article (or to Vidéos for something to play).
+const CardTitle = ({ item, onOpen, shortcut, active, highlight }: TitleProps) => (
+  <h3 className={styles.title}>
+    <a
+      className={styles.link}
+      // An article read on its site opens in Hodi too: its summary, and the way to the site.
+      href={isPlayable(item) ? watchHref(item.id) : articleHref(item.id)}
+      onClick={event => onOpen?.(item, event)}
+      data-shortcut={shortcut}
+      aria-current={active ? 'true' : undefined}
+    >
+      {highlight ? <Highlighted text={item.title} words={highlight} /> : item.title}
+    </a>
+  </h3>
+)
+
+const hideKindOf = (kind: TopicItem['kind']) => (kind === 'video' || kind === 'podcast' ? kind : 'article')
+
+type MetaProps = Pick<ArticleCardProps, 'item' | 'variant' | 'byline' | 'action' | 'onDismiss'> & {
+  age: ReactNode
+  markers: ReactNode
+  plain: boolean
+  offline: boolean
+}
+
+// The source and its age, then the markers and the card's buttons.
+const CardMeta = ({ item, variant, byline, age, markers, plain, offline, action, onDismiss }: MetaProps) => {
+  const { t } = useTranslation()
+  // A saved article cannot be put away by mistake: unsaved first.
+  const saved = useIsSaved(item.id)
+  const dismissable = onDismiss && !saved && (variant === 'row' || variant === 'compact')
+  return (
+    <div className={styles.meta}>
+      <span className={styles.source}>
+        {byline ?? (
+          <>
+            <SourceAvatar sourceId={item.sourceId} sourceName={item.sourceName} />
+            <span className={styles.sourceName}>{item.sourceName}</span>
+          </>
+        )}
+        {age && (
+          <span className={styles.time}>
+            <span aria-hidden="true">· </span>
+            {age}
+          </span>
+        )}
+      </span>
+      <span className={styles.markers} data-card-meta>
+        {!plain && markers}
+        {action}
+        {dismissable && <DismissButton label={t(`card.hideKind.${hideKindOf(item.kind)}`)} onDismiss={onDismiss} />}
+        {!plain && (variant === 'row' || (variant === 'compact' && !offline)) && <BookmarkButton item={item} />}
+      </span>
+    </div>
+  )
+}
 
 const ArticleCard = ({
   item,
@@ -192,120 +257,30 @@ const ArticleCard = ({
   shortcut,
   priority = false
 }: ArticleCardProps) => {
-  const { t } = useTranslation()
   // A saved video or episode opens in Vidéos.
   const playable = isPlayable(item)
-  const isLink = item.access === 'link' && !playable
   const related = item.related ?? []
   const compact = variant !== 'row'
-  // A saved article cannot be put away by mistake: unsaved first.
-  const saved = useIsSaved(item.id)
   // Beside the source, short: "Numerama · 3 H". A video or an episode gives its length instead, once known.
   const length = playable && item.media?.durationSeconds ? formatDuration(item.media.durationSeconds) : null
   const age = note ?? length ?? shortAgo(item.publishedAt)
-  // An article read on its site opens in Hodi too: its summary, and the way to the site.
-  const href = playable ? watchHref(item.id) : articleHref(item.id)
-  const showSummary = variant === 'row'
-  const hasPicture = item.image !== null
-
-  // One or two markers at most: English, then the reading time or "on the site".
-  const markers = offline ? (
-    <Chip tone="success">
-      <Check size={12} aria-hidden="true" />
-      {t('card.offline')}
-    </Chip>
-  ) : read ? (
-    isDismissed(item.id) ? (
-      <Chip>
-        <EyeOff size={12} aria-hidden="true" />
-        {stateWords(item).hidden}
-      </Chip>
-    ) : (
-      <Chip>
-        <Check size={12} aria-hidden="true" />
-        {stateWords(item).read}
-      </Chip>
-    )
-  ) : (
-    <>
-      <LanguageChip lang={item.lang} />
-      {isLink ? (
-        <Chip label={t('card.onSite')}>
-          <ExternalLink size={12} aria-hidden="true" />
-          {!compact && t('card.onSite')}
-        </Chip>
-      ) : (
-        item.readingMinutes != null && <ReadingTime minutes={item.readingMinutes} />
-      )}
-    </>
-  )
-
-  const title = (
-    <a
-      className={styles.link}
-      href={href}
-      onClick={event => onOpen?.(item, event)}
-      data-shortcut={shortcut}
-      aria-current={active ? 'true' : undefined}
-    >
-      {highlight ? <Highlighted text={item.title} words={highlight} /> : item.title}
-    </a>
-  )
-
+  const title = <CardTitle item={item} onOpen={onOpen} shortcut={shortcut} active={active} highlight={highlight} />
   const said = quote && <p className={styles.quote}>{quote}</p>
-
-  const meta = (
-    <div className={styles.meta}>
-      <span className={styles.source}>
-        {byline ?? (
-          <>
-            <SourceAvatar sourceId={item.sourceId} sourceName={item.sourceName} />
-            <span className={styles.sourceName}>{item.sourceName}</span>
-          </>
-        )}
-        {age && (
-          <span className={styles.time}>
-            <span aria-hidden="true">· </span>
-            {age}
-          </span>
-        )}
-      </span>
-      <span className={styles.markers} data-card-meta>
-        {!plain && markers}
-        {action}
-        {onDismiss && !saved && (variant === 'row' || variant === 'compact') && (
-          <DismissButton
-            label={t(
-              `card.hideKind.${item.kind === 'video' ? 'video' : item.kind === 'podcast' ? 'podcast' : 'article'}`
-            )}
-            onDismiss={onDismiss}
-          />
-        )}
-        {!plain && (variant === 'row' || (variant === 'compact' && !offline)) && <BookmarkButton item={item} />}
-      </span>
-    </div>
-  )
+  const markers = <Markers item={item} read={read} offline={offline} compact={compact} />
+  const meta = <CardMeta {...{ item, variant, byline, age, markers, plain, offline, action, onDismiss }} />
+  const faded = read && fadeRead ? styles.read : ''
 
   if (variant === 'slide')
     return (
-      <article
-        className={[styles.card, styles[variant], read && fadeRead ? styles.read : ''].join(' ')}
-        data-card={variant}
-      >
-        <Picture
-          item={item}
-          sizes={variant === 'slide' ? '236px' : '100vw'}
-          className={styles.cover}
-          priority={priority}
-        >
+      <article className={[styles.card, styles[variant], faded].join(' ')} data-card={variant}>
+        <Picture item={item} sizes="236px" className={styles.cover} priority={priority}>
           {playable && <PlayBadge item={item} />}
           <span className={styles.coverButton}>
             <BookmarkButton item={item} variant="image" size={44} />
           </span>
         </Picture>
         <div className={styles.body}>
-          <h3 className={styles.title}>{title}</h3>
-          {showSummary && item.summary && <p className={styles.summary}>{item.summary}</p>}
+          {title}
           {related.length > 0 && <AlsoOn related={related} compact />}
           {said}
           {meta}
@@ -315,18 +290,16 @@ const ArticleCard = ({
 
   return (
     <article
-      className={[styles.card, styles[variant], active ? styles.active : '', read && fadeRead ? styles.read : ''].join(
-        ' '
-      )}
+      className={[styles.card, styles[variant], active ? styles.active : '', faded].join(' ')}
       data-card={variant}
     >
       <div className={styles.top}>
         <div className={styles.text}>
-          <h3 className={styles.title}>{title}</h3>
-          {showSummary && item.summary && <p className={styles.summary}>{item.summary}</p>}
+          {title}
+          {variant === 'row' && item.summary && <p className={styles.summary}>{item.summary}</p>}
           {variant === 'compact' && related.length > 0 && <AlsoOn related={related} compact />}
         </div>
-        {hasPicture && (
+        {item.image !== null && (
           <Picture
             item={item}
             sizes={variant === 'row' ? '114px' : '144px'}

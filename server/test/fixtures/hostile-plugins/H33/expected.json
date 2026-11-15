@@ -1,0 +1,111 @@
+{
+  "case": "H33",
+  "title": "signIn only for an account this call created or checked",
+  "setup": "Server admin antho@example.com (the setup the test goes through), an adult adult@example.test and the plugin's own account plug@example.test with password 'plug-password-1', both made by the test in Hodi's store before the cases run.",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin",
+      "anonymous": true,
+      "body": {},
+      "expect": {
+        "status": 200,
+        "headersAbsent": [
+          "set-cookie"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/by-email",
+      "anonymous": true,
+      "body": {
+        "email": "adult@example.test"
+      },
+      "expect": {
+        "status": 200,
+        "headersAbsent": [
+          "set-cookie"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/swap",
+      "anonymous": true,
+      "body": {
+        "email": "plug@example.test",
+        "password": "plug-password-1",
+        "target": "antho@example.com"
+      },
+      "expect": {
+        "status": 200,
+        "headersAbsent": [
+          "set-cookie"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/remember",
+      "anonymous": true,
+      "body": {
+        "email": "plug@example.test",
+        "password": "plug-password-1"
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "kept": true
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/replay",
+      "anonymous": true,
+      "body": {},
+      "expect": {
+        "status": 200,
+        "headersAbsent": [
+          "set-cookie"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/google-takeover",
+      "anonymous": true,
+      "body": {
+        "target": "antho@example.com"
+      },
+      "expect": {
+        "status": 200,
+        "headersAbsent": [
+          "set-cookie"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/odd",
+      "anonymous": true,
+      "body": {},
+      "expect": {
+        "statusIn": [
+          200,
+          502
+        ],
+        "headersAbsent": [
+          "set-cookie"
+        ]
+      }
+    }
+  ],
+  "afterInCore": "Every refused signIn is in the plugin's log with the account id it named. No session row was created. The admin's and the adult's accounts are unchanged (same e-mail, same password hash, no provider added). Publicroutes are under /api/public/plugins/<id>/; 'anonymous' means no cookie at all.",
+  "alwaysCheck": [
+    "health",
+    "noFileOutsidePluginDir"
+  ],
+  "why": "signIn is the most powerful thing a plugin can ask. Each request here tries one way to get a session for an account the call did not just create or check."
+}

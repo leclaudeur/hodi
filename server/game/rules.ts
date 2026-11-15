@@ -28,7 +28,6 @@ export interface GameRules {
     reactionReceived: number
     readingDay: number
     readingDayArticles: number
-    dailyCap: number
   }
   levels: (Named & { points: number })[]
   badges: (Named & { id: BadgeId; tiers: [number, number, number] })[]
@@ -120,8 +119,7 @@ export const parseRules = (yamlText: string): GameRules => {
       shareSent: point('share_sent'),
       reactionReceived: point('reaction_received'),
       readingDay: point('reading_day'),
-      readingDayArticles: point('reading_day_articles'),
-      dailyCap: point('daily_cap')
+      readingDayArticles: point('reading_day_articles')
     },
     levels,
     badges,

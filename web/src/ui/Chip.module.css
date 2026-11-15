@@ -39,9 +39,16 @@
 
 /* "PEU OUVERTE": the waiting colour. */
 .warning {
-  border-color: var(--topic-belgique-border);
-  background: var(--topic-belgique-surface);
-  color: var(--topic-belgique);
+  border-color: var(--topic-belgium-border);
+  background: var(--topic-belgium-surface);
+  color: var(--topic-belgium);
+}
+
+/* "EN ERREUR": something broken, in the red of the destructive buttons. */
+.danger {
+  border-color: var(--destructive-border);
+  background: var(--destructive);
+  color: var(--destructive-text);
 }
 
 /* "CET APPAREIL": the brand's colour, for what is this device's own. */

@@ -1,3 +1,5 @@
+import ipaddr from 'ipaddr.js'
+
 // Limits on failed logins. Each client has its own small allowance, so bots trying passwords from the internet
 // do not lock the household out of signing in on a new device; a much larger limit shared by every client still
 // caps a guessing attempt spread over many addresses. Existing sessions keep working either way.
@@ -6,6 +8,18 @@ export const DEFAULT_WINDOW_MS = 15 * 60 * 1000
 export const DEFAULT_GLOBAL_MAX_FAILURES = 100
 // Past this many clients with recent failures, the oldest are forgotten (their failures still count globally).
 const MAX_CLIENTS = 10_000
+
+// An IPv6 address counts by its /64: one connection usually holds a whole /64, and each of its addresses must not get
+// an allowance of its own.
+export const clientKey = (client: string) => {
+  if (!ipaddr.IPv6.isValid(client)) return client
+  const parsed = ipaddr.process(client)
+  if (parsed.kind() === 'ipv4') return parsed.toString()
+  return `${(parsed as ipaddr.IPv6).parts
+    .slice(0, 4)
+    .map(part => part.toString(16))
+    .join(':')}::/64`
+}
 
 export type ThrottleDecision = { allowed: true } | { allowed: false; retryAfterSeconds: number }
 
@@ -30,15 +44,16 @@ export class LoginThrottle {
   check(nowMs: number, client = ''): ThrottleDecision {
     this.#prune(nowMs)
     return (
-      this.#refusal(this.#failures.get(client) ?? [], this.#maxFailures, nowMs) ??
+      this.#refusal(this.#failures.get(clientKey(client)) ?? [], this.#maxFailures, nowMs) ??
       this.#refusal(this.#global, this.#globalMaxFailures, nowMs) ?? { allowed: true }
     )
   }
 
   // Failures are never cleared by a successful login, so a correct guess
   // does not hand an attacker a fresh set of attempts.
-  recordFailure(nowMs: number, client = '') {
+  recordFailure(nowMs: number, rawClient = '') {
     this.#prune(nowMs)
+    const client = clientKey(rawClient)
     const failures = this.#failures.get(client) ?? []
     failures.push(nowMs)
     // Re-inserted, so the map stays ordered from the least to the most recently failing client.

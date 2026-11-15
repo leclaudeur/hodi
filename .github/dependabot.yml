@@ -1,0 +1,32 @@
+# Weekly update pull requests, grouped so a week brings at most one per ecosystem; the base image is checked daily.
+# Only the maintainer merges them.
+# Minor and patch versions only: a major version (TypeScript, ESLint, a non-LTS Node.js) waits for its ecosystem and
+# is done by hand.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ['*']
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+  # The Node.js base image, pinned by digest in the Dockerfile. Daily, since Node.js security releases reach the image
+  # within a day and Dependabot's security alerts never cover a base image.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+    ignore:
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']

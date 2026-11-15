@@ -43,6 +43,9 @@ const MAX_INLINE_INDEX = 199
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
+// An item id, as the routes check it: the only names the pictures' folder holds.
+const ARTICLE_ID = /^[\w-]{16}$/
+
 const isWidth = (width: number): width is ImageWidth => (IMAGE_WIDTHS as readonly number[]).includes(width)
 
 const exists = (file: string) =>
@@ -102,7 +105,7 @@ export class ArticleImages {
 
   // The file of an article's picture at this width, made first if needed; null when there is none to show.
   async file(articleId: string, width: number): Promise<string | null> {
-    if (!isWidth(width)) return null
+    if (!ARTICLE_ID.test(articleId) || !isWidth(width)) return null
     const file = this.#file(articleId, width)
     if (await exists(file)) return file
     if (this.#store.get(articleId)?.failed) return null
@@ -111,7 +114,14 @@ export class ArticleImages {
 
   // The file of picture n inside an article's text at this width, made the first time the reader asks for it.
   async inlineFile(articleId: string, index: number, width: number): Promise<string | null> {
-    if (!isWidth(width) || !Number.isInteger(index) || index < 0 || index > MAX_INLINE_INDEX) return null
+    if (
+      !ARTICLE_ID.test(articleId) ||
+      !isWidth(width) ||
+      !Number.isInteger(index) ||
+      index < 0 ||
+      index > MAX_INLINE_INDEX
+    )
+      return null
     const file = this.#inlineFile(articleId, index, width)
     if (await exists(file)) return file
     const key = `${articleId}.${index}`

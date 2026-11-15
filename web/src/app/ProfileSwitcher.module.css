@@ -25,7 +25,8 @@
   transition: background-color 120ms ease;
 }
 
-.waiting {
+.waiting,
+.still {
   cursor: default;
 }
 
@@ -38,7 +39,8 @@
     background: var(--control-hover);
   }
 
-  .selector.waiting:hover {
+  .selector.waiting:hover,
+  .selector.still:hover {
     background: var(--control);
   }
 }
@@ -54,11 +56,6 @@
 .chevrons {
   flex-shrink: 0;
   color: var(--text-3);
-}
-
-/* The footer's whole row, over the settings' round button too (44 and the 8 between). */
-.menu {
-  right: -52px;
 }
 
 .lock {
@@ -77,9 +74,25 @@
   border-radius: 50%;
 }
 
+/* A plugin's entry (« Changer de foyer »): the same round, its border plain, as dashes mean « add ». */
+.action {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+
 .pin {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+
+.password {
+  width: 100%;
 }

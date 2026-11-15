@@ -58,3 +58,13 @@ export const useNavCounts = () => {
     requests: pending + answers
   }
 }
+
+// The counter beside a section: how many are saved, how many followed articles or shares are new, and on the
+// settings' wheel, the requests.
+export const countOf = (id: Section, counts: ReturnType<typeof useNavCounts>) => {
+  if (id === 'saved') return counts.saved
+  if (id === 'followed') return counts.followed
+  if (id === 'shares') return counts.shares
+  if (id === 'settings') return counts.requests
+  return 0
+}

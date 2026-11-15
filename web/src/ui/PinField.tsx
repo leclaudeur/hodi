@@ -1,5 +1,4 @@
 import { useRef } from 'react'
-import { PIN_LENGTH } from '../api.ts'
 import styles from './PinField.module.css'
 
 export type PinState = 'idle' | 'wrong' | 'right'
@@ -16,14 +15,17 @@ interface PinFieldProps {
   // start: on the left, as the other fields of a settings form; centred on its own screen ("Qui lit ?").
   align?: 'center' | 'start'
   autoFocus?: boolean
-  // The number of digits: a profile's PIN by default, 6 for the setup code.
-  length?: number
+  // The number of characters: 8 for the setup code and the codes of « J'ai un code », 6 for an authenticator app's.
+  length: number
   // The digits drawn as dots; a code copied from a log is easier to check when it shows.
   masked?: boolean
+  // The characters it takes, digits by default; the setup code and a code of « J'ai un code » also have capital
+  // letters, typed in any case, and are drawn in two groups of four to read them out.
+  characters?: RegExp
 }
 
-// One box per digit (four for a PIN), as an activation code. One real input lies over them: the phone's number pad
-// and paste work as on any field; the boxes only draw what it holds. Password managers are kept out: a PIN is not a
+// One box per digit, as an activation code. One real input lies over them: the phone's number pad
+// and paste work as on any field; the boxes only draw what it holds. Password managers are kept out: a code is not a
 // site's password, and their pop-ups cover the boxes. The input is a plain, invisible text field for that (a
 // password one draws them in whatever its autocomplete says), with each manager's own "ignore me" attribute.
 const PinField = ({
@@ -35,8 +37,9 @@ const PinField = ({
   disabled = false,
   align = 'center',
   autoFocus,
-  length = PIN_LENGTH,
-  masked = true
+  length,
+  masked = true,
+  characters
 }: PinFieldProps) => {
   const input = useRef<HTMLInputElement>(null)
 
@@ -45,14 +48,15 @@ const PinField = ({
       className={`${styles.field} ${styles[state]} ${align === 'start' ? styles.start : ''} ${masked ? '' : styles.shown}`}
     >
       <span className={styles.label}>{label}</span>
-      <span className={styles.boxes}>
+      <span className={`${styles.boxes} ${characters ? styles.grouped : ''}`}>
         <input
           ref={input}
           className={styles.input}
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={length}
+          inputMode={characters ? 'text' : 'numeric'}
+          pattern={characters ? undefined : '[0-9]*'}
+          autoCapitalize={characters ? 'characters' : 'off'}
+          maxLength={characters ? undefined : length}
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
@@ -65,7 +69,10 @@ const PinField = ({
           aria-invalid={state === 'wrong' || undefined}
           value={value}
           onChange={event => {
-            const next = event.target.value.replace(/\D/g, '').slice(0, length)
+            const typed = event.target.value
+            const next = (
+              characters ? (typed.toUpperCase().match(characters) ?? []).join('') : typed.replace(/\D/g, '')
+            ).slice(0, length)
             onChange(next)
             if (next.length === length) onComplete?.(next)
           }}

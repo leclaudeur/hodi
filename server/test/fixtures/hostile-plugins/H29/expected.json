@@ -1,0 +1,23 @@
+{
+  "case": "H29",
+  "title": "who carries no e-mail without the permission",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/who",
+      "expect": {
+        "status": 200,
+        "bodyKeysNotContaining": [
+          "email",
+          "passwordHash",
+          "sessionGeneration"
+        ]
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

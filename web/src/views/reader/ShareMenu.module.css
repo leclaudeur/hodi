@@ -16,9 +16,7 @@
 
 /* Under the button, on a computer. */
 .popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  box-sizing: border-box;
   width: 300px;
 }
 

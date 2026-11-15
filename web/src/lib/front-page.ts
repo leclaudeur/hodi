@@ -8,12 +8,17 @@ import { sendPendingChanges } from './user-state.ts'
 
 // "À la une": the three most covered stories of each topic, kept for the visit.
 const STALE_AFTER_MS = 10 * 60 * 1000
+// A topic whose articles the server is still checking (a fresh install, a source just added) is asked again soon:
+// its stories would otherwise wait the ten minutes above.
+const POLL_INTERVAL_MS = 3000
+const MAX_POLLS = 12
 
 let sections: FrontPageSection[] | null = null
 // Asked once, answered or not: the lists wait for it, so that its row does not come in above them later.
 let settled = false
 let loadedAt = 0
 let pending: Promise<void> | null = null
+let polls = 0
 // The hidden sources and muted words the stories were picked with, by the server.
 let pickedWith: string | null = null
 // The language the topics are named in, by the server.
@@ -30,6 +35,7 @@ const load = () =>
       sections = next
       loadedAt = Date.now()
       listeners.forEach(listener => listener())
+      pollWhileChecking(next)
     })
     .catch(() => {})
     .finally(() => {
@@ -39,6 +45,12 @@ const load = () =>
         listeners.forEach(listener => listener())
       }
     }))
+
+function pollWhileChecking(next: FrontPageSection[]) {
+  const checking = next.some(section => section.checking > 0)
+  polls = checking ? polls + 1 : 0
+  if (checking && polls <= MAX_POLLS && !document.hidden) window.setTimeout(() => void load(), POLL_INTERVAL_MS)
+}
 
 // False until "À la une" was asked once (and its first load started: call with useFrontPage).
 export const useFrontPageSettled = () =>
@@ -85,7 +97,7 @@ export const useFrontPage = () => {
         ...section,
         items: section.items.filter(item => !isHidden(item, { ...preferences, hideRead: false }))
       })) ?? null,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filterKey stands for the preferences the filter reads
     [value, filterKey]
   )
 }

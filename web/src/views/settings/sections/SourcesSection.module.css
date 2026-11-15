@@ -1,23 +1,38 @@
-/* The search, then the button that adds a source, as tall as it. */
-.searchLine {
+/* The search on the left, the filters on the right, as above a list anywhere; on a narrow page the filters go
+   under the search. */
+.toolbar {
+  position: relative;
+  z-index: 6;
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 10px;
 }
 
-.searchLine > :first-child {
-  flex: 1;
+.toolbar > :first-child {
+  flex: 1 1 300px;
+  max-width: 360px;
   min-width: 0;
 }
 
 /* The state's select, then the topics' field. */
 .filters {
-  position: relative;
-  z-index: 6;
   display: flex;
+  flex: 1 1 320px;
   align-items: flex-start;
+  justify-content: flex-end;
   gap: 10px;
-  margin-top: -4px;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .toolbar > :first-child {
+    max-width: none;
+  }
+
+  .filters {
+    justify-content: flex-start;
+  }
 }
 
 /* A group's sources, as Réglages' other lists: rows with a line between them. */
@@ -41,11 +56,13 @@
 }
 
 /* A topic's name, held at the top of its group's card while its sources scroll. Over the card's top padding (12px),
-   so no row shows above it, and thinner once held: the space before it in the list is a margin, which scrolls away. */
+   so no row shows above it, and thinner once held: the space before it in the list is a margin, which scrolls away.
+   Its sides line up with the rows': the avatars on the left, the switches on the right. */
 .section > .topicSeparator {
   top: -12px;
   margin-top: 12px;
   padding-top: 14px;
+  padding-inline: 4px;
 }
 
 .section:first-child > .topicSeparator {
@@ -82,4 +99,14 @@
 
 .more {
   position: relative;
+}
+
+/* Under the list, the row's whole width, as the add buttons of Profils and Plugins. */
+.addLine {
+  display: flex;
+  margin-top: 16px;
+}
+
+.addLine > * {
+  flex: 1 1 0;
 }

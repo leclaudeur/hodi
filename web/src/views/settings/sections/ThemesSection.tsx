@@ -16,25 +16,9 @@ const moved = (ids: string[], from: number, to: number) => {
   return next
 }
 
-interface ThemesSectionProps {
-  topics: TopicInfo[]
-  layout: 'desktop' | 'phone'
-}
-
-// The topics' order (dragged by their handle, or moved with the arrow keys on it) and which ones show.
-const ThemesSection = ({ topics, layout }: ThemesSectionProps) => {
-  const { t } = useTranslation()
-  const preferences = usePreferences()
-  // Every topic with a source to show, hidden ones included, in the tabs' order.
-  const ordered = orderTopics(topics, { ...preferences, hiddenTopics: [] }).filter(topic =>
-    hasShownSource(topic, preferences)
-  )
-  const ids = ordered.map(topic => topic.id)
-  // While dragging: the order shown, saved once the topic is dropped.
+// While dragging: the order shown, saved once the topic is dropped. The arrow keys on a handle move it at once.
+const useTopicDrag = (ids: string[]) => {
   const [dragging, setDragging] = useState<{ id: string; order: string[] } | null>(null)
-  const shown = (dragging?.order ?? ids)
-    .map(id => ordered.find(topic => topic.id === id))
-    .filter(Boolean) as TopicInfo[]
 
   const startDrag = (event: PointerEvent<HTMLButtonElement>, id: string) => {
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -59,7 +43,7 @@ const ThemesSection = ({ topics, layout }: ThemesSectionProps) => {
   }
 
   const moveWithKeys = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const step = event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0
+    const step = KEY_STEPS.get(event.key) ?? 0
     if (!step || index + step < 0 || index + step >= ids.length) return
     event.preventDefault()
     updatePreferences({ topicOrder: moved(ids, index, index + step) })
@@ -68,56 +52,93 @@ const ThemesSection = ({ topics, layout }: ThemesSectionProps) => {
     window.requestAnimationFrame(() => target.focus())
   }
 
+  return { dragging, startDrag, drag, drop, moveWithKeys }
+}
+
+const KEY_STEPS = new Map([
+  ['ArrowUp', -1],
+  ['ArrowDown', 1]
+])
+
+interface ThemeRowProps {
+  topic: TopicInfo
+  index: number
+  hiddenTopics: string[]
+  drag: ReturnType<typeof useTopicDrag>
+}
+
+// A topic: its handle, its icon, its name over its count, its switch.
+const ThemeRow = ({ topic, index, hiddenTopics, drag }: ThemeRowProps) => {
+  const { t } = useTranslation()
+  const hidden = hiddenTopics.includes(topic.id)
+  return (
+    <li
+      className={`${styles.row} ${themeStyles.row} ${drag.dragging?.id === topic.id ? themeStyles.dragged : ''}`}
+      data-topic-row={topic.id}
+    >
+      <button
+        type="button"
+        className={themeStyles.handle}
+        aria-label={t('settings.themes.move', { name: topic.label })}
+        onPointerDown={event => drag.startDrag(event, topic.id)}
+        onPointerMove={drag.drag}
+        onPointerUp={drag.drop}
+        onPointerCancel={drag.drop}
+        onKeyDown={event => drag.moveWithKeys(event, index)}
+      >
+        <GripVertical size={16} aria-hidden="true" />
+      </button>
+      <span className={`${themeStyles.icon} ${hidden ? styles.dim : ''}`} data-topic={topic.id}>
+        <TopicIcon topicId={topic.id} size={18} />
+      </span>
+      {/* The count under the name: a long name keeps one line on a phone. */}
+      <span className={styles.rowText}>
+        <span className={`${styles.rowLabel} ${themeStyles.name} ${hidden ? themeStyles.hidden : ''}`}>
+          {topic.label}
+        </span>
+        <span className={styles.mono}>
+          {t('count.source', { count: topic.sources.length })}
+          {hidden && ` · ${t('settings.themes.hidden')}`}
+        </span>
+      </span>
+      <Toggle
+        label={t('settings.themes.show', { name: topic.label })}
+        checked={!hidden}
+        onChange={show =>
+          updatePreferences({
+            hiddenTopics: show ? hiddenTopics.filter(other => other !== topic.id) : [...hiddenTopics, topic.id]
+          })
+        }
+      />
+    </li>
+  )
+}
+
+interface ThemesSectionProps {
+  topics: TopicInfo[]
+  layout: 'desktop' | 'phone'
+}
+
+// The topics' order (dragged by their handle, or moved with the arrow keys on it) and which ones show.
+const ThemesSection = ({ topics, layout }: ThemesSectionProps) => {
+  const { t } = useTranslation()
+  const preferences = usePreferences()
+  // Every topic with a source to show, hidden ones included, in the tabs' order.
+  const ordered = orderTopics(topics, { ...preferences, hiddenTopics: [] }).filter(topic =>
+    hasShownSource(topic, preferences)
+  )
+  const ids = ordered.map(topic => topic.id)
+  const drag = useTopicDrag(ids)
+  const shown = (drag.dragging?.order ?? ids)
+    .map(id => ordered.find(topic => topic.id === id))
+    .filter(Boolean) as TopicInfo[]
+
   return (
     <SectionPage title={t('settings.nav.themes')} intro={t('settings.themes.intro')} layout={layout}>
       <ol className={styles.card}>
-        {shown.map((topic, index) => {
-          const hidden = preferences.hiddenTopics.includes(topic.id)
-          return (
-            <li
-              key={topic.id}
-              className={`${styles.row} ${themeStyles.row} ${dragging?.id === topic.id ? themeStyles.dragged : ''}`}
-              data-topic-row={topic.id}
-            >
-              <button
-                type="button"
-                className={themeStyles.handle}
-                aria-label={t('settings.themes.move', { name: topic.label })}
-                onPointerDown={event => startDrag(event, topic.id)}
-                onPointerMove={drag}
-                onPointerUp={drop}
-                onPointerCancel={drop}
-                onKeyDown={event => moveWithKeys(event, index)}
-              >
-                <GripVertical size={16} aria-hidden="true" />
-              </button>
-              <span className={`${themeStyles.icon} ${hidden ? styles.dim : ''}`} data-topic={topic.id}>
-                <TopicIcon topicId={topic.id} size={18} />
-              </span>
-              {/* The count under the name: a long name keeps one line on a phone. */}
-              <span className={styles.rowText}>
-                <span className={`${styles.rowLabel} ${themeStyles.name} ${hidden ? themeStyles.hidden : ''}`}>
-                  {topic.label}
-                </span>
-                <span className={styles.mono}>
-                  {t('count.source', { count: topic.sources.length })}
-                  {hidden && ` · ${t('settings.themes.hidden')}`}
-                </span>
-              </span>
-              <Toggle
-                label={t('settings.themes.show', { name: topic.label })}
-                checked={!hidden}
-                onChange={show =>
-                  updatePreferences({
-                    hiddenTopics: show
-                      ? preferences.hiddenTopics.filter(other => other !== topic.id)
-                      : [...preferences.hiddenTopics, topic.id]
-                  })
-                }
-              />
-            </li>
-          )
-        })}
+        {shown.map((topic, index) => (
+          <ThemeRow key={topic.id} topic={topic} index={index} hiddenTopics={preferences.hiddenTopics} drag={drag} />
+        ))}
       </ol>
     </SectionPage>
   )

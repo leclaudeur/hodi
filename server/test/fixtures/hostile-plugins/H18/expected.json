@@ -1,0 +1,21 @@
+{
+  "case": "H18",
+  "title": "No SQLite extension loads",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/extension",
+      "expect": {
+        "status": 200,
+        "body": {
+          "ok": false
+        }
+      }
+    }
+  ],
+  "alwaysCheck": [
+    "health",
+    "coreDbUnchanged",
+    "noFileOutsidePluginDir"
+  ]
+}

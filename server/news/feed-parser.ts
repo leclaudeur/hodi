@@ -133,6 +133,21 @@ const channelIdOf = (feedUrl: string) => {
   }
 }
 
+// A video's or an episode's player: a YouTube video of the channel, or the episode's audio file.
+const mediaOf = (node: Node, source: Source): ItemMedia | null => {
+  const videoId = text(node['yt:videoId'])
+  const audio = asArray(node.enclosure).find(entry => attribute(entry, 'type').startsWith('audio/'))
+  const audioUrl = httpsUrl(attribute(audio, 'url'))
+  if (source.kind === 'video' && /^[\w-]{11}$/.test(videoId)) {
+    const channelId = [text(node['yt:channelId']), channelIdOf(source.url)].find(id => /^UC[\w-]{22}$/.test(id))
+    return channelId ? { type: 'youtube', videoId, channelId } : { type: 'youtube', videoId }
+  }
+  if (source.kind === 'podcast' && audioUrl) {
+    return { type: 'audio', url: audioUrl, durationSeconds: duration(text(node['itunes:duration'])) }
+  }
+  return null
+}
+
 const toEntry = (node: Node, source: Source): FeedEntry | null => {
   const mediaGroup = asNode(node['media:group'])
   const rawLink = text(node.link) && !asNode(asArray(node.link)[0]) ? text(node.link) : atomLink(node)
@@ -147,18 +162,8 @@ const toEntry = (node: Node, source: Source): FeedEntry | null => {
   if (accessRights && accessRights !== 'free') return null
 
   const canonical = canonicalLink(link)
-  const videoId = text(node['yt:videoId'])
-  const audio = asArray(node.enclosure).find(entry => attribute(entry, 'type').startsWith('audio/'))
-  const audioUrl = httpsUrl(attribute(audio, 'url'))
 
-  let media: ItemMedia | null = null
-
-  if (source.kind === 'video' && /^[\w-]{11}$/.test(videoId)) {
-    const channelId = [text(node['yt:channelId']), channelIdOf(source.url)].find(id => /^UC[\w-]{22}$/.test(id))
-    media = channelId ? { type: 'youtube', videoId, channelId } : { type: 'youtube', videoId }
-  } else if (source.kind === 'podcast' && audioUrl) {
-    media = { type: 'audio', url: audioUrl, durationSeconds: duration(text(node['itunes:duration'])) }
-  }
+  const media = mediaOf(node, source)
 
   if (source.kind !== 'article' && !media) return null
 

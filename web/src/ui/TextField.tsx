@@ -13,7 +13,7 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
 // The settings' one-line field: a pill as tall as a button, its icon, then the text. Beside a Button in a
 // fieldRow, it takes the room left.
 const TextField = ({ icon: Icon, type = 'text', onClear, ...props }: TextFieldProps) => (
-  <label className={`${styles.field} ${onClear ? styles.clearable : ''}`}>
+  <label className={`${styles.field} ${onClear ? styles.clearable : ''}`} data-field>
     <Icon size={16} aria-hidden="true" />
     <input type={type} {...props} />
     {onClear && props.value !== '' && (

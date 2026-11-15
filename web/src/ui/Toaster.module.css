@@ -1,3 +1,20 @@
+/* The toasts' layer: a popover over the whole screen that lets every click through, except on a toast. */
+.layer {
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: none;
+  pointer-events: none;
+}
+
+.layer [data-sonner-toast] {
+  pointer-events: auto;
+}
+
 /* A toast, from the charter's cards: the card's surface, a 16px corner, the UI font. */
 .toast {
   display: flex;
