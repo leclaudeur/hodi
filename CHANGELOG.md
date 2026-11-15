@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.2] - 2026-11-15
+
+Hodi now installs on more servers: older processors and Portainer without admin rights.
+
 ### Fixed
 
 - **Older processors.** Hodi now starts on a processor without x86-64-v2, such as a virtual machine with a generic
@@ -279,5 +283,6 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.1...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.2...HEAD
+[1.0.0-beta.2]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/leclaudeur/hodi/releases/tag/v1.0.0-beta.1
