@@ -29,6 +29,8 @@ export const PLACEHOLDER_TEXT = new RegExp(
     '^(contenu vidéo|a retrouver dans l.émission)',
     // A gallery's count, left once its slideshow went: "13 images" (Gamekult).
     '^\\d+ (images|photos)$',
+    // A gallery's button, its slides' count in front: "5 Voir la galerie" (Elle).
+    '^(\\d+\\s*)?(voir|ouvrir) la galerie$',
     // A rating widget, a cookie or ad-blocker wall and a subscriber-only feature, left as text.
     '^(as-tu|avez-vous) apprécié (cet|l.) ?article',
     '^you rated this article',

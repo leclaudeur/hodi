@@ -66,7 +66,15 @@ const SIDEBAR = /(^|[\s_-])sidebar([\s_-]|$)/i
 // A name that says a block sits beside a sidebar ("article-content--has-sidebar", "container-with-sidebar") is the
 // text column's: Frandroid's article was dropped for it, and its newsletter form came instead.
 const BESIDE_SIDEBAR = /(has|with)[_-]+sidebar/i
+const SCRIPT_HOOK = /^js-/i
 const MIN_REAL_PARAGRAPH = 300
+
+const dropClassWords = (element: Element, word: RegExp) => {
+  const tokens: string[] = (element.getAttribute('class') ?? '').split(/\s+/)
+  if (tokens.some(token => word.test(token))) {
+    element.setAttribute('class', tokens.filter(token => token !== '' && !word.test(token)).join(' '))
+  }
+}
 
 export const unmarkLayoutBlocks = (root: Element) => {
   // A "sidebar" holding the article's title (its h1) is the page's layout: it loses that word.
@@ -76,17 +84,16 @@ export const unmarkLayoutBlocks = (root: Element) => {
     element && element !== root;
     element = element.parentElement
   ) {
-    const tokens: string[] = (element.getAttribute('class') ?? '').split(/\s+/)
-    if (tokens.some(token => SIDEBAR.test(token))) {
-      element.setAttribute('class', tokens.filter(token => token !== '' && !SIDEBAR.test(token)).join(' '))
-    }
+    dropClassWords(element, SIDEBAR)
     if (SIDEBAR.test(element.getAttribute('id') ?? '')) element.removeAttribute('id')
   }
   for (const element of [...root.querySelectorAll('[class*="sidebar" i]')]) {
-    const tokens: string[] = (element.getAttribute('class') ?? '').split(/\s+/)
-    if (tokens.some(token => BESIDE_SIDEBAR.test(token))) {
-      element.setAttribute('class', tokens.filter(token => token !== '' && !BESIDE_SIDEBAR.test(token)).join(' '))
-    }
+    dropClassWords(element, BESIDE_SIDEBAR)
+  }
+  // A "js-" class is a hook for the site's script, not a name for the block: Readability reads "js-widget-toggle"
+  // as a widget and drops Elle's gallery, its slides' text included.
+  for (const element of [...root.querySelectorAll('[class*="js-" i]')]) {
+    dropClassWords(element, SCRIPT_HOOK)
   }
   // A heading's id is an anchor made from its words ("h-comment-installer-le-mod"): Readability reads it as a
   // layout word and drops the heading.

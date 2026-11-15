@@ -179,6 +179,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
   notice in place of a short article, or nothing at all: the sign-up is left out and the text column is read.
 - **A list in a box stays in the text.** Gamekult's games of the week, in a box after the last paragraph, were
   left out of the reader and the article stopped on « place aux sorties de la semaine : ».
+- **Elle's galleries read in full.** A gallery article showed only its introduction: the reader now keeps its
+  slides' text, without the « 5 Voir la galerie » buttons.
 - Serveur › Plugins lists a plugin whose version is a pre-release, such as 1.0.0-beta.1, and offers 1.0.0 to a server
   that has 1.0.0-beta.1, or beta.2 to one that has beta.1.
 - **Serveur › Vue d'ensemble with a keyboard.** The small curves of its figures no longer take a stop of their own
