@@ -43,6 +43,8 @@ export interface TestPluginOptions {
   ai?: (question: PluginQuestion) => string
   // Serveur › E-mail set up (true, the default) or not, for ctx.mail.available().
   mail?: boolean
+  // Serveur › Général's public site, for ctx.serverSettings().publicHome (none: not given yet).
+  publicHome?: string
   // The household's name and language.
   household?: { name?: string; language?: 'fr' | 'en' }
   // Built unsigned: Hodi then refuses accounts, households, signIn, mail, notify and ai, as it would.

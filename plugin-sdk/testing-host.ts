@@ -164,7 +164,7 @@ export const startSmallHodi = async (
       textDays: 7,
       backupCopies: 7,
       maxSources: null,
-      publicHome: null
+      publicHome: options.publicHome ?? null
     }),
     log: line => log.push(line)
   })
