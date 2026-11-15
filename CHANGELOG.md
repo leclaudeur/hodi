@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.6] - 2026-11-15
+
+Plugins can read the public site's address, code fields lose their repeated label, and empty settings pages stop
+scrolling.
+
 ### Added
 
 - **Plugins.** A plugin can read the public site's address from the server's general settings.
@@ -338,7 +343,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.5...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.6...HEAD
+[1.0.0-beta.6]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.5...v1.0.0-beta.6
 [1.0.0-beta.5]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.4...v1.0.0-beta.5
 [1.0.0-beta.4]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.3...v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.2...v1.0.0-beta.3
