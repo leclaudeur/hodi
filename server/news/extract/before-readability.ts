@@ -81,6 +81,29 @@ export const unmarkLayoutBlocks = (root: Element) => {
   }
 }
 
+// Readability drops every aside. One inside the article that is a list, not links (Gamekult's games of the week,
+// in a box after the last paragraph), is part of the text: it becomes a plain block. Related links, newsletter
+// prompts and the site's explanations stay asides.
+const MIN_BOX_TEXT = 100
+const MIN_LIST_SHARE = 0.8
+const MAX_BOX_LINK_SHARE = 0.3
+
+const lengthOf = (elements: Element[]) =>
+  elements.reduce((sum, element) => sum + normalized(element.textContent).length, 0)
+
+export const keepListBoxes = (root: Element) => {
+  for (const box of [...root.querySelectorAll('article aside')]) {
+    const text = normalized(box.textContent).length
+    const listed = lengthOf([...box.querySelectorAll('li')])
+    const links = lengthOf([...box.querySelectorAll('a')])
+    if (text < MIN_BOX_TEXT || listed < text * MIN_LIST_SHARE || links > text * MAX_BOX_LINK_SHARE) continue
+    const block = box.ownerDocument.createElement('div')
+    for (const name of box.getAttributeNames()) block.setAttribute(name, box.getAttribute(name) ?? '')
+    block.append(...box.childNodes)
+    box.replaceWith(block)
+  }
+}
+
 // A live page whose posts are drawn by a script (France 24's live blogs) also sends them in the page, in a hidden
 // copy: Readability skips hidden blocks, and only the page's header was left. The copy is shown again, only inside a
 // block that says it is a live blog, so that a hidden article (a paywall's) stays hidden.
