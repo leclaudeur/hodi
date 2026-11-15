@@ -49,6 +49,11 @@ export const smtpSend: SendMail = async (settings, message) => {
   try {
     await transport.sendMail({ from: settings.sender, ...message })
   } catch (error) {
+    // The screen only says which kind of failure; the log keeps the mail server's own words for whoever fixes it.
+    const { code, message } = error as { code?: unknown; message?: unknown }
+    console.error(
+      `E-mail not sent through ${settings.host}:${settings.port}: ${String(code ?? '')} ${String(message ?? error)}`
+    )
     throw new MailError(failureOf(error), error)
   } finally {
     transport.close()

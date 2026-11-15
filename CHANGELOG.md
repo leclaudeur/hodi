@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **E-mail.** When a test or a message cannot be sent, the server's log gives the mail server's exact error.
+
 ## [1.0.0-beta.4] - 2026-11-15
 
 Code fields read in two groups with a dash, and the setup code says where to find it in one short notice.
