@@ -175,6 +175,12 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 
 ### Fixed
 
+- **Frandroid's articles instead of its newsletter form.** The reader showed the newsletter sign-up and its data
+  notice in place of a short article, or nothing at all: the sign-up is left out and the text column is read.
+- **A list in a box stays in the text.** Gamekult's games of the week, in a box after the last paragraph, were
+  left out of the reader and the article stopped on « place aux sorties de la semaine : ».
+- **Elle's galleries read in full.** A gallery article showed only its introduction: the reader now keeps its
+  slides' text, without the « 5 Voir la galerie » buttons.
 - **Fewer feeds failing on a timeout.** Every feed was fetched at once, and a quick one could wait out its 5
   seconds behind the others (Voici, Femme Actuelle, Sonovision): they are now fetched 10 at a time, and a feed or an
   article page gets 10 seconds.
