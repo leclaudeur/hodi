@@ -212,7 +212,7 @@
       "title": "L’actu de toute la maison",
       "lead": "Tes sites d’info préférés, <b>rangés par thème</b>, et lus <b>sans pub ni pistage</b>. Chacun a son profil, et le foyer se partage ce qui vaut la peine d’être lu.",
       "codeNoticeTitle": "Le code est dans le journal du serveur",
-      "codeNoticeText": "Hodi en écrit un nouveau à chaque démarrage, sur la ligne <i>Setup code</i> : prends le dernier, avec <code>docker compose logs app</code>.",
+      "codeNoticeText": "Prends la dernière ligne <i>Setup code</i> de <code>docker compose logs app</code>.",
       "code": "Code d’installation",
       "button": "Installer Hodi",
       "length": "Quelques minutes · tout dans le navigateur"

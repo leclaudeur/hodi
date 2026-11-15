@@ -21,29 +21,21 @@
 }
 
 .boxes {
-  /* Six digits: four gaps inside the groups, then the dash and the gap on each of its sides. */
-  --n: 6;
-  --spaces: calc(4 * 8px + 26px);
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  /* Boxes of 44 px at most, narrower in a narrower place. A set width: a container's width never follows its
-     content, so it would be 0 in a place as wide as what it holds. */
-  width: calc(var(--n) * 44px + var(--spaces));
-  max-width: 100%;
-  container-type: inline-size;
-}
-
-/* Eight characters: two more boxes and two more gaps. */
-.long {
-  --n: 8;
-  --spaces: calc(6 * 8px + 26px);
+  /* The boxes and the dash fill the field: boxes of 44 px at most, any width left goes around the dash. */
+  width: 100%;
+  max-width: 426px;
 }
 
 .group {
   display: flex;
+  flex: 0 1 auto;
   gap: 8px;
+  min-width: 0;
 }
 
 .dash {
@@ -75,15 +67,16 @@
   position: relative;
   display: flex;
   align-items: center;
-  /* The boxes and the dash fill the field's width; each box keeps the 44 × 60 shape, its corners in proportion. */
-  --box: calc((100cqw - var(--spaces)) / var(--n));
-  flex: none;
   justify-content: center;
-  width: var(--box);
+  /* Narrower in a narrower field, always in the 44 × 60 shape with its corners in proportion (14 px at 44 × 60). */
+  width: 44px;
+  min-width: 0;
+  flex: 0 1 auto;
   aspect-ratio: 44 / 60;
   border: 1px solid var(--border);
-  border-radius: calc(var(--box) * 14 / 44);
+  border-radius: 31.8% / 23.3%;
   background: var(--control);
+  container-type: inline-size;
   transition:
     border-color 160ms,
     background-color 160ms;
@@ -91,8 +84,8 @@
 
 /* A typed digit: a dot, never the digit (unless the field shows its digits, below). */
 .filled::after {
-  width: calc(var(--box) * 12 / 44);
-  height: calc(var(--box) * 12 / 44);
+  width: 28%;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: var(--text);
   content: '';
@@ -107,7 +100,7 @@
   color: var(--text);
   font-family: var(--font-mono);
   /* The text follows the box, between a size still easy to read and the one of a 44 px box. */
-  font-size: clamp(14px, calc(var(--box) / 2), 22px);
+  font-size: clamp(14px, 50cqw, 22px);
 }
 
 .wrong.shown .box {
@@ -122,7 +115,7 @@
 /* A caret in that box, blinking as in any text field, until the code is full. */
 .input:focus ~ .group .next:not(.filled)::before {
   width: 2px;
-  height: calc(var(--box) * 24 / 44);
+  height: 40%;
   border-radius: 1px;
   background: var(--text);
   animation: caret 1s steps(1) infinite;

@@ -77,7 +77,7 @@ const PinField = ({
       className={`${styles.field} ${styles[state]} ${align === 'start' ? styles.start : ''} ${masked ? '' : styles.shown}`}
     >
       <span className={styles.label}>{label}</span>
-      <span className={`${styles.boxes} ${length > 6 ? styles.long : ''}`}>
+      <span className={styles.boxes}>
         <input
           ref={input}
           className={styles.input}
