@@ -15,15 +15,25 @@
   min-height: calc(100dvh - var(--titlebar-height) - 22px);
 }
 
-.page > [data-empty-state] {
-  min-height: 0;
-  padding-bottom: 64px;
+/* The title's 40px above, the 20px gap under it: 10px under the state centres it in the room left. */
+.page:not(.phonePage):has(> [data-empty-state]) {
+  padding-bottom: 10px;
 }
 
-/* A phone's page scrolls with the window: the empty state sits under the title at its own height. */
+.page > [data-empty-state] {
+  min-height: 0;
+  padding: 24px 0;
+}
+
+/* On a phone or a tablet the page fills the screen under its header (MobilePage), so an empty state is centred
+   in the room left too. */
+.phonePage:has(> [data-empty-state]) {
+  flex-grow: 1;
+  padding-bottom: 0;
+}
+
 .phonePage > [data-empty-state] {
-  flex-grow: 0;
-  padding: 48px 0 24px;
+  padding: 0 0 calc(24px + var(--nav-room, env(safe-area-inset-bottom)));
 }
 
 .phonePage {

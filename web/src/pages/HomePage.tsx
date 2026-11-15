@@ -124,7 +124,7 @@ const HomePage = ({ onLoggedOut }: HomePageProps) => {
 
   const navHidden = ['article', 'story', 'dailySummary', 'search'].includes(route.name) || watching
   return (
-    <div className={styles.phone}>
+    <div className={styles.phone} data-nav={navHidden ? undefined : ''}>
       {route.name !== 'article' && !watching && <OfflineBanner layout="phone" onRetry={retry} />}
       <main ref={main} {...swipe}>
         {screen}
