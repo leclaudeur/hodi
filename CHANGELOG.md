@@ -19,8 +19,8 @@ The e-mail test works for a server's admin outside any household, and a failed e
 ### Fixed
 
 - **Shown password.** It reads at the size of the other fields' text, no longer larger and spaced out.
-- **E-mail test.** A server's admin with no profile in a household can send « Envoyer un essai » to their own address; it
-  failed as « le serveur ne répond pas ».
+- **E-mail test.** A server's admin with no profile in a household can use "Send a test" to reach their own address; it
+  failed as "the server doesn't answer".
 
 ## [1.0.0-beta.4] - 2026-11-15
 
