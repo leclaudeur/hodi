@@ -14,6 +14,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **Shown password.** It reads at the size of the other fields' text, no longer larger and spaced out.
 - **E-mail test.** A server's admin with no profile in a household can send « Envoyer un essai » to their own address; it
   failed as « le serveur ne répond pas ».
 
