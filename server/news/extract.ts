@@ -1,6 +1,7 @@
 import { Readability } from '@mozilla/readability'
 import { parseHTML } from 'linkedom'
 import {
+  keepListBoxes,
   recoverSplitText,
   removeAds,
   removeLabelledAds,
@@ -230,6 +231,7 @@ export const extractArticle = (html: string, url: string): ExtractedArticle | nu
   removeLabelledAds(document.body as unknown as Element)
   removeSignUps(document.body as unknown as Element)
   unmarkLayoutBlocks(document.body as unknown as Element)
+  keepListBoxes(document.body as unknown as Element)
   showLiveBlogPosts(document.body as unknown as Element)
   // Readability changes the page it reads: a copy is kept to find the text's other blocks.
   const page = document.body.cloneNode(true) as unknown as Element
