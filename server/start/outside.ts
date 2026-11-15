@@ -22,7 +22,8 @@ export interface Outside {
 }
 
 export const realOutside = (): Outside => ({
-  fetchText: createFetchText(),
+  // Feeds and article pages: a slow moment of a site (or of the server, busy with a refresh) gets 10 seconds.
+  fetchText: createFetchText({ timeoutMs: 10_000 }),
   findFetchText: createFetchText({ timeoutMs: 8000 }),
   isPublicLink: isPublicUrl,
   fetchBytes: createFetchBytes(),

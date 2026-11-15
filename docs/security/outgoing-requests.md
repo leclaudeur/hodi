@@ -16,7 +16,7 @@ follows the same rules.
 
 - **Public addresses only**: a name must resolve only to public addresses, for the request and each of its redirects.
 - **The source's own domains**: an article's address, and its final one, must be on the source's `domains`.
-- **Limits**: a 5-second timeout and a 5 MB size cap.
+- **Limits**: a 10-second timeout for a feed or an article page, and a 5 MB size cap.
 
 A news site that redirects to the server's own network, such as a router or a cloud metadata address, gets no request.
 A redirect to a login or paywall page leaves the source's domains, so the article is marked unreadable.

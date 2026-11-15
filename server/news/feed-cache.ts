@@ -11,8 +11,8 @@ export const ERROR_TTL_MS = 60 * 1000
 // "Tirer pour rafraîchir" fetches the feeds again, at most this often.
 const FORCED_REFRESH_MIN_MS = 60 * 1000
 // Feeds fetched at the same time. A hundred at once wait for one another (name lookups, parsing), and the quick ones
-// ran out of their 5 seconds before their turn came: they were logged as timeouts at every refresh.
-export const MAX_PARALLEL_FEEDS = 8
+// ran out of their time before their turn came: they were logged as timeouts at every refresh.
+export const MAX_PARALLEL_FEEDS = 10
 
 export interface SourceEntry {
   startedAt: number
