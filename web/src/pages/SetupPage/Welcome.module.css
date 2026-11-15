@@ -73,8 +73,8 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  /* The eight boxes' width: the notice under them is as wide. */
-  max-width: 418px;
+  /* A code field's width (ui/PinField): the notice under it is as wide. */
+  max-width: 360px;
 }
 
 .code > * {

@@ -21,18 +21,37 @@
 }
 
 .boxes {
+  --box: 44px;
+  --gap: 8px;
+  --radius: 14px;
   position: relative;
   display: flex;
-  /* Not stretched: each box keeps its own square height when the row narrows. */
-  align-items: flex-start;
-  max-width: 100%;
-  gap: 8px;
+  align-items: center;
+  /* The two groups at the field's two edges, as wide as the fields above them, a dash between. */
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
 }
 
-/* Eight boxes, in two groups of four: a wider gap in the middle to read the code out. */
+/* Eight characters: smaller boxes of the same shape, the same size everywhere, so they fit a phone. */
+.long {
+  --box: 32px;
+  --gap: 6px;
+  --radius: 10px;
+}
 
-.grouped .box:nth-of-type(4) {
-  margin-right: 10px;
+.group {
+  display: flex;
+  gap: var(--gap);
+}
+
+.dash {
+  flex: none;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text-3);
 }
 
 /* The real field, over the boxes: invisible, but it takes the taps, the keys and the paste. */
@@ -56,14 +75,13 @@
   position: relative;
   display: flex;
   align-items: center;
-  flex: 0 1 auto;
+  flex: none;
   justify-content: center;
-  /* Always 44 × 60, everywhere: on a narrow phone the boxes shrink together and keep that shape. */
-  width: 44px;
-  min-width: 0;
+  /* 44 × 60, or 32 × 44 for eight characters: the same shape, the same size wherever the field is. */
+  width: var(--box);
   aspect-ratio: 44 / 60;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius);
   background: var(--control);
   transition:
     border-color 160ms,
@@ -72,8 +90,8 @@
 
 /* A typed digit: a dot, never the digit (unless the field shows its digits, below). */
 .filled::after {
-  width: 12px;
-  height: 12px;
+  width: calc(var(--box) * 12 / 44);
+  height: calc(var(--box) * 12 / 44);
   border-radius: 50%;
   background: var(--text);
   content: '';
@@ -87,7 +105,7 @@
 .shown .box {
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: calc(var(--box) / 2);
 }
 
 .wrong.shown .box {
@@ -95,14 +113,14 @@
 }
 
 /* Where the next digit goes, while the field has the focus. */
-.input:focus ~ .next {
+.input:focus ~ .group .next {
   border-color: var(--rust-border);
 }
 
 /* A caret in that box, blinking as in any text field, until the code is full. */
-.input:focus ~ .next:not(.filled)::before {
+.input:focus ~ .group .next:not(.filled)::before {
   width: 2px;
-  height: 24px;
+  height: calc(var(--box) * 24 / 44);
   border-radius: 1px;
   background: var(--text);
   animation: caret 1s steps(1) infinite;
@@ -110,7 +128,7 @@
 }
 
 .wrong .box,
-.wrong .input:focus ~ .next {
+.wrong .input:focus ~ .group .next {
   border-color: var(--destructive-border);
   background: var(--destructive);
 }
@@ -124,7 +142,7 @@
 }
 
 .right .box,
-.right .input:focus ~ .next {
+.right .input:focus ~ .group .next {
   border-color: var(--topic-science);
   background: var(--topic-science-surface);
 }
@@ -142,7 +160,7 @@
     transition: none;
   }
 
-  .input:focus ~ .next:not(.filled)::before {
+  .input:focus ~ .group .next:not(.filled)::before {
     animation: none;
   }
 }

@@ -20,9 +20,37 @@ interface PinFieldProps {
   // The digits drawn as dots; a code copied from a log is easier to check when it shows.
   masked?: boolean
   // The characters it takes, digits by default; the setup code and a code of « J'ai un code » also have capital
-  // letters, typed in any case, and are drawn in two groups of four to read them out.
+  // letters, typed in any case.
   characters?: RegExp
 }
+
+interface GroupProps {
+  from: number
+  to: number
+  value: string
+  length: number
+  masked: boolean
+}
+
+// Half of the boxes: a code reads in two groups, three digits or four characters each.
+const Group = ({ from, to, value, length, masked }: GroupProps) => (
+  <span className={styles.group}>
+    {Array.from({ length: to - from }, (_, offset) => {
+      const index = from + offset
+      return (
+        <span
+          key={index}
+          className={`${styles.box} ${index < value.length ? styles.filled : ''} ${
+            index === Math.min(value.length, length - 1) ? styles.next : ''
+          }`}
+          aria-hidden="true"
+        >
+          {masked ? null : value[index]}
+        </span>
+      )
+    })}
+  </span>
+)
 
 // One box per digit, as an activation code. One real input lies over them: the phone's number pad
 // and paste work as on any field; the boxes only draw what it holds. Password managers are kept out: a code is not a
@@ -42,13 +70,14 @@ const PinField = ({
   characters
 }: PinFieldProps) => {
   const input = useRef<HTMLInputElement>(null)
+  const half = Math.ceil(length / 2)
 
   return (
     <label
       className={`${styles.field} ${styles[state]} ${align === 'start' ? styles.start : ''} ${masked ? '' : styles.shown}`}
     >
       <span className={styles.label}>{label}</span>
-      <span className={`${styles.boxes} ${characters ? styles.grouped : ''}`}>
+      <span className={`${styles.boxes} ${length > 6 ? styles.long : ''}`}>
         <input
           ref={input}
           className={styles.input}
@@ -82,17 +111,9 @@ const PinField = ({
             event.currentTarget.setSelectionRange(end, end)
           }}
         />
-        {Array.from({ length }, (_, index) => (
-          <span
-            key={index}
-            className={`${styles.box} ${index < value.length ? styles.filled : ''} ${
-              index === Math.min(value.length, length - 1) ? styles.next : ''
-            }`}
-            aria-hidden="true"
-          >
-            {masked ? null : value[index]}
-          </span>
-        ))}
+        <Group from={0} to={half} value={value} length={length} masked={masked} />
+        <span className={styles.dash} aria-hidden="true" />
+        <Group from={half} to={length} value={value} length={length} masked={masked} />
       </span>
     </label>
   )

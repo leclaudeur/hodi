@@ -11,8 +11,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 ### Changed
 
 - **Setup code.** Where to find it is now a blue notice under its boxes, as wide as them, instead of a « ? ».
-- **Code boxes** are 44 × 60 everywhere (setup, sign-in, profile codes, two-factor, backups) and keep that shape on a
-  narrow phone.
+- **Code boxes** read in two groups with a dash between, at the field's two edges: 3 + 3 boxes of 44 × 60 for a
+  6-digit code, 4 + 4 boxes of 32 × 44 for an 8-character one, the same size wherever the field is. The setup code in
+  the log reads the same way, `ABCD-1234`; it is typed with or without the dash.
 - **Commands in a sentence** show in the mono font with no tile behind them.
 
 ## [1.0.0-beta.3] - 2026-11-15

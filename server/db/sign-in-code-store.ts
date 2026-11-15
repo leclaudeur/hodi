@@ -47,6 +47,9 @@ export const drawCode = () =>
     () => SIGN_IN_CODE_ALPHABET[randomInt(SIGN_IN_CODE_ALPHABET.length)]
   ).join('')
 
+// A code as people read it: two groups of four, joined by a dash, as the boxes draw it. Typed back, the dash goes.
+export const codeForPeople = (code: string) => `${code.slice(0, 4)}-${code.slice(4)}`
+
 const CODE_PATTERN = new RegExp(`^[${SIGN_IN_CODE_ALPHABET}]{${SIGN_IN_CODE_LENGTH}}$`)
 
 // A code as typed, read as the code it is: in capitals, without the spaces or dashes a person may add. null when it

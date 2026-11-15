@@ -3,7 +3,7 @@ import { createApp } from './app.ts'
 import type { Config } from './config.ts'
 import type { Database } from './db/database.ts'
 import { type PluginBackup, diskUsage } from './db/maintenance.ts'
-import { drawCode } from './db/sign-in-code-store.ts'
+import { codeForPeople, drawCode } from './db/sign-in-code-store.ts'
 import { smtpSend } from './mail/mailer.ts'
 import { PluginInstaller } from './plugins/installer.ts'
 import { pluginArticle } from './plugins/articles.ts'
@@ -49,7 +49,7 @@ interface Running {
 const drawSetupCode = (stores: Stores) => {
   const setupCode = drawCode()
   if (!stores.household.isSetUp()) {
-    console.log(`Hodi is not set up yet: open it in a browser. Setup code, if asked: ${setupCode}`)
+    console.log(`Hodi is not set up yet: open it in a browser. Setup code, if asked: ${codeForPeople(setupCode)}`)
   }
   return setupCode
 }

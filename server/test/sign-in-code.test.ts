@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
-import { SIGN_IN_CODE_ALPHABET, SignInCodeStore, drawCode, signInCodeOf } from '../db/sign-in-code-store.ts'
+import {
+  SIGN_IN_CODE_ALPHABET,
+  SignInCodeStore,
+  codeForPeople,
+  drawCode,
+  signInCodeOf
+} from '../db/sign-in-code-store.ts'
 
 describe('codes of « J’ai un code »', () => {
   it('draws eight characters of the alphabet, as the setup code is too', () => {
@@ -18,6 +24,11 @@ describe('codes of « J’ai un code »', () => {
     assert.ok(!/[01ILO]/.test(SIGN_IN_CODE_ALPHABET))
     // Every character comes up: the draw covers the whole alphabet.
     assert.equal(new Set(drawn.join('')).size, SIGN_IN_CODE_ALPHABET.length)
+  })
+
+  it('shows a code in two groups of four, which read back as the code', () => {
+    assert.equal(codeForPeople('ABCD2345'), 'ABCD-2345')
+    assert.equal(signInCodeOf(codeForPeople('ABCD2345')), 'ABCD2345')
   })
 
   it('reads a code as typed, in capitals and without spaces or dashes', () => {
