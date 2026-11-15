@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Page not found.** The big « 404. » now carries the accent dot, and the title under it has none.
+
 ## [1.0.0-beta.3] - 2026-11-15
 
 Hodi starts on any processor, even a virtual machine with a generic CPU, and its image is 9 MB lighter.
