@@ -9,6 +9,23 @@
   padding: 40px 0 64px;
 }
 
+/* On a computer the page fills its panel (the window less the panel's 10 px margins and border), so an empty state
+   under the title takes the room left, with no scroll. */
+.page:not(.phonePage) {
+  min-height: calc(100dvh - var(--titlebar-height) - 22px);
+}
+
+.page > [data-empty-state] {
+  min-height: 0;
+  padding-bottom: 64px;
+}
+
+/* A phone's page scrolls with the window: the empty state sits under the title at its own height. */
+.phonePage > [data-empty-state] {
+  flex-grow: 0;
+  padding: 48px 0 24px;
+}
+
 .phonePage {
   max-width: none;
   padding: 4px var(--gutter) calc(120px + env(safe-area-inset-bottom));
