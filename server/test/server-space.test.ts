@@ -426,7 +426,8 @@ describe('server overview route', () => {
       videoDays: 90,
       textDays: 7,
       backupCopies: 7,
-      maxSources: null
+      maxSources: null,
+      publicHome: null
     })
   })
 

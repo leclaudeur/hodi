@@ -14,7 +14,7 @@ interface EmptyStateProps {
 
 // A list with nothing to show, or that failed to load: from the charter's "États d'erreur".
 const EmptyState = ({ icon, title, children, actions, tone = 'default', compact = false }: EmptyStateProps) => (
-  <div className={`${styles.wrap} ${compact ? styles.compact : ''}`}>
+  <div className={`${styles.wrap} ${compact ? styles.compact : ''}`} data-empty-state>
     <div className={styles.state} role={tone === 'danger' ? 'alert' : undefined}>
       <span className={`${styles.icon} ${styles[tone]}`} aria-hidden="true">
         {icon}

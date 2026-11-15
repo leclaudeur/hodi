@@ -1429,6 +1429,7 @@ describe('the server settings a plugin reads', () => {
     const settings = new ServerSettingsStore(db)
     settings.setContent({ articleDays: 5 })
     settings.setMaxSources(100)
+    settings.setAddresses({ publicHome: 'https://hodi.example' })
     const registry = await loadPlugins({
       dir,
       dataDir,
@@ -1436,7 +1437,14 @@ describe('the server settings a plugin reads', () => {
       serverSettings: () => publicServerSettings(settings)
     })
     const answer = (await registry.get('legal')!.sandbox!.call('routes', 'GET /days', {})) as { body: unknown }
-    assert.deepEqual(answer.body, { articleDays: 5, videoDays: 60, textDays: 7, backupCopies: 7, maxSources: 100 })
+    assert.deepEqual(answer.body, {
+      articleDays: 5,
+      videoDays: 60,
+      textDays: 7,
+      backupCopies: 7,
+      maxSources: 100,
+      publicHome: 'https://hodi.example'
+    })
     await registry.stop()
     rmSync(dir, { recursive: true, force: true })
     rmSync(dataDir, { recursive: true, force: true })

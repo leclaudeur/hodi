@@ -3,6 +3,20 @@
   padding-bottom: calc(120px + env(safe-area-inset-bottom));
 }
 
+/* A list with only an empty state: it fills the room under the header and the topics, to centre the state there. */
+.home:has(> [data-empty-state]) {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+
+.home > [data-empty-state] {
+  min-height: 0;
+  /* The header already ends on its own margin: 4px more puts the state halfway between it and the bottom. */
+  padding-top: 4px;
+  padding-bottom: calc(24px + var(--nav-room, env(safe-area-inset-bottom)));
+}
+
 .section {
   padding: 20px 0 4px;
 }

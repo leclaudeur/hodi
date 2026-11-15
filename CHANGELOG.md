@@ -8,9 +8,19 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Plugins.** A plugin can read the public site's address from the server's general settings.
+
 ### Changed
 
-- **Code fields.** The two-step sign-in and « J'ai un code » no longer repeat « Code » above the boxes: the screen's title already says it.
+- **Code fields.** The two-step sign-in and "I have a code" no longer repeat "Code" above the boxes: the screen's
+  title already says it.
+
+### Fixed
+
+- **Empty settings page.** A page of the server's space or of a plugin with nothing to list no longer scrolls: its
+  empty state takes the room left under the title.
 
 ## [1.0.0-beta.5] - 2026-11-15
 

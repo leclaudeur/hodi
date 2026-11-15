@@ -158,7 +158,14 @@ export const startSmallHodi = async (
       log: line => log.push(line)
     }),
     ai,
-    serverSettings: () => ({ articleDays: 3, videoDays: 60, textDays: 7, backupCopies: 7, maxSources: null }),
+    serverSettings: () => ({
+      articleDays: 3,
+      videoDays: 60,
+      textDays: 7,
+      backupCopies: 7,
+      maxSources: null,
+      publicHome: options.publicHome ?? null
+    }),
     log: line => log.push(line)
   })
   return { db, householdId, accounts, store, profiles, ai, registry }

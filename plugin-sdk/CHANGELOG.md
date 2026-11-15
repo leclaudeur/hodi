@@ -10,6 +10,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **Public site.** `ctx.serverSettings()` gives `publicHome`, the public site's address from the server's general settings,
+  or `null`. `testPlugin` takes it as its `publicHome` option.
+
 ## [1.0.0-beta.2] - 2026-11-15
 
 The same API as 1.0.0-beta.1, with the right links on npm.
