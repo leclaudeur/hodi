@@ -10,9 +10,14 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+## [1.0.0-beta.2] - 2026-11-15
+
+The same API as 1.0.0-beta.1, with the right links on npm.
+
 ### Changed
 
-- The package's homepage on npm is the SDK's site, https://sdk.get-hodi.com.
+- The package's homepage on npm is the SDK's site, https://sdk.get-hodi.com, and its README links to it.
+- Keywords and the address for issues on npm.
 
 ## [1.0.0-beta.1] - 2026-11-15
 
@@ -240,6 +245,7 @@ was never published: its changes are in this one.
 - `hodi-plugin build`, the types of the server part and of `hodi:sdk`, and signing with `--key`.
 
 [unreleased]: https://www.npmjs.com/package/@hodi-app/plugin-sdk?activeTab=versions
+[1.0.0-beta.2]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.2
 [1.0.0-beta.1]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.1
 [0.6.1]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/0.6.1
 [0.6.0]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/0.6.0

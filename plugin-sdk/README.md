@@ -10,8 +10,8 @@ One command builds the file Hodi installs. _Your plugin runs in Hodi's sandbox, 
 [![Node.js 24 or later](https://img.shields.io/badge/node-%E2%89%A524-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/leclaudeur/hodi/blob/main/LICENSE)
 
-[**Quick start**](#quick-start) · [**Server part**](#the-server-part) · [**Web part**](#the-web-part) ·
-[**Testing**](#testing) · [**Signing**](#signing)
+[**Documentation**](https://sdk.get-hodi.com) · [**Quick start**](#quick-start) · [**Server part**](#the-server-part) ·
+[**Web part**](#the-web-part) · [**Testing**](#testing) · [**Signing**](#signing)
 
 </div>
 
