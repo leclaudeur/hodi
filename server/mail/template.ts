@@ -149,10 +149,12 @@ export const mailHtml = (content: MailContent, frame: MailFrame, language: strin
   const title = row(
     `<h1 style="margin:0;font-family:${FONT};font-size:26px;line-height:32px;font-weight:700;color:${C.text}">${escape(content.title)}<span style="color:${C.rust}">.</span></h1>`
   )
-  const foot = [frame.sentBy, frame.address]
-    .filter(Boolean)
-    .map(line => escape(line!))
-    .join('<br>')
+  // Under the card, on one line: who sent it on the left, the site on the right, written without its https://.
+  const cell = `font-family:${MONO};font-size:11px;line-height:18px;color:${C.foot}`
+  const site = frame.address
+    ? `<td align="right" style="${cell};text-align:right"><a href="${escape(frame.address)}" style="color:${C.foot};text-decoration:none">${escape(frame.address.replace(/^https?:\/\//, ''))}</a></td>`
+    : ''
+  const foot = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="${cell}">${escape(frame.sentBy)}</td>${site}</tr></table>`
   return (
     `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">` +
     `<meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><title>${escape(content.title)}</title></head>` +
@@ -163,7 +165,7 @@ export const mailHtml = (content: MailContent, frame: MailFrame, language: strin
     `<tr><td bgcolor="${C.card}" style="padding:32px 28px;border:1px solid ${C.line};border-radius:16px;background:${C.card}">` +
     `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${eyebrow}${title}${space(16)}${bodyHtml(content.blocks, frame)}</table>` +
     `</td></tr>${space(24)}` +
-    `<tr><td style="padding:0 4px;font-family:${MONO};font-size:11px;line-height:18px;color:${C.foot}">${foot}</td></tr>` +
+    `<tr><td style="padding:0 4px">${foot}</td></tr>` +
     `</table></td></tr></table></body></html>`
   )
 }
