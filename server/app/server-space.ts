@@ -4,6 +4,8 @@ import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
 import { mailRoutes } from '../http/mail-routes.ts'
 import { pluginRoutes, pluginServerRoutes } from '../http/plugin-routes.ts'
 import { requireServerAdmin } from '../http/profile-routes.ts'
+import { accountAsking } from '../http/proof.ts'
+import { serverNoticeRoutes } from '../http/server-notice-routes.ts'
 import { serverRoutes } from '../http/server-routes.ts'
 import type { Wiring } from './wiring.ts'
 
@@ -64,6 +66,32 @@ const deletionsOf = ({ options, profileHooks }: Wiring) => {
   }
 }
 
+// The plugins that tell the server's admin of events: loaded, and allowed to.
+const noticePlugins = (plugins: Wiring['options']['plugins']) => () =>
+  (plugins?.list() ?? []).flatMap(({ id, manifest, sandbox, translations }) =>
+    manifest?.permissions.notify && sandbox && manifest.serverNotifications.length > 0
+      ? [{ id, name: manifest.name, translations, kinds: manifest.serverNotifications }]
+      : []
+  )
+
+const mountNotices = (api: express.Router, { options }: Wiring) => {
+  const { serverNotices, serverMail, plugins, accounts, now } = options
+  if (!serverNotices || !accounts) return
+  api.use(
+    '/server/notifications',
+    requireServerAdmin,
+    serverNoticeRoutes({
+      store: serverNotices.store,
+      accountOf: response => accountAsking(response, accounts)?.id ?? null,
+      coreKinds: ['weekly-report'],
+      plugins: noticePlugins(plugins),
+      mailReady: () => serverMail?.store.get() != null,
+      publicKey: serverNotices.publicKey || null,
+      now
+    })
+  )
+}
+
 // /server, for the server's admin, and the plugins' own routes.
 export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
   const { options } = wiring
@@ -78,10 +106,12 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
         send: serverMail.send,
         accounts,
         languageOf: profileId => news.languageOf(profileId),
+        home: () => options.serverSettings?.publicHome() ?? null,
         now
       })
     )
   }
+  mountNotices(api, wiring)
   if (!serverStats) return
   api.use(
     '/server',

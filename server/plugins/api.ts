@@ -1,3 +1,4 @@
+import type { PluginMailMessage } from './mail-message.ts'
 import type { PublicServerSettings } from '../db/server-settings-store.ts'
 import type { PluginArticle } from './articles.ts'
 import type { SettingValues } from './manifest.ts'
@@ -7,6 +8,10 @@ import type { SettingValues } from './manifest.ts'
 
 // A BLOB is a Uint8Array, both ways.
 export type SqlValue = string | number | boolean | null | Uint8Array
+
+// A text for the server's admin: one text, or one per language ({ fr, en }), of which each admin reads theirs (the
+// French, or the other, when it lacks it).
+export type PluginWritten = string | { fr?: string; en?: string }
 
 export interface PluginDatabase {
   // The rows a SELECT gives, each an object by column name.
@@ -53,13 +58,16 @@ export interface PluginContext {
   // pages say these numbers rather than writing them; a link to the public site uses that address.
   serverSettings: () => Promise<PublicServerSettings>
   // With permissions.mail: an e-mail through Serveur › E-mail. available() is false until the admin set it up, and
-  // send() then refuses. One plain address, a one-line subject and plain text: Hodi adds its footer naming the plugin,
-  // and refuses past 50 e-mails an hour ('mail_limit'). appUrl() is the server's address set there, for a link in an
+  // send() then refuses. One plain address, a one-line subject and plain text (paragraphs apart by an empty line,
+  // <i>…</i> for italics), and if it likes a title, a small line above it, a code with a caption, one button and a
+  // note, and the language of the words it adds (language: 'fr' | 'en', for someone without an account yet): Hodi
+  // builds the e-mail in its own dark template, with a plain-text copy, signs it as Hodi (never the plugin), and
+  // refuses past 50 e-mails an hour ('mail_limit'). appUrl() is the server's address set there, for a link in an
   // e-mail (such as a waiting list's confirmation), or null.
   mail: {
     available: () => Promise<boolean>
     appUrl: () => Promise<string | null>
-    send: (message: { to: string; subject: string; text: string }) => Promise<void>
+    send: (message: PluginMailMessage) => Promise<void>
   }
   // With permissions.households: the server's households. create() sets one up with its admin: an existing account
   // (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
@@ -90,6 +98,15 @@ export interface PluginContext {
     text: string
     path?: string
   }) => Promise<void>
+  // With permissions.notify and kinds in the manifest's serverNotifications: tells the server's admin of an event of
+  // one of them, by e-mail, in push on the devices of their account, both or neither, as they chose for it in
+  // Serveur › Notifications. title (80 characters) and text (240), plain text, one or one per language; path: one of the plugin's sections of
+  // /server and maybe a screen under it (#/server/plugin/<id>/<path>), Serveur › Notifications without one.
+  // 'unknown_type' for a kind the manifest does not list; fifty a day per plugin at most, 'too_many_notices' past them.
+  notifyServerAdmin?: (
+    type: string,
+    notice: { title: PluginWritten; text: PluginWritten; path?: string }
+  ) => Promise<void>
   // With permissions.ai, for a signed plugin ("Vérifié"): one question to the household's AI, only inside an aiActions
   // handler, which only a click on the plugin's AiButton (hodi:sdk) runs, and once per click: anywhere else it refuses
   // with 'ai_no_click', a second time with 'ai_already_asked'. Plain text: prompt (8000 characters), system (2000),
@@ -264,6 +281,16 @@ export interface ServerPlugin {
     who: { accountId: number; profileId: number | null; householdId: number },
     ctx: PluginContext
   ) => Promise<unknown>
+  // The weekly report to the server's admin (Serveur › Notifications), on Monday morning: the plugin's own table
+  // under its name, for the week from Monday to Sunday (YYYY-MM-DD). One to eight rows of plain text, each text one
+  // or one per language: label (60 characters), value (30), and maybe its change since the week before (« +12 % »,
+  // 20), green when good. Left out of the report when it fails or answers anything else.
+  weeklyReport?: (
+    week: { from: string; to: string },
+    ctx: PluginContext
+  ) => Promise<{
+    rows: { label: PluginWritten; value: PluginWritten; change?: { text: PluginWritten; good: boolean } }[]
+  }>
 }
 
 // A click on the plugin's AiButton: input is what the button was given (JSON, 16 KB at most), who the adult who

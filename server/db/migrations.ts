@@ -910,6 +910,24 @@ const MIGRATIONS: string[] = [
   INSERT INTO server_mail_next SELECT id, host, port, security, user, password, sender, updated_at FROM server_mail;
   DROP TABLE server_mail;
   ALTER TABLE server_mail_next RENAME TO server_mail;
+  `,
+  // Serveur › Notifications: how each server admin wants to hear of each kind of event, and the devices of their
+  // account that get it in push, apart from the devices of a profile.
+  `
+  CREATE TABLE server_notice_choices (
+    account_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type TEXT NOT NULL,
+    email INTEGER NOT NULL,
+    push INTEGER NOT NULL,
+    PRIMARY KEY (account_id, type)
+  );
+  CREATE TABLE server_push_devices (
+    endpoint TEXT PRIMARY KEY,
+    account_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+  );
   `
 ]
 

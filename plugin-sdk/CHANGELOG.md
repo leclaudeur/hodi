@@ -10,6 +10,27 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **Server notices.** `serverNotifications` in `plugin.json` lists the events a plugin can tell the server's admin
+  of, each a row of Serveur › Notifications (`manifest.serverNotifications.<type>` in its locales for other
+  languages), and `ctx.notifyServerAdmin(type, { title, text, path })` tells of one, by e-mail or push as the admin
+  chose. It needs `permissions.notify`. The test kit records them in `serverNotices`.
+- **Weekly report.** A `weeklyReport({ from, to }, ctx)` hook adds the plugin's table, one to eight rows of `label`,
+  `value` and an optional `change` (`{ text, good }`), to the server admin's weekly report under its name. The test kit calls it with `weeklyReport(week)`.
+- **Texts per language.** A notice's `title` and `text`, and a report row's `label`, `value` and `change.text`, may be
+  one text or one per language (`{ fr, en }`, type `PluginWritten`): each admin reads theirs, the French when it is
+  missing.
+- **E-mails.** `ctx.mail.send` takes, besides `text`, an optional `title`, `eyebrow`, `code` with its `caption`, one
+  `action` (`{ label, url }`) and a `note`. Hodi builds the e-mail in its dark template, with a plain-text copy. Text
+  may put a name in italics with `<i>…</i>`; any other markup stays text. `language` (`'fr'` or `'en'`) sets the
+  language of the words Hodi adds, for someone who has no account yet.
+
+### Changed
+
+- **E-mails.** An e-mail with only `to`, `subject` and `text` now comes in the template too, with the subject as its
+  title. Nothing in it names the plugin any more: it ends with « Envoyé par Hodi » and the public site's address.
+
 ## [1.0.0-beta.3] - 2026-11-15
 
 Plugins can read the public site's address.

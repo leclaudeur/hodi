@@ -8,6 +8,7 @@ import { NO_ARTICLES, type PluginArticle } from './articles.ts'
 import { NO_HOUSEHOLDS } from './households.ts'
 import { NO_MAIL } from './mail.ts'
 import { NO_NOTICES } from './notify.ts'
+import { NO_PLUGIN_SERVER_NOTICES } from './server-notify.ts'
 import { NO_PLUGIN_AI, type PluginAiStatus } from './ai.ts'
 import { type Capability, type Manifest, type SettingValues, settingValues } from './manifest.ts'
 import type { ManifestTranslations } from './manifest-texts.ts'
@@ -18,7 +19,8 @@ import { SNAPSHOT_SUFFIX, databasePath } from './sandbox/sqlite-wasm.ts'
 import { callContext } from './call-context.ts'
 import { pluginErasures } from './erasures.ts'
 import { type LoadDeps, type RequestDeps, loadPlugin, pruneKeptData } from './load-plugin.ts'
-import { aiActionRunner, articleTeller, dataExporter, dueTasks, signInChecker } from './plugin-calls.ts'
+import type { ReportRow } from './report-rows.ts'
+import { aiActionRunner, articleTeller, dataExporter, weeklyReporter, dueTasks, signInChecker } from './plugin-calls.ts'
 import type { WebParts } from './web-parts.ts'
 
 export { MAX_EXPORT_BYTES } from './plugin-calls.ts'
@@ -94,6 +96,8 @@ export interface PluginRegistry {
     profileId: number | null
     householdId: number
   }) => Promise<Record<string, unknown>>
+  // The weekly report's table of each plugin with a weeklyReport hook.
+  weeklyReports: (week: { from: string; to: string }) => Promise<{ name: string; rows: ReportRow[] }[]>
   // A plugin's log line, as Hodi writes it.
   log: (id: string, line: string) => void
   store: PluginStore
@@ -144,6 +148,7 @@ const requestDepsOf = (options: LoadPluginsOptions): RequestDeps => ({
   accounts: options.accounts ?? NO_ACCOUNTS,
   mail: options.mail ?? NO_MAIL,
   notifier: options.notifier ?? NO_NOTICES,
+  serverNotifier: options.serverNotifier ?? NO_PLUGIN_SERVER_NOTICES,
   ai: options.ai ?? NO_PLUGIN_AI,
   households: options.households ?? NO_HOUSEHOLDS,
   serverSettings:
@@ -275,6 +280,7 @@ export const loadPlugins = async (options: LoadPluginsOptions): Promise<PluginRe
     householdRemoved: householdId => erase('onHouseholdRemoved', { householdId }, householdId),
     runErasures,
     exportData: dataExporter(calls),
+    weeklyReports: weeklyReporter(calls),
     log: (id, line) => log(`[plugin ${id}] ${line}`),
     store,
     forget: forgetter(loaded, deps),

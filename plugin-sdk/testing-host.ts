@@ -17,6 +17,7 @@ import { householdHooks, pluginHouseholds } from '../server/plugins/households.t
 import { pluginMailer } from '../server/plugins/mail.ts'
 import { pluginNotifier } from '../server/plugins/notify.ts'
 import { type LoadPluginsOptions, loadPlugins } from '../server/plugins/registry.ts'
+import { pluginServerNotifier } from '../server/plugins/server-notify.ts'
 import type { TestPlugin, TestPluginOptions, TestSite, TestSiteRequest } from './testing.ts'
 
 // The small Hodi in memory a plugin's tests run in (testing.ts): one household, and fakes for what leaves the server.
@@ -39,7 +40,7 @@ const siteAnswer = (site: TestSite, request: TestSiteRequest): HttpAnswer => {
 }
 
 // What left the server, in order, for the test to read.
-export type Recorded = Pick<TestPlugin, 'mails' | 'notifications' | 'questions' | 'signedIn' | 'log'>
+export type Recorded = Pick<TestPlugin, 'mails' | 'notifications' | 'serverNotices' | 'questions' | 'signedIn' | 'log'>
 
 // The sites and articles of the test: each address is checked against permissions.network by Hodi itself, then
 // answered from the test's sites.
@@ -115,7 +116,7 @@ export const startSmallHodi = async (
   now: () => number
 ) => {
   const { db, householdId, accounts, store, profiles } = openHousehold(options, now)
-  const { mails, notifications, questions, log } = recorded
+  const { mails, notifications, serverNotices, questions, log } = recorded
   const answer = options.ai
   // One for the AiButton's route and ctx.ai, as in Hodi: the hourly count is theirs together.
   const ai = pluginAi({
@@ -144,6 +145,7 @@ export const startSmallHodi = async (
     }),
     mail: pluginMailer({
       store: { get: () => (options.mail === false ? null : MAIL) },
+      home: () => options.publicHome ?? null,
       send: async (_settings, message) => {
         mails.push(message)
       },
@@ -154,6 +156,16 @@ export const startSmallHodi = async (
       profilesOf: accountId => accounts.profilesOf(accountId),
       push: async (profileId, payload) => {
         notifications.push({ profileId, payload })
+      },
+      log: line => log.push(line)
+    }),
+    // What the server's admin would be told, as Hodi builds it, without choosing how.
+    serverNotifier: pluginServerNotifier({
+      notifier: {
+        tell: async (type, notice) => {
+          serverNotices.push({ type, ...(typeof notice === 'function' ? notice('fr') : notice) })
+          return { emails: 0, pushes: 0 }
+        }
       },
       log: line => log.push(line)
     }),

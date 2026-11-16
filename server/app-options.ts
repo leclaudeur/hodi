@@ -26,6 +26,7 @@ import type { FollowedAlerts } from './news/followed-alerts.ts'
 import type { NewsService } from './news/news-service.ts'
 import type { FindResult } from './news/source-finder.ts'
 import type { SourceIcons } from './news/source-icons.ts'
+import type { ServerNoticeStore } from './db/server-notice-store.ts'
 import type { PluginAi } from './plugins/ai.ts'
 import type { HouseholdHooks } from './plugins/households.ts'
 import type { PluginInstaller } from './plugins/installer.ts'
@@ -83,6 +84,8 @@ export interface AppOptions {
   }
   // Serveur › E-mail: the mail server's settings, and what sends through it (a fake in tests).
   serverMail?: { store: MailSettingsStore; send: SendMail }
+  // Serveur › Notifications: how each kind reaches the server's admin, and the key their devices subscribe with.
+  serverNotices?: { store: ServerNoticeStore; publicKey: string }
   // « Mot de passe oublié »: the links sent by e-mail, once Serveur › E-mail is set.
   passwordResets?: PasswordResetStore
   // Réglages > Compte et données > Appareils: each device signed in with an account; with accounts.

@@ -123,6 +123,13 @@ export const ctx = Object.freeze({
   ...(objects.includes('notify')
     ? { notify: async notice => { JSON.parse(await bridge.host('notify.send', json([notice]))) } }
     : {}),
+  ...(objects.includes('serverNotify')
+    ? {
+        notifyServerAdmin: async (type, notice) => {
+          JSON.parse(await bridge.host('serverNotify.send', json([type, notice])))
+        }
+      }
+    : {}),
   ...(objects.includes('households')
     ? {
         households: Object.freeze({
@@ -155,7 +162,15 @@ export const setSettings = text => { settings = Object.freeze(JSON.parse(text)) 
 `
 
 // The hooks a plugin may export: Hodi calls them, no route does.
-const HOOKS = ['onArticle', 'checkSignIn', 'onProfileDeleted', 'onAccountDeleted', 'onHouseholdRemoved', 'exportData']
+const HOOKS = [
+  'onArticle',
+  'checkSignIn',
+  'onProfileDeleted',
+  'onAccountDeleted',
+  'onHouseholdRemoved',
+  'exportData',
+  'weeklyReport'
+]
 
 // Runs a call into the plugin: a route of one of its groups, or a hook. Its answer comes back as JSON text.
 export const RUNTIME = `

@@ -1,3 +1,4 @@
+import { pluginReportRows } from './report-rows.ts'
 import type { PluginStore } from '../db/plugin-store.ts'
 import type { PluginArticle } from './articles.ts'
 import { type AiTicket, callContext } from './call-context.ts'
@@ -117,6 +118,28 @@ export const dataExporter =
       })
     )
     return Object.fromEntries(copies)
+  }
+
+// The weekly report: each plugin's table, in the order they are listed. One that fails or answers wrong is left out.
+export const weeklyReporter =
+  ({ loaded, log }: CallDeps) =>
+  async (week: { from: string; to: string }) => {
+    const asked = loaded.filter(
+      plugin => plugin.sandbox && plugin.manifest && plugin.shape?.hooks.includes('weeklyReport')
+    )
+    const tables = await Promise.all(
+      asked.map(async plugin => {
+        try {
+          const rows = pluginReportRows(await plugin.sandbox!.call('hook', 'weeklyReport', week, callContext(null)))
+          if (!rows) log(`[plugin ${plugin.id}] weeklyReport answered something else than one to eight rows`)
+          return rows ? [{ name: plugin.manifest!.name, rows }] : []
+        } catch (error) {
+          log(`[plugin ${plugin.id}] weeklyReport failed: ${message(error)}`)
+          return []
+        }
+      })
+    )
+    return tables.flat()
   }
 
 // A click on an active, signed plugin's AiButton: its aiActions[action] with a ticket for one ctx.ai question.

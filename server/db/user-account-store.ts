@@ -78,6 +78,12 @@ export class UserAccountStore {
     return this.#db.prepare('SELECT 1 FROM users LIMIT 1').get() !== undefined
   }
 
+  // The accounts that run the server (Serveur › Notifications tells them what happens on it).
+  serverAdmins(): UserAccount[] {
+    const rows = this.#db.prepare(`SELECT ${COLUMNS} FROM users WHERE server_admin = 1 ORDER BY id`).all()
+    return (rows as unknown as UserAccountRow[]).map(toAccount)
+  }
+
   // The server's first account, its admin; null when another device made one first.
   createServerAdmin(email: string, passwordHash: string, now: number): UserAccount | null {
     return transaction(this.#db, () => this.#insertServerAdmin(email, passwordHash, now))

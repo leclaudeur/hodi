@@ -1,0 +1,71 @@
+import type { Config } from '../config.ts'
+import type { HouseholdStore } from '../db/household-store.ts'
+import { inHousehold } from '../db/household-scope.ts'
+import type { MailSettingsStore } from '../db/mail-settings-store.ts'
+import type { ServerSettingsStore } from '../db/server-settings-store.ts'
+import type { ServerNoticeStore } from '../db/server-notice-store.ts'
+import type { UserAccountStore } from '../db/user-account-store.ts'
+import { smtpSend } from '../mail/mailer.ts'
+import type { ServerStatsStore } from '../db/server-stats-store.ts'
+import { type ServerNotifier, serverNotifier } from '../notices/server-notifier.ts'
+import { weeklyReport } from '../notices/weekly-report.ts'
+import type { PluginRegistry } from '../plugins/registry.ts'
+import type { Outside } from './outside.ts'
+
+// What happens on the server, told to its admins as each chose in Serveur › Notifications (start.ts).
+export const createServerNotifier = ({
+  config,
+  outside,
+  serverNotices,
+  accounts,
+  mailSettings,
+  serverSettings,
+  household
+}: {
+  config: Config
+  outside: Outside
+  serverNotices: ServerNoticeStore
+  accounts: UserAccountStore
+  mailSettings: MailSettingsStore
+  serverSettings: ServerSettingsStore
+  household: HouseholdStore
+}) =>
+  serverNotifier({
+    store: serverNotices,
+    admins: () => accounts.serverAdmins(),
+    mail: { settings: () => mailSettings.get(), send: smtpSend, home: () => serverSettings.publicHome() },
+    push: (target, payload) => outside.sendPush(target, payload, config.vapid),
+    // The language of the admin's household; an admin outside any household reads French, Hodi's own.
+    languageOf: account => {
+      const householdId = accounts.householdOf(account.id)
+      return householdId === null ? 'fr' : inHousehold(householdId, () => household.get().language)
+    },
+    log: console.warn
+  })
+
+// « Rapport de la semaine », on Monday from 08:00 in the server's time zone (start.ts).
+export const startWeeklyReport = ({
+  notifier,
+  serverStats,
+  serverSettings,
+  plugins,
+  timeZone
+}: {
+  notifier: ServerNotifier
+  serverStats: ServerStatsStore
+  serverSettings: ServerSettingsStore
+  plugins: PluginRegistry
+  timeZone: () => string
+}) => {
+  const report = weeklyReport({
+    week: week => serverStats.overview(week, Date.now()),
+    plugins: week => plugins.weeklyReports(week),
+    notifier,
+    sent: () => serverSettings.weeklyReportSent(),
+    markSent: monday => serverSettings.setWeeklyReportSent(monday),
+    timeZone,
+    log: console.warn
+  })
+  report.start()
+  return report
+}

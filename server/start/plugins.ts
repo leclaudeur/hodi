@@ -19,6 +19,8 @@ import { pluginAccounts } from '../plugins/accounts.ts'
 import { type HouseholdHooks, pluginHouseholds } from '../plugins/households.ts'
 import { pluginMailer } from '../plugins/mail.ts'
 import { pluginNotifier } from '../plugins/notify.ts'
+import { pluginServerNotifier } from '../plugins/server-notify.ts'
+import type { ServerNotifier } from '../notices/server-notifier.ts'
 import { pluginAi } from '../plugins/ai.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 
@@ -35,6 +37,7 @@ interface PluginWiring {
   household: HouseholdStore
   profiles: ProfileStore
   alerts: FollowedAlerts
+  serverNotices: ServerNotifier
   hooks: HouseholdHooks
   throttle: LoginThrottle
   mailSettings: MailSettingsStore
@@ -77,6 +80,8 @@ export const startPlugins = async (wiring: PluginWiring) => {
       profilesOf: accountId => accounts.profilesOf(accountId),
       push: (profileId, payload) => wiring.alerts.notifyShare(profileId, payload, 'plugins')
     }),
+    // What a plugin tells the server's admin of (Serveur › Notifications).
+    serverNotifier: pluginServerNotifier({ notifier: wiring.serverNotices }),
     households: pluginHouseholds({
       store: new PluginHouseholdStore(db),
       accounts,
@@ -88,6 +93,7 @@ export const startPlugins = async (wiring: PluginWiring) => {
     mail: pluginMailer({
       store: wiring.mailSettings,
       send: smtpSend,
+      home: () => wiring.serverSettings.publicHome(),
       languageOf: email => {
         const account = accounts.byEmail(email)
         const householdId = account ? accounts.householdOf(account.id) : null

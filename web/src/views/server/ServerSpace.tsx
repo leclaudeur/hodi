@@ -25,6 +25,7 @@ import ServerBackups from './ServerBackups.tsx'
 import ServerContent from './ServerContent.tsx'
 import ServerGeneral from './ServerGeneral.tsx'
 import ServerMail from './ServerMail.tsx'
+import ServerNotifications from './ServerNotifications.tsx'
 import ServerOverview from './ServerOverview.tsx'
 import AccountPage from './AccountPage.tsx'
 import HouseholdPage from './HouseholdPage.tsx'
@@ -51,6 +52,8 @@ const Page = ({ section, item, layout }: { section: ServerSection; item?: string
       return <ServerContent layout={layout} />
     case 'mail':
       return <ServerMail layout={layout} />
+    case 'notifications':
+      return <ServerNotifications layout={layout} />
     case 'households':
       return item ? <HouseholdPage id={item} layout={layout} /> : null
     case 'accounts':

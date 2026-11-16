@@ -2087,7 +2087,8 @@
       "content": "Content",
       "backups": "Backups",
       "mail": "E-mail",
-      "plugins": "Plugins"
+      "plugins": "Plugins",
+      "notifications": "Notifications"
     },
     "pluginsIntro": "More features, for the whole server, from Hodi’s registry or a file. Each plugin runs apart, with its own data. Only verified plugins add pages to Hodi.",
     "hints": {
@@ -2097,7 +2098,8 @@
       "general": "Hodi’s address and the home page",
       "content": "Durations and sources per household",
       "backups": "Copies of the whole database",
-      "mail": "The server that sends e-mails"
+      "mail": "The server that sends e-mails",
+      "notifications": "What the server tells you"
     },
     "overview": {
       "introOne": "The household in totals, beside the period before. The server counts, it doesn’t look: never what a person reads.",
@@ -2403,20 +2405,68 @@
       "senderIntro": "The address Hodi’s e-mails come from, for example no-reply@example.com. The mail server must accept it.",
       "toFill": "To fill in"
     },
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "notifications": {
+      "title": "Notifications",
+      "intro": "What the server tells you, and how: by e-mail to your address, in push on your devices, or both.",
+      "core": "Server",
+      "thisDevice": "This device",
+      "device": "Push on this device",
+      "deviceHint": "Push notifications arrive here",
+      "email": "E-mail",
+      "push": "Push",
+      "choice": "{{kind}}: {{way}}",
+      "noMailTitle": "The server’s e-mail isn’t set up",
+      "noMailText": "E-mail notifications stay off until then.",
+      "configure": "Set up",
+      "emptyTitle": "Nothing to tell for now",
+      "emptyText": "Installed plugins add here what they can tell you.",
+      "denied": "Notifications are blocked for Hodi in this browser.",
+      "unsupported": "This browser can’t receive notifications. On an iPhone, add Hodi to the home screen.",
+      "failed": "Couldn’t turn push on for this device.",
+      "loadFailed": "Couldn’t load the notifications.",
+      "saveFailed": "Couldn’t save this choice.",
+      "weeklyReport": {
+        "label": "Weekly report",
+        "hint": "On Monday at 08:00, the week’s numbers"
+      }
+    }
   },
   "mail": {
+    "linkFallback": "The button doesn’t work? Copy this link:",
+    "sentBy": "Sent by Hodi",
     "test": {
       "subject": "Hodi: test e-mail",
-      "text": "This e-mail comes from Hodi. The mail server works: Hodi can send its e-mails."
+      "eyebrow": "Server › E-mail",
+      "title": "It works",
+      "text": "This e-mail comes from Hodi. The mail server is set up right: Hodi can send its e-mails."
     },
     "reset": {
       "subject": "Hodi: choose a new password",
-      "text": "Hello,\n\nA new password was asked for the Hodi account {{email}}. To choose it, open this link within the hour:\n\n{{link}}\n\nIf you didn’t ask, ignore this e-mail: the password stays the same."
+      "eyebrow": "Your account",
+      "title": "New password",
+      "text": "A new password was asked for the Hodi account {{email}}. This link works for an hour.",
+      "button": "Choose a password",
+      "note": "If you didn’t ask, ignore this e-mail: the password stays the same."
     },
-    "plugin": {
-      "footer": "Sent by the Hodi plugin {{plugin}}, {{address}}",
-      "footerNoAddress": "Sent by the Hodi plugin {{plugin}}"
+    "serverNotice": {
+      "open": "Open in Hodi",
+      "note": "You get this e-mail because you run this server. Choose what it tells you in <i>Server › Notifications</i>."
+    },
+    "weekly": {
+      "eyebrow": "Weekly report",
+      "title": "{{from}} to {{to}}",
+      "text": "The week’s numbers across the server, compared with the week before.",
+      "server": "Server",
+      "rows": {
+        "visits": "Visits",
+        "articles": "Articles read",
+        "videos": "Videos watched",
+        "minutes": "Reading time",
+        "shares": "Shares",
+        "profiles": "New profiles"
+      },
+      "push": "Visits: {{visits}} · Articles read: {{articles}}"
     }
   },
   "forgot": {

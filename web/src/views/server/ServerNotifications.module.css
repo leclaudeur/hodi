@@ -1,0 +1,43 @@
+/* The grid of checks: one column per way a notice comes, its heading above the card. */
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-right: 20px;
+}
+
+.columns,
+.cells {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.columns > span,
+.cells > span {
+  display: flex;
+  justify-content: center;
+  width: 64px;
+}
+
+.columns > span {
+  margin-top: 8px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cells button {
+  justify-content: center;
+  width: auto;
+}
+
+.hidden {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

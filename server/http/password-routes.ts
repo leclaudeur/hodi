@@ -5,6 +5,8 @@ import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { type PasswordResetStore, isResetToken } from '../db/password-reset-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import { textsIn } from '../i18n.ts'
+import { hodiFrame } from '../mail/frame.ts'
+import { renderMail } from '../mail/template.ts'
 import type { SendMail } from '../mail/mailer.ts'
 import type { Language } from '../../shared/i18n.ts'
 import { clientAddressOf } from './client-address.ts'
@@ -28,6 +30,8 @@ interface PasswordRoutesOptions {
   // The plugins' say on this account signing in, asked before the link is used up or the password changes.
   checkSignIn?: CheckSignIn
   now: () => number
+  // The public site (Serveur › Général), under the card.
+  home?: () => string | null
   log?: (message: string) => void
   throttle?: LoginThrottle
 }
@@ -51,7 +55,7 @@ export const passwordRoutes = ({
 
 const mountForgotRoute = (
   router: express.Router,
-  { mail, send, resets, accounts, languageOf, now, log, throttle }: ResolvedOptions
+  { mail, send, resets, accounts, languageOf, home, now, log, throttle }: ResolvedOptions
 ) => {
   const throttled = (request: express.Request, response: express.Response) => {
     const client = clientAddressOf(request)
@@ -82,13 +86,26 @@ const mountForgotRoute = (
     const account = accounts.byEmail(email)
     const token = account ? resets.create(account.id, now()) : null
     if (!account || !token) return
-    const t = textsIn(languageOf(account))
+    const language = languageOf(account)
+    const t = textsIn(language)
     const link = `${settings.appUrl}/#/reset/${token}`
-    send(settings, {
-      to: account.email,
-      subject: t('mail.reset.subject'),
-      text: t('mail.reset.text', { email: account.email, link })
-    }).catch((error: unknown) => log(`Password reset e-mail failed: ${String(error)}`))
+    const content = {
+      eyebrow: t('mail.reset.eyebrow'),
+      title: t('mail.reset.title'),
+      blocks: [
+        { kind: 'text' as const, text: t('mail.reset.text', { email: account.email }) },
+        { kind: 'action' as const, label: t('mail.reset.button'), url: link },
+        { kind: 'note' as const, text: t('mail.reset.note') }
+      ]
+    }
+    const { html, text } = renderMail(
+      content,
+      hodiFrame(language, { appUrl: settings.appUrl, home: home?.() ?? null }),
+      language
+    )
+    send(settings, { to: account.email, subject: t('mail.reset.subject'), text, html }).catch((error: unknown) =>
+      log(`Password reset e-mail failed: ${String(error)}`)
+    )
   })
 }
 

@@ -1,5 +1,6 @@
 import {
   ArchiveRestore,
+  Bell,
   ChartColumn,
   ChevronRight,
   Clock,
@@ -71,6 +72,12 @@ const useGroups = (): { id: string; label: string; entries: Entry[] }[] => {
         { id: 'content', label: t('server.titles.content'), hint: t('server.hints.content'), icon: Clock },
         { id: 'backups', label: t('server.titles.backups'), hint: t('server.hints.backups'), icon: ArchiveRestore },
         { id: 'mail', label: t('server.titles.mail'), hint: t('server.hints.mail'), icon: Mail },
+        {
+          id: 'notifications',
+          label: t('server.titles.notifications'),
+          hint: t('server.hints.notifications'),
+          icon: Bell
+        },
         {
           id: 'plugins',
           label: t('server.titles.plugins'),

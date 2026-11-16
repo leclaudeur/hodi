@@ -2087,7 +2087,8 @@
       "content": "Contenu",
       "backups": "Sauvegardes",
       "mail": "E-mail",
-      "plugins": "Plugins"
+      "plugins": "Plugins",
+      "notifications": "Notifications"
     },
     "pluginsIntro": "Des fonctions en plus, pour tout le serveur, depuis le registre de Hodi ou un fichier. Chaque plugin tourne à part, avec ses propres données. Seuls les plugins vérifiés ajoutent des pages à Hodi.",
     "hints": {
@@ -2097,7 +2098,8 @@
       "general": "L’adresse de Hodi et la page d’accueil",
       "content": "Durées et sources par foyer",
       "backups": "Copies de toute la base de données",
-      "mail": "Le serveur d’envoi des e-mails"
+      "mail": "Le serveur d’envoi des e-mails",
+      "notifications": "Ce que le serveur te signale"
     },
     "overview": {
       "introOne": "Le foyer en totaux, comparé à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
@@ -2403,20 +2405,68 @@
       "senderIntro": "L’adresse d’où partent les e-mails de Hodi, par exemple no-reply@exemple.be. Le serveur d’envoi doit accepter de l’utiliser.",
       "toFill": "À remplir"
     },
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "notifications": {
+      "title": "Notifications",
+      "intro": "Ce que le serveur te signale, et comment : par e-mail à ton adresse, en push sur tes appareils, ou les deux.",
+      "core": "Serveur",
+      "thisDevice": "Cet appareil",
+      "device": "Push sur cet appareil",
+      "deviceHint": "Les notifications en push arrivent ici",
+      "email": "E-mail",
+      "push": "Push",
+      "choice": "{{kind}} : {{way}}",
+      "noMailTitle": "L’e-mail du serveur n’est pas configuré",
+      "noMailText": "Les notifications par e-mail restent désactivées jusque-là.",
+      "configure": "Configurer",
+      "emptyTitle": "Rien à signaler pour l’instant",
+      "emptyText": "Les plugins installés ajoutent ici ce qu’ils peuvent te signaler.",
+      "denied": "Les notifications sont bloquées pour Hodi dans ce navigateur.",
+      "unsupported": "Ce navigateur ne reçoit pas de notifications. Sur iPhone, ajoute Hodi à l’écran d’accueil.",
+      "failed": "Impossible d’activer le push sur cet appareil.",
+      "loadFailed": "Impossible de charger les notifications.",
+      "saveFailed": "Ce choix n’a pas pu être enregistré.",
+      "weeklyReport": {
+        "label": "Rapport de la semaine",
+        "hint": "Le lundi à 08:00, les chiffres de la semaine"
+      }
+    }
   },
   "mail": {
+    "linkFallback": "Le bouton ne marche pas ? Copie ce lien :",
+    "sentBy": "Envoyé par Hodi",
     "test": {
       "subject": "Hodi : e-mail d’essai",
-      "text": "Cet e-mail vient de Hodi. Le serveur d’envoi marche : Hodi peut envoyer ses e-mails."
+      "eyebrow": "Serveur › E-mail",
+      "title": "Ça marche",
+      "text": "Cet e-mail vient de Hodi. Le serveur d’envoi est bien réglé : Hodi peut envoyer ses e-mails."
     },
     "reset": {
       "subject": "Hodi : choisir un nouveau mot de passe",
-      "text": "Bonjour,\n\nUn nouveau mot de passe a été demandé pour le compte Hodi {{email}}. Pour le choisir, ouvre ce lien dans l’heure :\n\n{{link}}\n\nSi la demande ne vient pas de toi, ignore cet e-mail : le mot de passe reste le même."
+      "eyebrow": "Ton compte",
+      "title": "Nouveau mot de passe",
+      "text": "Un nouveau mot de passe a été demandé pour le compte Hodi {{email}}. Ce lien est valable une heure.",
+      "button": "Choisir un mot de passe",
+      "note": "Si la demande ne vient pas de toi, ignore cet e-mail : le mot de passe reste le même."
     },
-    "plugin": {
-      "footer": "Envoyé par le plugin {{plugin}} de Hodi, {{address}}",
-      "footerNoAddress": "Envoyé par le plugin {{plugin}} de Hodi"
+    "serverNotice": {
+      "open": "Ouvrir dans Hodi",
+      "note": "Tu reçois cet e-mail car tu gères ce serveur. Choisis ce qu’il te signale dans <i>Serveur › Notifications</i>."
+    },
+    "weekly": {
+      "eyebrow": "Rapport de la semaine",
+      "title": "Du {{from}} au {{to}}",
+      "text": "Les chiffres de la semaine sur tout le serveur, comparés à la semaine d’avant.",
+      "server": "Serveur",
+      "rows": {
+        "visits": "Visites",
+        "articles": "Articles lus",
+        "videos": "Vidéos vues",
+        "minutes": "Temps de lecture",
+        "shares": "Partages",
+        "profiles": "Nouveaux profils"
+      },
+      "push": "Visites : {{visits}} · Articles lus : {{articles}}"
     }
   },
   "forgot": {

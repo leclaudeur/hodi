@@ -27,6 +27,7 @@ import { DAY_MS } from '../../shared/time.ts'
 import { loadRules } from '../game/rules.ts'
 import { loadCatalog } from '../news/catalog.ts'
 import { ArticleImages } from '../news/article-images.ts'
+import { ServerNoticeStore } from '../db/server-notice-store.ts'
 import type { Outside } from './outside.ts'
 
 // The stores over Hodi's database, and the nightly upkeep of what they keep (start.ts).
@@ -83,12 +84,15 @@ export const openStores = (
     youth: new YouthStore(db, timeZone),
     serverPeople: new ServerPeopleStore(db),
     serverStats: new ServerStatsStore(db, timeZone),
+    // The server's time zone: its household's, else the install's.
+    timeZone,
     sources,
     file,
     catalog: sources.load(file, Date.now(), household.isSetUp() ? household.get().language : null),
     // The household game's rules, next to sources.yml; points follow the household's days.
     game: new GameStore(db, loadRules(path.resolve('gamification.yml')), timeZone),
     mailSettings: new MailSettingsStore(db),
+    serverNotices: new ServerNoticeStore(db),
     passwordResets: new PasswordResetStore(db, config.sessionSecret),
     pluginStore: new PluginStore(db)
   }

@@ -35,7 +35,13 @@ describe('e-mails of plugins', () => {
       { ...MESSAGE, subject: '' },
       { ...MESSAGE, subject: 'x'.repeat(201) },
       { ...MESSAGE, text: 'x'.repeat(20_001) },
-      { ...MESSAGE, text: 'a\u0000b' }
+      { ...MESSAGE, text: 'a\u0000b' },
+      { ...MESSAGE, title: 'Un\ndeux' },
+      { ...MESSAGE, code: 'K7QM 4RWD' },
+      { ...MESSAGE, action: { label: 'Entrer', url: 'javascript:alert(1)' } },
+      { ...MESSAGE, action: { label: 'Entrer', url: 'https://x.test/" onclick="x' } },
+      { ...MESSAGE, action: 'https://x.test' },
+      { ...MESSAGE, note: '' }
     ]) {
       assert.equal(pluginMailMessage(refused), null, JSON.stringify(refused))
     }
@@ -48,7 +54,7 @@ describe('e-mails of plugins', () => {
     await assert.rejects(mailer.send(PLUGIN, MESSAGE), /mail_unavailable/)
   })
 
-  it('end with the core’s footer, in the recipient’s language', async () => {
+  it('end with Hodi’s footer, never the plugin’s name, in the recipient’s language', async () => {
     const sent: MailMessage[] = []
     const send = async (_settings: MailSettings, message: MailMessage) => {
       sent.push(message)
@@ -59,18 +65,99 @@ describe('e-mails of plugins', () => {
       PLUGIN,
       MESSAGE
     )
-    assert.deepEqual(sent, [
-      {
-        to: 'marie@example.test',
-        subject: 'Ta place est prête',
-        text: 'Bonjour Marie,\n\nTu peux entrer.\n\n-- \nEnvoyé par le plugin Club de Hodi, https://hodi.example.test'
+    assert.deepEqual(
+      sent.map(({ to, subject, text }) => ({ to, subject, text })),
+      [
+        {
+          to: 'marie@example.test',
+          subject: 'Ta place est prête',
+          text: 'Ta place est prête\n\nBonjour Marie,\n\nTu peux entrer.\n\n-- \nEnvoyé par Hodi\nhttps://hodi.example.test'
+        },
+        {
+          to: 'marie@example.test',
+          subject: 'Ta place est prête',
+          text: 'Ta place est prête\n\nBonjour Marie,\n\nTu peux entrer.\n\n-- \nSent by Hodi'
+        }
+      ]
+    )
+    // The same e-mail in Hodi's template, and nothing says a plugin sent it.
+    assert.match(sent[0]!.html!, /<h1[^>]*>Ta place est prête<span/)
+    assert.doesNotMatch(sent[0]!.html!, /Club/)
+    assert.match(
+      sent[0]!.html!,
+      />Envoyé par Hodi<\/td><td align="right"[^>]*><a href="https:\/\/hodi\.example\.test"[^>]*>hodi\.example\.test<\/a>/
+    )
+    assert.match(sent[1]!.html!, /<html lang="en">/)
+  })
+
+  it('give the public site under the card, and keep the logo on Hodi’s address', async () => {
+    const sent: MailMessage[] = []
+    const mailer = pluginMailer({
+      store: { get: () => SETTINGS },
+      send: async (_settings, message) => {
+        sent.push(message)
       },
-      {
-        to: 'marie@example.test',
-        subject: 'Ta place est prête',
-        text: 'Bonjour Marie,\n\nTu peux entrer.\n\n-- \nSent by the Hodi plugin Club'
+      home: () => 'https://get-hodi.example.test/'
+    })
+    await mailer.send(PLUGIN, MESSAGE)
+    assert.match(sent[0]!.text, /-- \nEnvoyé par Hodi\nhttps:\/\/get-hodi\.example\.test$/)
+    assert.match(sent[0]!.html!, /<a href="https:\/\/get-hodi\.example\.test"[^>]*>get-hodi\.example\.test<\/a>/)
+    assert.match(sent[0]!.html!, /src="https:\/\/hodi\.example\.test\/mail-logo\.png"/)
+  })
+
+  it('take the language the plugin writes in, for someone without an account', async () => {
+    const sent: MailMessage[] = []
+    const mailer = pluginMailer({
+      store: { get: () => SETTINGS },
+      send: async (_settings, message) => {
+        sent.push(message)
       }
-    ])
+    })
+    await mailer.send(PLUGIN, {
+      ...MESSAGE,
+      language: 'en',
+      action: { label: 'Join', url: 'https://hodi.example.test' }
+    })
+    assert.match(sent[0]!.text, /Join:\nhttps:\/\/hodi\.example\.test\n\n-- \nSent by Hodi/)
+    assert.match(sent[0]!.html!, /<html lang="en">/)
+    await assert.rejects(mailer.send(PLUGIN, { ...MESSAGE, language: 'de' }), /invalid_mail/)
+  })
+
+  it('take a title, a code, a button and a note, in Hodi’s order, and never the plugin’s HTML', async () => {
+    const sent: MailMessage[] = []
+    const mailer = pluginMailer({
+      store: { get: () => SETTINGS },
+      send: async (_settings, message) => {
+        sent.push(message)
+      }
+    })
+    await mailer.send(PLUGIN, {
+      ...MESSAGE,
+      title: 'C’est ton tour',
+      eyebrow: 'Club › File d’attente',
+      text: 'Choisis <i>Entrer</i>.\n\n<b>Gras</b> <script>alert(1)</script>',
+      note: 'Si tu n’as rien demandé, ignore cet e-mail.',
+      action: { label: 'Entrer', url: 'https://hodi.example.test/#join=abc' },
+      code: 'K7QM-4RWD',
+      caption: 'Valable 30 minutes.'
+    })
+    const { html, text } = sent[0]!
+    assert.match(html!, /Choisis <i>Entrer<\/i>\./)
+    assert.match(html!, /&lt;b&gt;Gras&lt;\/b&gt; &lt;script&gt;/)
+    assert.doesNotMatch(html!, /<script|<b>/i)
+    const order = ['K7QM-4RWD', 'Valable 30 minutes.', 'href="https://hodi.example.test/#join=abc"', 'Si tu n’as rien']
+    const at = order.map(piece => html!.indexOf(piece))
+    assert.deepEqual(
+      [...at].sort((a, b) => a - b),
+      at
+    )
+    assert.ok(at.every(index => index > 0))
+    assert.equal(
+      text,
+      'C’est ton tour\n\nChoisis Entrer.\n\n<b>Gras</b> <script>alert(1)</script>\n\nK7QM-4RWD\n\nValable 30 minutes.\n\n' +
+        'Entrer :\nhttps://hodi.example.test/#join=abc\n\nSi tu n’as rien demandé, ignore cet e-mail.\n\n' +
+        '-- \nEnvoyé par Hodi\nhttps://hodi.example.test'
+    )
   })
 
   it('stop at 50 an hour for each plugin, and start again an hour later', async () => {
