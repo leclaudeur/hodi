@@ -42,6 +42,27 @@ describe('a plugin’s name and description in other languages', () => {
     })
   })
 
+  it('reads the rows of Serveur › Notifications, leaving out what does not fit', () => {
+    const root = folderWith({
+      'locales/en.json': locale({
+        serverNotifications: {
+          household: { label: ' New household ', hint: 'When someone creates one' },
+          waitlist: { label: 'x'.repeat(61), hint: 'When someone joins the list' },
+          broken: 'New'
+        }
+      }),
+      'locales/de.json': locale({ serverNotifications: { household: { label: '' } } })
+    })
+    assert.deepEqual(manifestTranslations(root), {
+      en: {
+        serverNotifications: {
+          household: { label: 'New household', hint: 'When someone creates one' },
+          waitlist: { hint: 'When someone joins the list' }
+        }
+      }
+    })
+  })
+
   it('keeps plugin.json’s texts where a locale is broken, empty or too long', () => {
     const root = folderWith({
       'locales/en.json': '{ not json',

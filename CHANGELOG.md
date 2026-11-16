@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Serveur › Notifications.** The server's admin chooses, for each kind of event, e-mail, push, both or neither, and
+  turns push on for each device. Plugins add their own kinds under their name.
+
 ### Changed
 
 - **E-mails.** Every e-mail Hodi and its plugins send uses one dark template, made to show well in every mail app,

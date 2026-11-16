@@ -1,3 +1,5 @@
+import { type ServerNoticeSpec, parseServerNotices } from './manifest-notices.ts'
+
 // What a plugin tells Hodi about itself, in the plugin.json at the root of its folder.
 // The version of the plugin API this Hodi speaks. A plugin written for another major version is not loaded.
 // API 2 runs a plugin's server part in its sandbox (sandbox/): its routes are a table of handlers, no longer an
@@ -78,6 +80,8 @@ export interface Manifest {
   settings: SettingSpec[]
   permissions: Permissions
   feeds: PluginFeed[]
+  // Its rows of Serveur › Notifications (manifest-notices.ts).
+  serverNotifications: ServerNoticeSpec[]
   // The memory its server part may use, in MiB; Hodi keeps it within its own ceiling (sandbox.ts).
   memoryMb: number | null
 }
@@ -280,6 +284,8 @@ export const parseManifest = (value: unknown): Manifest => {
   const permissions = parsePermissions(value.permissions ?? {})
   const feeds = parseFeeds(value.feeds ?? [], permissions.network)
   const memoryMb = parseMemory(value.memoryMb ?? null)
+  const serverNotifications = parseServerNotices(value.serverNotifications ?? [], permissions.notify)
+  if (typeof serverNotifications === 'string') throw new ManifestError(serverNotifications)
 
   return {
     id,
@@ -293,6 +299,7 @@ export const parseManifest = (value: unknown): Manifest => {
     settings,
     permissions,
     feeds,
+    serverNotifications,
     memoryMb
   }
 }

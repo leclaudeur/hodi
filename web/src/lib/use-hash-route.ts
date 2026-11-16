@@ -45,6 +45,7 @@ export const SERVER_SECTIONS = [
   'content',
   'backups',
   'mail',
+  'notifications',
   'plugins'
 ] as const
 export type ServerSection = (typeof SERVER_SECTIONS)[number]

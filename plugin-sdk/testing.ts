@@ -6,6 +6,7 @@ import { hashPassword } from '../server/auth/password.ts'
 import { inHousehold } from '../server/db/household-scope.ts'
 import type { ProfileKind } from '../server/db/profile-store.ts'
 import type { MailMessage } from '../server/mail/mailer.ts'
+import type { ServerNotice } from '../server/notices/server-notifier.ts'
 import type { HttpAnswer } from '../server/news/fetch-text.ts'
 import type { PluginQuestion } from '../server/news/summarizer.ts'
 import type { AlertPayload } from '../server/news/followed-alerts.ts'
@@ -104,9 +105,11 @@ export interface TestPlugin {
   accountDeleted: (accountId: number) => Promise<void>
   householdRemoved: (householdId: number) => Promise<void>
   exportData: (person: TestPerson) => Promise<unknown>
-  // What left the server, in order: e-mails, notifications, the AI's questions, the accounts a route signed in.
+  // What left the server, in order: e-mails, notifications, what the server's admin was told, the AI's questions, the
+  // accounts a route signed in.
   mails: MailMessage[]
   notifications: { profileId: number; payload: AlertPayload }[]
+  serverNotices: ServerNotice[]
   questions: PluginQuestion[]
   signedIn: number[]
   // Its log lines, and Hodi's lines about it (a refused permission, a hook that failed).
@@ -187,7 +190,14 @@ const hooksOf = (hodi: SmallHodi, id: string, sandbox: PluginSandbox) => {
 export const testPlugin = async (folder = '.', options: TestPluginOptions = {}): Promise<TestPlugin> => {
   const { work, dir, id, trustedKey } = await buildForTest(folder, options)
   const now = Date.now
-  const recorded: Recorded = { mails: [], notifications: [], questions: [], signedIn: [], log: [] }
+  const recorded: Recorded = {
+    mails: [],
+    notifications: [],
+    serverNotices: [],
+    questions: [],
+    signedIn: [],
+    log: []
+  }
   const hodi = await startSmallHodi({ dir, dataDir: path.join(work, 'data'), trustedKey }, options, recorded, now)
   const { db, registry, store, householdId } = hodi
   const plugin = registry.get(id)

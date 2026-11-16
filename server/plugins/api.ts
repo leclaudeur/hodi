@@ -93,6 +93,12 @@ export interface PluginContext {
     text: string
     path?: string
   }) => Promise<void>
+  // With permissions.notify and kinds in the manifest's serverNotifications: tells the server's admin of an event of
+  // one of them, by e-mail, in push on the devices of their account, both or neither, as they chose for it in
+  // Serveur › Notifications. title (80 characters) and text (240), plain text; path: one of the plugin's sections of
+  // /server and maybe a screen under it (#/server/plugin/<id>/<path>), Serveur › Notifications without one.
+  // 'unknown_type' for a kind the manifest does not list; fifty a day per plugin at most, 'too_many_notices' past them.
+  notifyServerAdmin?: (type: string, notice: { title: string; text: string; path?: string }) => Promise<void>
   // With permissions.ai, for a signed plugin ("Vérifié"): one question to the household's AI, only inside an aiActions
   // handler, which only a click on the plugin's AiButton (hodi:sdk) runs, and once per click: anywhere else it refuses
   // with 'ai_no_click', a second time with 'ai_already_asked'. Plain text: prompt (8000 characters), system (2000),

@@ -123,6 +123,13 @@ export const ctx = Object.freeze({
   ...(objects.includes('notify')
     ? { notify: async notice => { JSON.parse(await bridge.host('notify.send', json([notice]))) } }
     : {}),
+  ...(objects.includes('serverNotify')
+    ? {
+        notifyServerAdmin: async (type, notice) => {
+          JSON.parse(await bridge.host('serverNotify.send', json([type, notice])))
+        }
+      }
+    : {}),
   ...(objects.includes('households')
     ? {
         households: Object.freeze({

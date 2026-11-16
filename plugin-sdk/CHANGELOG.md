@@ -12,6 +12,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ### Added
 
+- **Server notices.** `serverNotifications` in `plugin.json` lists the events a plugin can tell the server's admin
+  of, each a row of Serveur › Notifications (`manifest.serverNotifications.<type>` in its locales for other
+  languages), and `ctx.notifyServerAdmin(type, { title, text, path })` tells of one, by e-mail or push as the admin
+  chose. It needs `permissions.notify`. The test kit records them in `serverNotices`.
+
 - **E-mails.** `ctx.mail.send` takes, besides `text`, an optional `title`, `eyebrow`, `code` with its `caption`, one
   `action` (`{ label, url }`) and a `note`. Hodi builds the e-mail in its dark template, with a plain-text copy. Text
   may put a name in italics with `<i>…</i>`; any other markup stays text.

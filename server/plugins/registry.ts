@@ -8,6 +8,7 @@ import { NO_ARTICLES, type PluginArticle } from './articles.ts'
 import { NO_HOUSEHOLDS } from './households.ts'
 import { NO_MAIL } from './mail.ts'
 import { NO_NOTICES } from './notify.ts'
+import { NO_PLUGIN_SERVER_NOTICES } from './server-notify.ts'
 import { NO_PLUGIN_AI, type PluginAiStatus } from './ai.ts'
 import { type Capability, type Manifest, type SettingValues, settingValues } from './manifest.ts'
 import type { ManifestTranslations } from './manifest-texts.ts'
@@ -144,6 +145,7 @@ const requestDepsOf = (options: LoadPluginsOptions): RequestDeps => ({
   accounts: options.accounts ?? NO_ACCOUNTS,
   mail: options.mail ?? NO_MAIL,
   notifier: options.notifier ?? NO_NOTICES,
+  serverNotifier: options.serverNotifier ?? NO_PLUGIN_SERVER_NOTICES,
   ai: options.ai ?? NO_PLUGIN_AI,
   households: options.households ?? NO_HOUSEHOLDS,
   serverSettings:

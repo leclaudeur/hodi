@@ -11,6 +11,7 @@ import type { PublicServerSettings } from '../db/server-settings-store.ts'
 import type { Manifest } from './manifest.ts'
 import type { SandboxRequest } from './sandbox/sandbox.ts'
 import { type CallContext, clientOf, householdOf, vouch, vouchedFor } from './call-context.ts'
+import type { PluginServerNotifier } from './server-notify.ts'
 
 export const message = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
@@ -98,6 +99,7 @@ interface RequestDeps {
   accounts: PluginAccounts
   mail: PluginMailer
   notifier: PluginNotifier
+  serverNotifier: PluginServerNotifier
   serverSettings: () => PublicServerSettings
   signed: boolean
   ai: PluginAi
@@ -226,6 +228,13 @@ export const requestsOf = (manifest: Manifest, deps: RequestDeps) => {
       // Within a household's call, only its people; a request after its call ended reaches nobody.
       if (typeof context !== 'object' || context === null) throw new Error('no_call')
       await notifier.send(plugin, notice, (context as CallContext).householdId)
+      return null
+    }
+  }
+  if (manifest.permissions.notify && manifest.serverNotifications.length > 0) {
+    const plugin = { id: manifest.id, name: manifest.name, kinds: manifest.serverNotifications }
+    requests['serverNotify.send'] = async ([type, notice]) => {
+      await deps.serverNotifier.send(plugin, type, notice)
       return null
     }
   }
