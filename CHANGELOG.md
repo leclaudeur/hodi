@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.9] - 2026-11-16
+
+A hidden topic leaves the feed too, and the reader's back button returns to the list in one step on a phone.
+
 ### Fixed
 
 - **Feed.** A topic turned off in Settings › Topics leaves the feed too, not only the menu. An article that also
@@ -384,7 +388,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.8...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.9...HEAD
+[1.0.0-beta.9]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.8...v1.0.0-beta.9
 [1.0.0-beta.8]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.7...v1.0.0-beta.8
 [1.0.0-beta.7]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.6...v1.0.0-beta.7
 [1.0.0-beta.6]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.5...v1.0.0-beta.6
