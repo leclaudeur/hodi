@@ -2421,9 +2421,6 @@
       "text": "Un nouveau mot de passe a été demandé pour le compte Hodi {{email}}. Ce lien est valable une heure.",
       "button": "Choisir un mot de passe",
       "note": "Si la demande ne vient pas de toi, ignore cet e-mail : le mot de passe reste le même."
-    },
-    "plugin": {
-      "sentBy": "Envoyé par le plugin {{plugin}} de Hodi"
     }
   },
   "forgot": {

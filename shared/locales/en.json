@@ -2421,9 +2421,6 @@
       "text": "A new password was asked for the Hodi account {{email}}. This link works for an hour.",
       "button": "Choose a password",
       "note": "If you didn’t ask, ignore this e-mail: the password stays the same."
-    },
-    "plugin": {
-      "sentBy": "Sent by the Hodi plugin {{plugin}}"
     }
   },
   "forgot": {

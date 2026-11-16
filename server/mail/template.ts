@@ -30,7 +30,9 @@ export interface MailFrame {
   linkFallback: string
   // Who sent it, under the card: « Envoyé par Hodi ».
   sentBy: string
-  // The server's address (Serveur › E-mail), for the logo and under the card; null without one.
+  // Hodi's address (Serveur › E-mail), where the logo is; null without one.
+  logo: string | null
+  // The address under the card: the public site (Serveur › Général), else Hodi's; null without either.
   address: string | null
 }
 
@@ -157,7 +159,7 @@ export const mailHtml = (content: MailContent, frame: MailFrame, language: strin
     `<body style="margin:0;padding:0;background:${C.bg}" bgcolor="${C.bg}">` +
     `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${C.bg}" style="background:${C.bg}"><tr><td align="center" style="padding:32px 16px">` +
     `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px">` +
-    `<tr><td style="padding:0 4px">${logoHtml(frame.address)}</td></tr>${space(24)}` +
+    `<tr><td style="padding:0 4px">${logoHtml(frame.logo)}</td></tr>${space(24)}` +
     `<tr><td bgcolor="${C.card}" style="padding:32px 28px;border:1px solid ${C.line};border-radius:16px;background:${C.card}">` +
     `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${eyebrow}${title}${space(16)}${bodyHtml(content.blocks, frame)}</table>` +
     `</td></tr>${space(24)}` +

@@ -5,6 +5,7 @@ import { type MailFrame, renderMail } from '../mail/template.ts'
 const FRAME: MailFrame = {
   linkFallback: 'Le bouton ne marche pas ? Copie ce lien :',
   sentBy: 'Envoyé par Hodi',
+  logo: 'https://hodi.example.test',
   address: 'https://hodi.example.test'
 }
 
@@ -66,7 +67,7 @@ describe('the e-mail template', () => {
           }
         ]
       },
-      { ...FRAME, address: null },
+      { ...FRAME, logo: null, address: null },
       'en'
     )
     assert.doesNotMatch(html, /<img/)

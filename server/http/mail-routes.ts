@@ -28,12 +28,15 @@ export const mailRoutes = ({
   send,
   accounts,
   languageOf,
+  home = () => null,
   now
 }: {
   mail: MailSettingsStore
   send: SendMail
   accounts: UserAccountStore
   languageOf: (profileId: number) => Language
+  // The public site (Serveur › Général), under the card.
+  home?: () => string | null
   now: () => number
 }) => {
   const router = express.Router()
@@ -86,7 +89,11 @@ export const mailRoutes = ({
       blocks: [{ kind: 'text' as const, text: t('mail.test.text') }]
     }
     try {
-      const { html, text } = renderMail(content, hodiFrame(language, settings.appUrl), language)
+      const { html, text } = renderMail(
+        content,
+        hodiFrame(language, { appUrl: settings.appUrl, home: home() }),
+        language
+      )
       await send(settings, { to: account.email, subject: t('mail.test.subject'), text, html })
       response.json({ to: account.email })
     } catch (error) {
