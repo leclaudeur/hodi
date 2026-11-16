@@ -14,7 +14,8 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 - **E-mails.** `ctx.mail.send` takes, besides `text`, an optional `title`, `eyebrow`, `code` with its `caption`, one
   `action` (`{ label, url }`) and a `note`. Hodi builds the e-mail in its dark template, with a plain-text copy. Text
-  may put a name in italics with `<i>…</i>`; any other markup stays text.
+  may put a name in italics with `<i>…</i>`; any other markup stays text. `language` (`'fr'` or `'en'`) sets the
+  language of the words Hodi adds, for someone who has no account yet.
 
 ### Changed
 

@@ -87,6 +87,24 @@ describe('e-mails of plugins', () => {
     assert.match(sent[1]!.html!, /<html lang="en">/)
   })
 
+  it('take the language the plugin writes in, for someone without an account', async () => {
+    const sent: MailMessage[] = []
+    const mailer = pluginMailer({
+      store: { get: () => SETTINGS },
+      send: async (_settings, message) => {
+        sent.push(message)
+      }
+    })
+    await mailer.send(PLUGIN, {
+      ...MESSAGE,
+      language: 'en',
+      action: { label: 'Join', url: 'https://hodi.example.test' }
+    })
+    assert.match(sent[0]!.text, /Join:\nhttps:\/\/hodi\.example\.test\n\n-- \nSent by the Hodi plugin Club/)
+    assert.match(sent[0]!.html!, /<html lang="en">/)
+    await assert.rejects(mailer.send(PLUGIN, { ...MESSAGE, language: 'de' }), /invalid_mail/)
+  })
+
   it('take a title, a code, a button and a note, in Hodi’s order, and never the plugin’s HTML', async () => {
     const sent: MailMessage[] = []
     const mailer = pluginMailer({
