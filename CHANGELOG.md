@@ -8,10 +8,14 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.8] - 2026-11-16
+
+The push checks in Server › Notifications wait until this device takes push notices.
+
 ### Fixed
 
-- **Serveur › Notifications.** The push checks stay greyed out and empty until « Push sur cet appareil » is on and the
-  browser allows notifications, as the e-mail ones do without Serveur › E-mail.
+- **Server › Notifications.** The push checks stay greyed out and empty until "Push on this device" is on and the
+  browser allows notifications, as the e-mail ones do without Server › E-mail.
 
 ## [1.0.0-beta.7] - 2026-11-16
 
@@ -372,7 +376,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.7...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.8...HEAD
+[1.0.0-beta.8]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.7...v1.0.0-beta.8
 [1.0.0-beta.7]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.6...v1.0.0-beta.7
 [1.0.0-beta.6]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.5...v1.0.0-beta.6
 [1.0.0-beta.5]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.4...v1.0.0-beta.5
