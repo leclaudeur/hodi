@@ -10,6 +10,10 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+## [1.0.0-beta.4] - 2026-11-16
+
+Plugins can tell the server's admin of an event, add a table to the weekly report, and send e-mails in Hodi's template.
+
 ### Added
 
 - **Server notices.** `serverNotifications` in `plugin.json` lists the events a plugin can tell the server's admin
@@ -275,6 +279,7 @@ was never published: its changes are in this one.
 - `hodi-plugin build`, the types of the server part and of `hodi:sdk`, and signing with `--key`.
 
 [unreleased]: https://www.npmjs.com/package/@hodi-app/plugin-sdk?activeTab=versions
+[1.0.0-beta.4]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.4
 [1.0.0-beta.3]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.3
 [1.0.0-beta.2]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.2
 [1.0.0-beta.1]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.1
