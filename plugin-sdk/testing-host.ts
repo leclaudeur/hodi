@@ -145,6 +145,7 @@ export const startSmallHodi = async (
     }),
     mail: pluginMailer({
       store: { get: () => (options.mail === false ? null : MAIL) },
+      home: () => options.publicHome ?? null,
       send: async (_settings, message) => {
         mails.push(message)
       },
