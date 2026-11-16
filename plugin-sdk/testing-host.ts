@@ -161,8 +161,8 @@ export const startSmallHodi = async (
     // What the server's admin would be told, as Hodi builds it, without choosing how.
     serverNotifier: pluginServerNotifier({
       notifier: {
-        tell: async notice => {
-          serverNotices.push(notice)
+        tell: async (type, notice) => {
+          serverNotices.push({ type, ...(typeof notice === 'function' ? notice('fr') : notice) })
           return { emails: 0, pushes: 0 }
         }
       },

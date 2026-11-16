@@ -2425,7 +2425,11 @@
       "unsupported": "This browser can’t receive notifications. On an iPhone, add Hodi to the home screen.",
       "failed": "Couldn’t turn push on for this device.",
       "loadFailed": "Couldn’t load the notifications.",
-      "saveFailed": "Couldn’t save this choice."
+      "saveFailed": "Couldn’t save this choice.",
+      "weeklyReport": {
+        "label": "Weekly report",
+        "hint": "On Monday at 08:00, the week’s numbers"
+      }
     }
   },
   "mail": {
@@ -2451,6 +2455,21 @@
     "serverNotice": {
       "open": "Open in Hodi",
       "note": "You get this e-mail because you run this server. Choose what it tells you in <i>Server › Notifications</i>."
+    },
+    "weekly": {
+      "eyebrow": "Weekly report",
+      "title": "{{from}} to {{to}}",
+      "text": "The week’s numbers across the server, compared with the week before.",
+      "server": "Server",
+      "rows": {
+        "visits": "Visits",
+        "articles": "Articles read",
+        "videos": "Videos watched",
+        "minutes": "Reading time",
+        "shares": "Shares",
+        "profiles": "New profiles"
+      },
+      "push": "Visits: {{visits}} · Articles read: {{articles}}"
     }
   },
   "forgot": {

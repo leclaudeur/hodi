@@ -12,6 +12,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 - **Serveur › Notifications.** The server's admin chooses, for each kind of event, e-mail, push, both or neither, and
   turns push on for each device. Plugins add their own kinds under their name.
+- **Rapport de la semaine.** On Monday from 08:00, the server's admin gets the past week's numbers beside the week
+  before (visits, articles, videos, reading time, shares, new profiles), with a table from each plugin that has one.
+  Chosen like any other kind in Serveur › Notifications.
 
 ### Changed
 

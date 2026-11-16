@@ -20,6 +20,12 @@ describe('the rows of Serveur › Notifications', () => {
     expect(noticeTexts(kind('household'), 'fr')).toEqual({ label: 'Libellé household', hint: null })
   })
 
+  it('names the core’s own kinds from the app’s texts, under « Serveur »', () => {
+    const report = { ...kind('weekly-report', null), id: 'core:weekly-report', label: null, translations: {} }
+    expect(noticeTexts(report, 'fr').label).toBe('Rapport de la semaine')
+    expect(noticeGroups([report], 'fr').map(group => group.name)).toEqual(['Serveur'])
+  })
+
   it('groups the kinds under each plugin’s name, in the server’s order', () => {
     const other = { id: 'club', name: 'Club', translations: {} }
     const groups = noticeGroups([kind('household'), kind('match', other), kind('waitlist')], 'en')

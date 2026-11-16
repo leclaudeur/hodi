@@ -273,6 +273,14 @@ export interface ServerPlugin {
     who: { accountId: number; profileId: number | null; householdId: number },
     ctx: PluginContext
   ) => Promise<unknown>
+  // The weekly report to the server's admin (Serveur › Notifications), on Monday morning: the plugin's own table
+  // under its name, for the week from Monday to Sunday (YYYY-MM-DD). One to eight rows of plain text: label (60
+  // characters), value (30), and maybe its change since the week before (« +12 % », 20), green when good. Left out of
+  // the report when it fails or answers anything else.
+  weeklyReport?: (
+    week: { from: string; to: string },
+    ctx: PluginContext
+  ) => Promise<{ rows: { label: string; value: string; change?: { text: string; good: boolean } }[] }>
 }
 
 // A click on the plugin's AiButton: input is what the button was given (JSON, 16 KB at most), who the adult who

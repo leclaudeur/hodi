@@ -19,7 +19,8 @@ import { SNAPSHOT_SUFFIX, databasePath } from './sandbox/sqlite-wasm.ts'
 import { callContext } from './call-context.ts'
 import { pluginErasures } from './erasures.ts'
 import { type LoadDeps, type RequestDeps, loadPlugin, pruneKeptData } from './load-plugin.ts'
-import { aiActionRunner, articleTeller, dataExporter, dueTasks, signInChecker } from './plugin-calls.ts'
+import type { MailRow } from '../mail/template.ts'
+import { aiActionRunner, articleTeller, dataExporter, weeklyReporter, dueTasks, signInChecker } from './plugin-calls.ts'
 import type { WebParts } from './web-parts.ts'
 
 export { MAX_EXPORT_BYTES } from './plugin-calls.ts'
@@ -95,6 +96,8 @@ export interface PluginRegistry {
     profileId: number | null
     householdId: number
   }) => Promise<Record<string, unknown>>
+  // The weekly report's table of each plugin with a weeklyReport hook.
+  weeklyReports: (week: { from: string; to: string }) => Promise<{ name: string; rows: MailRow[] }[]>
   // A plugin's log line, as Hodi writes it.
   log: (id: string, line: string) => void
   store: PluginStore
@@ -277,6 +280,7 @@ export const loadPlugins = async (options: LoadPluginsOptions): Promise<PluginRe
     householdRemoved: householdId => erase('onHouseholdRemoved', { householdId }, householdId),
     runErasures,
     exportData: dataExporter(calls),
+    weeklyReports: weeklyReporter(calls),
     log: (id, line) => log(`[plugin ${id}] ${line}`),
     store,
     forget: forgetter(loaded, deps),

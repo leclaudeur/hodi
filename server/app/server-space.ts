@@ -83,7 +83,7 @@ const mountNotices = (api: express.Router, { options }: Wiring) => {
     serverNoticeRoutes({
       store: serverNotices.store,
       accountOf: response => accountAsking(response, accounts)?.id ?? null,
-      coreKinds: [],
+      coreKinds: ['weekly-report'],
       plugins: noticePlugins(plugins),
       mailReady: () => serverMail?.store.get() != null,
       publicKey: serverNotices.publicKey || null,

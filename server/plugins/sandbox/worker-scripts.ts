@@ -162,7 +162,15 @@ export const setSettings = text => { settings = Object.freeze(JSON.parse(text)) 
 `
 
 // The hooks a plugin may export: Hodi calls them, no route does.
-const HOOKS = ['onArticle', 'checkSignIn', 'onProfileDeleted', 'onAccountDeleted', 'onHouseholdRemoved', 'exportData']
+const HOOKS = [
+  'onArticle',
+  'checkSignIn',
+  'onProfileDeleted',
+  'onAccountDeleted',
+  'onHouseholdRemoved',
+  'exportData',
+  'weeklyReport'
+]
 
 // Runs a call into the plugin: a route of one of its groups, or a hook. Its answer comes back as JSON text.
 export const RUNTIME = `

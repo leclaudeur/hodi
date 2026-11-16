@@ -71,8 +71,7 @@ export const pluginServerNotifier = ({
         throw new Error('too_many_notices')
       }
       sent.set(plugin.id, [...times, at])
-      await notifier.tell({
-        type: pluginNoticeType(plugin.id, type),
+      await notifier.tell(pluginNoticeType(plugin.id, type), {
         from: plugin.name,
         title: notice.title,
         text: notice.text,

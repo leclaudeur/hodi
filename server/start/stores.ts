@@ -84,6 +84,8 @@ export const openStores = (
     youth: new YouthStore(db, timeZone),
     serverPeople: new ServerPeopleStore(db),
     serverStats: new ServerStatsStore(db, timeZone),
+    // The server's time zone: its household's, else the install's.
+    timeZone,
     sources,
     file,
     catalog: sources.load(file, Date.now(), household.isSetUp() ? household.get().language : null),

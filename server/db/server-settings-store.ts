@@ -104,6 +104,22 @@ export class ServerSettingsStore {
       .run(value)
   }
 
+  // The Monday of the last week the weekly report went for (YYYY-MM-DD), kept as 20261109; null before the first.
+  weeklyReportSent(): string | null {
+    const row = this.#db.prepare("SELECT value FROM server_settings WHERE key = 'weeklyReportSent'").get() as
+      { value: number } | undefined
+    const day = String(row?.value ?? '')
+    return /^\d{8}$/.test(day) ? `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)}` : null
+  }
+
+  setWeeklyReportSent(monday: string) {
+    this.#db
+      .prepare(
+        "INSERT INTO server_settings (key, value) VALUES ('weeklyReportSent', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value"
+      )
+      .run(Number(monday.replace(/-/g, '')))
+  }
+
   // « Plus tard » at the setup's household step: the server runs with no household, its admin in /server only, until
   // Serveur › Foyers creates one.
   householdLater(): boolean {

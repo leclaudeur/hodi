@@ -109,7 +109,7 @@ export interface TestPlugin {
   // accounts a route signed in.
   mails: MailMessage[]
   notifications: { profileId: number; payload: AlertPayload }[]
-  serverNotices: ServerNotice[]
+  serverNotices: (ServerNotice & { type: string })[]
   questions: PluginQuestion[]
   signedIn: number[]
   // Its log lines, and Hodi's lines about it (a refused permission, a hook that failed).

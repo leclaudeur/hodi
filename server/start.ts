@@ -21,7 +21,7 @@ import { openRestoredDatabase } from './start/restore.ts'
 import { type Stores, openStores } from './start/stores.ts'
 import { createIcons, createNews } from './start/news.ts'
 import { createAlerts } from './start/alerts.ts'
-import { createServerNotifier } from './start/server-notices.ts'
+import { createServerNotifier, startWeeklyReport } from './start/server-notices.ts'
 import { replayToPlugins, startPlugins } from './start/plugins.ts'
 
 export { type Outside, realOutside } from './start/outside.ts'
@@ -160,6 +160,7 @@ export const startHodi = async (config: Config, outside: Outside) => {
     throttle
   })
   loadedPlugins = plugins
+  startWeeklyReport({ ...stores, notifier: serverNotices, plugins })
   replayToPlugins(plugins, forgottenAgain)
   news.setArticleListener(result => {
     const article = pluginArticle(result)

@@ -2425,7 +2425,11 @@
       "unsupported": "Ce navigateur ne reçoit pas de notifications. Sur iPhone, ajoute Hodi à l’écran d’accueil.",
       "failed": "Impossible d’activer le push sur cet appareil.",
       "loadFailed": "Impossible de charger les notifications.",
-      "saveFailed": "Ce choix n’a pas pu être enregistré."
+      "saveFailed": "Ce choix n’a pas pu être enregistré.",
+      "weeklyReport": {
+        "label": "Rapport de la semaine",
+        "hint": "Le lundi à 08:00, les chiffres de la semaine"
+      }
     }
   },
   "mail": {
@@ -2451,6 +2455,21 @@
     "serverNotice": {
       "open": "Ouvrir dans Hodi",
       "note": "Tu reçois cet e-mail car tu gères ce serveur. Choisis ce qu’il te signale dans <i>Serveur › Notifications</i>."
+    },
+    "weekly": {
+      "eyebrow": "Rapport de la semaine",
+      "title": "Du {{from}} au {{to}}",
+      "text": "Les chiffres de la semaine sur tout le serveur, comparés à la semaine d’avant.",
+      "server": "Serveur",
+      "rows": {
+        "visits": "Visites",
+        "articles": "Articles lus",
+        "videos": "Vidéos vues",
+        "minutes": "Temps de lecture",
+        "shares": "Partages",
+        "profiles": "Nouveaux profils"
+      },
+      "push": "Visites : {{visits}} · Articles lus : {{articles}}"
     }
   },
   "forgot": {

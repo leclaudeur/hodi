@@ -61,8 +61,8 @@ const notifierOn = (server: ReturnType<typeof serverWith>, mail: MailSettings | 
   return { notifier, mails, pushed, gone }
 }
 
+const TYPE = 'plugin:village:household'
 const NOTICE = {
-  type: 'plugin:village:household',
   from: 'Village',
   title: 'Nouveau foyer',
   text: 'La famille Dupont vient de créer son foyer.',
@@ -101,10 +101,10 @@ describe('server notices', () => {
 
   it('comes by e-mail until the admin chooses, and keeps each account’s choices and devices apart', () => {
     const { store, admin, other } = serverWith()
-    assert.deepEqual(store.choice(admin.id, NOTICE.type), { email: true, push: false })
-    store.choose(admin.id, NOTICE.type, { email: false, push: true })
-    assert.deepEqual(store.choice(admin.id, NOTICE.type), { email: false, push: true })
-    assert.deepEqual(store.choice(other.id, NOTICE.type), { email: true, push: false })
+    assert.deepEqual(store.choice(admin.id, TYPE), { email: true, push: false })
+    store.choose(admin.id, TYPE, { email: false, push: true })
+    assert.deepEqual(store.choice(admin.id, TYPE), { email: false, push: true })
+    assert.deepEqual(store.choice(other.id, TYPE), { email: true, push: false })
 
     store.addDevice(admin.id, PHONE, 1)
     store.addDevice(other.id, LAPTOP, 2)
@@ -123,20 +123,20 @@ describe('server notices', () => {
     const server = serverWith()
     const { notifier, mails, pushed, gone } = notifierOn(server)
     // Léa is no server admin: she is never told.
-    server.store.choose(server.other.id, NOTICE.type, { email: true, push: true })
+    server.store.choose(server.other.id, TYPE, { email: true, push: true })
 
-    assert.deepEqual(await notifier.tell(NOTICE), { emails: 1, pushes: 0 })
+    assert.deepEqual(await notifier.tell(TYPE, NOTICE), { emails: 1, pushes: 0 })
     assert.equal(mails[0]?.to, 'admin@example.test')
     assert.equal(mails[0]?.subject, 'Village · Nouveau foyer')
     assert.match(mails[0]?.html ?? '', /href="https:\/\/hodi\.example\.test\/#\/server\/plugin\/village\/households"/)
     assert.match(mails[0]?.text ?? '', /La famille Dupont vient de créer son foyer\.\n\nOuvrir dans Hodi :/)
     assert.match(mails[0]?.text ?? '', /Choisis ce qu’il te signale dans Serveur › Notifications\./)
 
-    server.store.choose(server.admin.id, NOTICE.type, { email: false, push: true })
+    server.store.choose(server.admin.id, TYPE, { email: false, push: true })
     server.store.addDevice(server.admin.id, PHONE, 1)
     server.store.addDevice(server.admin.id, LAPTOP, 2)
     gone.add(LAPTOP.endpoint)
-    assert.deepEqual(await notifier.tell(NOTICE), { emails: 0, pushes: 1 })
+    assert.deepEqual(await notifier.tell(TYPE, NOTICE), { emails: 0, pushes: 1 })
     assert.deepEqual(pushed, [
       {
         target: PHONE,
@@ -155,7 +155,7 @@ describe('server notices', () => {
 
   it('sends no e-mail while Serveur › E-mail is not set', async () => {
     const { notifier, mails } = notifierOn(serverWith(), null)
-    assert.deepEqual(await notifier.tell(NOTICE), { emails: 0, pushes: 0 })
+    assert.deepEqual(await notifier.tell(TYPE, NOTICE), { emails: 0, pushes: 0 })
     assert.equal(mails.length, 0)
   })
 
@@ -179,7 +179,7 @@ describe('server notices', () => {
     const told: unknown[] = []
     const clock = { now: 0 }
     const notifier = pluginServerNotifier({
-      notifier: { tell: async notice => (told.push(notice), { emails: 1, pushes: 0 }) },
+      notifier: { tell: async (type, notice) => (told.push({ type, ...notice }), { emails: 1, pushes: 0 }) },
       now: () => clock.now,
       log: () => {}
     })
@@ -187,7 +187,7 @@ describe('server notices', () => {
     await assert.rejects(notifier.send(plugin, 'accounts', { title: 'a', text: 'b' }), /unknown_type/)
     await assert.rejects(notifier.send(plugin, 'household', { title: 'a' }), /invalid_notice/)
     await notifier.send(plugin, 'household', { title: 'Nouveau foyer', text: 'Les Dupont.', path: 'households' })
-    assert.deepEqual(told, [{ ...NOTICE, text: 'Les Dupont.' }])
+    assert.deepEqual(told, [{ type: TYPE, ...NOTICE, text: 'Les Dupont.' }])
     for (let index = 1; index < SERVER_NOTICES_PER_DAY; index++) {
       await notifier.send(plugin, 'waitlist', { title: 'a', text: 'b' })
     }
@@ -309,7 +309,7 @@ describe('ctx.notifyServerAdmin', () => {
     const kit = await testPlugin(folder)
     kits.push(kit)
     assert.equal((await kit.route('POST /tell', { body: { type: 'household' } })).status, 200)
-    assert.deepEqual(kit.serverNotices, [{ ...NOTICE, text: 'Les Dupont.' }])
+    assert.deepEqual(kit.serverNotices, [{ type: TYPE, ...NOTICE, text: 'Les Dupont.' }])
     assert.equal((await kit.route('POST /tell', { body: { type: 'accounts' } })).status, 500)
     assert.equal(kit.serverNotices.length, 1)
   })

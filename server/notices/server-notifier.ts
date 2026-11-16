@@ -13,8 +13,6 @@ import type { Language } from '../../shared/i18n.ts'
 // admin never keeps the others from being told.
 
 export interface ServerNotice {
-  // The kind's id: « core:weekly-report », « plugin:village:household ».
-  type: string
   // Who tells it: « Serveur », a plugin's name. The e-mail's small line above its title, before the push's title.
   from: string
   title: string
@@ -24,11 +22,16 @@ export interface ServerNotice {
   url: string
   // More of the e-mail under its text: the weekly report's tables.
   blocks?: MailBlock[]
+  // The push's text, when it is not the e-mail's: the report's main numbers.
+  push?: string
 }
+
+// A notice the core writes in each admin's language (the weekly report), or one already written (a plugin's).
+export type ServerNoticeIn = ServerNotice | ((language: Language) => ServerNotice)
 
 export interface ServerNotifier {
   // How many e-mails and pushes left.
-  tell: (notice: ServerNotice) => Promise<{ emails: number; pushes: number }>
+  tell: (type: string, notice: ServerNoticeIn) => Promise<{ emails: number; pushes: number }>
 }
 
 interface NotifierDeps {
@@ -42,8 +45,12 @@ interface NotifierDeps {
 
 const failure = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
-const sendMail = async (notice: ServerNotice, account: UserAccount, settings: MailSettings, deps: NotifierDeps) => {
-  const language = deps.languageOf(account)
+const sendMail = async (
+  notice: ServerNotice,
+  { account, language }: { account: UserAccount; language: Language },
+  settings: MailSettings,
+  deps: NotifierDeps
+) => {
   const t = textsIn(language)
   const blocks: MailBlock[] = [
     ...notice.text.split(/\n{2,}/).map(text => ({ kind: 'text' as const, text })),
@@ -77,30 +84,34 @@ const pushTo = async (targets: PushTarget[], payload: AlertPayload, deps: Notifi
   return sent
 }
 
+const payloadOf = (type: string, notice: ServerNotice): AlertPayload => ({
+  title: `${notice.from} · ${notice.title}`,
+  body: notice.push ?? notice.text.replace(/\n+/g, ' '),
+  url: notice.url,
+  // One per kind on a device: a newer one replaces it.
+  tag: `server:${type}`,
+  badge: null
+})
+
 export const serverNotifier = (deps: NotifierDeps): ServerNotifier => ({
-  tell: async notice => {
+  tell: async (type, written) => {
     const settings = deps.mail.settings()
-    const payload: AlertPayload = {
-      title: `${notice.from} · ${notice.title}`,
-      body: notice.text.replace(/\n+/g, ' '),
-      url: notice.url,
-      // One per kind on a device: a newer one replaces it.
-      tag: `server:${notice.type}`,
-      badge: null
-    }
     let emails = 0
     let pushes = 0
     for (const account of deps.admins()) {
-      const choice = deps.store.choice(account.id, notice.type)
+      const choice = deps.store.choice(account.id, type)
+      if (!(choice.email && settings) && !choice.push) continue
+      const language = deps.languageOf(account)
+      const notice = typeof written === 'function' ? written(language) : written
       if (choice.email && settings) {
         try {
-          await sendMail(notice, account, settings, deps)
+          await sendMail(notice, { account, language }, settings, deps)
           emails++
         } catch (error) {
-          deps.log?.(`Server notice ${notice.type}: e-mail not sent: ${failure(error)}`)
+          deps.log?.(`Server notice ${type}: e-mail not sent: ${failure(error)}`)
         }
       }
-      if (choice.push) pushes += await pushTo(deps.store.devices(account.id), payload, deps)
+      if (choice.push) pushes += await pushTo(deps.store.devices(account.id), payloadOf(type, notice), deps)
     }
     return { emails, pushes }
   }

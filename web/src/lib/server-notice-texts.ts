@@ -4,8 +4,13 @@ import { t } from './i18n.ts'
 
 // A row of Serveur › Notifications in the language shown: the core's kinds from the app's texts, a plugin's from its
 // locales, else from its manifest.
-// The core's own kinds, by key: the weekly report joins them.
-const CORE_KINDS: Record<string, () => { label: string; hint: string }> = {}
+// The core's own kinds, by key.
+const CORE_KINDS: Record<string, () => { label: string; hint: string }> = {
+  'weekly-report': () => ({
+    label: t('server.notifications.weeklyReport.label'),
+    hint: t('server.notifications.weeklyReport.hint')
+  })
+}
 
 export const noticeTexts = (kind: ServerNoticeKind, language: string) => {
   const core = kind.plugin ? undefined : CORE_KINDS[kind.key]
