@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Serveur › Notifications.** The push checks stay greyed out and empty until « Push sur cet appareil » is on and the
+  browser allows notifications, as the e-mail ones do without Serveur › E-mail.
+
 ## [1.0.0-beta.7] - 2026-11-16
 
 The server's admin chooses how to hear of each event and gets a weekly report, every e-mail comes in one dark

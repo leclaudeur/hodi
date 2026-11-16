@@ -20,9 +20,14 @@ type Way = 'email' | 'push'
 const WAYS: Way[] = ['email', 'push']
 
 // « Push sur cet appareil »: this device takes the push notices of the admin's account.
-const DeviceRow = ({ publicKey }: { publicKey: string }) => {
+interface DeviceProps {
+  publicKey: string
+  on: boolean
+  setOn: (on: boolean) => void
+}
+
+const DeviceRow = ({ publicKey, on, setOn }: DeviceProps) => {
   const { t } = useTranslation()
-  const [on, setOn] = useState(serverPushOn)
   useEffect(() => void syncServerPush(publicKey), [publicKey])
   const change = async (next: boolean) => {
     if (!next) {
@@ -49,12 +54,14 @@ const DeviceRow = ({ publicKey }: { publicKey: string }) => {
 interface GridProps {
   group: NoticeGroup
   mail: boolean
+  push: boolean
   onChoose: (kind: ServerNoticeKind, way: Way) => void
 }
 
 // One group's kinds, a row each, with its checks under the columns' names.
-const GroupGrid = ({ group, mail, onChoose }: GridProps) => {
+const GroupGrid = ({ group, mail, push, onChoose }: GridProps) => {
   const { t, i18n } = useTranslation()
+  const usable: Record<Way, boolean> = { email: mail, push }
   return (
     <>
       <div className={own.head}>
@@ -74,8 +81,8 @@ const GroupGrid = ({ group, mail, onChoose }: GridProps) => {
                 {WAYS.map(way => (
                   <span key={way}>
                     <Checkbox
-                      checked={kind[way] && (way === 'push' || mail)}
-                      disabled={way === 'email' && !mail}
+                      checked={kind[way] && usable[way]}
+                      disabled={!usable[way]}
                       onChange={() => onChoose(kind, way)}
                     >
                       <span className={own.hidden}>
@@ -111,6 +118,10 @@ const MailMissing = () => {
 const ServerNotifications = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const { t, i18n } = useTranslation()
   const [notices, setNotices] = useState<ServerNotices | null>(null)
+  // On only while the browser still lets it show them: a permission taken back turns the switch off.
+  const [deviceOn, setDeviceOn] = useState(
+    () => serverPushOn() && notificationSupport() === 'supported' && Notification.permission === 'granted'
+  )
   useEffect(() => {
     getServerNotices()
       .then(setNotices)
@@ -130,12 +141,15 @@ const ServerNotifications = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   }
 
   const groups = notices ? noticeGroups(notices.kinds, i18n.language) : []
+  const canPush = Boolean(notices?.publicKey) && notificationSupport() === 'supported'
+  // Like e-mail without Serveur › E-mail: the push checks wait for this device to take the notices.
+  const push = canPush && deviceOn
   return (
     <SectionPage title={t('server.notifications.title')} intro={t('server.notifications.intro')} layout={layout}>
       {notices && !notices.mail && <MailMissing />}
-      {notices?.publicKey && notificationSupport() === 'supported' && <DeviceRow publicKey={notices.publicKey} />}
+      {canPush && notices?.publicKey && <DeviceRow publicKey={notices.publicKey} on={deviceOn} setOn={setDeviceOn} />}
       {groups.map(group => (
-        <GroupGrid key={group.id} group={group} mail={notices?.mail ?? false} onChoose={choose} />
+        <GroupGrid key={group.id} group={group} mail={notices?.mail ?? false} push={push} onChoose={choose} />
       ))}
       {notices && groups.length === 0 && (
         <EmptyState icon={<BellOff size={20} />} title={t('server.notifications.emptyTitle')}>
