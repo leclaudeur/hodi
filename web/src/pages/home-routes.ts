@@ -81,3 +81,11 @@ export const screenKeyOf = (route: Route, readerId: string | null, inPanel: bool
 export const panelContent = (main: HTMLElement) =>
   main.querySelector('[data-overlayscrollbars-contents]') ?? main.firstElementChild?.firstElementChild ?? null
 export const screenContent = (main: HTMLElement) => main.firstElementChild
+
+// How many articles were opened one after the other up to this history entry. A computer opens each one over the
+// last, so a phone's back button, once the window narrows, steps over all of them to reach the list. An entry
+// stamped already (coming back to it) keeps its count.
+export const articleDepthOf = (isArticle: boolean, stamped: unknown, previous: number) => {
+  if (!isArticle) return 0
+  return typeof stamped === 'number' ? stamped : previous + 1
+}

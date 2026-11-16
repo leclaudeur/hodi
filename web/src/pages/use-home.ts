@@ -3,7 +3,7 @@ import { TOPICS_CHANGED, type TopicInfo, UnauthorizedError, getTopics } from '..
 import { useLanguage } from '../lib/i18n.ts'
 import { CLOSE_READER, FRONT_PAGE_HREF, LISTEN_HREF, type Route, topicHref } from '../lib/use-hash-route.ts'
 import { sendPendingChanges } from '../lib/user-state.ts'
-import { FEED, type List, keptOf, keyOf, listOf } from './home-routes.ts'
+import { FEED, type List, articleDepthOf, keptOf, keyOf, listOf } from './home-routes.ts'
 
 const SWIPE_MIN_DISTANCE = 60
 const SWIPE_MAX_DURATION_MS = 700
@@ -59,6 +59,22 @@ export const useReaderId = (route: Route, routeList: List | null, isDesktop: boo
   return route.name === 'article' || isDesktop ? kept : null
 }
 
+// The articles opened in a row up to the history entry shown, kept in the entry itself so that it is still right
+// after going back or forward to it.
+const useArticleDepth = (route: Route) => {
+  const depth = useRef(0)
+  // Each new address counts, not each new route object with the same one.
+  const routeKey = JSON.stringify(route)
+  const isArticle = route.name === 'article'
+  useEffect(() => {
+    const state = (window.history.state ?? {}) as { articleDepth?: unknown }
+    const next = articleDepthOf(isArticle, state.articleDepth, depth.current)
+    depth.current = next
+    if (state.articleDepth !== next) window.history.replaceState({ ...state, articleDepth: next }, '')
+  }, [routeKey, isArticle])
+  return depth
+}
+
 // A list was shown this visit: going back from the reader returns to it. The same for the videos.
 export const useBackWays = (listKey: string | null, route: Route) => {
   const visitedList = useRef(false)
@@ -70,8 +86,9 @@ export const useBackWays = (listKey: string | null, route: Route) => {
   useEffect(() => {
     if (watchList) visitedWatch.current = true
   }, [watchList])
+  const depth = useArticleDepth(route)
   const onBack = () => {
-    if (visitedList.current) window.history.back()
+    if (visitedList.current) window.history.go(-Math.max(1, depth.current))
     else window.location.hash = FRONT_PAGE_HREF
   }
   const onWatchBack = () => {

@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Back button.** On a phone or a tablet, the reader's back button returns to the list in one step, even after
+  several articles opened one after the other (as a computer does, before its window narrows).
+
 ## [1.0.0-beta.8] - 2026-11-16
 
 The push checks in Server › Notifications wait until this device takes push notices.
