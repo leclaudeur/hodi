@@ -529,6 +529,9 @@ listen:
     ])
     assert.deepEqual(youth.hiddenTopics(zoe.id), ['world'])
     await call('PUT', `/profiles/${zoe.id}/topics`, 1, { hidden: [] })
+    // Turned on again, the theme is back in its own lists too.
+    const shownAgain = users(zoe.id).preferences() as { hiddenTopics: string[] }
+    assert.deepEqual(shownAgain.hiddenTopics, ['economie'])
   })
 
   it('shows a young profile only its sources, and lets it add none', async () => {

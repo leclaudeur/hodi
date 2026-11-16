@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import type { TopicItem } from '../api.ts'
 import { useConnection } from '../lib/connection.ts'
-import { loadPreviousDay, refreshDayFeed, useDayFeed } from '../lib/day-feed.ts'
+import { loadPreviousDay, refreshDayFeed, syncHiddenTopics, useDayFeed } from '../lib/day-feed.ts'
 import { loadDayLabel } from '../lib/format.ts'
-import { isHidden, usePreferences } from '../lib/preferences.ts'
+import { isHidden, isInHiddenTopic, usePreferences } from '../lib/preferences.ts'
 import { useReadState } from '../lib/read-state.ts'
 import type { DayGroup } from './ArticleList.tsx'
 import { t } from '../lib/i18n.ts'
@@ -26,7 +26,7 @@ export const revealDay = (day: string) => {
 const GLIDE_MS = 700
 
 // What Le fil and a topic's list show, on a desktop or a phone: the days loaded so far, without the
-// articles the settings hide (read ones, muted sources and words).
+// articles the settings hide (read ones, muted sources and words, and in Le fil the hidden topics').
 export const useFeedView = (scope: string, onUnauthorized: () => void) => {
   const state = useDayFeed(scope)
   const preferences = usePreferences()
@@ -38,8 +38,18 @@ export const useFeedView = (scope: string, onUnauthorized: () => void) => {
     if (state.unauthorized) onUnauthorized()
   }, [state.unauthorized, onUnauthorized])
 
+  const hiddenTopics = preferences.hiddenTopics
+  useEffect(() => {
+    if (scope === '') syncHiddenTopics(hiddenTopics)
+  }, [scope, hiddenTopics])
+
   const groups: DayGroup[] = state.days
-    .map(day => ({ day: day.day, items: day.items.filter(item => !isHidden(item, preferences)) }))
+    .map(day => ({
+      day: day.day,
+      items: day.items.filter(
+        item => !isHidden(item, preferences) && !(scope === '' && isInHiddenTopic(item, preferences))
+      )
+    }))
     .filter(group => group.items.length > 0)
   const items: TopicItem[] = groups.flatMap(group => group.items)
   const listed = state.days.reduce((count, day) => count + day.items.length, 0)

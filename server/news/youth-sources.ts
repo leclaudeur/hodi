@@ -117,11 +117,14 @@ export class YouthSources {
 
   setHiddenTopics(profile: Profile, ids: string[]) {
     const allowed = new Set(this.topicsFor(kindOf(profile)).map(topic => topic.id))
-    this.#options.youth.setHiddenTopics(
-      profile.id,
-      ids.filter(id => allowed.has(id))
+    const before = this.#options.youth.hiddenTopics(profile.id)
+    const hidden = ids.filter(id => allowed.has(id))
+    this.#options.youth.setHiddenTopics(profile.id, hidden)
+    this.sync(
+      profile,
+      [],
+      before.filter(id => !hidden.includes(id))
     )
-    this.sync(profile)
   }
 
   // What stays off for a young profile, whatever it asks: the sources and themes its parents did not turn on.
@@ -143,9 +146,9 @@ export class YouthSources {
     }
   }
 
-  // Writes the lock into its preferences, keeping what it turned off itself; opened: sources just turned on by its
-  // parents, shown again even if it had hidden them.
-  sync(profile: Profile, opened: string[] = []) {
+  // Writes the lock into its preferences, keeping what it turned off itself; opened and openedTopics: the sources and
+  // themes just turned on by its parents, shown again even if it had hidden them.
+  sync(profile: Profile, opened: string[] = [], openedTopics: string[] = []) {
     const lock = this.lock(profile)
     if (!lock) return
     const { youth, users, now } = this.#options
@@ -156,7 +159,7 @@ export class YouthSources {
       id => allowed.has(id) && !opened.includes(id)
     )
     const ownTopics = ((preferences.hiddenTopics as string[] | undefined) ?? []).filter(
-      id => !lock.hiddenTopics.includes(id)
+      id => !lock.hiddenTopics.includes(id) && !openedTopics.includes(id)
     )
     user.setPreferences(
       {

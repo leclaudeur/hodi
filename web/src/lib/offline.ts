@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { DATA_CACHE, type SearchItem } from '../api.ts'
 import { useConnection } from './connection.ts'
-import { isHidden, usePreferences } from './preferences.ts'
+import { isHidden, isInHiddenTopic, usePreferences } from './preferences.ts'
 import { isRead } from './read-state.ts'
 import { useSaved } from './saved.ts'
 
@@ -115,7 +115,7 @@ export const useListedOffline = () => {
       item =>
         (ids.has(item.id) || texts.includes(item.id)) &&
         !isRead(item.id) &&
-        !preferences.hiddenTopics.includes(item.topicId) &&
+        !isInHiddenTopic(item, preferences) &&
         !isHidden(item, preferences)
     )
     .map(item => item.id)

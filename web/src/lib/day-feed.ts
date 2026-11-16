@@ -111,6 +111,18 @@ export const loadPreviousDay = async (scope: string) => {
 // Pull to refresh: today again, now.
 export const refreshDayFeed = (scope: string) => refreshToday(scope)
 
+// The hidden topics Le fil was last listed with. Once they change, the server lists it again from today, and each
+// earlier day comes back on "Charger": a topic shown again has its articles there too.
+let listedWithout: string | null = null
+export const syncHiddenTopics = (hiddenTopics: readonly string[]) => {
+  const key = [...hiddenTopics].sort().join(',')
+  const changed = listedWithout !== null && listedWithout !== key
+  listedWithout = key
+  if (!changed || stateOf('').loadedAt === 0) return
+  set('', { days: stateOf('').days.slice(0, 1) })
+  void refreshToday('')
+}
+
 // The days of every topic (scope '') or of one topic. Today is fetched on first use and when stale.
 export const useDayFeed = (scope: string) => {
   const state = useSyncExternalStore(

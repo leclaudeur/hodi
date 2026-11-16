@@ -10,6 +10,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **Feed.** A topic turned off in Settings › Topics leaves the feed too, not only the menu. An article that also
+  belongs to a topic still shown stays, under that one.
+- **Teens' topics.** A topic a parent turns off and on again comes back in the teen's lists too.
 - **Back button.** On a phone or a tablet, the reader's back button returns to the list in one step, even after
   several articles opened one after the other (as a computer does, before its window narrows).
 

@@ -496,6 +496,32 @@ topics:
     assert.ok(found.items.length > 0 && found.items.every(item => item.topicLabel === 'World'))
   })
 
+  it("leaves a profile's hidden topics out of Le fil, keeping an article that a shown topic also has", async () => {
+    // Alpha is in both topics, as a source added under two themes is.
+    const [world] = catalog.topics
+    const alpha = world?.sources.find(source => source.id === 'alpha')
+    assert.ok(world && alpha)
+    const shared = { ...catalog, topics: [world, { ...world, id: 'tech', label: 'Tech', sources: [alpha] }] }
+    const fake = fakeFetch({
+      ...feeds,
+      'https://alpha.example/sommet': articlePage('Sommet'),
+      'https://beta.example/elections': articlePage('Élections')
+    })
+    const news = new NewsService(shared, { fetchText: fake.fetchText, now: () => NOW, log: () => {} })
+    await news.getDay('2026-10-23', 'Europe/Brussels')
+    await news.whenChecksIdle()
+
+    const all = await news.getDay('2026-10-23', 'Europe/Brussels')
+    assert.ok(all?.items.some(item => item.sourceId === 'beta'))
+    const withoutWorld = await news.getDay('2026-10-23', 'Europe/Brussels', null, 'fr', ['world'])
+    assert.ok(withoutWorld && withoutWorld.items.length > 0)
+    assert.ok(withoutWorld.items.every(item => item.topicId === 'tech' && item.sourceId === 'alpha'))
+    const none = await news.getDay('2026-10-23', 'Europe/Brussels', null, 'fr', ['world', 'tech'])
+    assert.deepEqual(none?.items, [])
+    // One topic asked by its id is listed even when hidden: only Le fil leaves it out.
+    assert.ok((await news.getDay('2026-10-23', 'Europe/Brussels', 'world', 'fr', ['world']))?.items.length)
+  })
+
   describe('summaries', () => {
     const dailySummarySetup = (summarize: (input: SummaryInput) => Promise<string[]>) => {
       const fake = fakeFetch({ ...feeds, 'https://beta.example/elections': articlePage('Élections') })

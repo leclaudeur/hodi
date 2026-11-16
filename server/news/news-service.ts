@@ -251,9 +251,15 @@ export class NewsService {
     day: string | null,
     timeZone: string,
     topicId: string | null = null,
-    language: Language = 'fr'
+    language: Language = 'fr',
+    hiddenTopics: readonly string[] = []
   ): Promise<DayFeed | null> {
-    const topics = topicId === null ? this.#catalog.topics : this.#catalog.topics.filter(topic => topic.id === topicId)
+    if (topicId === null) {
+      // A topic the profile hid leaves Le fil, and an article also in a shown topic is listed under that one.
+      const shown = this.#catalog.topics.filter(topic => !hiddenTopics.includes(topic.id))
+      return this.#lister.day(shown, day, timeZone, language)
+    }
+    const topics = this.#catalog.topics.filter(topic => topic.id === topicId)
     if (topics.length === 0) return null
     return this.#lister.day(topics, day, timeZone, language)
   }

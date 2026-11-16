@@ -122,7 +122,8 @@ const mountListRoutes = (
       return
     }
 
-    const feed = await news.getDay(day ?? null, tz, topic ?? null, languageOf(response))
+    const hidden = filterOf(response).hiddenTopics
+    const feed = await news.getDay(day ?? null, tz, topic ?? null, languageOf(response), hidden)
 
     if (!feed) {
       response.status(400).json({ error: 'bad_request' })
