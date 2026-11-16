@@ -8,19 +8,24 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.7] - 2026-11-16
+
+The server's admin chooses how to hear of each event and gets a weekly report, every e-mail comes in one dark
+template, and the installed app always opens on Connexion.
+
 ### Added
 
-- **Serveur › Notifications.** The server's admin chooses, for each kind of event, e-mail, push, both or neither, and
+- **Server › Notifications.** The server's admin chooses, for each kind of event, e-mail, push, both or neither, and
   turns push on for each device. Plugins add their own kinds under their name.
-- **Rapport de la semaine.** On Monday from 08:00, the server's admin gets the past week's numbers beside the week
+- **Weekly report.** On Monday from 08:00, the server's admin gets the past week's numbers beside the week
   before (visits, articles, videos, reading time, shares, new profiles), with a table from each plugin that has one.
-  Chosen like any other kind in Serveur › Notifications.
+  Chosen like any other kind in Server › Notifications.
 
 ### Changed
 
 - **E-mails.** Every e-mail Hodi and its plugins send uses one dark template, made to show well in every mail app,
   with a plain-text copy for the ones that show no HTML. The password reset has a button. Under the card, every e-mail
-  says « Envoyé par Hodi » and gives the public site's address (Serveur › Général), else Hodi's: never a plugin's name.
+  says "Sent by Hodi" and gives the public site's address (Server › General), else Hodi's: never a plugin's name.
 
 ### Fixed
 
@@ -362,7 +367,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.6...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.7...HEAD
+[1.0.0-beta.7]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.6...v1.0.0-beta.7
 [1.0.0-beta.6]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.5...v1.0.0-beta.6
 [1.0.0-beta.5]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.4...v1.0.0-beta.5
 [1.0.0-beta.4]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.3...v1.0.0-beta.4
