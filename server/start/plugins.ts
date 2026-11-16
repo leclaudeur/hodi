@@ -93,6 +93,7 @@ export const startPlugins = async (wiring: PluginWiring) => {
     mail: pluginMailer({
       store: wiring.mailSettings,
       send: smtpSend,
+      home: () => wiring.serverSettings.publicHome(),
       languageOf: email => {
         const account = accounts.byEmail(email)
         const householdId = account ? accounts.householdOf(account.id) : null

@@ -27,6 +27,7 @@ const mountPassword = (api: express.Router, { options }: Wiring, login: Login) =
           return profileId === null ? household.get().language : news.languageOf(profileId)
         }),
       checkSignIn: login.checkSignIn,
+      home: () => options.serverSettings?.publicHome() ?? null,
       signIn: (account, hash, request) => {
         const session = login.resetAccountPassword(account, hash, request)
         if (session === null) return []

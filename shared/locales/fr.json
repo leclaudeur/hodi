@@ -2449,9 +2449,6 @@
       "button": "Choisir un mot de passe",
       "note": "Si la demande ne vient pas de toi, ignore cet e-mail : le mot de passe reste le même."
     },
-    "plugin": {
-      "sentBy": "Envoyé par le plugin {{plugin}} de Hodi"
-    },
     "serverNotice": {
       "open": "Ouvrir dans Hodi",
       "note": "Tu reçois cet e-mail car tu gères ce serveur. Choisis ce qu’il te signale dans <i>Serveur › Notifications</i>."

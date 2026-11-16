@@ -106,6 +106,7 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
         send: serverMail.send,
         accounts,
         languageOf: profileId => news.languageOf(profileId),
+        home: () => options.serverSettings?.publicHome() ?? null,
         now
       })
     )
