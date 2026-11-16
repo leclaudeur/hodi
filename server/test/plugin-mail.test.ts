@@ -108,7 +108,7 @@ describe('e-mails of plugins', () => {
     const { html, text } = sent[0]!
     assert.match(html!, /Choisis <i>Entrer<\/i>\./)
     assert.match(html!, /&lt;b&gt;Gras&lt;\/b&gt; &lt;script&gt;/)
-    assert.doesNotMatch(html!, /<script|<b>/)
+    assert.doesNotMatch(html!, /<script|<b>/i)
     const order = ['K7QM-4RWD', 'Valable 30 minutes.', 'href="https://hodi.example.test/#join=abc"', 'Si tu n’as rien']
     const at = order.map(piece => html!.indexOf(piece))
     assert.deepEqual(
