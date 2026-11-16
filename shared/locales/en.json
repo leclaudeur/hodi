@@ -2445,9 +2445,6 @@
       "button": "Choose a password",
       "note": "If you didn’t ask, ignore this e-mail: the password stays the same."
     },
-    "plugin": {
-      "sentBy": "Sent by the Hodi plugin {{plugin}}"
-    },
     "serverNotice": {
       "open": "Open in Hodi",
       "note": "You get this e-mail because you run this server. Choose what it tells you in <i>Server › Notifications</i>."

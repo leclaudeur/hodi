@@ -8,7 +8,7 @@ export interface PluginMailMessage {
   text: string
   // The card's title; the subject without one.
   title?: string
-  // The small line above the title; the plugin's name without one.
+  // The small line above the title; none without one.
   eyebrow?: string
   // A code to type somewhere, in large letters, and the line under it.
   code?: string

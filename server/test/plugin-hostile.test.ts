@@ -569,10 +569,7 @@ describe('hostile plugins', () => {
         assert.deepEqual(Object.keys(mail).sort(), ['html', 'subject', 'text', 'to'])
         assert.equal(mail.to, 'a@example.test')
         assert.doesNotMatch(mail.subject, /[\r\n]/)
-        assert.ok(
-          mail.text.endsWith('-- \nEnvoyé par le plugin Hostile H38 de Hodi\nhttps://hodi.example.test'),
-          mail.text
-        )
+        assert.ok(mail.text.endsWith('-- \nEnvoyé par Hodi\nhttps://hodi.example.test'), mail.text)
         // Hodi's template only: no header and no markup of the plugin's own gets into the HTML.
         assert.doesNotMatch(mail.html!, /<script|\r|\nBcc/i)
       }

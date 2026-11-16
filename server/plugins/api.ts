@@ -57,7 +57,7 @@ export interface PluginContext {
   // send() then refuses. One plain address, a one-line subject and plain text (paragraphs apart by an empty line,
   // <i>…</i> for italics), and if it likes a title, a small line above it, a code with a caption, one button and a
   // note, and the language of the words it adds (language: 'fr' | 'en', for someone without an account yet): Hodi
-  // builds the e-mail in its own dark template, with a plain-text copy, names the plugin under it, and
+  // builds the e-mail in its own dark template, with a plain-text copy, signs it as Hodi (never the plugin), and
   // refuses past 50 e-mails an hour ('mail_limit'). appUrl() is the server's address set there, for a link in an
   // e-mail (such as a waiting list's confirmation), or null.
   mail: {

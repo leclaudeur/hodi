@@ -30,6 +30,8 @@ interface PasswordRoutesOptions {
   // The plugins' say on this account signing in, asked before the link is used up or the password changes.
   checkSignIn?: CheckSignIn
   now: () => number
+  // The public site (Serveur › Général), under the card.
+  home?: () => string | null
   log?: (message: string) => void
   throttle?: LoginThrottle
 }
@@ -53,7 +55,7 @@ export const passwordRoutes = ({
 
 const mountForgotRoute = (
   router: express.Router,
-  { mail, send, resets, accounts, languageOf, now, log, throttle }: ResolvedOptions
+  { mail, send, resets, accounts, languageOf, home, now, log, throttle }: ResolvedOptions
 ) => {
   const throttled = (request: express.Request, response: express.Response) => {
     const client = clientAddressOf(request)
@@ -96,7 +98,11 @@ const mountForgotRoute = (
         { kind: 'note' as const, text: t('mail.reset.note') }
       ]
     }
-    const { html, text } = renderMail(content, hodiFrame(language, settings.appUrl), language)
+    const { html, text } = renderMail(
+      content,
+      hodiFrame(language, { appUrl: settings.appUrl, home: home?.() ?? null }),
+      language
+    )
     send(settings, { to: account.email, subject: t('mail.reset.subject'), text, html }).catch((error: unknown) =>
       log(`Password reset e-mail failed: ${String(error)}`)
     )

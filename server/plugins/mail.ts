@@ -1,5 +1,5 @@
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
-import { textsIn } from '../i18n.ts'
+import { hodiFrame } from '../mail/frame.ts'
 import type { SendMail } from '../mail/mailer.ts'
 import { type MailBlock, renderMail } from '../mail/template.ts'
 import { type PluginMailMessage, pluginMailMessage } from './mail-message.ts'
@@ -47,6 +47,7 @@ export const pluginMailer = ({
   store,
   send,
   languageOf = () => 'fr',
+  home = () => null,
   now = Date.now,
   log = console.log
 }: {
@@ -54,6 +55,8 @@ export const pluginMailer = ({
   send: SendMail
   // The footer's language, when the plugin does not say: the recipient's, when they have an account.
   languageOf?: (email: string) => Language
+  // The public site (Serveur › Général), under the card; Hodi's address without one.
+  home?: () => string | null
   now?: () => number
   log?: (line: string) => void
 }): PluginMailer => {
@@ -85,14 +88,14 @@ export const pluginMailer = ({
       sent.set(plugin.id, [...recent, at])
 
       const language = message.language ?? languageOf(message.to)
-      const t = textsIn(language)
+      // Hodi's e-mail, plugin or not: the people who get it never need to know which part of Hodi sent it.
       const { html, text } = renderMail(
-        { eyebrow: message.eyebrow ?? plugin.name, title: message.title ?? message.subject, blocks: blocksOf(message) },
         {
-          linkFallback: t('mail.linkFallback'),
-          sentBy: t('mail.plugin.sentBy', { plugin: plugin.name }),
-          address: settings.appUrl
+          ...(message.eyebrow ? { eyebrow: message.eyebrow } : {}),
+          title: message.title ?? message.subject,
+          blocks: blocksOf(message)
         },
+        hodiFrame(language, { appUrl: settings.appUrl, home: home() }),
         language
       )
       try {
