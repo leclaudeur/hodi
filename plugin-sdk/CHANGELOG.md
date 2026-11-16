@@ -10,6 +10,17 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **E-mails.** `ctx.mail.send` takes, besides `text`, an optional `title`, `eyebrow`, `code` with its `caption`, one
+  `action` (`{ label, url }`) and a `note`. Hodi builds the e-mail in its dark template, with a plain-text copy. Text
+  may put a name in italics with `<i>…</i>`; any other markup stays text.
+
+### Changed
+
+- **E-mails.** An e-mail with only `to`, `subject` and `text` now comes in the template too: the subject is its title
+  and the plugin's name the line above it.
+
 ## [1.0.0-beta.3] - 2026-11-15
 
 Plugins can read the public site's address.

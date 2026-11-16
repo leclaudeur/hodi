@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **E-mails.** Every e-mail Hodi and its plugins send uses one dark template, made to show well in every mail app,
+  with a plain-text copy for the ones that show no HTML. The password reset has a button.
+
 ## [1.0.0-beta.6] - 2026-11-15
 
 Plugins can read the public site's address, code fields lose their repeated label, and empty settings pages stop

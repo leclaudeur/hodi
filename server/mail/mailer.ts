@@ -7,6 +7,8 @@ export interface MailMessage {
   to: string
   subject: string
   text: string
+  // The same e-mail in the dark template (template.ts); the text stays for mail apps without HTML.
+  html?: string
 }
 
 // Why a send failed, in words the admin can act on: the server cannot be reached (host, port, security), it refused

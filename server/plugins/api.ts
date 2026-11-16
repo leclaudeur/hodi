@@ -1,3 +1,4 @@
+import type { PluginMailMessage } from './mail-message.ts'
 import type { PublicServerSettings } from '../db/server-settings-store.ts'
 import type { PluginArticle } from './articles.ts'
 import type { SettingValues } from './manifest.ts'
@@ -53,13 +54,15 @@ export interface PluginContext {
   // pages say these numbers rather than writing them; a link to the public site uses that address.
   serverSettings: () => Promise<PublicServerSettings>
   // With permissions.mail: an e-mail through Serveur › E-mail. available() is false until the admin set it up, and
-  // send() then refuses. One plain address, a one-line subject and plain text: Hodi adds its footer naming the plugin,
-  // and refuses past 50 e-mails an hour ('mail_limit'). appUrl() is the server's address set there, for a link in an
+  // send() then refuses. One plain address, a one-line subject and plain text (paragraphs apart by an empty line,
+  // <i>…</i> for italics), and if it likes a title, a small line above it, a code with a caption, one button and a
+  // note: Hodi builds the e-mail in its own dark template, with a plain-text copy, names the plugin under it, and
+  // refuses past 50 e-mails an hour ('mail_limit'). appUrl() is the server's address set there, for a link in an
   // e-mail (such as a waiting list's confirmation), or null.
   mail: {
     available: () => Promise<boolean>
     appUrl: () => Promise<string | null>
-    send: (message: { to: string; subject: string; text: string }) => Promise<void>
+    send: (message: PluginMailMessage) => Promise<void>
   }
   // With permissions.households: the server's households. create() sets one up with its admin: an existing account
   // (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,

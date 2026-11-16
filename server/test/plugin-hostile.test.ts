@@ -566,13 +566,15 @@ describe('hostile plugins', () => {
       for (const index of [0, 1, 2, 3]) assert.equal(results[index]!.ok, false, `try ${index}`)
       assert.ok(mails.length <= 4)
       for (const mail of mails) {
-        assert.deepEqual(Object.keys(mail).sort(), ['subject', 'text', 'to'])
+        assert.deepEqual(Object.keys(mail).sort(), ['html', 'subject', 'text', 'to'])
         assert.equal(mail.to, 'a@example.test')
         assert.doesNotMatch(mail.subject, /[\r\n]/)
         assert.ok(
-          mail.text.endsWith('-- \nEnvoyé par le plugin Hostile H38 de Hodi, https://hodi.example.test'),
+          mail.text.endsWith('-- \nEnvoyé par le plugin Hostile H38 de Hodi\nhttps://hodi.example.test'),
           mail.text
         )
+        // Hodi's template only: no header and no markup of the plugin's own gets into the HTML.
+        assert.doesNotMatch(mail.html!, /<script|\r|\nBcc/i)
       }
       mails.length = 0
     },
