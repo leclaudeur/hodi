@@ -83,7 +83,10 @@ describe('e-mails of plugins', () => {
     // The same e-mail in Hodi's template, and nothing says a plugin sent it.
     assert.match(sent[0]!.html!, /<h1[^>]*>Ta place est prête<span/)
     assert.doesNotMatch(sent[0]!.html!, /Club/)
-    assert.match(sent[0]!.html!, />Envoyé par Hodi<\/td><td align="right"[^>]*><a href="https:\/\/hodi\.example\.test"[^>]*>hodi\.example\.test<\/a>/)
+    assert.match(
+      sent[0]!.html!,
+      />Envoyé par Hodi<\/td><td align="right"[^>]*><a href="https:\/\/hodi\.example\.test"[^>]*>hodi\.example\.test<\/a>/
+    )
     assert.match(sent[1]!.html!, /<html lang="en">/)
   })
 
