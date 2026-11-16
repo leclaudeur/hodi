@@ -105,6 +105,8 @@ export interface TestPlugin {
   accountDeleted: (accountId: number) => Promise<void>
   householdRemoved: (householdId: number) => Promise<void>
   exportData: (person: TestPerson) => Promise<unknown>
+  // Its table of the weekly report, as it answers, for a week from Monday to Sunday (YYYY-MM-DD).
+  weeklyReport: (week: { from: string; to: string }) => Promise<unknown>
   // What left the server, in order: e-mails, notifications, what the server's admin was told, the AI's questions, the
   // accounts a route signed in.
   mails: MailMessage[]
@@ -183,7 +185,8 @@ const hooksOf = (hodi: SmallHodi, id: string, sandbox: PluginSandbox) => {
     accountDeleted: (accountId: number) => erased(() => registry.accountDeleted(accountId)),
     householdRemoved: (removed: number) => erased(() => registry.householdRemoved(removed)),
     exportData: (person: TestPerson) =>
-      hook('exportData', { accountId: person.accountId, profileId: person.profileId, householdId })
+      hook('exportData', { accountId: person.accountId, profileId: person.profileId, householdId }),
+    weeklyReport: (week: { from: string; to: string }) => hook('weeklyReport', week, null)
   }
 }
 

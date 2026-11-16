@@ -9,7 +9,7 @@ import type { ServerDay } from '../db/server-day-counts.ts'
 import { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerNotice, ServerNoticeIn } from '../notices/server-notifier.ts'
 import { WEEKLY_REPORT, dueWeek, reportNotice, weeklyReport } from '../notices/weekly-report.ts'
-import { pluginReportRows } from '../plugins/report-rows.ts'
+import { pluginReportRows, reportRowsIn } from '../plugins/report-rows.ts'
 
 // Monday 16 November 2026, 08:05 in Brussels (07:05 UTC).
 const MONDAY = Date.UTC(2026, 10, 16, 7, 5)
@@ -125,9 +125,29 @@ describe('the weekly report', () => {
       { rows: [{ label: 'a\nb', value: '1' }] },
       { rows: [{ label: 'a', value: 'x'.repeat(31) }] },
       { rows: [{ label: 'a', value: '1', change: { text: '+1' } }] },
-      { rows: [{ label: '<b>a</b>'.repeat(10), value: '1' }] }
+      { rows: [{ label: '<b>a</b>'.repeat(10), value: '1' }] },
+      { rows: [{ label: { de: 'a' }, value: '1' }] },
+      { rows: [{ label: { fr: 'a', en: '' }, value: '1' }] }
     ]
     for (const value of refused) assert.equal(pluginReportRows(value), null, JSON.stringify(value))
+  })
+
+  it('shows each admin a plugin’s rows in their language, or in French when it lacks it', () => {
+    const rows = pluginReportRows({
+      rows: [
+        {
+          label: { fr: 'Nouveaux foyers', en: 'New households' },
+          value: '2',
+          change: { text: { fr: '+1' }, good: true }
+        },
+        { label: { en: 'Waiting' }, value: { fr: '4 personnes', en: '4 people' } }
+      ]
+    })!
+    assert.deepEqual(reportRowsIn(rows, 'en'), [
+      { label: 'New households', value: '2', change: { text: '+1', good: true } },
+      { label: 'Waiting', value: '4 people' }
+    ])
+    assert.deepEqual(reportRowsIn(rows, 'fr')[1], { label: 'Waiting', value: '4 personnes' })
   })
 })
 

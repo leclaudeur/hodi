@@ -13,7 +13,7 @@ import { UserAccountStore } from '../db/user-account-store.ts'
 import { serverNoticeRoutes } from '../http/server-notice-routes.ts'
 import type { MailMessage } from '../mail/mailer.ts'
 import type { AlertPayload, PushTarget } from '../news/followed-alerts.ts'
-import { serverNotifier } from '../notices/server-notifier.ts'
+import { type ServerNoticeIn, serverNotifier } from '../notices/server-notifier.ts'
 import { parseManifest } from '../plugins/manifest.ts'
 import { SERVER_NOTICES_PER_DAY, pluginServerNotice, pluginServerNotifier } from '../plugins/server-notify.ts'
 
@@ -172,14 +172,23 @@ describe('server notices', () => {
       { title: 'x'.repeat(81), text: 'b' },
       { title: 'a', text: 'x'.repeat(241) },
       { title: 'a', text: 'b', path: '../settings' },
-      { title: 'a', text: 'b', to: 'someone@example.test' }
+      { title: 'a', text: 'b', to: 'someone@example.test' },
+      { title: {}, text: 'b' },
+      { title: { de: 'a' }, text: 'b' },
+      { title: { fr: 'a', en: 'x'.repeat(81) }, text: 'b' }
     ]
     for (const value of refused) assert.equal(pluginServerNotice(value), null, JSON.stringify(value))
 
     const told: unknown[] = []
     const clock = { now: 0 }
     const notifier = pluginServerNotifier({
-      notifier: { tell: async (type, notice) => (told.push({ type, ...notice }), { emails: 1, pushes: 0 }) },
+      // Each notice as a French admin reads it.
+      notifier: {
+        tell: async (type, notice) => (
+          told.push({ type, ...(typeof notice === 'function' ? notice('fr') : notice) }),
+          { emails: 1, pushes: 0 }
+        )
+      },
       now: () => clock.now,
       log: () => {}
     })
@@ -188,6 +197,18 @@ describe('server notices', () => {
     await assert.rejects(notifier.send(plugin, 'household', { title: 'a' }), /invalid_notice/)
     await notifier.send(plugin, 'household', { title: 'Nouveau foyer', text: 'Les Dupont.', path: 'households' })
     assert.deepEqual(told, [{ type: TYPE, ...NOTICE, text: 'Les Dupont.' }])
+    // One text per language: each admin reads theirs, the French when theirs is missing.
+    let written: ServerNoticeIn | null = null
+    const languages = pluginServerNotifier({
+      notifier: { tell: async (_type, notice) => ((written = notice), { emails: 1, pushes: 0 }) },
+      log: () => {}
+    })
+    await languages.send(plugin, 'household', {
+      title: { fr: 'Nouveau foyer', en: 'New household' },
+      text: { fr: 'Les Dupont.' }
+    })
+    const inEnglish = (written as unknown as (language: 'fr' | 'en') => { title: string; text: string })('en')
+    assert.deepEqual([inEnglish.title, inEnglish.text], ['New household', 'Les Dupont.'])
     for (let index = 1; index < SERVER_NOTICES_PER_DAY; index++) {
       await notifier.send(plugin, 'waitlist', { title: 'a', text: 'b' })
     }

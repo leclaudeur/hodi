@@ -1,6 +1,7 @@
 import type { ServerNotifier } from '../notices/server-notifier.ts'
 import { DAY_MS } from '../../shared/time.ts'
 import type { ServerNoticeSpec } from './manifest-notices.ts'
+import { type Written, writtenIn, writtenOf } from './written.ts'
 
 // ctx.notifyServerAdmin: a plugin tells the server's admin of an event of one of its kinds (manifest
 // serverNotifications), which reaches them as they chose in Serveur › Notifications. The core builds the e-mail and
@@ -19,20 +20,26 @@ const CONTROL = /[\u0000-\u001f\u007f]/
 const TEXT_CONTROL = /[\u0000-\u0009\u000b-\u001f\u007f]/
 
 export interface PluginServerNotice {
-  title: string
-  text: string
+  title: Written
+  text: Written
   path: string | null
 }
 
-// What a plugin may give, or null when something is missing, too long or not plain text.
+const fitsTitle = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim() !== '' && value.length <= MAX_TITLE && !CONTROL.test(value)
+const fitsText = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim() !== '' && value.length <= MAX_TEXT && !TEXT_CONTROL.test(value)
+
+// What a plugin may give, or null when something is missing, too long or not plain text. Its title and text are one
+// text, or one per language.
 export const pluginServerNotice = (value: unknown): PluginServerNotice | null => {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
   const { title, text, path, ...rest } = value as Record<string, unknown>
   if (Object.keys(rest).length > 0) return null
-  if (typeof title !== 'string' || title.trim() === '' || title.length > MAX_TITLE || CONTROL.test(title)) return null
-  if (typeof text !== 'string' || text.trim() === '' || text.length > MAX_TEXT || TEXT_CONTROL.test(text)) return null
+  const written = { title: writtenOf(title, fitsTitle), text: writtenOf(text, fitsText) }
+  if (!written.title || !written.text) return null
   if (path !== undefined && (typeof path !== 'string' || !PATH.test(path))) return null
-  return { title: title.trim(), text: text.trim(), path: path ?? null }
+  return { title: written.title, text: written.text, path: path ?? null }
 }
 
 // The id a plugin's kind has in Serveur › Notifications.
@@ -71,13 +78,13 @@ export const pluginServerNotifier = ({
         throw new Error('too_many_notices')
       }
       sent.set(plugin.id, [...times, at])
-      await notifier.tell(pluginNoticeType(plugin.id, type), {
+      await notifier.tell(pluginNoticeType(plugin.id, type), language => ({
         from: plugin.name,
-        title: notice.title,
-        text: notice.text,
+        title: writtenIn(notice.title, language),
+        text: writtenIn(notice.text, language),
         // Its section of /server and a screen under it; without one, the page where the admin chose.
         url: notice.path ? `#/server/plugin/${plugin.id}/${notice.path}` : '#/server/notifications'
-      })
+      }))
     }
   }
 }

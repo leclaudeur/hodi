@@ -9,6 +9,10 @@ import type { SettingValues } from './manifest.ts'
 // A BLOB is a Uint8Array, both ways.
 export type SqlValue = string | number | boolean | null | Uint8Array
 
+// A text for the server's admin: one text, or one per language ({ fr, en }), of which each admin reads theirs (the
+// French, or the other, when it lacks it).
+export type PluginWritten = string | { fr?: string; en?: string }
+
 export interface PluginDatabase {
   // The rows a SELECT gives, each an object by column name.
   query: (sql: string, params?: SqlValue[]) => Record<string, SqlValue>[]
@@ -96,10 +100,13 @@ export interface PluginContext {
   }) => Promise<void>
   // With permissions.notify and kinds in the manifest's serverNotifications: tells the server's admin of an event of
   // one of them, by e-mail, in push on the devices of their account, both or neither, as they chose for it in
-  // Serveur › Notifications. title (80 characters) and text (240), plain text; path: one of the plugin's sections of
+  // Serveur › Notifications. title (80 characters) and text (240), plain text, one or one per language; path: one of the plugin's sections of
   // /server and maybe a screen under it (#/server/plugin/<id>/<path>), Serveur › Notifications without one.
   // 'unknown_type' for a kind the manifest does not list; fifty a day per plugin at most, 'too_many_notices' past them.
-  notifyServerAdmin?: (type: string, notice: { title: string; text: string; path?: string }) => Promise<void>
+  notifyServerAdmin?: (
+    type: string,
+    notice: { title: PluginWritten; text: PluginWritten; path?: string }
+  ) => Promise<void>
   // With permissions.ai, for a signed plugin ("Vérifié"): one question to the household's AI, only inside an aiActions
   // handler, which only a click on the plugin's AiButton (hodi:sdk) runs, and once per click: anywhere else it refuses
   // with 'ai_no_click', a second time with 'ai_already_asked'. Plain text: prompt (8000 characters), system (2000),
@@ -275,13 +282,15 @@ export interface ServerPlugin {
     ctx: PluginContext
   ) => Promise<unknown>
   // The weekly report to the server's admin (Serveur › Notifications), on Monday morning: the plugin's own table
-  // under its name, for the week from Monday to Sunday (YYYY-MM-DD). One to eight rows of plain text: label (60
-  // characters), value (30), and maybe its change since the week before (« +12 % », 20), green when good. Left out of
-  // the report when it fails or answers anything else.
+  // under its name, for the week from Monday to Sunday (YYYY-MM-DD). One to eight rows of plain text, each text one
+  // or one per language: label (60 characters), value (30), and maybe its change since the week before (« +12 % »,
+  // 20), green when good. Left out of the report when it fails or answers anything else.
   weeklyReport?: (
     week: { from: string; to: string },
     ctx: PluginContext
-  ) => Promise<{ rows: { label: string; value: string; change?: { text: string; good: boolean } }[] }>
+  ) => Promise<{
+    rows: { label: PluginWritten; value: PluginWritten; change?: { text: PluginWritten; good: boolean } }[]
+  }>
 }
 
 // A click on the plugin's AiButton: input is what the button was given (JSON, 16 KB at most), who the adult who

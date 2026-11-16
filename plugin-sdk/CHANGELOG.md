@@ -17,8 +17,10 @@ and never touch `version`; a small release pull request raises `version` and mov
   languages), and `ctx.notifyServerAdmin(type, { title, text, path })` tells of one, by e-mail or push as the admin
   chose. It needs `permissions.notify`. The test kit records them in `serverNotices`.
 - **Weekly report.** A `weeklyReport({ from, to }, ctx)` hook adds the plugin's table, one to eight rows of `label`,
-  `value` and an optional `change` (`{ text, good }`), to the server admin's weekly report under its name.
-
+  `value` and an optional `change` (`{ text, good }`), to the server admin's weekly report under its name. The test kit calls it with `weeklyReport(week)`.
+- **Texts per language.** A notice's `title` and `text`, and a report row's `label`, `value` and `change.text`, may be
+  one text or one per language (`{ fr, en }`, type `PluginWritten`): each admin reads theirs, the French when it is
+  missing.
 - **E-mails.** `ctx.mail.send` takes, besides `text`, an optional `title`, `eyebrow`, `code` with its `caption`, one
   `action` (`{ label, url }`) and a `note`. Hodi builds the e-mail in its dark template, with a plain-text copy. Text
   may put a name in italics with `<i>…</i>`; any other markup stays text. `language` (`'fr'` or `'en'`) sets the

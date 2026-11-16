@@ -13,6 +13,7 @@ export type {
   PluginResponse,
   PluginRoutes,
   PluginTask,
+  PluginWritten,
   PluginZipEntry,
   PublicHandler,
   PublicResponse,

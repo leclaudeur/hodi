@@ -19,7 +19,7 @@ import { SNAPSHOT_SUFFIX, databasePath } from './sandbox/sqlite-wasm.ts'
 import { callContext } from './call-context.ts'
 import { pluginErasures } from './erasures.ts'
 import { type LoadDeps, type RequestDeps, loadPlugin, pruneKeptData } from './load-plugin.ts'
-import type { MailRow } from '../mail/template.ts'
+import type { ReportRow } from './report-rows.ts'
 import { aiActionRunner, articleTeller, dataExporter, weeklyReporter, dueTasks, signInChecker } from './plugin-calls.ts'
 import type { WebParts } from './web-parts.ts'
 
@@ -97,7 +97,7 @@ export interface PluginRegistry {
     householdId: number
   }) => Promise<Record<string, unknown>>
   // The weekly report's table of each plugin with a weeklyReport hook.
-  weeklyReports: (week: { from: string; to: string }) => Promise<{ name: string; rows: MailRow[] }[]>
+  weeklyReports: (week: { from: string; to: string }) => Promise<{ name: string; rows: ReportRow[] }[]>
   // A plugin's log line, as Hodi writes it.
   log: (id: string, line: string) => void
   store: PluginStore

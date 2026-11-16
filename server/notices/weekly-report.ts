@@ -1,6 +1,7 @@
 import type { ServerDay } from '../db/server-day-counts.ts'
 import { textsIn } from '../i18n.ts'
 import type { MailBlock, MailRow } from '../mail/template.ts'
+import { type ReportRow, reportRowsIn } from '../plugins/report-rows.ts'
 import type { Language } from '../../shared/i18n.ts'
 import { DAY_MS } from '../../shared/time.ts'
 import type { ServerNotice, ServerNotifier } from './server-notifier.ts'
@@ -23,7 +24,7 @@ export interface Week {
 // A plugin's table: its name, and its rows as it wrote them.
 export interface PluginReport {
   name: string
-  rows: MailRow[]
+  rows: ReportRow[]
 }
 
 interface ReportDeps {
@@ -124,7 +125,10 @@ export const reportNotice = (
     from: t('mail.weekly.eyebrow'),
     title: titleOf(week, language),
     text: t('mail.weekly.text'),
-    blocks: [server, ...plugins.map(({ name, rows }) => ({ kind: 'rows' as const, title: name, rows }))],
+    blocks: [
+      server,
+      ...plugins.map(({ name, rows }) => ({ kind: 'rows' as const, title: name, rows: reportRowsIn(rows, language) }))
+    ],
     push: t('mail.weekly.push', {
       visits: `${count(now.visits)}${visits ? ` (${visits.text})` : ''}`,
       articles: count(now.articles)
