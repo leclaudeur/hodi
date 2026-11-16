@@ -8,6 +8,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Feed.** A topic turned off in Settings › Topics leaves the feed too, not only the menu. An article that also
+  belongs to a topic still shown stays, under that one.
+- **Teens' topics.** A topic a parent turns off and on again comes back in the teen's lists too.
+
 ## [1.0.0-beta.8] - 2026-11-16
 
 The push checks in Server › Notifications wait until this device takes push notices.

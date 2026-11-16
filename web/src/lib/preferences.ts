@@ -184,6 +184,10 @@ export const isHidden = (
   return mutedWords.some(word => wordPattern(word).test(text))
 }
 
+// An article of a topic the profile hid: Le fil leaves it out at once, before the server lists it again.
+export const isInHiddenTopic = (item: { topicId: string }, { hiddenTopics }: Pick<Preferences, 'hiddenTopics'>) =>
+  hiddenTopics.includes(item.topicId)
+
 // Every followed subject an article is about: Suivis lists it under each.
 export const followedWordsOf = (item: TopicItem, { followedWords }: Preferences) => {
   if (followedWords.length === 0) return []
