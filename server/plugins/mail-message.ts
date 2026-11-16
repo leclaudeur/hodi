@@ -17,6 +17,9 @@ export interface PluginMailMessage {
   action?: { label: string; url: string }
   // The last words, under a line.
   note?: string
+  // The language of what Hodi adds (the line naming the plugin, the punctuation): the plugin's text's, for someone
+  // without an account yet. Without it, the recipient's account's, or French.
+  language?: 'fr' | 'en'
 }
 
 const MAX_ADDRESS = 254
@@ -55,7 +58,18 @@ const isAction = (value: unknown): value is { label: string; url: string } => {
 // The fields a plugin may give, or null when one is missing, too long, or could carry a header or markup.
 export const pluginMailMessage = (value: unknown): PluginMailMessage | null => {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
-  const { to, subject, text: body, title, eyebrow, code, caption, action, note } = value as Record<string, unknown>
+  const {
+    to,
+    subject,
+    text: body,
+    title,
+    eyebrow,
+    code,
+    caption,
+    action,
+    note,
+    language
+  } = value as Record<string, unknown>
   if (typeof to !== 'string' || to.length > MAX_ADDRESS || !ADDRESS.test(to)) return null
   if (!line(subject, MAX_SUBJECT) || !text(body, MAX_TEXT)) return null
   const checks = [
@@ -64,10 +78,11 @@ export const pluginMailMessage = (value: unknown): PluginMailMessage | null => {
     optional(code, v => typeof v === 'string' && CODE.test(v)),
     optional(caption, v => line(v, MAX_LINE)),
     optional(action, isAction),
-    optional(note, v => text(v, MAX_NOTE))
+    optional(note, v => text(v, MAX_NOTE)),
+    optional(language, v => v === 'fr' || v === 'en')
   ]
   if (checks.includes(false)) return null
-  const optionalFields = { title, eyebrow, code, caption, note } as Record<string, string | undefined>
+  const optionalFields = { title, eyebrow, code, caption, note, language } as Record<string, string | undefined>
   const kept = Object.fromEntries(Object.entries(optionalFields).filter(([, field]) => field !== undefined))
   const button = action as PluginMailMessage['action']
   return { to, subject, text: body, ...kept, ...(button ? { action: { label: button.label, url: button.url } } : {}) }

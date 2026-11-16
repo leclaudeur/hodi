@@ -52,7 +52,7 @@ export const pluginMailer = ({
 }: {
   store: Pick<MailSettingsStore, 'get'>
   send: SendMail
-  // The footer's language: the recipient's, when they have an account.
+  // The footer's language, when the plugin does not say: the recipient's, when they have an account.
   languageOf?: (email: string) => Language
   now?: () => number
   log?: (line: string) => void
@@ -84,7 +84,7 @@ export const pluginMailer = ({
       // Counted before it leaves: a send that fails still took its place, so a failing server is not hammered.
       sent.set(plugin.id, [...recent, at])
 
-      const language = languageOf(message.to)
+      const language = message.language ?? languageOf(message.to)
       const t = textsIn(language)
       const { html, text } = renderMail(
         { eyebrow: message.eyebrow ?? plugin.name, title: message.title ?? message.subject, blocks: blocksOf(message) },
