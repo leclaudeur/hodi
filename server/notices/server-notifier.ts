@@ -34,7 +34,8 @@ export interface ServerNotifier {
 interface NotifierDeps {
   store: ServerNoticeStore
   admins: () => UserAccount[]
-  mail: { settings: () => MailSettings | null; send: SendMail }
+  // home: the public site (Serveur › Général), under the card.
+  mail: { settings: () => MailSettings | null; send: SendMail; home?: () => string | null }
   push: SendPush
   languageOf: (account: UserAccount) => Language
   log?: (line: string) => void
@@ -55,7 +56,7 @@ const sendMail = async (notice: ServerNotice, account: UserAccount, settings: Ma
   ]
   const { html, text } = renderMail(
     { eyebrow: notice.from, title: notice.title, blocks },
-    hodiFrame(language, settings.appUrl),
+    hodiFrame(language, { appUrl: settings.appUrl, home: deps.mail.home?.() ?? null }),
     language
   )
   await deps.mail.send(settings, { to: account.email, subject: `${notice.from} · ${notice.title}`, text, html })

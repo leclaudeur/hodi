@@ -2,6 +2,7 @@ import type { Config } from '../config.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
 import { inHousehold } from '../db/household-scope.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
+import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerNoticeStore } from '../db/server-notice-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
 import { smtpSend } from '../mail/mailer.ts'
@@ -15,6 +16,7 @@ export const createServerNotifier = ({
   serverNotices,
   accounts,
   mailSettings,
+  serverSettings,
   household
 }: {
   config: Config
@@ -22,12 +24,13 @@ export const createServerNotifier = ({
   serverNotices: ServerNoticeStore
   accounts: UserAccountStore
   mailSettings: MailSettingsStore
+  serverSettings: ServerSettingsStore
   household: HouseholdStore
 }) =>
   serverNotifier({
     store: serverNotices,
     admins: () => accounts.serverAdmins(),
-    mail: { settings: () => mailSettings.get(), send: smtpSend },
+    mail: { settings: () => mailSettings.get(), send: smtpSend, home: () => serverSettings.publicHome() },
     push: (target, payload) => outside.sendPush(target, payload, config.vapid),
     // The language of the admin's household; an admin outside any household reads French, Hodi's own.
     languageOf: account => {
