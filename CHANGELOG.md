@@ -14,6 +14,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **Suivis.** « Ajouter un sujet », when no topic is followed yet, opens Réglages › Sujets suivis instead of Réglages.
+
 - **Nobody banned by the server's proxy.** Using Hodi never makes a burst of refused requests any more, which a proxy
   such as CrowdSec bans as probing. It happened when the app opened in a new tab on a profile that asks for its
   password, to the server's admin outside any household, to a teen outside its hours, and on a list of cards whose
