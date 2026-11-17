@@ -1,6 +1,7 @@
 import { Minus, Plus } from 'lucide-react'
 import { type MouseEvent, type PointerEvent, type ReactNode, useEffect, useRef } from 'react'
 import RoundButton from './RoundButton.tsx'
+import StepperInput from './StepperInput.tsx'
 import styles from './Stepper.module.css'
 
 interface StepperProps {
@@ -15,8 +16,10 @@ interface StepperProps {
   // Bigger steps, in order, as a quick run of clicks or a long press goes on: 5 min, then 15, then 30. Each lands on
   // its own multiples, so the values stay round.
   fastSteps?: readonly number[]
-  // How the value reads: "1 h 30", "10".
-  children: ReactNode
+  // How the value reads: "1 h 30", "10". Not shown when the value can be typed.
+  children?: ReactNode
+  // The value can also be typed, for a number too far for the buttons (a limit of 2 000).
+  editable?: boolean
   onChange: (value: number) => void
 }
 
@@ -40,6 +43,7 @@ const Stepper = ({
   step,
   fastSteps = [],
   children,
+  editable = false,
   onChange
 }: StepperProps) => {
   // The latest value: a held button moves several times before the parent renders again.
@@ -107,9 +111,13 @@ const Stepper = ({
   return (
     <div className={styles.stepper} role="group" aria-label={label}>
       {button(-1)}
-      <output className={styles.value} aria-live="polite">
-        {children}
-      </output>
+      {editable ? (
+        <StepperInput label={label} value={value} min={min} max={max} onChange={onChange} />
+      ) : (
+        <output className={styles.value} aria-live="polite">
+          {children}
+        </output>
+      )}
       {button(1)}
     </div>
   )

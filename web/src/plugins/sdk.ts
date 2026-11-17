@@ -52,6 +52,8 @@ export type { PinState } from '../ui/PinField.tsx'
 export { default as RoundButton } from '../ui/RoundButton.tsx'
 // One choice among a few in a pill, as SettingRow's choice (« Clair · Sombre · Système »).
 export { default as Segmented } from '../ui/Segmented.tsx'
+// A number picked with − and +, faster when held, and typed when `editable` (Serveur › Contenu's durations).
+export { default as Stepper } from '../ui/Stepper.tsx'
 export { default as SourceAvatar } from '../ui/SourceAvatar.tsx'
 export { default as StatusLine } from '../ui/StatusLine.tsx'
 export { default as TextField } from '../ui/TextField.tsx'

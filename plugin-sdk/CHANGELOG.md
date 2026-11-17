@@ -10,6 +10,12 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **`Stepper` in `hodi:sdk`.** The number picked with − and + of Server › Content, faster when clicked quickly or
+  held. With `editable`, the value in the middle can also be typed: a number within `min` and `max` counts at once,
+  one outside them is brought back inside when the field is left.
+
 ## [1.0.0-beta.4] - 2026-11-16
 
 Plugins can tell the server's admin of an event, add a table to the weekly report, and send e-mails in Hodi's template.

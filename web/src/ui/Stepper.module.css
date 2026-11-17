@@ -20,6 +20,21 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* A typed value: the text of the value; the pill shows the focus, as a text field's frame does. */
+.input {
+  min-width: 0;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.stepper:focus-within:has(.input:focus) {
+  border-color: var(--rust-border);
+}
+
 /* A long press repeats: no text selection, callout or double-tap zoom on the way. */
 .stepper button {
   touch-action: manipulation;
