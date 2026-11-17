@@ -165,14 +165,22 @@
   margin-top: 28px;
 }
 
-/* The buttons under the tiles: « Gérer les profils » and a plugin's beside it, wrapping on a narrow phone; nothing
-   takes room without one. */
+/* The buttons under the tiles: « Gérer les profils » and a plugin's beside it (« Changer de foyer »), all as wide as
+   the widest, one under the other on a phone; nothing takes room without one. */
 .actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   gap: 12px;
-  margin-top: 40px;
+  width: max-content;
+  max-width: 100%;
+  margin: 40px auto 0;
+}
+
+@media (max-width: 600px) {
+  .actions {
+    grid-auto-flow: row;
+  }
 }
 
 .actions:empty {
