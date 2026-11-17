@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.12] - 2026-11-17
+
+Every household sees its sources' icons again.
+
 ### Fixed
 
 - **Source avatars.** Every household sees its sources' icons, and a source added since the server started shows its
@@ -419,7 +423,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.11...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.12...HEAD
+[1.0.0-beta.12]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.11...v1.0.0-beta.12
 [1.0.0-beta.11]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.10...v1.0.0-beta.11
 [1.0.0-beta.10]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.9...v1.0.0-beta.10
 [1.0.0-beta.9]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.8...v1.0.0-beta.9
