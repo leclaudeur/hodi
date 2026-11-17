@@ -424,7 +424,11 @@ describe('plugin sandbox', () => {
   })
 
   it('lets only a few calls wait, and not for long', async () => {
-    const sandbox = slowPlugin()
+    // A long wait, so that only the queue's length decides here, however busy the machine; the short one is below.
+    const sandbox = slowPlugin({ maxWaitMs: 10_000 })
+    // Its thread started first, so that only the queue counts below.
+    assert.equal(await sandbox.call('routes', 'GET /x', 0), 'slept')
+    await new Promise(resolve => setImmediate(resolve))
     const calls = Array.from({ length: MAX_WAITING_CALLS + 4 }, () => sandbox.call('routes', 'GET /x', 50))
     const results = await Promise.allSettled(calls)
     const done = results.filter(result => result.status === 'fulfilled').length
@@ -534,9 +538,15 @@ describe('plugin sandbox', () => {
           },
           log: () => {},
           settings: () => ({})
-        }
+        },
+        // Only the lanes' order and length are checked here, however busy the machine.
+        maxWaitMs: 10_000
       }
     )
+    // Its thread started first, so that only the queue counts below.
+    assert.equal(await sandbox.call('routes', 'GET /x', 'start'), 'route')
+    await new Promise(resolve => setImmediate(resolve))
+    order.length = 0
     const first = sandbox.call('routes', 'GET /x', 'first')
     const hooks = Array.from({ length: MAX_WAITING_HOOKS + 2 }, () => sandbox.call('hook', 'onArticle', {}))
     const second = sandbox.call('routes', 'GET /x', 'second')
