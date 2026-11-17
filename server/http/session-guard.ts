@@ -47,6 +47,9 @@ const serverOnly = (request: express.Request, response: express.Response, accoun
     // « Validation en deux étapes », which /server needs first.
     request.path.startsWith('/account/two-factor') ||
     request.path.startsWith('/server/') ||
+    // The topics, sources and icons that Serveur › Vue d'ensemble shows: every one refused would add up, at each
+    // opening, to the burst of errors a proxy such as CrowdSec bans as probing.
+    (request.method === 'GET' && /^\/(topics|sources|sources\/[^/]+\/icon)$/.test(request.path)) ||
     request.path === '/plugins' ||
     request.path.startsWith('/plugins/')
   if (!open) {

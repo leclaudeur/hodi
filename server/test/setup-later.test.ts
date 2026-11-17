@@ -132,6 +132,11 @@ describe('a server whose household is left for later', () => {
     assert.equal(feed.status, 403)
     assert.equal(((await feed.json()) as { error: string }).error, 'no_household')
 
+    // Except the topics, sources and icons that Vue d'ensemble shows.
+    assert.equal((await call('/topics', signedIn)).status, 200)
+    assert.equal((await call('/sources', signedIn)).status, 200)
+    assert.equal((await call('/sources/monde/icon', signedIn)).status, 204)
+
     // Serveur › E-mail's test goes to the admin's own address, with no profile to find it through.
     const mail = { host: 'smtp.example.com', port: 465, security: 'tls', user: null, sender: 'hodi@example.com' }
     assert.equal((await call('/server/mail', signedIn, 'PUT', mail)).status, 200)

@@ -460,6 +460,10 @@ describe('app', () => {
     assert.equal(icon.status, 200)
     assert.equal(icon.headers.get('content-type'), 'image/png')
     assert.equal(icon.headers.get('cache-control'), 'private, max-age=604800')
+    // A known source whose site gives no icon answers without an error; an unknown one is not found.
+    const none = await get('/sources/yt-test/icon')
+    assert.equal(none.status, 204)
+    assert.equal(none.headers.get('cache-control'), 'private, max-age=86400')
     assert.equal((await get('/sources/nope/icon')).status, 404)
     assert.equal((await get(`/search?q=${'x'.repeat(101)}`)).status, 400)
 

@@ -8,6 +8,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Server admin banned by a proxy.** The server's admin outside any household no longer makes about ten refused
+  requests each time /server opens, which a proxy such as CrowdSec could ban as probing. A source whose site has no
+  icon no longer answers « not found » either.
+
 ## [1.0.0-beta.10] - 2026-11-17
 
 Signing in with Google from a new browser works again when the server has a public home page.

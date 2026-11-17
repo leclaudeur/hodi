@@ -79,7 +79,8 @@ type Session = Awaited<ReturnType<typeof getSession>>
 const openingSession = async () => {
   const session = await getSession()
   const signedIn = session !== null && session !== 'setup'
-  rememberSession(signedIn)
+  // The server's admin outside any household opens /server alone: preload.js's requests would all be refused.
+  rememberSession(signedIn && !session.serverOnly)
   const left = await leaveOnOpen(signedIn && session.profileChosen)
   return left ? getSession(true) : session
 }
