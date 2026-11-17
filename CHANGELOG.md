@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **« Qui lit ? ».** The buttons under the profiles are all as wide as the widest, and one under the other on a phone.
+
 ### Fixed
 
 - **Nobody banned by the server's proxy.** Using Hodi never makes a burst of refused requests any more, which a proxy
