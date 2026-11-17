@@ -10,15 +10,15 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [1.0.0-beta.11] - 2026-11-17
 
-Nobody gets banned by a server's proxy any more for using Hodi, and two small fixes on « Qui lit ? » and Suivis.
+Nobody gets banned by a server's proxy any more for using Hodi, and two small fixes on Who’s in? and Followed.
 
 ### Changed
 
-- **« Qui lit ? ».** The buttons under the profiles are all as wide as the widest, and one under the other on a phone.
+- **Who’s in?** The buttons under the profiles are all as wide as the widest, and one under the other on a phone.
 
 ### Fixed
 
-- **Suivis.** « Ajouter un sujet », when no topic is followed yet, opens Réglages › Sujets suivis instead of Réglages.
+- **Followed.** Add a subject, when no subject is followed yet, opens Settings › Followed instead of Settings.
 - **Nobody banned by the server's proxy.** Using Hodi never makes a burst of refused requests any more, which a proxy
   such as CrowdSec bans as probing. It happened when the app opened in a new tab on a profile that asks for its
   password, to the server's admin outside any household, to a teen outside its hours, and on a list of cards whose
