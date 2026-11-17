@@ -9,7 +9,7 @@ import { useFollowedItems } from '../lib/followed-items.ts'
 import { dayOfItem, loadDayLabel } from '../lib/format.ts'
 import { markFollowedSeen } from '../lib/notifications.ts'
 import { followedWordsOf, usePreferences } from '../lib/preferences.ts'
-import { FRONT_PAGE_HREF, SETTINGS_HREF } from '../lib/use-hash-route.ts'
+import { FRONT_PAGE_HREF, settingsHref } from '../lib/use-hash-route.ts'
 import Button from '../ui/Button.tsx'
 import EmptyState from '../ui/EmptyState.tsx'
 import FilterChip from '../ui/FilterChip.tsx'
@@ -100,7 +100,7 @@ const FollowedContent = ({ words, error, loading, empty, layout, children }: Con
       <EmptyState
         icon={<Activity size={28} />}
         title={t('followed.none')}
-        actions={<Button onClick={() => (window.location.hash = SETTINGS_HREF)}>{t('followed.add')}</Button>}
+        actions={<Button href={settingsHref('followed')}>{t('followed.add')}</Button>}
       >
         {t('followed.noneText')}
       </EmptyState>
