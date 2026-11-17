@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **« Qui lit ? ».** The buttons under the profiles are all as wide as the widest, and one under the other on a phone.
+
 ## [1.0.0-beta.10] - 2026-11-17
 
 Signing in with Google from a new browser works again when the server has a public home page.
