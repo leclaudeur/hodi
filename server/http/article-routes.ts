@@ -59,8 +59,9 @@ const mountImageRoutes = (
   // An article's picture at one of the widths of IMAGE_WIDTHS, by the article's id: never a URL from the client.
   const sendPicture = (response: express.Response, file: string | null) => {
     if (!file) {
-      // The card or the reader falls back to the site's own picture.
-      response.set('Cache-Control', 'private, max-age=3600').status(404).json({ error: 'not_found' })
+      // The card or the reader falls back to the site's own picture. Not an error: a list of cards without one would
+      // add up to a burst of 404s, which a proxy such as CrowdSec bans as probing.
+      response.set('Cache-Control', 'private, max-age=3600').status(204).end()
       return
     }
     // The same id and width always give the same picture.

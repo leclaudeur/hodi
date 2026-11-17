@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Readers banned by a proxy.** An article whose picture Hodi could not make smaller no longer answers « not found »:
+  a list of such cards could look like probing to a proxy such as CrowdSec, which then banned the reader's address.
+
 ## [1.0.0-beta.10] - 2026-11-17
 
 Signing in with Google from a new browser works again when the server has a public home page.

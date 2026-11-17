@@ -573,8 +573,8 @@ listen:
     // Nor does its picture: the API never hands it what it may not open.
     assert.equal((await call('GET', `/images/${rtl}/240`, zoe.id)).status, 200)
     assert.equal((await call('GET', `/images/${lemonde}/240`, 1)).status, 200)
-    assert.equal((await call('GET', `/images/${lemonde}/240`, zoe.id)).status, 404)
-    assert.equal((await call('GET', `/images/${lemonde}/1/240`, zoe.id)).status, 404)
+    assert.equal((await call('GET', `/images/${lemonde}/240`, zoe.id)).status, 204)
+    assert.equal((await call('GET', `/images/${lemonde}/1/240`, zoe.id)).status, 204)
     assert.equal((await call('POST', '/me/shares', 1, { articleId: lemonde, to: [zoe.id] })).status, 200)
     assert.equal((await call('GET', `/articles/${lemonde}`, zoe.id)).status, 200)
     assert.equal((await call('GET', `/images/${lemonde}/240`, zoe.id)).status, 200)

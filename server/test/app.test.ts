@@ -514,9 +514,10 @@ describe('app', () => {
       '/images/PICTUREPICTURE00/-2/480',
       '/images/PICTUREPICTURE00/2000/480'
     ]) {
+      // An empty answer, not an error: the card falls back to the site's picture.
       const response = await fetch(`${baseUrl}/api${route}`, { headers: { cookie } })
-      assert.equal(response.status, 404)
-      await response.arrayBuffer()
+      assert.equal(response.status, 204)
+      assert.equal((await response.arrayBuffer()).byteLength, 0)
     }
   })
 
