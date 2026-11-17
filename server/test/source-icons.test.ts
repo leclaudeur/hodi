@@ -30,7 +30,7 @@ const home = `<html><head>
 const icons = (responses: Record<string, FakeResponse>, store?: NewsStore, now = NOW) => {
   const fake = fakeFetch(responses)
   return {
-    icons: new SourceIcons(catalog, { ...fake, store, now: () => now, log: () => {} }),
+    icons: new SourceIcons(() => catalog, { ...fake, store, now: () => now, log: () => {} }),
     calls: fake.calls
   }
 }
@@ -73,6 +73,18 @@ describe('SourceIcons', () => {
     assert.equal(await none.icons.get('nope'), undefined)
   })
 
+  it('knows the sources of the household being served, read at each request', async () => {
+    const empty = parseCatalog('topics: []\n')
+    let current = empty
+    const fake = fakeFetch({ 'https://alpha.example/': '<html></html>', 'https://alpha.example/favicon.ico': PNG })
+    const served = new SourceIcons(() => current, { ...fake, now: () => NOW, log: () => {} })
+    assert.equal(await served.get('alpha'), undefined)
+
+    // A source added since Hodi started, or another household's, is found without a restart.
+    current = catalog
+    assert.equal((await served.get('alpha'))?.contentType, 'image/png')
+  })
+
   it('keeps the icon it has when the site is down', async () => {
     const store = new NewsStore(openDatabase(':memory:'))
     await icons({ 'https://alpha.example/': home, 'https://cdn.alpha.example/touch.png': PNG }, store).icons.get(
@@ -97,7 +109,7 @@ describe('SourceIcons site names', () => {
   it('hands over the name the home page gives the site while looking for the icon', async () => {
     const fake = fakeFetch({ 'https://alpha.example/': named, 'https://cdn.alpha.example/touch.png': PNG })
     const { found, siteName } = watch()
-    const icons = new SourceIcons(catalog, { ...fake, siteName, now: () => NOW, log: () => {} })
+    const icons = new SourceIcons(() => catalog, { ...fake, siteName, now: () => NOW, log: () => {} })
     await icons.get('alpha')
     await icons.get('alpha')
     assert.deepEqual(found, [['alpha', 'Alpha Mag']])
@@ -111,7 +123,7 @@ describe('SourceIcons site names', () => {
 
     const fake = fakeFetch({ 'https://alpha.example/': named })
     const { found, siteName } = watch()
-    const later = new SourceIcons(catalog, { ...fake, store, siteName, now: () => NOW + DAY, log: () => {} })
+    const later = new SourceIcons(() => catalog, { ...fake, store, siteName, now: () => NOW + DAY, log: () => {} })
     assert.equal((await later.get('alpha'))?.contentType, 'image/png')
     await new Promise(resolve => setImmediate(resolve))
     await later.get('alpha')

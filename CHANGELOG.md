@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Source avatars.** Every household sees its sources' icons, and a source added since the server started shows its
+  own too. Until now only the sources of the server's first household had one, and each other avatar was refused.
+
 ## [1.0.0-beta.11] - 2026-11-17
 
 Nobody gets banned by a server's proxy any more for using Hodi, and two small fixes on « Qui lit ? » and Suivis.

@@ -4,8 +4,11 @@ import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
 import { migrate, versionBefore } from '../db/migrations.ts'
 import { inHousehold } from '../db/household-scope.ts'
+import { NewsStore } from '../db/news-store.ts'
 import { SourceStore, createPauseCheck } from '../db/source-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
+import { createIcons } from '../start/news.ts'
+import { PNG, fakeFetch } from './helpers/news.ts'
 
 const NOW = Date.UTC(2026, 9, 25, 12)
 
@@ -192,6 +195,28 @@ describe('source store', () => {
 
     store.load(file(), NOW + 1, 'fr')
     assert.deepEqual(addedBy(db), { alpha: null, chaine: 1 })
+  })
+
+  it('serves the icon of a source added since the start, and of another household’s own source', async () => {
+    const db = openDatabase(':memory:')
+    const store = new SourceStore(db)
+    store.load(file(), NOW, 'fr')
+    const outside = fakeFetch({
+      'https://delta.example/': '<html></html>',
+      'https://delta.example/favicon.ico': PNG
+    })
+    const icons = createIcons({ file: file(BETA), outside, store: new NewsStore(db), sources: store })
+
+    store.add({ ...file().topics[1]!.sources[0]!, addedBy: 1 }, 'topic', ['tech'], NOW)
+    assert.equal((await icons.get('delta'))?.contentType, 'image/png')
+
+    db.prepare("INSERT INTO accounts (id, name, created_at) VALUES (2, 'Martin', ?)").run(NOW)
+    inHousehold(2, () => store.load(file(), NOW, 'fr'))
+    inHousehold(2, () => store.add({ ...file(BETA).topics[0]!.sources[1]!, addedBy: 1 }, 'topic', ['world'], NOW))
+    // Beta has no site to take an icon from: known, so no icon rather than not found.
+    assert.equal(await inHousehold(2, () => icons.get('beta')), null)
+    // Each household reaches only the icons of the sources it follows.
+    assert.equal(await icons.get('beta'), undefined)
   })
 
   it('lists a source in each of its topics, the first one first', () => {

@@ -128,7 +128,7 @@ listen:
     },
     users: profileId => new UserStore(db, profileId),
     game: new GameStore(db, parseRules(readFileSync('gamification.yml', 'utf8')), () => 'Europe/Brussels'),
-    icons: new SourceIcons(catalog, { fetchText, fetchBytes, now: () => clock, log: () => {} }),
+    icons: new SourceIcons(() => catalog, { fetchText, fetchBytes, now: () => clock, log: () => {} }),
     images: {
       file: async (id, width) => (id === 'PICTUREPICTURE00' && width === 240 ? picture : null),
       inlineFile: async (id, index, width) =>

@@ -94,7 +94,9 @@ export const declaredIcons = (html: string, pageUrl: string): string[] =>
     .map(icon => icon.url)
 
 export class SourceIcons {
-  readonly #catalog: Catalog
+  // The catalogue of the household being served, read at each request: a source added since Hodi started, or
+  // followed only by another household, is known too.
+  readonly #catalog: () => Catalog
   readonly #fetchText: FetchText
   readonly #fetchBytes: FetchBytes
   readonly #store: IconStore | undefined
@@ -107,7 +109,7 @@ export class SourceIcons {
   readonly #named = new Set<string>()
 
   constructor(
-    catalog: Catalog,
+    catalog: () => Catalog,
     { fetchText, fetchBytes, store, now = Date.now, log = console.warn, siteName }: SourceIconsOptions
   ) {
     this.#siteName = siteName
@@ -121,7 +123,7 @@ export class SourceIcons {
 
   // undefined: no such source. null: its site has no icon.
   async get(sourceId: string): Promise<Icon | null | undefined> {
-    const source = allSources(this.#catalog).find(candidate => candidate.id === sourceId)
+    const source = allSources(this.#catalog()).find(candidate => candidate.id === sourceId)
     if (!source) return undefined
 
     const known = this.#memory.get(sourceId) ?? this.#store?.getIcon(sourceId) ?? null

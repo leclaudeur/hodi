@@ -105,12 +105,12 @@ export const createNews = (wiring: NewsWiring) => {
 
 // Source avatars. A site added from a link whose feed gave no name ("voici.fr") takes the one its home page gives.
 export const createIcons = ({
-  catalog,
+  file,
   outside,
   store,
   sources
-}: Pick<NewsWiring, 'catalog' | 'outside' | 'store' | 'sources'>) =>
-  new SourceIcons(catalog, {
+}: Pick<NewsWiring, 'file' | 'outside' | 'store' | 'sources'>) =>
+  new SourceIcons(() => sources.catalog(file), {
     fetchText: outside.fetchText,
     fetchBytes: outside.fetchBytes,
     store,
