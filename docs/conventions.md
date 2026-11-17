@@ -32,6 +32,10 @@ complexity stays under **15**, without counting blank lines and comments. The on
 - **Routes**: every route lives in a `server/http/*-routes.ts`, and `server/app.ts` only puts them together
 - **Input**: every request body and outside payload goes through a `zod` schema where it enters
 - **API calls**: through `web/src/api.ts`, never a `fetch` in a component (plugins' `sdk.ts` apart)
+- **Refusals**: a public server's proxy (CrowdSec) bans an address after about ten 400, 403 or 404 on different paths,
+  so using the app never answers one of those. A missing picture or icon answers 204, and a state of the device
+  (profile closed, outside a teen's hours, no household) answers 423. `e2e/probing.ts` fails any journey that gets a
+  GET refused or comes near a ban
 - **Shared code**: what both the server and the web app need lives in `shared/`
 - **Imports**: Node, packages, the project, then CSS, with no cycle (_planned_)
 - **Exports**: `export default` for a `.tsx` file's component, named exports elsewhere (_planned_)
