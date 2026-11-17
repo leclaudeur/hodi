@@ -8,9 +8,15 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.10] - 2026-11-17
+
+Signing in with Google from a new browser works again when the server has a public home page.
+
 ### Fixed
 
-- Signing in with Google from a new browser no longer lands on the public site (Serveur › Général › Page d'accueil publique): Google's return to the app's address now opens Connexion.
+- **Google sign-in.** Signing in with Google from a browser that never signed in here no longer lands on the public
+  site (Server › General › Public home page): Google's return to the app's address now opens Connexion and finishes
+  the sign-in.
 
 ## [1.0.0-beta.9] - 2026-11-16
 
@@ -392,7 +398,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.9...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.10...HEAD
+[1.0.0-beta.10]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.9...v1.0.0-beta.10
 [1.0.0-beta.9]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.8...v1.0.0-beta.9
 [1.0.0-beta.8]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.7...v1.0.0-beta.8
 [1.0.0-beta.7]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.6...v1.0.0-beta.7
