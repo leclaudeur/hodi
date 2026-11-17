@@ -2,7 +2,7 @@ import { AlertCircle, RefreshCw } from 'lucide-react'
 import { type ComponentProps, Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PROFILE_CLOSED, getSession, leaveProfile } from './api.ts'
-import { rememberSession } from './lib/session-hint.ts'
+import { rememberProfileOpen, rememberSession } from './lib/session-hint.ts'
 import { isLinkedDevice, setLinkedDevice } from './lib/linked-device.ts'
 import { setServerOnly } from './lib/server-only.ts'
 import { setHouseholdLanguage, setProfileLanguage } from './lib/i18n.ts'
@@ -79,7 +79,8 @@ type Session = Awaited<ReturnType<typeof getSession>>
 const openingSession = async () => {
   const session = await getSession()
   const signedIn = session !== null && session !== 'setup'
-  rememberSession(signedIn)
+  // The server's admin outside any household opens /server alone: preload.js's requests would all be refused.
+  rememberSession(signedIn && !session.serverOnly)
   const left = await leaveOnOpen(signedIn && session.profileChosen)
   return left ? getSession(true) : session
 }
@@ -250,6 +251,11 @@ const App = () => {
   useEffect(() => {
     setProfileLanguage(status === 'authenticated' ? language : null)
   }, [status, language])
+
+  // For preload.js on the next load of this tab: whether a profile is open here.
+  useEffect(() => {
+    if (status !== 'loading') rememberProfileOpen(status === 'authenticated')
+  }, [status])
 
   // A young profile reads within its parents' time and hours.
   useEffect(() => {

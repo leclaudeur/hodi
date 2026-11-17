@@ -1,5 +1,6 @@
 import { type Browser, type BrowserContext, type Page, expect, test } from '@playwright/test'
 import { Secret, TOTP } from 'otpauth'
+import { MAX_PROBING, probingWatch } from './probing.ts'
 
 // What Hodi cannot do without, on a fresh install, one journey after the other: set it up, read, save, search, add
 // profiles and sources, sign in on other devices, share between profiles, and keep a teen to what its parents chose.
@@ -35,8 +36,20 @@ let page: Page
 let sam: Page
 let teen: Page
 
-test.beforeAll(async ({ browser }) => {
+// A proxy such as CrowdSec bans an address that gets many refusals on different paths: no journey may come near it.
+const probing = probingWatch()
+
+test.beforeAll(async ({ browser, baseURL }) => {
+  probing.attach(browser, baseURL ?? '')
   page = await browser.newPage()
+})
+
+// Using the app is never refused: a GET answers, or 401 once signed out, never 400, 403 or 404. A refused click
+// (a wrong password) is a single path, which the bucket holds well under a ban.
+test.afterEach(() => {
+  const { refusals, peak } = probing.take()
+  expect(refusals.filter(refusal => refusal.method === 'GET')).toEqual([])
+  expect(peak, JSON.stringify(refusals)).toBeLessThanOrEqual(MAX_PROBING)
 })
 
 test.afterAll(async () => {
@@ -129,6 +142,21 @@ test('sets up the household in the browser', async () => {
   // Le fil, with the sites' articles of the day.
   await expect(page.getByText('Pluie record sur Bruxelles').first()).toBeVisible()
   await expect(page.getByText('La bourse de Paris recule').first()).toBeVisible()
+})
+
+// Before any young profile, Alex's is the only one and asks for its password: a device where it is closed reads as
+// nobody, and any request for its data is refused. Opening the app must not ask for any.
+test('opens the app again in a new tab without a refused request', async ({ browser }) => {
+  const context = await browser.newContext()
+  const first = await signIn(context, 'Alex')
+  await first.close()
+  for (let opening = 0; opening < 2; opening++) {
+    const tab = await context.newPage()
+    await tab.goto('/')
+    await expect(tab.getByRole('heading', { name: 'Qui lit ?' })).toBeVisible()
+    await tab.close()
+  }
+  await context.close()
 })
 
 test('opens an article in the reader', async () => {
@@ -358,6 +386,11 @@ test('opens a second tab on the same profile, and « Qui lit ? » again once eve
   const again = await context.newPage()
   await again.goto('/')
   await expect(again.getByRole('heading', { name: 'Qui lit ?' })).toBeVisible()
+  // Opened again with the profile closed: nothing asks for its data, which a closed profile refuses.
+  await again.close()
+  const third = await context.newPage()
+  await third.goto('/')
+  await expect(third.getByRole('heading', { name: 'Qui lit ?' })).toBeVisible()
   await context.close()
 })
 

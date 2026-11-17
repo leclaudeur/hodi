@@ -251,9 +251,9 @@ describe('youth api', () => {
     assert.equal(limits.opensAt, Date.UTC(2026, 9, 31, 7))
 
     const feed = await call('GET', `/feed?tz=${encodeURIComponent(ZONE)}`, zoe.id)
-    assert.equal(feed.status, 403)
+    assert.equal(feed.status, 423)
     assert.equal(((await feed.json()) as { error: string }).error, 'time_up')
-    assert.equal((await call('GET', '/topics', zoe.id)).status, 403)
+    assert.equal((await call('GET', '/topics', zoe.id)).status, 423)
     // Its profile and "Qui lit ?" still answer; an adult reads on.
     assert.equal((await call('GET', '/profiles', zoe.id)).status, 200)
     assert.equal((await call('GET', '/topics', sam.id)).status, 200)
@@ -275,7 +275,7 @@ describe('youth api', () => {
     }
     const limits = (await (await call('GET', '/me/limits', leo.id)).json()) as { access: string }
     assert.equal(limits.access, 'time_up')
-    assert.equal((await call('GET', '/topics', leo.id)).status, 403)
+    assert.equal((await call('GET', '/topics', leo.id)).status, 423)
   })
 
   it('keeps Résumer, the questions and Résumé du jour for the adults', async () => {
@@ -573,8 +573,8 @@ listen:
     // Nor does its picture: the API never hands it what it may not open.
     assert.equal((await call('GET', `/images/${rtl}/240`, zoe.id)).status, 200)
     assert.equal((await call('GET', `/images/${lemonde}/240`, 1)).status, 200)
-    assert.equal((await call('GET', `/images/${lemonde}/240`, zoe.id)).status, 404)
-    assert.equal((await call('GET', `/images/${lemonde}/1/240`, zoe.id)).status, 404)
+    assert.equal((await call('GET', `/images/${lemonde}/240`, zoe.id)).status, 204)
+    assert.equal((await call('GET', `/images/${lemonde}/1/240`, zoe.id)).status, 204)
     assert.equal((await call('POST', '/me/shares', 1, { articleId: lemonde, to: [zoe.id] })).status, 200)
     assert.equal((await call('GET', `/articles/${lemonde}`, zoe.id)).status, 200)
     assert.equal((await call('GET', `/images/${lemonde}/240`, zoe.id)).status, 200)

@@ -47,10 +47,14 @@ const serverOnly = (request: express.Request, response: express.Response, accoun
     // « Validation en deux étapes », which /server needs first.
     request.path.startsWith('/account/two-factor') ||
     request.path.startsWith('/server/') ||
+    // The topics, sources and icons that Serveur › Vue d'ensemble shows: every one refused would add up, at each
+    // opening, to the burst of errors a proxy such as CrowdSec bans as probing.
+    (request.method === 'GET' && /^\/(topics|sources|sources\/[^/]+\/icon)$/.test(request.path)) ||
     request.path === '/plugins' ||
     request.path.startsWith('/plugins/')
   if (!open) {
-    response.status(403).json({ error: 'no_household' })
+    // 423, not 403: the device's state, which a proxy such as CrowdSec would otherwise count as probing.
+    response.status(423).json({ error: 'no_household' })
     return false
   }
   response.locals.accountId = account.id
@@ -231,7 +235,9 @@ const chooseProfileOf = (options: SessionGuardOptions): RequestHandler => {
     response.locals.profileChosen = chosen !== undefined
     // Nothing but "Qui lit ?" answers: the list, the photos and the choice of a profile with its code.
     if (locked && !isQuiLit(request)) {
-      response.status(403).json({ error: 'profile_locked' })
+      // 423, not 403: every request of the app at once would otherwise be a burst of 403s, which a proxy such as
+      // CrowdSec bans as probing.
+      response.status(423).json({ error: 'profile_locked' })
       return
     }
     // A profile opened here: it counts in the server's visits of the day and as online, as numbers only.

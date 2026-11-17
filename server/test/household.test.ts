@@ -328,7 +328,9 @@ describe('household', () => {
     const member = profiles.create('Léa', 'world', 0)!
     const chosen = await post(`/profiles/current`, { id: member.id }, { cookie }, 'PUT')
     const asMember = `${cookie}; ${cookiesFrom(chosen)}`
-    assert.equal((await fetch(`${baseUrl}/api/household`, { headers: { cookie: asMember } })).status, 403)
+    // Léa, an adult without an account, stays closed: the device reads as nobody and gets nothing of the household's.
+    const refused = await fetch(`${baseUrl}/api/household`, { headers: { cookie: asMember } })
+    assert.deepEqual([refused.status, await refused.json()], [423, { error: 'profile_locked' }])
   })
 })
 

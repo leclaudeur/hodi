@@ -62,6 +62,8 @@ export const useProfiles = ({
 }: { fresh?: boolean; onError?: (error: unknown) => void } = {}) => {
   const value = useSyncExternalStore(subscribe, () => state)
   useEffect(() => {
+    // No household to list: asking would only be refused.
+    if (isServerOnly()) return
     if (!state || fresh) refreshProfiles().catch((error: unknown) => onError?.(error))
     // eslint-disable-next-line react-hooks/exhaustive-deps -- loaded once for the app: later changes come through this module
   }, [])

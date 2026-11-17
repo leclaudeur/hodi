@@ -129,8 +129,13 @@ describe('a server whose household is left for later', () => {
 
     // Nothing of the app: there is no household to read in.
     const feed = await call('/profiles', signedIn)
-    assert.equal(feed.status, 403)
+    assert.equal(feed.status, 423)
     assert.equal(((await feed.json()) as { error: string }).error, 'no_household')
+
+    // Except the topics, sources and icons that Vue d'ensemble shows.
+    assert.equal((await call('/topics', signedIn)).status, 200)
+    assert.equal((await call('/sources', signedIn)).status, 200)
+    assert.equal((await call('/sources/monde/icon', signedIn)).status, 204)
 
     // Serveur › E-mail's test goes to the admin's own address, with no profile to find it through.
     const mail = { host: 'smtp.example.com', port: 465, security: 'tls', user: null, sender: 'hodi@example.com' }
@@ -201,7 +206,7 @@ describe('a household made for someone else', () => {
     // The server's admin has no profile in it: still /server alone.
     const current = (await (await call('/session', session)).json()) as { serverOnly?: boolean }
     assert.equal(current.serverOnly, true)
-    assert.equal((await call('/profiles', session)).status, 403)
+    assert.equal((await call('/profiles', session)).status, 423)
     const people = (await (await call('/server/households', session)).json()) as {
       households: { name: string }[]
       canCreate: boolean

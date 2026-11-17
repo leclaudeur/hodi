@@ -68,8 +68,9 @@ export const sourceViewRoutes = ({
       return
     }
 
+    // A known source without an icon is not an error: a 404 per avatar would read as probing to a proxy like CrowdSec.
     if (icon === null) {
-      response.set('Cache-Control', 'private, max-age=86400').status(404).json({ error: 'not_found' })
+      response.set('Cache-Control', 'private, max-age=86400').status(204).end()
       return
     }
 

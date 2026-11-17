@@ -7,7 +7,7 @@ export class UnauthorizedError extends Error {}
 // Sent on window when the server answers that this device's profile is closed: the app goes back to « Qui lit ? ».
 export const PROFILE_CLOSED = 'hodi:profile-closed'
 const noteProfileClosed = async (response: Response) => {
-  if (response.status !== 403) return
+  if (response.status !== 423) return
   const body = (await response
     .clone()
     .json()

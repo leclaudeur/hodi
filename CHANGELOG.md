@@ -8,6 +8,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Nobody banned by the server's proxy.** Using Hodi never makes a burst of refused requests any more, which a proxy
+  such as CrowdSec bans as probing. It happened when the app opened in a new tab on a profile that asks for its
+  password, to the server's admin outside any household, to a teen outside its hours, and on a list of cards whose
+  pictures Hodi had not made smaller or a page of sources without an icon.
+
 ## [1.0.0-beta.10] - 2026-11-17
 
 Signing in with Google from a new browser works again when the server has a public home page.

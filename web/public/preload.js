@@ -18,8 +18,13 @@ try {
   // Storage blocked: the app asks itself, as before.
 }
 
+// The profile's own data only when this tab had one open (src/lib/session-hint.ts): a new tab starts on « Qui lit ? »,
+// where a profile that asks for its password would refuse each request, and a burst of refusals reads as probing to a
+// proxy such as CrowdSec, which bans the address.
 function preloadSignedIn(urls) {
-  urls.push('/api/me/limits', '/api/profiles', '/api/game', '/api/topics')
+  urls.push('/api/profiles')
+  if (sessionStorage.getItem('hodi:profile-open') !== '1') return
+  urls.push('/api/me/limits', '/api/game', '/api/topics')
   var state = JSON.parse(localStorage.getItem('hodi:user-state') || 'null')
   urls.push('/api/me?since=' + ((state && state.revision) || 0))
   // The home page, and the pages shown over it (a story, the daily summary): the day's articles, "À la une" and the

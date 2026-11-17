@@ -85,7 +85,9 @@ export const youthGate =
     }
     const limits = youth.limits(profileIdOf(response), now())
     if (limits.access !== 'open') {
-      response.status(403).json({ error: 'time_up', access: limits.access, opensAt: limits.opensAt })
+      // 423, not 403: a state of the profile, not a refusal. Each list asked at once would otherwise add to the burst of
+      // 403s a proxy such as CrowdSec bans as probing.
+      response.status(423).json({ error: 'time_up', access: limits.access, opensAt: limits.opensAt })
       return
     }
     // Opening a list or an article counts as time on screen too, as the app's heartbeat does: a device that stops

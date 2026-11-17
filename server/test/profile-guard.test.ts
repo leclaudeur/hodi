@@ -103,6 +103,12 @@ describe('opening a profile with its account’s password', () => {
     assert.deepEqual(await lockedIds(anthoDevice), [1, sophieId, noAccountId])
     assert.deepEqual(await lockedIds(sophieDevice), [1, sophieId, noAccountId])
 
+    // Until one opens, the app's requests answer 423, not 403: a proxy such as CrowdSec bans a burst of 403s.
+    for (const route of ['/feed?tz=UTC', '/topics', '/me/limits', '/game']) {
+      const closedHere = await call('GET', route, anthoDevice)
+      assert.deepEqual([closedHere.status, await closedHere.json()], [423, { error: 'profile_locked' }])
+    }
+
     // His own profile too, on his own device.
     const refused = await call('PUT', '/profiles/current', anthoDevice, { id: 1 })
     assert.equal(refused.status, 403)
