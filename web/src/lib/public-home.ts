@@ -1,6 +1,7 @@
 // Serveur › Général's public site: a browser that never had a session here, opening the app's bare address, goes
 // there. Once it signed in, it stays on Connexion for good, even signed out; any other address (#/sign-in, a code's or
-// a reset's link) opens Hodi's own page, and so does the app added to a home screen, which has its own storage.
+// a reset's link, a sign-in service coming back with ?code=…) opens Hodi's own page, and so does the app added to a
+// home screen, which has its own storage.
 const KEY = 'hodi:signed-in-before'
 
 export const rememberSignedIn = () => {
@@ -24,9 +25,11 @@ const installed = () =>
   window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay)').matches ||
   (navigator as Navigator & { standalone?: boolean }).standalone === true
 
+const bareAddress = (hash: string, search: string) => search === '' && (hash === '' || hash === '#' || hash === '#/')
+
 export const publicHomeFor = (
   home: string | null | undefined,
-  hash: string,
+  { hash, search }: { hash: string; search: string },
   before = signedInBefore(),
   app = installed()
-) => (home && !before && !app && (hash === '' || hash === '#' || hash === '#/') ? home : null)
+) => (home && !before && !app && bareAddress(hash, search) ? home : null)

@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- Signing in with Google from a new browser no longer lands on the public site (Serveur › Général › Page d'accueil publique): Google's return to the app's address now opens Connexion.
+
 ## [1.0.0-beta.9] - 2026-11-16
 
 A hidden topic leaves the feed too, and the reader's back button returns to the list in one step on a phone.

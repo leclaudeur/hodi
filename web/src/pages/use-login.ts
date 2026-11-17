@@ -28,7 +28,7 @@ export const useSignInPage = () => {
   useEffect(() => {
     getSetup()
       .then(state => {
-        const home = state.needed ? null : publicHomeFor(state.publicHome, window.location.hash)
+        const home = state.needed ? null : publicHomeFor(state.publicHome, window.location)
         // Not ready: the site opens in its place, without Connexion showing first.
         if (home) return window.location.replace(home)
         setReady(true)
