@@ -422,7 +422,7 @@ describe('joining the household with a code', () => {
     assert.equal(profiles.list().length, 3)
   })
 
-  it('gives an adult who forgot their password a new one, with a code from the admin only', async () => {
+  it('gives an adult who forgot their password a new one, with a code from the server admin only', async () => {
     const sophie = profiles.list().find(profile => profile.name === 'Sophie')!
     const asSam = cookiesFrom(await login({ email: 'sam@example.com', password: PASSWORD }))
     assert.equal((await makeCode(asSam, { profileId: sophie.id })).status, 403)
@@ -430,13 +430,14 @@ describe('joining the household with a code', () => {
     assert.equal((await makeCode(admin, { profileId: profiles.list()[0]!.id })).status, 400)
     const before = cookiesFrom(await login({ email: 'sophie@example.com', password: PASSWORD }))
 
-    // The code opens Sophie's account: it takes the admin's own password, which a device left open does not know.
-    const unproven = await makeCode(admin, { profileId: sophie.id })
-    assert.equal(unproven.status, 403)
-    assert.deepEqual(await unproven.json(), { error: 'invalid_password' })
-    const made = await makeCode(admin, { profileId: sophie.id, password: PASSWORD })
-    assert.equal(made.status, 201)
-    const { code } = (await made.json()) as { code: string }
+    // Her password is hers: the household's admin never makes the code, even with their own password.
+    const refused = await makeCode(admin, { profileId: sophie.id, password: PASSWORD })
+    assert.deepEqual([refused.status, await refused.json()], [403, { error: 'own_password' }])
+    // As Serveur › Comptes makes it.
+    const { code } = new SignInCodeStore(install.db, Buffer.alloc(32, 2)).create(
+      { profileId: sophie.id, createdBy: profiles.list()[0]!.id, reset: true },
+      clock
+    )
     const checked = (await (await post('/codes/check', { code })).json()) as { kind: string; profile: { name: string } }
     assert.equal(checked.kind, 'reset')
     assert.equal(checked.profile.name, 'Sophie')

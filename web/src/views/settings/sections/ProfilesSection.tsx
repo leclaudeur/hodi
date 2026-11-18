@@ -110,7 +110,7 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const withAccounts = own?.hasAccount === true
   const mayEdit = (profile: Profile) => admin || profile.id === current || (parent && isYoung(profile))
   const edited = typeof editing === 'number' ? profiles.find(profile => profile.id === editing) : undefined
-  const confirms = profileConfirms({ t, onEditing: setEditing, onGiving: setGiving })
+  const confirms = profileConfirms({ t, onEditing: setEditing })
   const editActions = editActionsOf(edited, { admin, current, withAccounts, confirms, onGiving: setGiving })
 
   return (

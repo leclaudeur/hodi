@@ -1,4 +1,3 @@
-import { codeRequestKey } from '../notices/code-request.ts'
 import type express from 'express'
 import { currentHouseholdId } from '../db/household-scope.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
@@ -122,9 +121,7 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
         codes,
         profiles,
         accounts,
-        now,
-        checkProof: wiring.checkProof,
-        onResetCode: id => wiring.options.serverInbox?.store.handle(codeRequestKey(id), now())
+        now
       })
     )
   fillHouseholdHooks(wiring)

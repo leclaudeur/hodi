@@ -214,7 +214,9 @@ test('invites an adult, who joins with the code and makes their own account', as
   await device.close()
 })
 
-test('gives Sam, who forgot their password, a new one with a code from the admin', async ({ browser }) => {
+test('gives Sam, who forgot their password, a new one with a code from the server’s admin only', async ({
+  browser
+}) => {
   // Sam's device from before: the new password signs it out.
   const before = await browser.newPage()
   await before.goto('/')
@@ -234,13 +236,21 @@ test('gives Sam, who forgot their password, a new one with a code from the admin
   const waiting = page.getByRole('main').locator('h2:text-is("À traiter") + ul')
   await expect(waiting.getByText('Sam demande un code')).toBeVisible()
 
-  // Sam joined from another device: the list as it is now.
+  // Sam's password is Sam's: the household's admin has no way to give a new one in Profils.
   await page.goto('/#/settings/profiles')
   await page.reload()
   await page.getByRole('button', { name: 'Modifier Sam' }).click()
-  // The code opens Sam's account: the admin's own password first, and a wrong one stays in the question.
+  const edit = page.getByRole('dialog', { name: 'Modifier le profil' })
+  await expect(edit.getByRole('button', { name: 'Passer le rôle d’admin' })).toBeVisible()
+  await expect(edit.getByRole('button', { name: 'Nouveau mot de passe' })).toHaveCount(0)
+  await page.keyboard.press('Escape')
+
+  // The server's admin opens the request, then makes the code: their own password first, and a wrong one stays in
+  // the question.
+  await page.goto('/#/server/inbox')
+  await waiting.getByRole('link', { name: 'Voir' }).click()
   const askPassword = async (typed: string) => {
-    await page.getByRole('button', { name: 'Nouveau mot de passe' }).click()
+    await page.getByRole('main').getByRole('button', { name: 'Faire un code' }).first().click()
     const question = page.getByRole('dialog', { name: /^Nouveau mot de passe\s\?$/ })
     await question.getByLabel('Mon mot de passe').fill(typed)
     // The password is checked first: a wrong one never reaches the code.
@@ -255,14 +265,8 @@ test('gives Sam, who forgot their password, a new one with a code from the admin
   await wrong.getByRole('button', { name: 'Créer le code' }).click()
   const reset = page.getByRole('dialog', { name: 'Nouveau mot de passe', exact: true })
   await expect(reset.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
-  const first = await reset.getByRole('textbox', { name: 'Code' }).inputValue()
-  expect(first).toMatch(/^[A-HJKMNP-Z2-9]{8}$/)
-  // The same card, over the profile's: Retour goes back to it, Terminé closes both.
-  await reset.getByRole('button', { name: 'Retour' }).click()
-  await expect(page.getByRole('dialog', { name: 'Modifier le profil' })).toBeVisible()
-  await askPassword(PASSWORD)
-  await expect(reset.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
   const code = await reset.getByRole('textbox', { name: 'Code' }).inputValue()
+  expect(code).toMatch(/^[A-HJKMNP-Z2-9]{8}$/)
   await reset.getByRole('button', { name: 'Terminé' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 

@@ -52,7 +52,7 @@
       "intro": "Les 8 caractères qu’un adulte du foyer t’a donnés, ou le lien qui va avec.",
       "label": "Code",
       "helpTitle": "D’où vient ce code ?",
-      "help": "Un adulte du foyer le crée dans Réglages › Profils, avec « Inviter un adulte », « Connecter un appareil » ou « Nouveau mot de passe ». Il sert une seule fois, pendant 24 h.",
+      "help": "Un adulte du foyer le crée dans Réglages › Profils, avec « Inviter un adulte » ou « Connecter un appareil ». Pour un mot de passe oublié, c’est l’admin du serveur qui le donne. Il sert une seule fois, pendant 24 h.",
       "wrong": "Ce code ne marche pas : il a peut-être déjà servi, ou ses 24 h sont passées. Demandes-en un nouveau."
     },
     "invite": {
@@ -192,9 +192,6 @@
     "noAccount": "Sans compte",
     "noAccountHint": "Un code, sur son appareil",
     "connect": "Connecter un appareil",
-    "forgotPassword": "Mot de passe oublié",
-    "forgotPasswordHint": "Un code, pour en choisir un nouveau",
-    "newPassword": "Nouveau mot de passe",
     "inviteHint": "Un adulte crée son propre compte : tu lui donnes un code d’invitation, à taper dans « J’ai un code ».",
     "invite": "Inviter",
     "makeAdmin": "Admin du foyer",

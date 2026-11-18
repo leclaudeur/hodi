@@ -52,7 +52,7 @@
       "intro": "The 8 characters an adult of the household gave you, or the link that came with them.",
       "label": "Code",
       "helpTitle": "Where does this code come from?",
-      "help": "An adult of the household makes it in Settings › Profiles, with “Invite an adult” or “Connect a device”. It works once, for 24 hours.",
+      "help": "An adult of the household makes it in Settings › Profiles, with “Invite an adult” or “Connect a device”. For a forgotten password, the server’s admin gives it. It works once, for 24 hours.",
       "wrong": "This code doesn’t work: it may have been used already, or its 24 hours are over. Ask for a new one."
     },
     "invite": {
@@ -192,9 +192,6 @@
     "noAccount": "No account",
     "noAccountHint": "A code, on their device",
     "connect": "Connect a device",
-    "forgotPassword": "Forgotten password",
-    "forgotPasswordHint": "A code, to choose a new one",
-    "newPassword": "New password",
     "inviteHint": "An adult makes their own account: you give them an invitation code, to type in “I have a code”.",
     "invite": "Invite",
     "makeAdmin": "Household admin",
