@@ -10,6 +10,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **Bold and italics in intros.** The intro of `Dialog`, `SectionPage` and `askToConfirm` shows `<b>…</b>` (a name, an
+  e-mail) in bold and `<i>…</i>` (a screen's or a button's name) in italics, as Hodi's own texts do.
+
 ## [1.0.0-beta.5] - 2026-11-18
 
 Plugins can show Hodi's − / + number picker, with a value that can be typed. Needs Hodi 1.0.0-beta.13 or later.
