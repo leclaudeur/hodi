@@ -10,6 +10,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **Joining another household.** Someone who already has an account and types a household's code now lands in that
+  household on this device, not back in their own.
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme
   (dark in the light theme), with its icon readable.
 

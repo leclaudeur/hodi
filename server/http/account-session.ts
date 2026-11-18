@@ -14,7 +14,9 @@ import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
 export type AccountOf = (request: express.Request) => UserAccount | null
 
 // A new session for a device that has just signed in: a row in Appareils, named after its browser.
-export type CookieFor = (account: UserAccount, request: express.Request) => string
+// householdId: the household this device reads in from now on, when it is not the account's first (a code that just
+// added the account to another household).
+export type CookieFor = (account: UserAccount, request: express.Request, householdId?: number) => string
 
 export const accountSession = (
   accounts: UserAccountStore | undefined,
@@ -56,9 +58,10 @@ export const accountSession = (
   const cookieForDevice = (account: UserAccount, deviceId: number) =>
     sessionCookie(createDeviceSessionToken(account.id, deviceId, keyOf(account), now()))
 
-  const cookieFor: CookieFor = (account, request) => {
+  const cookieFor: CookieFor = (account, request, householdId) => {
     if (!devices) throw new Error('No device store')
     const device = devices.create(account.id, request.get('user-agent') ?? '', now())
+    if (householdId !== undefined) devices.moveTo(account.id, device.id, householdId)
     return cookieForDevice(account, device.id)
   }
 

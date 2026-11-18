@@ -160,6 +160,27 @@ describe('two households on one server', () => {
       ['Claire']
     )
   })
+
+  it('opens the inviting household on the device of an account from another household that joins it', async () => {
+    const made = await call('/codes', dupont, 'POST', {})
+    const { code } = (await made.json()) as { code: string }
+    const joined = await call('/codes/join', '', 'POST', {
+      code,
+      existing: true,
+      email: MARTIN,
+      password: PASSWORD,
+      profile: { name: 'Marc', color: 'world' }
+    })
+    assert.equal(joined.status, 200)
+    const { profileId } = (await joined.json()) as { profileId: number }
+    const device = cookiesFrom(joined)
+    // Not the account's first household (the Martins'), but the one whose code it typed, on its new profile there.
+    const here = await profileIds(device)
+    assert.ok(here.includes(dupontAdmin) && here.includes(profileId) && !here.includes(martinAdmin))
+    assert.equal((await json<{ profileChosen: boolean }>('/session', device)).profileChosen, true)
+    // Its other devices still read where they did.
+    assert.ok((await profileIds(martin)).includes(martinAdmin))
+  })
 })
 
 describe("each household's catalogue in the news service", () => {

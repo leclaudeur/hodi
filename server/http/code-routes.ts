@@ -70,7 +70,8 @@ const completeJoin = (
     response.json({ profileId, signIn: false })
     return
   }
-  response.set('Set-Cookie', withProfileCookie(options, cookieFor(account, request), profileId))
+  // In the household of the code, which for an account from another household is not its first.
+  response.set('Set-Cookie', withProfileCookie(options, cookieFor(account, request, currentHouseholdId()), profileId))
   response.json({ profileId })
 }
 
