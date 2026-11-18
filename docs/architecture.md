@@ -69,6 +69,11 @@ in which topics, is that household's row of `household_sources`. `server/test/ho
 Personal accounts live in `users`, and `profiles.user_id` says whose profile is whose. The codes of **I have a code**
 are `sign_in_codes`, and a young profile's own device is a row of `profile_devices` with a cookie of its own.
 
+What opens a profile in _Who's in?_ is decided by `http/profile-guard.ts`: a private profile's password
+(`users.private_profile`), the household's parental code (`accounts.parental_pin_hash`) or nothing.
+`http/profile-current-routes.ts` checks it. `http/trusted-devices.ts` keeps the browsers that skip a private profile's
+password: the `hodi_trusted` cookie, checked against `user_devices.trusted`.
+
 Every sign-in of an existing account first asks `http/sign-in-check.ts`, which runs each plugin's `checkSignIn` hook.
 The server admin's sign-in is never asked, so a broken plugin cannot lock them out.
 
