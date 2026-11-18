@@ -3,6 +3,7 @@ import { currentHouseholdId } from '../db/household-scope.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
 import { accountRoutes } from '../http/account-routes.ts'
 import { codeRoutes } from '../http/code-routes.ts'
+import type { InvitationMail } from '../http/invitation-routes.ts'
 import { householdRoutes } from '../http/household-routes.ts'
 import { householdPhotoRoutes } from '../http/household-photo.ts'
 import { profileDeviceRoutes } from '../http/profile-device-routes.ts'
@@ -104,6 +105,18 @@ const fillHouseholdHooks = ({ options, householdOptions, profileHooks }: Wiring)
   householdHooks.removed = id => plugins?.householdRemoved(id)
 }
 
+// Personnes invitées: an invitation's code by e-mail, once Serveur › E-mail is set, in the inviter's language.
+const invitationMail = ({ options }: Wiring): InvitationMail | undefined => {
+  const { serverMail, news, profiles, household, serverSettings } = options
+  if (!serverMail || !profiles) return undefined
+  return {
+    ...serverMail,
+    languageOf: profileId => news.languageOf(profileId),
+    inviterOf: profileId => ({ name: profiles.get(profileId)?.name ?? '', household: household.get().name }),
+    home: () => serverSettings?.publicHome() ?? null
+  }
+}
+
 // The signed-in household's own routes: the session, the account, profiles and young profiles' rules.
 export const mountHousehold = (api: express.Router, wiring: Wiring) => {
   const { youth, accounts, household, serverSettings, twoFactor, codes, profiles, now } = wiring.options
@@ -115,7 +128,10 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
   api.use(sessionRoutes({ accounts, household, serverSettings, twoFactor }))
   mountAccount(api, wiring)
   if (codes && profiles)
-    api.use('/codes', codeRoutes({ codes, profiles, accounts, now, checkProof: wiring.checkProof }))
+    api.use(
+      '/codes',
+      codeRoutes({ codes, profiles, accounts, now, checkProof: wiring.checkProof, mail: invitationMail(wiring) })
+    )
   fillHouseholdHooks(wiring)
   mountProfiles(api, wiring)
   mountSourceRequests(api, wiring)

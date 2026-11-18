@@ -351,7 +351,16 @@
     "open": "Open",
     "noAccount": "{{name}} has no account yet. This profile opens once {{name}} makes one with their code.",
     "loginOnly": "{{name}} signs in without a password: continue with the same button as at sign-in to open their profile.",
-    "loginOnlyNoWay": "{{name}} signs in without a password, through a plugin that is gone. An adult of the household can give them a code to choose a password."
+    "loginOnlyNoWay": "{{name}} signs in without a password, through a plugin that is gone. An adult of the household can give them a code to choose a password.",
+    "invite": {
+      "intro": "An 8-character code to join the household with their own account. The name is how you recognise the invitation in <i>Invited people</i>: the person picks their own when they create their account.",
+      "name": "Name",
+      "email": "E-mail (optional)",
+      "send": "Send the code",
+      "create": "Create the code",
+      "sent": "Code sent to {{email}}",
+      "invalid": "Check the name (40 characters at most) and the e-mail address."
+    }
   },
   "limits": {
     "fiveMinutes": "Only 5 minutes of reading left today",
@@ -1385,7 +1394,28 @@
       "deleted": "{{name}} deleted",
       "deleteFailed": "The deletion failed. Try again in a moment.",
       "active": "Open",
-      "add": "Add a profile"
+      "add": "Add a profile",
+      "groups": {
+        "adults": "Adults",
+        "teens": "Teens",
+        "children": "Children",
+        "invited": "Invited people"
+      },
+      "ownAccount": "Their own account",
+      "waitingAccount": "Waiting for their account",
+      "invited": {
+        "untilToday": "until {{time}}",
+        "untilTomorrow": "until tomorrow, {{time}}",
+        "code": "Code valid {{until}}",
+        "unnamed": "Invitation",
+        "resend": "Send again",
+        "resendName": "Send a code to {{name}} again",
+        "show": "See the code",
+        "showName": "See a code for {{name}}",
+        "cancelName": "Cancel {{name}}’s invitation",
+        "cancelled": "{{name}}’s invitation cancelled",
+        "cancelFailed": "The invitation could not be cancelled. Try again in a moment."
+      }
     },
     "notifications": {
       "errors": {
@@ -1865,6 +1895,11 @@
       "title": "Hand over the admin role?",
       "message": "<b>{{name}}</b> then manages the household’s profiles, sources, AI key and settings. <b>You become an adult like the others</b>, and only {{name}} can give the role back. Type your password to confirm.",
       "button": "Hand over"
+    },
+    "cancelInvitation": {
+      "title": "Cancel the invitation?",
+      "message": "<b>{{name}}</b>’s code will stop working. You can invite them again.",
+      "button": "Cancel the invitation"
     }
   },
   "dialogIntro": {
@@ -2467,6 +2502,14 @@
         "profiles": "New profiles"
       },
       "push": "Visits: {{visits}} · Articles read: {{articles}}"
+    },
+    "invite": {
+      "subject": "{{name}} invites you to Hodi",
+      "title": "Join the {{household}} household",
+      "text": "{{name}} invites you to the {{household}} household on Hodi. With this code you make your own account and your profile is added to it. It works for 24 hours, once.",
+      "code": "Your code: {{code}}",
+      "button": "Join the household",
+      "note": "If you don’t know this person, ignore this e-mail: without the code, nothing happens."
     }
   },
   "forgot": {

@@ -19,6 +19,7 @@ import {
 import { type CheckProof, askingWithProof } from './proof.ts'
 import { ANYONE_IN, refuseSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
+import { type InvitationMail, invitationRoutes, inviteOf, mailInvitation } from './invitation-routes.ts'
 import { isAdminOf, isParentOf, profileIdOf } from './profile-routes.ts'
 
 // "J'ai un code": an adult of the household invites a new adult, or the admin gives an adult profile without an
@@ -208,6 +209,8 @@ interface CodeRoutesOptions {
   now: () => number
   // « Nouveau mot de passe » for another adult opens their account: the admin's own password comes first.
   checkProof?: CheckProof
+  // Personnes invitées: an invitation's code by e-mail, once Serveur › E-mail is set.
+  mail?: InvitationMail
 }
 
 // « Nouveau mot de passe » for another adult: whether this admin may give it, or the refusal sent.
@@ -273,8 +276,17 @@ export const codeRoutes = (options: CodeRoutesOptions) => {
       response.status(409).json({ error: 'household_full' })
       return
     }
-    response.status(201).json(codes.create({ createdBy: profileIdOf(response) }, now()))
+    const invite = inviteOf(request.body)
+    if (invite === 'invalid') {
+      response.status(400).json({ error: 'invalid_request' })
+      return
+    }
+    const inviter = profileIdOf(response)
+    const made = codes.create({ createdBy: inviter, invite }, now())
+    const sent = invite?.email ? mailInvitation(options.mail, { to: invite.email, code: made.code, inviter }) : false
+    response.status(201).json({ ...made, sent })
   })
+  router.use('/invitations', invitationRoutes({ codes, now, mail: options.mail }))
 
   return router
 }

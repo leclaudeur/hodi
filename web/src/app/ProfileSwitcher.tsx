@@ -13,7 +13,7 @@ import PasswordField from '../ui/PasswordField.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import { Bar } from '../ui/Skeleton.tsx'
 import StatusLine from '../ui/StatusLine.tsx'
-import CodeDialog from '../views/profiles/CodeDialog.tsx'
+import InviteDialog from '../views/profiles/InviteDialog.tsx'
 import ProfileForm from '../views/profiles/ProfileForm.tsx'
 import styles from './ProfileSwitcher.module.css'
 import RichText from '../ui/RichText.tsx'
@@ -163,11 +163,7 @@ const AddProfile = ({
           />
         )}
       </Dialog>
-      <CodeDialog
-        key={inviting ? 'invite' : 'closed'}
-        target={inviting ? null : undefined}
-        onClose={() => setInviting(false)}
-      />
+      <InviteDialog open={inviting} onClose={() => setInviting(false)} />
     </>
   )
 }

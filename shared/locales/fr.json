@@ -351,7 +351,16 @@
     "open": "Ouvrir",
     "noAccount": "{{name}} n’a pas encore de compte. Son profil s’ouvrira quand {{name}} l’aura créé avec son code.",
     "loginOnly": "{{name}} se connecte sans mot de passe : continue avec le même bouton qu'à la connexion pour ouvrir son profil.",
-    "loginOnlyNoWay": "{{name}} se connecte sans mot de passe, par un plugin qui n'est plus là. Un adulte du foyer peut lui donner un code pour choisir un mot de passe."
+    "loginOnlyNoWay": "{{name}} se connecte sans mot de passe, par un plugin qui n'est plus là. Un adulte du foyer peut lui donner un code pour choisir un mot de passe.",
+    "invite": {
+      "intro": "Un code de 8 caractères pour rejoindre le foyer avec son propre compte. Le nom sert à reconnaître l’invitation dans <i>Personnes invitées</i> : la personne choisit le sien en créant son compte.",
+      "name": "Nom",
+      "email": "E-mail (facultatif)",
+      "send": "Envoyer le code",
+      "create": "Créer le code",
+      "sent": "Code envoyé à {{email}}",
+      "invalid": "Vérifie le nom (40 caractères au plus) et l’adresse e-mail."
+    }
   },
   "limits": {
     "fiveMinutes": "Plus que 5 minutes de lecture aujourd’hui",
@@ -1385,7 +1394,28 @@
       "deleted": "{{name}} supprimé",
       "deleteFailed": "La suppression a échoué. Réessaie dans un instant.",
       "active": "Actif",
-      "add": "Ajouter un profil"
+      "add": "Ajouter un profil",
+      "groups": {
+        "adults": "Adultes",
+        "teens": "Ados",
+        "children": "Enfants",
+        "invited": "Personnes invitées"
+      },
+      "ownAccount": "Son propre compte",
+      "waitingAccount": "En attente de son compte",
+      "invited": {
+        "untilToday": "jusqu’à {{time}}",
+        "untilTomorrow": "jusqu’à demain, {{time}}",
+        "code": "Code valable {{until}}",
+        "unnamed": "Invitation",
+        "resend": "Renvoyer",
+        "resendName": "Renvoyer un code à {{name}}",
+        "show": "Voir le code",
+        "showName": "Voir un code pour {{name}}",
+        "cancelName": "Annuler l’invitation de {{name}}",
+        "cancelled": "Invitation de {{name}} annulée",
+        "cancelFailed": "L’invitation n’a pas pu être annulée. Réessaie dans un instant."
+      }
     },
     "notifications": {
       "errors": {
@@ -1865,6 +1895,11 @@
       "title": "Passer le rôle d’admin ?",
       "message": "<b>{{name}}</b> gère alors les profils, les sources, la clé IA et les réglages du foyer. <b>Toi, tu deviens un adulte comme les autres</b>, et seul·e {{name}} pourra te rendre ce rôle. Confirme avec le mot de passe.",
       "button": "Passer le rôle"
+    },
+    "cancelInvitation": {
+      "title": "Annuler l’invitation ?",
+      "message": "Le code de <b>{{name}}</b> ne marchera plus. Tu pourras l’inviter à nouveau.",
+      "button": "Annuler l’invitation"
     }
   },
   "dialogIntro": {
@@ -2467,6 +2502,14 @@
         "profiles": "Nouveaux profils"
       },
       "push": "Visites : {{visits}} · Articles lus : {{articles}}"
+    },
+    "invite": {
+      "subject": "{{name}} t’invite sur Hodi",
+      "title": "Rejoins le foyer {{household}}",
+      "text": "{{name}} t’invite dans le foyer {{household}} sur Hodi. Avec ce code, tu crées ton propre compte et ton profil y est ajouté. Il est valable 24 heures, une seule fois.",
+      "code": "Ton code : {{code}}",
+      "button": "Rejoindre le foyer",
+      "note": "Si tu ne connais pas cette personne, ignore cet e-mail : sans le code, rien ne se passe."
     }
   },
   "forgot": {

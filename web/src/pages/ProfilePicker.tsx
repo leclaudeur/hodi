@@ -6,7 +6,7 @@ import { addProfile } from '../lib/profiles.ts'
 import Copyright from '../ui/Copyright.tsx'
 import PhoneHeader from '../ui/PhoneHeader.tsx'
 import RoundButton from '../ui/RoundButton.tsx'
-import CodeDialog from '../views/profiles/CodeDialog.tsx'
+import InviteDialog from '../views/profiles/InviteDialog.tsx'
 import ProfileForm from '../views/profiles/ProfileForm.tsx'
 import { Unlock, Who, useOpening } from './ProfilePickerParts.tsx'
 import styles from './ProfilePicker.module.css'
@@ -70,11 +70,7 @@ const ProfilePicker = ({ chosen, closed = false, onUnauthorized }: ProfilePicker
       />
       <div className={styles.content}>{content}</div>
       <Copyright />
-      <CodeDialog
-        key={inviting ? 'invite' : 'closed'}
-        target={inviting ? null : undefined}
-        onClose={() => setInviting(false)}
-      />
+      <InviteDialog open={inviting} onClose={() => setInviting(false)} />
     </main>
   )
 }

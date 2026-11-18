@@ -185,10 +185,15 @@ test('invites an adult, who joins with the code and makes their own account', as
   await page.goto('/#/settings/profiles')
   await page.getByRole('button', { name: 'Inviter un adulte' }).click()
   const invite = page.getByRole('dialog', { name: 'Inviter un adulte' })
+  // A name to know the invitation by; without Serveur › E-mail, the code shows to be handed over.
+  await invite.getByRole('textbox', { name: 'Nom' }).fill('Sam')
+  await invite.getByRole('button', { name: 'Créer le code' }).click()
   await expect(invite.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
   const code = await invite.getByRole('textbox', { name: 'Code' }).inputValue()
   expect(code).toMatch(/^[A-HJKMNP-Z2-9]{8}$/)
   await invite.getByRole('button', { name: 'Terminé' }).click()
+  await expect(page.getByRole('heading', { name: 'Personnes invitées' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Annuler l’invitation de Sam' })).toBeVisible()
 
   // Sam's own device: « J'ai un code » on the Connexion page, then Sam's account and profile.
   const device = await browser.newPage()
@@ -212,6 +217,10 @@ test('invites an adult, who joins with the code and makes their own account', as
   await skipTour(device)
   await expect(device.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
   await device.close()
+  // The code used, Sam is with the adults and no longer invited.
+  await page.reload()
+  await expect(page.getByText('Sam', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Personnes invitées' })).toHaveCount(0)
 })
 
 test('gives Sam, who forgot their password, a new one with a code from the admin', async ({ browser }) => {
@@ -284,9 +293,10 @@ test('creates a teen profile', async () => {
   await dialog.getByRole('button', { name: 'Créer le profil' }).click()
   await expect(dialog).toHaveCount(0)
 
-  const profiles = page.getByRole('main').getByRole('listitem')
-  await expect(profiles.filter({ hasText: 'Sam' })).toContainText('Adulte')
-  await expect(profiles.filter({ hasText: 'Zoé' })).toContainText('Ado')
+  // Each kind under its own title: Adultes, then Ados.
+  const group = (title: string) => page.getByRole('main').locator(`h2:text-is("${title}") + ul`)
+  await expect(group('Adultes').getByRole('listitem').filter({ hasText: 'Sam' })).toContainText('Son propre compte')
+  await expect(group('Ados').getByRole('listitem').filter({ hasText: 'Zoé' })).toHaveCount(1)
 })
 
 test('links Zoé’s own tablet with a parent’s code, which opens her profile only, until it is removed', async ({

@@ -928,6 +928,12 @@ const MIGRATIONS: string[] = [
     auth TEXT NOT NULL,
     updated_at INTEGER NOT NULL
   );
+  `,
+  // Réglages › Profils › Personnes invitées: an invitation keeps the name it was given, to be recognised in the list (the
+  // person picks their own on joining), and the address it was sent to, when it was.
+  `
+  ALTER TABLE sign_in_codes ADD COLUMN invite_name TEXT;
+  ALTER TABLE sign_in_codes ADD COLUMN invite_email TEXT;
   `
 ]
 
