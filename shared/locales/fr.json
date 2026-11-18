@@ -364,8 +364,8 @@
     "before": "Tu pourras lire à partir de {{time}}.",
     "switch": "Changer de profil",
     "timeUpTomorrow": "Le temps de lecture du jour est fini. Tu pourras relire demain.",
-    "meHint": "Nom, photo, temps du jour",
-    "meIntro": "Le prénom, la photo et le temps de lecture du jour.",
+    "meHint": "Nom, photo, langue, temps du jour",
+    "meIntro": "Ton prénom, ta photo, ta langue et ton temps de lecture du jour. Tu peux aussi revoir la visite guidée, ou remettre tes réglages à zéro.",
     "today": "Aujourd’hui",
     "readingTime": "Temps d’écran restant",
     "readingHint": "{{time}} / jour · réglé par les parents",
@@ -1172,17 +1172,17 @@
       "sources": "Sources",
       "followed": "Sujets suivis",
       "muted": "Sujets masqués",
-      "me": "Mon profil",
       "stats": "Statistiques",
       "sharing": "Partage",
       "household": "Foyer",
       "profiles": "Profils",
       "ai": "IA et crédits",
       "notifications": "Notifications",
-      "account": "Compte et données",
+      "account": "Mon compte",
       "shortcuts": "Raccourcis clavier",
       "server": "Serveur",
-      "about": "À propos"
+      "about": "À propos",
+      "general": "Général"
     },
     "hints": {
       "history": "Lus et vus, 7 jours",
@@ -1191,7 +1191,6 @@
       "sources": "État des flux",
       "failing": "{{count}} en erreur",
       "none": "Aucun",
-      "me": "Nom et photo",
       "stats": "Lectures et vidéos",
       "on": "Activé",
       "off": "Désactivé",
@@ -1202,11 +1201,12 @@
       "ai": "Appels du jour",
       "onPlural": "Activées",
       "offPlural": "Désactivées",
-      "account": "E-mail, appareils, copie",
+      "account": "Profil, connexion, appareils, données",
       "shortcuts": "Touche ?",
       "server": "Plugins, pour tout le serveur",
       "about": "Version, code source, crédits",
-      "plugins": "Ajouter des fonctions"
+      "plugins": "Ajouter des fonctions",
+      "general": "Visite guidée, remise à zéro"
     },
     "titles": {
       "reading": "Lecture",
@@ -1215,17 +1215,17 @@
       "followed": "Sujets suivis",
       "muted": "Sujets masqués",
       "notifications": "Notifications",
-      "me": "Mon profil",
       "stats": "Statistiques",
       "ai": "IA et crédits",
       "household": "Foyer",
       "profiles": "Profils",
       "sharing": "Partage",
-      "account": "Compte et données",
+      "account": "Mon compte",
       "shortcuts": "Raccourcis",
       "about": "À propos",
       "plugins": "Plugins",
-      "plugin": "Plugin"
+      "plugin": "Plugin",
+      "general": "Général"
     },
     "themes": {
       "intro": "Les rubriques du fil, dans l’ordre du menu. Glisse-les pour changer cet ordre. Un thème masqué quitte le fil et le menu, mais reste visible pour les autres profils. Un thème sans aucune source n’apparaît pas.",
@@ -1303,7 +1303,7 @@
     },
     "account": {
       "browser": "Navigateur",
-      "intro": "Le compte, les appareils connectés et tout ce que Hodi garde de toi. Le prénom et la photo se changent dans Mon profil.",
+      "intro": "Ton prénom, ta photo et ta langue, ta connexion, tes appareils et tout ce que Hodi garde de toi.",
       "sessionHint": "Connecté pour 90 jours, puis le mot de passe est redemandé",
       "thisDevice": "Cet appareil",
       "offline": "Hors ligne",
@@ -1348,7 +1348,8 @@
       "choosePasswordIntro": "Tu pourras te connecter avec l’e-mail du compte et ce mot de passe, en plus de l’autre façon.",
       "signInAgain": "Pour confirmer que c’est toi, reconnecte-toi juste avant (il y a moins de 5 minutes), puis reviens ici.",
       "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise « Mot de passe oublié » ou demande un code à un adulte du foyer.",
-      "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter"
+      "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter",
+      "profile": "Profil"
     },
     "roles": {
       "admin": "Admin",
@@ -1359,7 +1360,7 @@
     "editProfileTitle": "Modifier le profil",
     "profileSaved": "Profil enregistré",
     "me": {
-      "intro": "Ce qui n’appartient qu’à toi : le prénom et la photo. Tu peux aussi revoir la visite guidée, ou remettre les réglages et les statistiques à zéro, sans toucher aux autres profils.",
+      "intro": "Revoir la visite guidée, ou remettre tes réglages par défaut. Ton prénom, ta photo, ta langue et tes statistiques sont dans <i>Mon compte</i>.",
       "help": "Aide",
       "tour": "Visite guidée",
       "tourHint": "Ajouter une source pas à pas, comme au premier jour",
@@ -1371,7 +1372,7 @@
       "resetAction": "Réinitialiser",
       "resetSettingsDone": "Réglages réinitialisés",
       "clearStats": "Statistiques de lecture",
-      "clearStatsHint": "Effacées sur tous les appareils",
+      "clearStatsHint": "Avec les badges et les niveaux, sur tous les appareils",
       "clearStatsTitle": "Effacer les stats de lecture ?",
       "clearStatsMessage": "Les lectures sont effacées sur tous les appareils. Ça ne se récupère pas.",
       "clearAction": "Effacer",
@@ -2248,7 +2249,7 @@
         "reset": "Mot de passe oublié",
         "resetLabel": "Faire un code",
         "resetHint": "La personne le tape dans « J’ai un code », puis choisit un nouveau mot de passe. Ses appareils se déconnectent.",
-        "own": "Le tien se change dans Réglages › Compte et données",
+        "own": "Le tien se change dans Réglages › Mon compte",
         "deleteSection": "Supprimer",
         "delete": "Supprimer ce compte",
         "deleteHint": "Son profil et tout ce qu’il contient partent avec lui",
@@ -2328,7 +2329,7 @@
       }
     },
     "backups": {
-      "intro": "Chaque nuit, une copie de toute la base et des données des plugins. Elle contient les données de tout le monde : ton mot de passe la protège, et mieux vaut en garder une hors du serveur. La copie d’un seul compte est dans Réglages › Compte et données.",
+      "intro": "Chaque nuit, une copie de toute la base et des données des plugins. Elle contient les données de tout le monde : ton mot de passe la protège, et mieux vaut en garder une hors du serveur. La copie d’un seul compte est dans Réglages › Mon compte.",
       "settings": "Réglages",
       "kept": "Copies gardées",
       "keptValue_one": "{{count}} copie",

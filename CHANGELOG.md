@@ -8,6 +8,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Mon compte.** Réglages › Compte et données becomes Mon compte, and starts with your profile (name, photo, colour)
+  and your language, which leaves Lecture et affichage. Mon profil becomes Général: the guided tour and the reset.
+  Clearing your reading stats moves under the stats. A teen or a child keeps its name, photo, language and time of the
+  day in Général.
+
 ### Fixed
 
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme

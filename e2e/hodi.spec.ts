@@ -394,7 +394,7 @@ test('opens a second tab on the same profile, and « Qui lit ? » again once eve
   await context.close()
 })
 
-test('lists the account’s devices in Compte et données and signs one out', async ({ browser }) => {
+test('lists the account’s devices in Mon compte and signs one out', async ({ browser }) => {
   const other = await signIn(browser, 'Alex')
   await page.goto('/#/settings/account')
   // The list as it is now, with the device just signed in.
@@ -539,17 +539,18 @@ test('keeps an article left half read in Reprendre', async () => {
 })
 
 test('switches the interface to English and back', async () => {
-  await sam.goto('/#/settings/reading')
+  // The language is the account's, in Mon compte beside the name and the photo.
+  await sam.goto('/#/settings/account')
   await sam.getByRole('radio', { name: 'English' }).click()
-  await expect(sam.getByRole('heading', { name: 'Reading and display', level: 1 })).toBeVisible()
+  await expect(sam.getByRole('heading', { name: 'My account', level: 1 })).toBeVisible()
   await expect(sam.getByRole('link', { name: 'Settings' }).first()).toBeVisible()
   // The articles keep their own language.
   await sam.getByRole('link', { name: 'Feed' }).first().click()
   await expect(sam.getByRole('link', { name: 'Pluie record sur Bruxelles' }).first()).toBeAttached()
 
-  await sam.goto('/#/settings/reading')
+  await sam.goto('/#/settings/account')
   await sam.getByRole('radio', { name: 'Français' }).click()
-  await expect(sam.getByRole('heading', { name: 'Lecture et affichage', level: 1 })).toBeVisible()
+  await expect(sam.getByRole('heading', { name: 'Mon compte', level: 1 })).toBeVisible()
 })
 
 test('shows a teen only the sources its parents gave it', async ({ browser }) => {
