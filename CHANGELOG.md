@@ -10,10 +10,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
-- **Mon compte.** Réglages › Compte et données becomes Mon compte, and starts with your profile (name, photo, colour)
-  and your language, which leaves Lecture et affichage. Mon profil becomes Général: the guided tour and the reset.
+- **My account.** Settings > Account and data becomes My account, and starts with your profile (name, photo, colour)
+  and your language, which leaves Reading and display. My profile becomes General: the guided tour and the reset.
   Clearing your reading stats moves under the stats. A teen or a child keeps its name, photo, language and time of the
-  day in Général.
+  day in General.
 
 ### Fixed
 
