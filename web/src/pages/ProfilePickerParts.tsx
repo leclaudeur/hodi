@@ -195,10 +195,9 @@ interface WhoProps {
   onAdd: () => void
 }
 
-// "Qui lit ?": the profiles, "Ajouter" for an adult, then « Gérer les profils » and the plugins' buttons.
+// "Qui lit ?": the profiles, "Ajouter" for an adult, then « Gérer les profils ».
 export const Who = ({ opening, chosen, closed, onAdd }: WhoProps) => {
   const { t } = useTranslation()
-  const layout = useScreenLayout()
   const value: Profiles = opening.value
   const profiles = value?.profiles ?? []
   // Any adult adds young profiles here; an adult joins with "Inviter un adulte", so that it has its account.
@@ -232,14 +231,12 @@ export const Who = ({ opening, chosen, closed, onAdd }: WhoProps) => {
         </StatusLine>
       )}
 
-      {/* « Gérer les profils », and a plugin's buttons beside it at the same height (« Changer de foyer »). */}
       <div className={styles.actions}>
         {chosen && !closed && (
           <Button icon={Settings} href={settingsHref('profiles')}>
             {t('profiles.manage')}
           </Button>
         )}
-        <PluginSlots slot="whoIsReadingFooter" props={{ layout }} />
       </div>
     </>
   )

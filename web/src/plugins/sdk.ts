@@ -7,7 +7,6 @@ import { hasNoPassword } from '../lib/two-factor.ts'
 import { pluginNamespace, registerWebPlugin, usePluginCapability, type WebPlugin } from './registry.ts'
 
 export type {
-  AfterSignInProps,
   AgeConsent,
   AvatarMenuItem,
   OverviewCardSlot,
