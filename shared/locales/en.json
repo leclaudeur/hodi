@@ -90,7 +90,7 @@
     "newAccount": "Create a new account",
     "signIn": "Join",
     "alreadyMember": "This account already has a profile in this household: sign in with it.",
-    "otherHousehold": "{{email}} is already in the {{current}} household. To join the {{household}} household, leave yours first in Settings › Account and data."
+    "otherHousehold": "Your account {{email}} is already in {{current}}. To join {{household}}, leave your household first in Settings › My account."
   },
   "password": {
     "show": "Show password",
@@ -1350,7 +1350,12 @@
       "signInAgain": "To confirm it is you, sign in again just before (less than 5 minutes ago), then come back here.",
       "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use “Forgot password” or ask an adult of the household for a code.",
       "sessionHintNoPassword": "Signed in for 90 days, then you sign in again",
-      "profile": "Profile"
+      "profile": "Profile",
+      "household": "Household",
+      "householdAdmin": "Household admin",
+      "householdMember": "Household member",
+      "lastAdult": "{{role}} · the only adult with an account",
+      "leave": "Leave"
     },
     "roles": {
       "admin": "Admin",
@@ -1867,6 +1872,12 @@
       "title": "Hand over the admin role?",
       "message": "<b>{{name}}</b> then manages the household’s profiles, sources, AI key and settings. <b>You become an adult like the others</b>, and only {{name}} can give the role back. Type your password to confirm.",
       "button": "Hand over"
+    },
+    "leaveHousehold": {
+      "title": "Leave {{name}}?",
+      "message": "Your profile in <b>{{name}}</b> goes, with what you read, saved and followed there. Your account <b>{{email}}</b> stays: an adult of a household can invite you there with a code.",
+      "messageAdmin": "Your profile in <b>{{name}}</b> goes, with what you read, saved and followed there, and <b>{{heir}}</b> becomes the household’s admin. Your account <b>{{email}}</b> stays: an adult of a household can invite you there with a code.",
+      "button": "Leave the household"
     }
   },
   "dialogIntro": {
@@ -2574,7 +2585,9 @@
   },
   "noHousehold": {
     "title": "You no longer have a household",
-    "text": "Your profile was removed from its household. Your account still exists: you can keep a copy of your data or delete it.",
-    "deleteMessage": "<b>{{email}}</b> is erased right away. Backup copies forget it within {{days}} at most."
+    "text": "Your account <b>{{email}}</b> is in no household any more, but it still exists: you find it in <i>My account</i>. To join a household, sign out, then type in <i>I have a code</i> the one an adult of it gives you.",
+    "deleteMessage": "<b>{{email}}</b> is erased right away. Backup copies forget it within {{days}} at most.",
+    "account": "My account",
+    "accountIntro": "How you sign in, your devices and everything Hodi keeps about you."
   }
 }

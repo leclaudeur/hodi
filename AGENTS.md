@@ -85,7 +85,7 @@ Unit tests cover the web utilities only: check a screen in a real browser. Playw
 
 ## End-to-end tests
 
-`e2e/hodi.spec.ts` (Playwright) goes through the journeys Hodi cannot do without, on a fresh install whose news sites are made up by `e2e/server.ts`: setup, reader, Enregistrés, search, profiles (adult, teen, every adult with its password, its own included), adding a source, signing in on other devices and out, a phone, sharing with and without a word and the reactions, Masquer and Historique, Suivis, Reprendre, English, and a teen's sources, requests and hours. A change to one of them keeps `npm run test:e2e` passing and updates the test. The `e2e-test` skill explains the harness and how to write a test.
+`e2e/hodi.spec.ts` (Playwright) goes through the journeys Hodi cannot do without, on a fresh install whose news sites are made up by `e2e/server.ts`: setup, reader, Enregistrés, search, profiles (adult, teen, every adult with its password, its own included), adding a source, signing in on other devices and out, leaving the household and joining again, a phone, sharing with and without a word and the reactions, Masquer and Historique, Suivis, Reprendre, English, and a teen's sources, requests and hours. A change to one of them keeps `npm run test:e2e` passing and updates the test. The `e2e-test` skill explains the harness and how to write a test.
 
 ## Pull requests
 

@@ -8,6 +8,15 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Leave a household.** Settings > My account shows your household and your role, with Leave: your profile and what
+  you read there go, your account stays and can join another household with a code. The last adult with an account
+  cannot leave.
+- **An account with no household.** After leaving, or once its profile is deleted, an account signs in to a card that
+  says so, with My account on a page of its own (e-mail, password, devices, a copy, deleting it) and Sign out.
+  `#/account` opens My account in every case.
+
 ### Changed
 
 - **My account.** Settings > Account and data becomes My account, and starts with your profile (name, photo, colour)

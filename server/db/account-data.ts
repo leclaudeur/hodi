@@ -58,6 +58,19 @@ export const deleteAccount = (
     return [account.id, ...others]
   })
 
+// Mon compte › Foyer › « Quitter »: the plan's profile goes, the account stays, in no household. The server's admin
+// keeps /server: only deleting the account hands it over.
+export const leaveHouseholdOnly = (
+  db: Database,
+  account: UserAccount,
+  plan: DeletionPlan,
+  now: number,
+  householdId = currentHouseholdId()
+): void =>
+  transaction(db, () => {
+    leaveHousehold(db, { ...account, serverAdmin: false }, plan, now, householdId)
+  })
+
 // The account's row, written down first.
 const forgetAccount = (db: Database, accountId: number) => {
   const key = rowKey(db, 'users', accountId)
@@ -291,6 +304,10 @@ export class AccountDataStore {
 
   delete(account: UserAccount, plan: DeletionPlan, now: number): number[] {
     return deleteAccount(this.#db, account, plan, now)
+  }
+
+  leave(account: UserAccount, plan: DeletionPlan, now: number) {
+    leaveHouseholdOnly(this.#db, account, plan, now)
   }
 
   householdsOf(accountId: number) {

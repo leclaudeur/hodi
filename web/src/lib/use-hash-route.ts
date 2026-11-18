@@ -152,7 +152,9 @@ const SIMPLE_ROUTES = new Map<string, () => Route>([
   ['stats', () => ({ name: 'settings', section: 'stats' })],
   ['summary', () => ({ name: 'dailySummary' })],
   ['history', () => ({ name: 'history' })],
-  ['profiles', () => ({ name: 'profiles' })]
+  ['profiles', () => ({ name: 'profiles' })],
+  // The site's « Mon compte » link (get-hodi.com/account), whether the account reads in a household or not.
+  ['account', () => ({ name: 'settings', section: 'account' })]
 ])
 
 const settingsRoute = (second: string, third: string, path: string): Route => {

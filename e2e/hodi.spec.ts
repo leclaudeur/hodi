@@ -414,6 +414,80 @@ test('lists the account’s devices in Mon compte and signs one out', async ({ b
   await other.close()
 })
 
+test('leaves the household from Mon compte, keeps the account alone, and joins again with a code', async ({
+  browser
+}) => {
+  const NOE = { email: 'noe@example.com', password: 'la phrase de passe de Noé' }
+  // Alex, the household's admin, sees the household in Mon compte and could leave it: Sam is another adult.
+  await page.goto('/#/settings/account')
+  const household = page.getByRole('main')
+  await expect(household.getByText('Admin du foyer')).toBeVisible()
+  await expect(household.getByRole('button', { name: 'Quitter' })).toBeVisible()
+
+  const inviteCode = async () => {
+    await page.goto('/#/settings/profiles')
+    await page.getByRole('button', { name: 'Inviter un adulte' }).click()
+    const invite = page.getByRole('dialog', { name: 'Inviter un adulte' })
+    // The code comes with its QR.
+    await expect(invite.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
+    const code = await invite.getByRole('textbox', { name: 'Code' }).inputValue()
+    await invite.getByRole('button', { name: 'Terminé' }).click()
+    return code
+  }
+  const enterCode = async (device: Page, code: string) => {
+    await device.goto('/')
+    await device.getByRole('link', { name: 'J’ai un code' }).click()
+    await device.getByRole('textbox', { name: 'Code' }).fill(code)
+    await expect(device.getByRole('heading', { name: 'Rejoins Famille Test' })).toBeVisible()
+  }
+
+  // Noé joins with a new account, then leaves from Mon compte with the password.
+  const noe = await browser.newPage()
+  await enterCode(noe, await inviteCode())
+  await noe.getByRole('textbox', { name: 'E-mail' }).fill(NOE.email)
+  await noe.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(NOE.password)
+  await noe.getByRole('textbox', { name: 'Confirme le mot de passe' }).fill(NOE.password)
+  await noe.getByRole('checkbox', { name: 'J’ai au moins 13 ans' }).click()
+  await noe.getByRole('button', { name: 'Continuer' }).click()
+  await noe.getByRole('textbox', { name: 'Prénom' }).fill('Noé')
+  await noe.getByRole('button', { name: 'Créer mon compte' }).click()
+  await skipTour(noe)
+  await noe.goto('/#/settings/account')
+  await expect(noe.getByRole('main').getByText('Membre du foyer')).toBeVisible()
+  await noe.getByRole('main').getByRole('button', { name: 'Quitter' }).click()
+  const leave = noe.getByRole('dialog', { name: 'Quitter Famille Test ?' })
+  await expect(leave.getByText(NOE.email)).toBeVisible()
+  await leave.getByRole('textbox', { name: 'Mon mot de passe' }).fill(NOE.password)
+  await leave.getByRole('button', { name: 'Quitter le foyer' }).click()
+
+  // In no household: the card, then its own account alone, nothing of the household it left.
+  await expect(noe.getByRole('heading', { name: 'Tu n’as plus de foyer' })).toBeVisible()
+  await expect(noe.getByText(NOE.email)).toBeVisible()
+  await noe.getByRole('link', { name: 'Mon compte' }).click()
+  await expect(noe.getByRole('heading', { name: 'Mon compte' })).toBeVisible()
+  await expect(noe.getByText('Cet appareil')).toBeVisible()
+  await expect(noe.getByRole('button', { name: 'Quitter' })).toHaveCount(0)
+  await noe.getByRole('button', { name: 'Retour' }).click()
+  await expect(noe.getByRole('heading', { name: 'Tu n’as plus de foyer' })).toBeVisible()
+  // Noé's profile left the household's list.
+  await page.goto('/#/settings/profiles')
+  await expect(page.getByRole('main').getByText('Noé')).toHaveCount(0)
+
+  // Signed out, Noé joins again with a new code and the same account.
+  await noe.getByRole('button', { name: 'Se déconnecter' }).click()
+  await expect(noe.getByRole('textbox', { name: 'E-mail' })).toBeVisible()
+  await enterCode(noe, await inviteCode())
+  await noe.getByRole('link', { name: 'J’ai déjà un compte' }).click()
+  await noe.getByRole('textbox', { name: 'E-mail' }).fill(NOE.email)
+  await noe.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(NOE.password)
+  await noe.getByRole('button', { name: 'Continuer' }).click()
+  await noe.getByRole('textbox', { name: 'Prénom' }).fill('Noé')
+  await noe.getByRole('button', { name: 'Créer mon compte' }).click()
+  await skipTour(noe)
+  await expect(noe.getByRole('button', { name: 'Noé, mon profil' })).toBeVisible()
+  await noe.close()
+})
+
 test('reads on a phone', async ({ browser }) => {
   const phone = await signIn(browser, 'Alex', { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
   await phone.getByRole('link', { name: 'La bourse de Paris recule' }).first().click()

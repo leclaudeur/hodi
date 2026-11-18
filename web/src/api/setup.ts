@@ -97,7 +97,14 @@ export interface AccountView {
   recentSignIn: boolean
   devices: AccountDevice[]
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
-  deletion: { householdGoes: boolean; household: string; others: string[] } | null
+  deletion: {
+    householdGoes: boolean
+    household: string
+    others: string[]
+    heir: string | null
+    member: boolean
+    admin: boolean
+  } | null
   // « Validation en deux étapes »: on since then, or null. required: the server's admin cannot turn it off.
   twoFactor: { since: number | null; required: boolean; recoveryLeft: number }
 }
@@ -123,6 +130,9 @@ export const signOutDevice = (id: number) => sendJson<AccountView>('DELETE', `/a
 export const ACCOUNT_COPY_URL = '/api/account/copy'
 
 export const deleteAccount = (proof?: AdminProof) => sendJson<null>('DELETE', '/account', proof)
+
+// Mon compte › Foyer › « Quitter »: the profile goes, the account stays in no household.
+export const leaveHousehold = (proof?: AdminProof) => sendJson<null>('POST', '/account/leave', proof)
 
 // "J'ai un code": eight letters and digits an adult gives, valid once and for a day. None of 0, O, 1, I or L, which
 // read alike (the server's sign-in-code-store.ts draws them).

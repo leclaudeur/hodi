@@ -242,7 +242,8 @@ const App = () => {
   }
   if (status === 'setup') return <SetupPage onDone={signedIn} />
   if (status === 'anonymous') return <SignedOut onLoggedIn={signedIn} />
-  if (status === 'noHousehold') return <NoHouseholdPage />
+  if (status === 'noHousehold')
+    return <NoHouseholdPage account={route.name === 'settings' && route.section === 'account'} />
 
   // No household yet: the server's space whatever the address, with its plugins' sections.
   if (status === 'server') {

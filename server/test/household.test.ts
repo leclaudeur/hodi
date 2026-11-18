@@ -772,7 +772,14 @@ describe('the account and its data', () => {
 
     // The last adult: the household goes with Sam's account, and the install waits for its first-run screens.
     const last = (await (await get(sam)).json()) as { deletion: { householdGoes: boolean; household: string } }
-    assert.deepEqual(last.deletion, { householdGoes: true, household: 'Chez nous', others: [] })
+    assert.deepEqual(last.deletion, {
+      householdGoes: true,
+      household: 'Chez nous',
+      others: [],
+      heir: null,
+      member: true,
+      admin: true
+    })
     assert.equal((await post('/account', { password: PASSWORD }, { cookie: sam }, 'DELETE')).status, 204)
     const setup = (await (await fetch(`${baseUrl}/api/setup`)).json()) as { needed: boolean; stage: string }
     assert.deepEqual([setup.needed, setup.stage], [true, 'account'])
