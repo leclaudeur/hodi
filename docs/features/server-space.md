@@ -23,7 +23,7 @@ to the app.
 - **General**: the server's addresses. **Hodi's address** is the one the e-mails' links open; it starts as the
   address the page is open at, and _Forgot password_ needs it. The **public home page** is a site's address, such as
   Hodi's presentation page. A browser that never signed in on this server, opening its bare address, goes there instead
-  of _Sign in_. Once it has signed in, or with an address of the app's own (`#/sign-in`, a code's or a reset's link),
+  of _Sign in_. Once it has signed in, or with an address of the app's own (`#/sign-in`, a code's or a reset code's button),
   _Sign in_ opens as usual. Empty by default.
 - **Content**: how long the server keeps what it fetches, for every household. An article stays in the lists 1 to 14
   days (3 by default), a video 7 to 180 days (60), and the text of a read article 1 to 30 days (7). It also caps the
@@ -42,7 +42,9 @@ Restoring a copy first keeps a copy of how things are now, then restarts Hodi wi
 goes back to the same moment, and what was deleted since the copy, such as an account or a household, is deleted again.
 
 Once _E-mail_ is set and _General_ has Hodi's address, the sign-in page shows **Forgot password**. It always answers the same,
-whether an account has that e-mail or not. The account gets a link valid for one hour, once, which signs out its other
-devices and opens its profile.
+whether an account has that e-mail or not. The account gets an 8-character code valid for one hour, once, with a button
+that fills it in. The person types it, chooses a new password, which signs out the account's other devices, and enters
+Hodi. **I have a code** on that page goes straight to the code, for someone coming back with it later. Wrong codes count
+against the device, as wrong passwords do.
 
 [← Back to the features](../features.md)
