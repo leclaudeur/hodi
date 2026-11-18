@@ -4,7 +4,7 @@ import type { AccountHelpers, AccountRoutesOptions } from './account-routes.ts'
 // Réglages › Compte et données: « Profil privé » and the devices that open it without the password.
 export const mountLockRoutes = (
   router: express.Router,
-  { accounts, devices }: AccountRoutesOptions,
+  { accounts, devices, profileCookieFor }: AccountRoutesOptions,
   { sessionOrRefuse, recentlySignedIn, checkProof, view }: AccountHelpers
 ) => {
   // On, with the password (and the app's code): it is the one « Qui lit ? » asks from then on, so a person who no
@@ -22,6 +22,9 @@ export const mountLockRoutes = (
     const proved = !on || signedInNow || (await checkProof(session.account, request, response))
     if (!proved) return
     accounts.setPrivateProfile(session.account.id, on)
+    // Every other device asks for the password (or the Code parental) from now on; its profile stays open here.
+    const own = accounts.profileOf(session.account.id)
+    if (own !== null && profileCookieFor) response.set('Set-Cookie', profileCookieFor(own))
     response.json(view(accounts.get(session.account.id)!, session.device))
   })
 

@@ -162,14 +162,17 @@ describe('opening a profile with a private profile, a Code parental or a trusted
   })
 
   it('asks a private profile for its password instead, the Code parental never opens it', async () => {
+    const tabletAsAntho = after_(tablet, await call('PUT', '/profiles/current', tablet, { id: 1, code: CODE }))
+    assert.equal(await chosen(tabletAsAntho), true)
     // Turning it on asks for the password it will need.
     assert.equal((await call('PUT', '/account/private', anthoPhone, { on: true })).status, 403)
     assert.equal((await call('PUT', '/account/private', anthoPhone, { on: true, password: 'faux' })).status, 403)
     const on = await call('PUT', '/account/private', anthoPhone, { on: true, password: ANTHO.password })
     assert.equal(on.status, 200)
     assert.equal(((await on.json()) as { privateProfile: boolean }).privateProfile, true)
-    // His profile, open on his phone, asks again there too.
-    assert.equal(await chosen(anthoPhone), false)
+    // His profile stays open on the phone that turned it on, and asks for the password on the tablet.
+    assert.equal(await chosen(after_(anthoPhone, on)), true)
+    assert.equal(await chosen(tabletAsAntho), false)
 
     assert.deepEqual(await locks(tablet), { Admin: 'password', Sophie: 'code', Max: null })
     assert.equal((await call('PUT', '/profiles/current', tablet, { id: 1, code: CODE })).status, 403)
@@ -239,7 +242,11 @@ describe('opening a profile with a private profile, a Code parental or a trusted
   })
 
   it('opens freely again once private is off and the code is gone', async () => {
-    assert.equal((await call('PUT', '/account/private', anthoPhone, { on: false })).status, 200)
+    const off = await call('PUT', '/account/private', anthoPhone, { on: false })
+    assert.equal(off.status, 200)
+    // His profile stays open on the phone, now that the Code parental would open it.
+    anthoPhone = after_(anthoPhone, off)
+    assert.equal(await chosen(anthoPhone), true)
     const removed = await call('DELETE', '/household/parental-code', anthoPhone)
     assert.equal(((await removed.json()) as { parentalCode: boolean }).parentalCode, false)
     assert.deepEqual(await locks(tablet), { Admin: null, Sophie: null, Max: null })

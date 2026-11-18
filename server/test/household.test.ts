@@ -500,8 +500,8 @@ describe('an account with no password of its own (« Se connecter avec Google »
     ;({ baseUrl, household, profiles } = install)
     antho = cookiesFrom(await post('/setup/account', ACCOUNT))
     antho = `${antho}; ${cookiesFrom(await post('/setup', SETUP, { cookie: antho }))}`
-    // As if a plugin had made it with a login alone, its profile private.
-    install.db.prepare('UPDATE users SET has_password = 0, private_profile = 1').run()
+    // As if a plugin had made it with a login alone.
+    install.db.prepare('UPDATE users SET has_password = 0').run()
   })
   after(() => install.close())
 
@@ -513,6 +513,7 @@ describe('an account with no password of its own (« Se connecter avec Google »
     }
 
   it('says so in « Qui lit ? », where its private profile opens through the plugin', async () => {
+    install.db.prepare('UPDATE users SET private_profile = 1').run()
     const list = (await (await fetch(`${baseUrl}/api/profiles`, { headers: { cookie: antho } })).json()) as {
       profiles: { name: string; locked: boolean; loginOnly?: boolean }[]
     }
@@ -520,6 +521,7 @@ describe('an account with no password of its own (« Se connecter avec Google »
       list.profiles.map(({ name, locked, loginOnly }) => ({ name, locked, loginOnly })),
       [{ name: 'Antho', locked: true, loginOnly: true }]
     )
+    install.db.prepare('UPDATE users SET private_profile = 0').run()
   })
 
   it('changes its e-mail without a password only within 5 minutes of a sign-in on this device', async () => {

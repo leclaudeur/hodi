@@ -10,7 +10,7 @@ import type { HouseholdRoutesOptions } from './setup-routes.ts'
 
 export type HouseholdOptions = Pick<
   HouseholdRoutesOptions,
-  'household' | 'providers' | 'defaultTimeZone' | 'onChange' | 'now'
+  'household' | 'profiles' | 'secret' | 'providers' | 'defaultTimeZone' | 'onChange' | 'now'
 >
 
 // After the session and profile checks, the admin's only: Réglages > Foyer and the AI's provider and key.

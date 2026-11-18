@@ -45,8 +45,16 @@ for the admin's own password first.
 ## Opening a profile
 
 Hodi starts on _Who's in?_ each time it opens, as a TV app does, but not on a reload nor while another Hodi tab is open
-in the same browser. Every adult profile asks for its account's password each time, on any device, its person's own
-included. Teen and child profiles never ask for a password: their parents open them for them.
+in the same browser. What a profile asks for there depends on two settings, both off on a new install:
+
+- **Private profile**, in _Settings › Account and data_: any adult turns it on, with their password. Their profile then
+  asks for that password on every device. Under the password, **Don’t ask again on this device** (unticked) lets it
+  open at once on that device. The **Trusted devices** row lists how many do, and **Ask again** takes them all back.
+  Signing out of a device, signing it out from the list or a new password take it back too.
+- **Parental code**, in _Settings › Household_: the admin sets six digits. Every adult profile that is not private then
+  asks for them, and opens at the last digit. A forgotten code is never shown again: the admin types a new one.
+- Without either, an adult profile opens at once. Teen and child profiles never ask for anything: their parents open
+  them for them.
 
 Signing in opens your own profile at once, and whoever opens a profile on a device is the account signed in there. An
 adult profile whose person has no account yet stays closed until they make one, with a code. To change profile, use the
