@@ -72,6 +72,10 @@ are `sign_in_codes`, and a young profile's own device is a row of `profile_devic
 Every sign-in of an existing account first asks `http/sign-in-check.ts`, which runs each plugin's `checkSignIn` hook.
 The server admin's sign-in is never asked, so a broken plugin cannot lock them out.
 
+An account belongs to one household. Leaving it is `POST /api/account/leave` (`http/account-leave-route.ts`), refused
+for the last adult with an account. An account with no household gets 423 `no_household` everywhere but its session
+and `/account*`, so it reaches only its own account.
+
 ### The Server space
 
 The routes of `#/server` are in `http/server-routes.ts`, behind `requireServerAdmin`. Its totals come from

@@ -42,6 +42,18 @@ The admin hands the role to another adult with an account with **Hand over the a
 becomes a member. That, deleting an adult profile that has an account, and **New password** for another adult all ask
 for the admin's own password first.
 
+## Leaving the household
+
+An account belongs to one household. _Settings › My account_ shows it with your role, and **Leave**, in red, asks for
+your password: your profile goes with what you read, saved and followed there, and your account stays. When you are
+the admin, the dialog names the adult who takes the role over. The last adult with an account cannot leave, as no one
+could open the household any more: deleting the account is then the only way out.
+
+An account with no household, after leaving or once its profile was deleted, signs in to a card that says so, with
+**Sign out** and _My account_ on a page of its own (`#/account`: e-mail, password, two-step verification, devices, a
+copy, deleting the account). A new code from another household's adult, with **I already have an account**, makes it
+join again. `#/account` opens _Settings › My account_ for an account in a household.
+
 ## Opening a profile
 
 Hodi starts on _Who's in?_ each time it opens, as a TV app does, but not on a reload nor while another Hodi tab is open
