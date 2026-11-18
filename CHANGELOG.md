@@ -10,6 +10,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **Info lines and checkboxes.** The icon of an info or error line sits on the middle of its text, and the
+  _J’ai au moins 13 ans_ box lines up with the icon of the field above it.
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme
   (dark in the light theme), with its icon readable.
 
