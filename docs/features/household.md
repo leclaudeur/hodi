@@ -23,15 +23,22 @@ for themselves.
 
 Codes are eight letters and digits with a QR, valid once for 24 hours, typed after **I have a code** on the sign-in page.
 
-- **A new adult**: another adult makes the code with **Invite an adult**, in _Settings › Profiles_. The new person then
-  chooses an e-mail and a password, ticks **I am at least 13 years old** and makes their profile.
+- **A new adult**: another adult makes the code with **Invite an adult**, in _Settings › Profiles_, under a name that
+  tells the invitation apart. Once _Server › E-mail_ is set, an address sends the code by e-mail; without one, the
+  dialog shows it. The new person then chooses an e-mail and a password, ticks **I am at least 13 years old** and makes
+  their profile.
 - **An adult profile with no account yet**: the admin gives it to its person with **Connect a device**, in its form.
 - **A teen's or child's own device**: a parent makes the code in _Settings › Profiles › Manage › Devices_. That device
   opens this profile only, with no _Who's in?_, until it goes unused for 90 days or a parent removes it.
 - **A forgotten password**: the admin makes a code with **New password** in the profile's form. Its person types it, then
   a new password.
 
-On a code's page, **I already have an account** links the profile to an existing account instead of a new one.
+Until it is used, the invitation waits under _Invited people_, below the profiles' groups (_Adults_, _Teens_,
+_Children_). **Send again** or **See the code** replaces its code with a new one for another 24 hours, as only a hash of
+a code is kept, and the red cross cancels it.
+
+On a code's page, **I already have an account** links the profile to an existing account instead of a new one, as long
+as that account reads in no other household: one account belongs to one household.
 
 ## The admin
 
