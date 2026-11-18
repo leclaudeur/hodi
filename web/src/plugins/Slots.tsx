@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useIsPhone } from '../lib/use-media.ts'
 import PluginSlot from './PluginSlot.tsx'
-import { type AgeConsent, type WebPlugin, pluginNamespace, usePluginSlots } from './registry.ts'
+import { type AgeConsent, type WebPlugin, pluginNamespace, shownMenuItems, usePluginSlots } from './registry.ts'
 
 // The layout a full-page slot gets: the phone's below 600 px, the computer's above.
 export const useScreenLayout = (): 'desktop' | 'phone' => (useIsPhone() ? 'phone' : 'desktop')
@@ -63,25 +63,21 @@ export interface AvatarEntry {
 export const useAvatarMenu = (): AvatarEntry[] => {
   const { i18n } = useTranslation()
   return usePluginSlots('avatarMenu').flatMap(({ id, value }) =>
-    (Array.isArray(value) ? value : [])
-      .filter(
-        item => typeof item?.id === 'string' && typeof item.label === 'string' && typeof item.onClick === 'function'
-      )
-      .map(item => ({
-        key: `${id}:${item.id}`,
-        label: String(i18n.t(item.label as never, { ns: pluginNamespace(id) } as never)),
-        icon: item.icon ? (
-          <PluginSlot id={id} component={item.icon} props={{ size: 16 }} fallback={<Puzzle size={16} />} />
-        ) : (
-          <Puzzle size={16} aria-hidden="true" />
-        ),
-        onClick: () => {
-          try {
-            item.onClick()
-          } catch (error) {
-            console.error(`Plugin ${id} failed:`, error)
-          }
+    shownMenuItems(value, error => console.error(`Plugin ${id} failed:`, error)).map(item => ({
+      key: `${id}:${item.id}`,
+      label: String(i18n.t(item.label as never, { ns: pluginNamespace(id) } as never)),
+      icon: item.icon ? (
+        <PluginSlot id={id} component={item.icon} props={{ size: 16 }} fallback={<Puzzle size={16} />} />
+      ) : (
+        <Puzzle size={16} aria-hidden="true" />
+      ),
+      onClick: () => {
+        try {
+          item.onClick()
+        } catch (error) {
+          console.error(`Plugin ${id} failed:`, error)
         }
-      }))
+      }
+    }))
   )
 }

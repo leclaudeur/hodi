@@ -10,6 +10,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **`visible` on an avatar menu entry.** A function asked each time the menu draws: when it returns false, the entry
+  is left out (« Changer de foyer » for an account in one household only). An entry without it is always there.
+
 ## [1.0.0-beta.5] - 2026-11-18
 
 Plugins can show Hodi's − / + number picker, with a value that can be typed. Needs Hodi 1.0.0-beta.13 or later.

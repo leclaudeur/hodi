@@ -4,6 +4,7 @@ import {
   localesToLoad,
   pluginFile,
   type PluginInfo,
+  shownMenuItems,
   slotsOf,
   type WebPlugin
 } from '../src/plugins/registry.ts'
@@ -281,5 +282,37 @@ describe('plugin places around sign-in', () => {
     expect(slotsOf({ plugins, web }, 'signInExtras')).toEqual([{ id: 'second', value: Page }])
     expect(slotsOf({ plugins, web }, 'ageConsent')).toEqual([{ id: 'first', value: 'consent' }])
     expect(slotsOf({ plugins, web }, 'avatarMenu')).toEqual([])
+  })
+})
+
+describe("a plugin's avatar menu", () => {
+  const onClick = () => {}
+
+  it('keeps the well-formed entries, and those whose visible() says true', () => {
+    const errors: unknown[] = []
+    const shown = shownMenuItems(
+      [
+        { id: 'always', label: 'a', onClick },
+        { id: 'shown', label: 'b', onClick, visible: () => true },
+        { id: 'hidden', label: 'c', onClick, visible: () => false },
+        {
+          id: 'broken',
+          label: 'd',
+          onClick,
+          visible: () => {
+            throw new Error('no households')
+          }
+        },
+        { id: 'no-click', label: 'e' },
+        null
+      ],
+      error => errors.push(error)
+    )
+    expect(shown.map(item => item.id)).toEqual(['always', 'shown'])
+    expect(errors).toHaveLength(1)
+  })
+
+  it('has none when the slot is not a list', () => {
+    expect(shownMenuItems('menu', () => {})).toEqual([])
   })
 })

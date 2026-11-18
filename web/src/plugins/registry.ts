@@ -113,7 +113,25 @@ export interface AvatarMenuItem {
   // 16 px, in a round (a Lucide icon the plugin bundles).
   icon?: ComponentType<{ size?: number }>
   onClick: () => void
+  // Asked each time the menu draws: false leaves the entry out (« Changer de foyer » for an account in one household
+  // only). Without it, the entry is always there.
+  visible?: () => boolean
 }
+
+// The entries of one plugin's avatar menu that are well formed and visible now. An entry whose visible() throws is
+// left out: a broken check never shows an entry that should not be there.
+export const shownMenuItems = (value: unknown, onError: (error: unknown) => void): AvatarMenuItem[] =>
+  (Array.isArray(value) ? (value as Partial<AvatarMenuItem>[]) : []).filter((item): item is AvatarMenuItem => {
+    if (typeof item?.id !== 'string' || typeof item.label !== 'string' || typeof item.onClick !== 'function')
+      return false
+    if (typeof item.visible !== 'function') return true
+    try {
+      return item.visible() === true
+    } catch (error) {
+      onError(error)
+      return false
+    }
+  })
 
 // What a plugin's web.js gives Hodi, through definePlugin() in hodi:sdk.
 export interface WebPlugin {
