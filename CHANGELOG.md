@@ -10,7 +10,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
-- **Names stand out.** In dialogs and at the top of the settings, Serveur and Mon compte pages, the names of households and
+- **Names stand out.** In dialogs and at the top of the Settings, Server and My account pages, the names of households and
   profiles and the e-mail addresses are in bold, and the names of screens and buttons in italics.
 
 ### Fixed
