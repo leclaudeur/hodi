@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from 'react'
 
-const MARK = /<(b|i)>(.*?)<\/\1>/g
+// The text inside holds no "<", so a long or broken text is read in one pass.
+const MARK = /<(b|i)>([^<]*)<\/\1>/g
 
 // A translated text that already went through t(), with its <b> (a name, an e-mail) and its <i> (a screen's name), as
 // page and dialog intros receive it. Any other text, or a node, is left as it is.

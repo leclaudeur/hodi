@@ -36,6 +36,13 @@ describe('rich', () => {
     expect(node).toBe(42)
   })
 
+  it('reads a long text full of unclosed tags at once', () => {
+    const text = '<b>' + '<b>a'.repeat(50_000)
+    const started = performance.now()
+    expect(pieces(rich(text))).toEqual([['text', text]])
+    expect(performance.now() - started).toBeLessThan(500)
+  })
+
   it('keeps a tag it does not know as text', () => {
     expect(pieces(rich('<u>a</u> et <b>b</b>'))).toEqual([
       ['text', '<u>a</u> et '],
