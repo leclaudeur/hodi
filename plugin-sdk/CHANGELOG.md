@@ -10,6 +10,10 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **A green notice.** `Notice` takes `tone="success"`, for what just worked.
+
 ## [1.0.0-beta.5] - 2026-11-18
 
 Plugins can show Hodi's − / + number picker, with a value that can be typed. Needs Hodi 1.0.0-beta.13 or later.
