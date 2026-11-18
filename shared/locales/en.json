@@ -2569,5 +2569,8 @@
   "seo": {
     "title": "Hodi - News for the whole family, free and everywhere",
     "description": "Your favourite news sites, sorted by topic, all in one place. A profile for everyone, and the household shares what’s worth reading."
+  },
+  "choiceField": {
+    "remove": "Remove {{name}}"
   }
 }

@@ -2569,5 +2569,8 @@
   "seo": {
     "title": "Hodi - L’actu pour toute la famille, gratuite et partout",
     "description": "Tes sites d’actualités préférés, triés par thème et réunis au même endroit. Un profil pour chacun, et le foyer partage ce qui vaut la peine d’être lu."
+  },
+  "choiceField": {
+    "remove": "Retirer {{name}}"
   }
 }
