@@ -8,6 +8,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Forgot password with a code.** Forgot password now e-mails an 8-character code (valid an hour, once) instead of a
+  link: the person types it on the page, or opens the e-mail's button, then chooses a new password and lands on a
+  done screen. I have a code goes straight to the code, for someone coming back with it later. Wrong codes count
+  against the device, as sign-in attempts do.
+
 ### Fixed
 
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme

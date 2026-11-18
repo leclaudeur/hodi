@@ -9,7 +9,7 @@ import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
 import { MailSettingsStore } from '../db/mail-settings-store.ts'
-import { PasswordResetStore, RESET_LINK_INTERVAL, RESET_LINK_LIFETIME } from '../db/password-reset-store.ts'
+import { PasswordResetStore, RESET_CODE_INTERVAL, RESET_CODE_LIFETIME } from '../db/password-reset-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
@@ -31,15 +31,15 @@ describe('password reset links', () => {
       "INSERT INTO users (email, password_hash, password_changed_at, created_at) VALUES ('a@example.com', 'x', 0, 0)"
     ).run()
     const token = resets.create(1, 0)!
-    assert.match(token, /^[A-Za-z0-9_-]{43}$/)
-    assert.equal(resets.create(1, RESET_LINK_INTERVAL - 1), null)
-    assert.equal(resets.peek(token, RESET_LINK_LIFETIME - 1), 1)
-    assert.equal(resets.peek(token, RESET_LINK_LIFETIME), null)
+    assert.match(token, /^[A-HJKMNP-Z2-9]{8}$/)
+    assert.equal(resets.create(1, RESET_CODE_INTERVAL - 1), null)
+    assert.equal(resets.peek(token, RESET_CODE_LIFETIME - 1), 1)
+    assert.equal(resets.peek(token, RESET_CODE_LIFETIME), null)
     // A new link replaces the one before.
-    const next = resets.create(1, RESET_LINK_INTERVAL)!
-    assert.equal(resets.peek(token, RESET_LINK_INTERVAL), null)
-    assert.equal(resets.take(next, RESET_LINK_INTERVAL), 1)
-    assert.equal(resets.take(next, RESET_LINK_INTERVAL), null)
+    const next = resets.create(1, RESET_CODE_INTERVAL)!
+    assert.equal(resets.peek(token, RESET_CODE_INTERVAL), null)
+    assert.equal(resets.take(next, RESET_CODE_INTERVAL), 1)
+    assert.equal(resets.take(next, RESET_CODE_INTERVAL), null)
     // Only a hash is kept.
     const kept = db.prepare('SELECT token_hash FROM password_resets').all() as { token_hash: string }[]
     assert.ok(kept.every(row => row.token_hash !== next))
@@ -66,7 +66,7 @@ describe('Mot de passe oublié', () => {
       .getSetCookie()
       .map(cookie => cookie.split(';')[0])
       .join('; ')
-  const linkOf = (message: MailMessage) => /#\/reset\/([A-Za-z0-9_-]{43})/.exec(message.text)?.[1]
+  const linkOf = (message: MailMessage) => /#\/reset\/([A-HJKMNP-Z2-9]{8})/.exec(message.text)?.[1]
   const setup = async () => (await (await fetch(`${baseUrl}/api/setup`)).json()) as { resetByMail?: boolean }
   // The e-mail leaves after the answer.
   const settle = () => new Promise(resolve => setTimeout(resolve, 20))
@@ -161,40 +161,44 @@ describe('Mot de passe oublié', () => {
     assert.equal(sent[0]!.to, 'antho@example.com')
     assert.match(sent[0]!.text, /https:\/\/hodi\.example\.com\/#\/reset\//)
     const token = linkOf(sent[0]!)!
+    // The code shows in the e-mail too, in two groups of four, to type on another device.
+    assert.ok(sent[0]!.text.includes(`${token.slice(0, 4)}-${token.slice(4)}`))
 
     // A second ask within the minute sends nothing more.
     await post('/password/forgot', { email: 'antho@example.com' })
     await settle()
     assert.equal(sent.length, 1)
 
-    assert.deepEqual(await (await post('/password/check', { token })).json(), { email: 'antho@example.com' })
-    assert.equal((await post('/password/check', { token: 'x'.repeat(43) })).status, 404)
-    assert.equal((await post('/password/reset', { token, password: 'court' })).status, 400)
+    // Typed as people read it, with its dash and in small letters.
+    const typed = `${token.slice(0, 4)}-${token.slice(4)}`.toLowerCase()
+    assert.deepEqual(await (await post('/password/check', { code: typed })).json(), { email: 'antho@example.com' })
+    assert.equal((await post('/password/check', { code: 'ZZZZ2222' })).status, 404)
+    assert.equal((await post('/password/reset', { code: token, password: 'court' })).status, 400)
 
-    const reset = await post('/password/reset', { token, password: NEW_PASSWORD })
+    const reset = await post('/password/reset', { code: token, password: NEW_PASSWORD })
     assert.equal(reset.status, 204)
     const here = cookiesFrom(reset)
     assert.match(here, /hodi_profile/)
     assert.equal((await fetch(`${baseUrl}/api/session`, { headers: { cookie: here } })).status, 200)
     // The device signed in before asks again.
     assert.equal((await fetch(`${baseUrl}/api/session`, { headers: { cookie: other } })).status, 401)
-    assert.equal((await post('/password/reset', { token, password: NEW_PASSWORD })).status, 404)
+    assert.equal((await post('/password/reset', { code: token, password: NEW_PASSWORD })).status, 404)
     assert.equal((await post('/login', { email: 'antho@example.com', password: PASSWORD })).status, 401)
     assert.equal((await post('/login', { email: 'antho@example.com', password: NEW_PASSWORD })).status, 204)
   })
 
   it('works an hour only', async () => {
-    clock += RESET_LINK_INTERVAL
+    clock += RESET_CODE_INTERVAL
     await post('/password/forgot', { email: 'antho@example.com' })
     await settle()
     const token = linkOf(sent.at(-1)!)!
-    clock += RESET_LINK_LIFETIME
-    assert.equal((await post('/password/check', { token })).status, 404)
-    assert.equal((await post('/password/reset', { token, password: NEW_PASSWORD })).status, 404)
+    clock += RESET_CODE_LIFETIME
+    assert.equal((await post('/password/check', { code: token })).status, 404)
+    assert.equal((await post('/password/reset', { code: token, password: NEW_PASSWORD })).status, 404)
   })
 
   it('signs in on Connexion after the new password, with the app’s code, when the account asks for it', async () => {
-    clock += RESET_LINK_INTERVAL
+    clock += RESET_CODE_INTERVAL
     const { secret } = twoFactor.start(1, 'antho@example.com', clock)
     const appCode = () =>
       new TOTP({ secret: Secret.fromBase32(secret), digits: 6, period: 30 }).generate({ timestamp: clock })
@@ -202,7 +206,7 @@ describe('Mot de passe oublié', () => {
     await post('/password/forgot', { email: 'antho@example.com' })
     await settle()
     const token = linkOf(sent.at(-1)!)!
-    const reset = await post('/password/reset', { token, password: PASSWORD })
+    const reset = await post('/password/reset', { code: token, password: PASSWORD })
     assert.equal(reset.status, 200)
     assert.deepEqual(await reset.json(), { signIn: false })
     // No session: a link in a mailbox is not the phone.
@@ -215,5 +219,12 @@ describe('Mot de passe oublié', () => {
       (await post('/login', { email: 'antho@example.com', password: PASSWORD, code: appCode() })).status,
       204
     )
+  })
+  it('stops a device that tries codes one after the other', async () => {
+    const tries: number[] = []
+    for (let attempt = 0; attempt < 12; attempt++)
+      tries.push((await post('/password/check', { code: 'ZZZZ2222' })).status)
+    assert.ok(tries.includes(429), tries.join(' '))
+    assert.ok(tries.slice(tries.indexOf(429)).every(status => status === 429))
   })
 })
