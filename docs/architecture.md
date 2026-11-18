@@ -67,7 +67,10 @@ in which topics, is that household's row of `household_sources`. `server/test/ho
 ### Accounts and sign-in
 
 Personal accounts live in `users`, and `profiles.user_id` says whose profile is whose. The codes of **I have a code**
-are `sign_in_codes`, and a young profile's own device is a row of `profile_devices` with a cookie of its own.
+are `sign_in_codes`, and a young profile's own device is a row of `profile_devices` with a cookie of its own. The
+session cookie holds one token per account signed in on the device, and `http/account-session.ts` reads them all
+(`sessionsOf`), finds the one whose profile is open (`sessionOf`) and drops one at sign-out (`cookieWithout`). A trusted
+device is a flag on the account's own row in `user_devices` (`http/trusted-devices.ts`).
 
 Every sign-in of an existing account first asks `http/sign-in-check.ts`, which runs each plugin's `checkSignIn` hook.
 The server admin's sign-in is never asked, so a broken plugin cannot lock them out.

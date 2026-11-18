@@ -56,8 +56,15 @@ in the same browser. What a profile asks for there depends on two settings, both
 - Without either, an adult profile opens at once. Teen and child profiles never ask for anything: their parents open
   them for them.
 
-Signing in opens your own profile at once, and whoever opens a profile on a device is the account signed in there. An
-adult profile whose person has no account yet stays closed until they make one, with a code. To change profile, use the
+_Who's in?_ shows the accounts signed in on the device, then the household's teen and child profiles, as a TV's
+streaming app does. **Add** signs one more account in with its e-mail and password, and the app's code when two-step
+verification is on; an account of another household is refused, as a device serves one household. Signing in opens
+your own profile at once. An adult profile whose account is not signed in on the device does not show there, and one
+whose person has no account yet stays closed until they make one, with a code. New profiles are made in
+_Settings › Profiles_ only.
+
+**Sign out** takes only the account whose profile is open: the others stay, and _Who's in?_ opens again. When the last
+adult signs out, the young profiles leave with them and the device goes back to the sign-in page. To change profile, use the
 selector at the foot of the sidebar on a computer, or _Who's in?_ from the header's avatar on a tablet or a phone.
 
 Each profile has its own settings, saved articles, history, followed subjects and statistics, on the server: every

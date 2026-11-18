@@ -18,7 +18,12 @@ A sign-in sets a signed, stateless cookie: `HttpOnly`, `Secure`, `SameSite=Lax`,
 The cookie is signed with a key derived from the session secret, the account's password hash and its session
 generation. A new password therefore signs out that account's other devices, and no one else's.
 
-Signing out clears the cookie on that device. [Deployment](../deployment.md#sign-out-every-device) shows how to sign
+One device may hold up to 5 accounts of the same household, for _Who's in?_: the cookie then carries one token per
+account, joined by `~`, and each is checked on its own. A profile opens only for an account whose token is there, and
+an account of another household is refused at sign-in.
+
+Signing out removes only the token of the account whose profile is open, and that device's row in the account's
+devices. [Deployment](../deployment.md#sign-out-every-device) shows how to sign
 out every device at once. The web bundle holds no data and is public, so the sign-in page can load.
 
 ## One-time codes
@@ -37,8 +42,10 @@ no list of devices.
 
 ## Profiles in _Who's in?_
 
-An adult profile asks for its account's password each time it opens, and the server checks it against that account's
-hash. Each device may fail an account's password 5 times in 15 minutes, so a child guessing on a tablet never blocks the
+A private adult profile asks for its account's password when it opens, and the server checks it against that account's
+hash. **Don't ask again on this device** marks that account's own session row on the device as trusted, so it goes
+with a sign-out, a sign-out from the devices' list or a new password. An adult profile that is not private asks for the
+household's parental code when the admin has set one. Each device may fail an account's password 5 times in 15 minutes, so a child guessing on a tablet never blocks the
 parents' own devices. All devices together stop after 50 failures for that account.
 
 The device's choice of an adult profile is signed with a version that changes with the account's password. After a new
