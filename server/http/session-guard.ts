@@ -62,6 +62,23 @@ const serverOnly = (request: express.Request, response: express.Response, accoun
   return true
 }
 
+// An account whose last profile was deleted from its household: the account is still the person's, but no household
+// is theirs any more. Its own account alone (Réglages › Compte et données: a copy, deletion) and nothing of the
+// household it left. False when the refusal is sent.
+const accountOnly = (request: express.Request, response: express.Response, account: UserAccount) => {
+  const open =
+    (request.method === 'GET' && request.path === '/session') ||
+    request.path === '/account' ||
+    request.path.startsWith('/account/')
+  if (!open) {
+    response.status(423).json({ error: 'no_household' })
+    return false
+  }
+  response.locals.accountId = account.id
+  response.locals.noHousehold = true
+  return true
+}
+
 const householdHelpers = ({
   accounts,
   profiles,
@@ -135,6 +152,14 @@ const answerBeforeSetup = (
   response.status(401).json({ error: 'setup_required' })
 }
 
+// A session with no profile in the household it reads in: the server's admin gets /server, any other account its own
+// account alone. Without accounts (older tests), every session reads in the one household.
+const gateOf = (accounts: UserAccountStore | undefined, account: UserAccount, householdId: number) => {
+  if (!accounts) return null
+  if (account.serverAdmin) return accounts.profileOf(account.id, householdId) === null ? serverOnly : null
+  return accounts.householdOf(account.id) === null ? accountOnly : null
+}
+
 const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
   const { accounts, devices, profiles, sessionOf, cookieFor, linkedDevices } = options
   const { householdOfSession, readsInSetUpHousehold } = householdHelpers(options)
@@ -157,8 +182,9 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
 
     const session = sessionOf(request)
     const householdId = (session && householdOfSession(session)) ?? DEFAULT_ACCOUNT_ID
-    if (session?.account.serverAdmin && accounts?.profileOf(session.account.id, householdId) === null) {
-      if (serverOnly(request, response, session.account)) inHousehold(householdId, next)
+    const gate = session && gateOf(accounts, session.account, householdId)
+    if (session && gate) {
+      if (gate(request, response, session.account)) inHousehold(householdId, next)
       return
     }
     if (session) {
@@ -178,6 +204,14 @@ const serverOnlyLocals = (response: express.Response) => {
   response.locals.profileId = 0
   response.locals.admin = false
   response.locals.serverAdmin = true
+  response.locals.profileChosen = false
+}
+
+// An account with no household left: no profile, no right in any household.
+const noHouseholdLocals = (response: express.Response) => {
+  response.locals.profileId = 0
+  response.locals.admin = false
+  response.locals.serverAdmin = false
   response.locals.profileChosen = false
 }
 
@@ -215,6 +249,11 @@ const chooseProfileOf = (options: SessionGuardOptions): RequestHandler => {
   return (request, response, next) => {
     if (response.locals.serverOnly === true) {
       serverOnlyLocals(response)
+      next()
+      return
+    }
+    if (response.locals.noHousehold === true) {
+      noHouseholdLocals(response)
       next()
       return
     }

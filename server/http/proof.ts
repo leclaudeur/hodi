@@ -91,9 +91,9 @@ export const proofCheck = ({
 }
 
 // Whose proof an action asks for: the account of the profile open on this device, since every adult profile asks for
-// its own password when it opens; with no household, the server admin's session itself.
+// its own password when it opens; with no household, the session's own account.
 export const accountAsking = (response: express.Response, accounts: UserAccountStore) =>
-  response.locals.serverOnly === true
+  response.locals.serverOnly === true || response.locals.noHousehold === true
     ? typeof response.locals.accountId === 'number'
       ? accounts.get(response.locals.accountId)
       : null

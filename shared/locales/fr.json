@@ -2569,5 +2569,10 @@
   "seo": {
     "title": "Hodi - L’actu pour toute la famille, gratuite et partout",
     "description": "Tes sites d’actualités préférés, triés par thème et réunis au même endroit. Un profil pour chacun, et le foyer partage ce qui vaut la peine d’être lu."
+  },
+  "noHousehold": {
+    "title": "Tu n’as plus de foyer",
+    "text": "Ton profil a été retiré de son foyer. Ton compte, lui, existe toujours : tu peux garder une copie de tes données ou le supprimer.",
+    "deleteMessage": "<b>{{email}}</b> est effacé tout de suite. Les copies de sauvegarde l’oublient au plus tard dans {{days}}."
   }
 }

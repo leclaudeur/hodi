@@ -2569,5 +2569,10 @@
   "seo": {
     "title": "Hodi - News for the whole family, free and everywhere",
     "description": "Your favourite news sites, sorted by topic, all in one place. A profile for everyone, and the household shares what’s worth reading."
+  },
+  "noHousehold": {
+    "title": "You no longer have a household",
+    "text": "Your profile was removed from its household. Your account still exists: you can keep a copy of your data or delete it.",
+    "deleteMessage": "<b>{{email}}</b> is erased right away. Backup copies forget it within {{days}} at most."
   }
 }

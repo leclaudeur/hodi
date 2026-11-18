@@ -21,6 +21,7 @@ import { clearSignedIn, isJustSignedIn } from './lib/after-sign-in.ts'
 import SignedOut from './app/SignedOut.tsx'
 import Tour from './app/Tour.tsx'
 import HomePage from './pages/HomePage.tsx'
+import NoHouseholdPage from './pages/NoHouseholdPage.tsx'
 import ProfilePicker from './pages/ProfilePicker.tsx'
 import TimeUpPage from './pages/TimeUpPage.tsx'
 import EmptyState from './ui/EmptyState.tsx'
@@ -46,7 +47,7 @@ const SetupPage = (props: ComponentProps<typeof LazySetupPage>) => (
 
 // setup: a new install, before its first-run screens. choosing: logged in, but no profile picked on this device yet.
 // server: the server's admin with no household yet, in /server alone.
-type Status = 'loading' | 'setup' | 'anonymous' | 'choosing' | 'authenticated' | 'server' | 'error'
+type Status = 'loading' | 'setup' | 'anonymous' | 'choosing' | 'authenticated' | 'server' | 'noHousehold' | 'error'
 
 // Each time the app opens (not on a reload in the same tab), it starts on « Qui lit ? », as Netflix does: the device
 // may be shared, and the profile open when it closed may not be the reader's. Not while another tab of Hodi is open in
@@ -80,7 +81,7 @@ const openingSession = async () => {
   const session = await getSession()
   const signedIn = session !== null && session !== 'setup'
   // The server's admin outside any household opens /server alone: preload.js's requests would all be refused.
-  rememberSession(signedIn && !session.serverOnly)
+  rememberSession(signedIn && !session.serverOnly && !session.noHousehold)
   const left = await leaveOnOpen(signedIn && session.profileChosen)
   return left ? getSession(true) : session
 }
@@ -89,6 +90,7 @@ const statusOf = (session: Session): Status => {
   if (session === 'setup') return 'setup'
   if (!session) return 'anonymous'
   if (session.serverOnly) return 'server'
+  if (session.noHousehold) return 'noHousehold'
   return session.profileChosen ? 'authenticated' : 'choosing'
 }
 
@@ -142,8 +144,9 @@ const useAfterSignIn = (status: Status) => {
   const [afterSignIn] = usePluginSlots('afterSignIn')
   const [justSignedIn, setJustSignedIn] = useState(isJustSignedIn)
   const layout = useScreenLayout()
-  // The server's admin with no household has no step to take (/server alone), nor does anyone when no plugin has one.
-  const noStep = status === 'server' || (plugins.ready && !afterSignIn)
+  // The server's admin with no household has no step to take (/server alone), nor an account with no household left,
+  // nor anyone when no plugin has one.
+  const noStep = status === 'server' || status === 'noHousehold' || (plugins.ready && !afterSignIn)
   useEffect(() => {
     if (justSignedIn && noStep) clearSignedIn()
   }, [justSignedIn, noStep])
@@ -280,6 +283,7 @@ const App = () => {
   }
   if (status === 'setup') return <SetupPage onDone={signedIn} />
   if (status === 'anonymous') return <SignedOut onLoggedIn={signedIn} />
+  if (status === 'noHousehold') return <NoHouseholdPage />
 
   // No household yet: the server's space whatever the address, with its plugins' sections.
   if (status === 'server') {
