@@ -8,7 +8,8 @@ import PhoneHeader from '../ui/PhoneHeader.tsx'
 import RoundButton from '../ui/RoundButton.tsx'
 import CodeDialog from '../views/profiles/CodeDialog.tsx'
 import ProfileForm from '../views/profiles/ProfileForm.tsx'
-import { Unlock, Who, useOpening } from './ProfilePickerParts.tsx'
+import { Who, useOpening } from './ProfilePickerParts.tsx'
+import { Unlock } from './ProfileUnlock.tsx'
 import styles from './ProfilePicker.module.css'
 
 interface ProfilePickerProps {

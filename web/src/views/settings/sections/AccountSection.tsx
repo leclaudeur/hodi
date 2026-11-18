@@ -17,6 +17,7 @@ import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import { PluginSlots } from '../../../plugins/Slots.tsx'
 import { DeviceRows, TwoFactorRow, confirmDelete, labelOf } from './AccountRows.tsx'
+import PrivateProfileRow from './PrivateProfileRow.tsx'
 
 // undefined while it comes; null: no account here.
 const useAccount = (onUnauthorized: () => void) => {
@@ -201,6 +202,7 @@ const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
             onClick: () => setEditing('password')
           }}
         />
+        <PrivateProfileRow account={account} onAccount={setAccount} />
         <TwoFactorRow account={account} onAccount={setAccount} onStarted={setStarted} onNewCodes={setNewCodes} />
         {/* A plugin's rows about the account (« Relier mon compte Google »). */}
         <PluginSlots slot="accountRows" props={{ layout }} />

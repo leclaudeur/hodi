@@ -351,7 +351,11 @@
     "open": "Open",
     "noAccount": "{{name}} has no account yet. This profile opens once {{name}} makes one with their code.",
     "loginOnly": "{{name}} signs in without a password: continue with the same button as at sign-in to open their profile.",
-    "loginOnlyNoWay": "{{name}} signs in without a password, through a plugin that is gone. An adult of the household can give them a code to choose a password."
+    "loginOnlyNoWay": "{{name}} signs in without a password, through a plugin that is gone. An adult of the household can give them a code to choose a password.",
+    "parentalCode": "Parental code",
+    "wrongCode": "That code is not the right one.",
+    "trustDevice": "Don’t ask again on this device",
+    "codeHint": "Ask the household’s admin."
   },
   "limits": {
     "fiveMinutes": "Only 5 minutes of reading left today",
@@ -688,7 +692,9 @@
     "word_one": "{{count}} word",
     "word_other": "{{count}} words",
     "profile_one": "{{count}} profile",
-    "profile_other": "{{count}} profiles"
+    "profile_other": "{{count}} profiles",
+    "device_one": "{{count}} device",
+    "device_other": "{{count}} devices"
   },
   "state": {
     "read": {
@@ -1348,7 +1354,13 @@
       "choosePasswordIntro": "You will be able to sign in with your e-mail and this password, besides your other way.",
       "signInAgain": "To confirm it is you, sign in again just before (less than 5 minutes ago), then come back here.",
       "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use “Forgot password” or ask an adult of the household for a code.",
-      "sessionHintNoPassword": "Signed in for 90 days, then you sign in again"
+      "sessionHintNoPassword": "Signed in for 90 days, then you sign in again",
+      "private": "Private profile",
+      "privateHint": "Your password to open your profile",
+      "trusted": "Opens without a password",
+      "askAgain": "Ask again",
+      "trustedDevices": "Trusted devices",
+      "privateFailed": "Your private profile couldn’t be changed. Try again in a moment."
     },
     "roles": {
       "admin": "Admin",
@@ -1482,7 +1494,16 @@
       "gameOn": "Game on",
       "gameOff": "Game off",
       "gameFailed": "The game could not be changed. Try again in a moment.",
-      "timeZoneValue": "{{zone}} · {{offset}}"
+      "timeZoneValue": "{{zone}} · {{offset}}",
+      "adults": "Adult profiles",
+      "parentalCode": "Parental code",
+      "parentalCodeHint": "Asked to open an adult profile",
+      "code": "Code",
+      "codeValue": "6 digits",
+      "codeTitle": "Parental code",
+      "codeIntro": "Six digits, asked to open an adult profile from <i>Who’s reading?</i>. A private profile asks for its password instead.",
+      "newCode": "New code",
+      "codeFailed": "The parental code couldn’t be saved. Try again in a moment."
     },
     "proposals": {
       "errors": {
@@ -1865,9 +1886,15 @@
       "title": "Hand over the admin role?",
       "message": "<b>{{name}}</b> then manages the household’s profiles, sources, AI key and settings. <b>You become an adult like the others</b>, and only {{name}} can give the role back. Type your password to confirm.",
       "button": "Hand over"
+    },
+    "privateOn": {
+      "title": "Make your profile private?",
+      "message": "Your password will be asked to open your profile from <i>Who’s reading?</i>, on every device. On your own ones, tick <i>Don’t ask again on this device</i>.",
+      "button": "Make private"
     }
   },
   "dialogIntro": {
+    "codeOpen": "Type the household’s <b>parental code</b> to open this profile.",
     "ownOpen": "Type <b>your password</b> to open this profile.",
     "shortcuts": "On a computer, without leaving the keyboard. Press <b>?</b> anywhere to see them again.",
     "timeZone": "It sets <b>when each day starts</b>: new feed, daily summary, quiet hours and young readers’ screen time.",

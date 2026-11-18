@@ -351,7 +351,11 @@
     "open": "Ouvrir",
     "noAccount": "{{name}} n’a pas encore de compte. Son profil s’ouvrira quand {{name}} l’aura créé avec son code.",
     "loginOnly": "{{name}} se connecte sans mot de passe : continue avec le même bouton qu'à la connexion pour ouvrir son profil.",
-    "loginOnlyNoWay": "{{name}} se connecte sans mot de passe, par un plugin qui n'est plus là. Un adulte du foyer peut lui donner un code pour choisir un mot de passe."
+    "loginOnlyNoWay": "{{name}} se connecte sans mot de passe, par un plugin qui n'est plus là. Un adulte du foyer peut lui donner un code pour choisir un mot de passe.",
+    "parentalCode": "Code parental",
+    "wrongCode": "Ce code n’est pas le bon.",
+    "trustDevice": "Ne plus demander sur cet appareil",
+    "codeHint": "Demande-le à l’admin du foyer."
   },
   "limits": {
     "fiveMinutes": "Plus que 5 minutes de lecture aujourd’hui",
@@ -688,7 +692,9 @@
     "word_one": "{{count}} mot",
     "word_other": "{{count}} mots",
     "profile_one": "{{count}} profil",
-    "profile_other": "{{count}} profils"
+    "profile_other": "{{count}} profils",
+    "device_one": "{{count}} appareil",
+    "device_other": "{{count}} appareils"
   },
   "state": {
     "read": {
@@ -1348,7 +1354,13 @@
       "choosePasswordIntro": "Tu pourras te connecter avec l’e-mail du compte et ce mot de passe, en plus de l’autre façon.",
       "signInAgain": "Pour confirmer que c’est toi, reconnecte-toi juste avant (il y a moins de 5 minutes), puis reviens ici.",
       "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise « Mot de passe oublié » ou demande un code à un adulte du foyer.",
-      "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter"
+      "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter",
+      "private": "Profil privé",
+      "privateHint": "Ton mot de passe pour ouvrir ton profil",
+      "trusted": "S’ouvre sans mot de passe",
+      "askAgain": "Redemander",
+      "trustedDevices": "Appareils de confiance",
+      "privateFailed": "Ton profil privé n’a pas pu être changé. Réessaie dans un instant."
     },
     "roles": {
       "admin": "Admin",
@@ -1482,7 +1494,16 @@
       "gameOn": "Jeu activé",
       "gameOff": "Jeu désactivé",
       "gameFailed": "Le jeu n’a pas pu être changé. Réessaie dans un instant.",
-      "timeZoneValue": "{{zone}} · {{offset}}"
+      "timeZoneValue": "{{zone}} · {{offset}}",
+      "adults": "Profils adultes",
+      "parentalCode": "Code parental",
+      "parentalCodeHint": "Demandé pour ouvrir un profil adulte",
+      "code": "Code",
+      "codeValue": "6 chiffres",
+      "codeTitle": "Code parental",
+      "codeIntro": "Six chiffres, demandés pour ouvrir un profil adulte depuis <i>Qui lit ?</i>. Un profil privé demande son mot de passe à la place.",
+      "newCode": "Nouveau code",
+      "codeFailed": "Le code parental n’a pas pu être enregistré. Réessaie dans un instant."
     },
     "proposals": {
       "errors": {
@@ -1865,9 +1886,15 @@
       "title": "Passer le rôle d’admin ?",
       "message": "<b>{{name}}</b> gère alors les profils, les sources, la clé IA et les réglages du foyer. <b>Toi, tu deviens un adulte comme les autres</b>, et seul·e {{name}} pourra te rendre ce rôle. Confirme avec le mot de passe.",
       "button": "Passer le rôle"
+    },
+    "privateOn": {
+      "title": "Rendre ton profil privé ?",
+      "message": "Ton mot de passe sera demandé pour ouvrir ton profil depuis <i>Qui lit ?</i>, sur tous les appareils. Sur les tiens, coche <i>Ne plus demander sur cet appareil</i>.",
+      "button": "Rendre privé"
     }
   },
   "dialogIntro": {
+    "codeOpen": "Tape le <b>code parental</b> du foyer pour ouvrir ce profil.",
     "ownOpen": "Tape <b>le mot de passe du compte</b> pour ouvrir ce profil.",
     "shortcuts": "Sur ordinateur, sans quitter le clavier. Appuie sur <b>?</b> n’importe où pour les revoir.",
     "timeZone": "Il fixe <b>le début de chaque jour</b> : nouveau fil, Résumé du jour, heures calmes et temps d’écran des jeunes.",
