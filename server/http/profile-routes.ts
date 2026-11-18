@@ -1,8 +1,5 @@
 import express from 'express'
-import type { LoginThrottle } from '../auth/login-throttle.ts'
-import { hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
-import { clientAddressOf } from './client-address.ts'
-import { clearedProfileCookie, profileCookie, profileToken } from '../auth/session.ts'
+import { clearedProfileCookie } from '../auth/session.ts'
 import {
   PROFILE_AVATARS,
   profileColorOf,
@@ -10,12 +7,11 @@ import {
   type Profile,
   type ProfileAvatar,
   type ProfileKind,
-  type ProfileStore,
   cleanName,
   isYoung
 } from '../db/profile-store.ts'
-import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
-import { type Guard, guardOf } from './profile-guard.ts'
+import { type CurrentRoutesOptions, deviceAccountOf, guardFor, mountCurrentRoutes } from './profile-current-routes.ts'
+import { isAccountGuard, lockOf } from './profile-guard.ts'
 import { type CheckProof, askingWithProof } from './proof.ts'
 import { mountPhotoRoutes } from './profile-photos.ts'
 
@@ -24,12 +20,9 @@ import { mountPhotoRoutes } from './profile-photos.ts'
 const isKind = (value: unknown): value is ProfileKind => PROFILE_KINDS.includes(value as ProfileKind)
 const isAvatar = (value: unknown): value is ProfileAvatar => PROFILE_AVATARS.includes(value as ProfileAvatar)
 
-// A password typed in "Qui lit ?". Wrong ones count per account and per device: a child guessing a parent's password
-// on its tablet blocks only that account there, never the parents' own devices. All devices together stop far
-// later, which still caps a guess spread over several devices.
+// A password or code typed in "Qui lit ?": see profile-current-routes.ts.
 export const PIN_MAX_FAILURES = 5
 export const PIN_GLOBAL_MAX_FAILURES = 50
-const MAX_PASSWORD_LENGTH = 256
 
 // The profile a request is for, set by the app's middleware.
 export const profileIdOf = (response: express.Response) => response.locals.profileId as number
@@ -55,16 +48,7 @@ export const requireServerAdmin: express.RequestHandler = (_request, response, n
   else response.status(403).json({ error: 'server_admin_only' })
 }
 
-interface ProfileRoutesOptions {
-  profiles: ProfileStore
-  now: () => number
-  // Signs the device's choice of a profile.
-  secret: Buffer
-  pinThrottle: LoginThrottle
-  // The people's accounts, whose passwords open their profiles; absent in tests without accounts.
-  accounts?: UserAccountStore
-  // The session cookie of an account on this device: the one whose profile opens here becomes the device's.
-  signIn?: (account: UserAccount, request: express.Request) => string
+interface ProfileRoutesOptions extends CurrentRoutesOptions {
   // What a new profile starts with (the base sources only).
   onCreate?: (profileId: number) => void
   // What else goes with a deleted profile (its devices' alerts).
@@ -79,14 +63,14 @@ export const profileRoutes = (options: ProfileRoutesOptions) => {
   const router = express.Router()
   const helpers = profileHelpers(options)
   mountListRoutes(router, options)
-  mountCurrentRoutes(router, options, helpers)
+  mountCurrentRoutes(router, options)
   mountEditRoutes(router, options, helpers)
   mountAdminRoutes(router, options, helpers)
   mountPhotoRoutes(router, options, helpers)
   return router
 }
 
-const profileHelpers = ({ profiles, now, secret, pinThrottle, accounts, checkProof }: ProfileRoutesOptions) => {
+const profileHelpers = ({ profiles, accounts, checkProof }: ProfileRoutesOptions) => {
   const idOf = (request: express.Request) => {
     const id = Number(request.params.id)
     return Number.isInteger(id) && profiles.get(id) ? id : null
@@ -101,41 +85,6 @@ const profileHelpers = ({ profiles, now, secret, pinThrottle, accounts, checkPro
     return false
   }
 
-  const cookieFor = (id: number) => profileCookie(profileToken(id, profiles.lock(id)?.version ?? 0, secret))
-
-  // true when the password is right, or there is none to give; else the refusal is sent.
-  const checkPassword = async (
-    guard: Guard,
-    password: unknown,
-    request: express.Request,
-    response: express.Response
-  ) => {
-    if (guard === 'no_account') {
-      response.status(403).json({ error: 'no_account' })
-      return false
-    }
-    const account = guard
-    if (!account) return true
-    const client = `${account.id}|${clientAddressOf(request)}`
-    const decision = pinThrottle.check(now(), client)
-    if (!decision.allowed) {
-      response.set('Retry-After', String(decision.retryAfterSeconds))
-      response.status(429).json({ error: 'too_many_attempts', retryAfterSeconds: decision.retryAfterSeconds })
-      return false
-    }
-    if (
-      typeof password === 'string' &&
-      password.length <= MAX_PASSWORD_LENGTH &&
-      (await verifyPassword(password, account.passwordHash))
-    ) {
-      if (needsRehash(account.passwordHash)) accounts?.upgradePassword(account.id, await hashPassword(password))
-      return true
-    }
-    pinThrottle.recordFailure(now(), client)
-    response.status(403).json({ error: 'wrong_password' })
-    return false
-  }
-
   // Another adult's profile with its account: what they read and kept goes, and they no longer read here. The admin's
   // password comes first.
   const withProof = async (target: Profile, request: express.Request, response: express.Response) => {
@@ -143,26 +92,26 @@ const profileHelpers = ({ profiles, now, secret, pinThrottle, accounts, checkPro
     return (await askingWithProof(checkProof, accounts, request, response)) !== null
   }
 
-  return { idOf, mayManage, mayChange, cookieFor, checkPassword, withProof }
+  return { idOf, mayManage, mayChange, withProof }
 }
 
 type ProfileHelpers = ReturnType<typeof profileHelpers>
 
-// The device's account, when one is signed in here.
-const deviceAccountOf = (response: express.Response) => response.locals.accountId as number | undefined
-
-const mountListRoutes = (router: express.Router, { profiles, now, accounts, onCreate }: ProfileRoutesOptions) => {
-  // locked: this device types a password before it opens that profile; own: the profile of the account signed in
-  // here, if any.
-  router.get('/', (_request, response) => {
+const mountListRoutes = (router: express.Router, options: ProfileRoutesOptions) => {
+  const { profiles, now, accounts, trust, onCreate } = options
+  const guardOfProfile = guardFor(options)
+  // locked: this device types something before it opens that profile, lock says what; own: the profile of the
+  // account signed in here, if any.
+  router.get('/', (request, response) => {
     const device = deviceAccountOf(response)
     response.json({
       profiles: profiles.list().map(profile => {
-        const guard = guardOf(profile, accounts)
+        const guard = guardOfProfile(profile)
+        const lock = lockOf(guard, isAccountGuard(guard) && trust?.trustedFor(request, guard) != null)
         // An account with no password of its own (« Se connecter avec Google »): its person opens it through the
         // plugin, which signs the device in with it.
-        const loginOnly = guard !== null && guard !== 'no_account' && !guard.hasPassword
-        return { ...profile, locked: guard !== null, ...(loginOnly ? { loginOnly } : {}) }
+        const loginOnly = lock === 'password' && isAccountGuard(guard) && !guard.hasPassword
+        return { ...profile, locked: lock !== null, ...(lock ? { lock } : {}), ...(loginOnly ? { loginOnly } : {}) }
       }),
       current: profileIdOf(response),
       own: device === undefined || !accounts ? null : accounts.profileOf(device),
@@ -192,36 +141,6 @@ const mountListRoutes = (router: express.Router, { profiles, now, accounts, onCr
     }
     onCreate?.(profile.id)
     response.status(201).json(profile)
-  })
-}
-
-const mountCurrentRoutes = (
-  router: express.Router,
-  { profiles, accounts, signIn }: ProfileRoutesOptions,
-  { cookieFor, checkPassword }: ProfileHelpers
-) => {
-  // This device now reads as that profile, after the password its guard asks for, if any.
-  router.put('/current', async (request, response) => {
-    const id: unknown = request.body?.id
-    const profile = typeof id === 'number' ? profiles.get(id) : null
-    if (!profile) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    const guard = guardOf(profile, accounts)
-    if (!(await checkPassword(guard, request.body?.password, request, response))) return
-    // There is no device's account: whoever opens their profile here is the one signed in, for their account's pages.
-    const cookies = [cookieFor(profile.id)]
-    if (guard && guard !== 'no_account' && signIn && guard.id !== deviceAccountOf(response))
-      cookies.push(signIn(guard, request))
-    response.set('Set-Cookie', cookies)
-    response.json({ current: profile.id })
-  })
-
-  // The app opening again on this device: it asks « Qui lit ? » first, like a TV's streaming app.
-  router.delete('/current', (_request, response) => {
-    response.set('Set-Cookie', clearedProfileCookie())
-    response.status(204).end()
   })
 }
 

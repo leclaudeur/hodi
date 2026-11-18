@@ -320,6 +320,9 @@ describe('household', () => {
   })
 
   it('is the admin’s only', async () => {
+    // A private profile: the session alone opens it no more than Léa's.
+    const own = await signIn()
+    assert.equal((await post('/account/private', { on: true, password: PASSWORD }, { cookie: own }, 'PUT')).status, 200)
     // The session alone: the device then picks the profile it reads with.
     const cookie = (await signIn())
       .split('; ')
@@ -497,8 +500,8 @@ describe('an account with no password of its own (« Se connecter avec Google »
     ;({ baseUrl, household, profiles } = install)
     antho = cookiesFrom(await post('/setup/account', ACCOUNT))
     antho = `${antho}; ${cookiesFrom(await post('/setup', SETUP, { cookie: antho }))}`
-    // As if a plugin had made it with a login alone.
-    install.db.prepare('UPDATE users SET has_password = 0').run()
+    // As if a plugin had made it with a login alone, its profile private.
+    install.db.prepare('UPDATE users SET has_password = 0, private_profile = 1').run()
   })
   after(() => install.close())
 
@@ -509,7 +512,7 @@ describe('an account with no password of its own (« Se connecter avec Google »
       recentSignIn: boolean
     }
 
-  it('says so in « Qui lit ? », where its profile opens through the plugin', async () => {
+  it('says so in « Qui lit ? », where its private profile opens through the plugin', async () => {
     const list = (await (await fetch(`${baseUrl}/api/profiles`, { headers: { cookie: antho } })).json()) as {
       profiles: { name: string; locked: boolean; loginOnly?: boolean }[]
     }

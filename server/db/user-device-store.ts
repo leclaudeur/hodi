@@ -14,6 +14,8 @@ export interface UserDevice {
   lastSeenAt: number
   // The household it was moved to (« Changer de foyer »); null: its account's first.
   householdId: number | null
+  // « Ne plus demander sur cet appareil »: its account's private profile opens here without the password.
+  trusted: boolean
 }
 
 interface UserDeviceRow {
@@ -22,16 +24,18 @@ interface UserDeviceRow {
   created_at: number
   last_seen_at: number
   household_id: number | null
+  trusted: number
 }
 
-const COLUMNS = 'id, user_agent, created_at, last_seen_at, household_id'
+const COLUMNS = 'id, user_agent, created_at, last_seen_at, household_id, trusted'
 
 const toDevice = (row: UserDeviceRow): UserDevice => ({
   id: row.id,
   userAgent: row.user_agent,
   createdAt: row.created_at,
   lastSeenAt: row.last_seen_at,
-  householdId: row.household_id
+  householdId: row.household_id,
+  trusted: row.trusted === 1
 })
 
 export class UserDeviceStore {
@@ -66,6 +70,17 @@ export class UserDeviceStore {
   touch(device: UserDevice, now: number) {
     if (now - device.lastSeenAt < LAST_SEEN_STEP) return
     this.#db.prepare('UPDATE user_devices SET last_seen_at = ? WHERE id = ?').run(now, device.id)
+  }
+
+  setTrusted(userId: number, id: number, trusted: boolean) {
+    this.#db
+      .prepare('UPDATE user_devices SET trusted = ? WHERE id = ? AND user_id = ?')
+      .run(trusted ? 1 : 0, id, userId)
+  }
+
+  // « Redemander »: the password again on every device of the account.
+  untrustAll(userId: number) {
+    this.#db.prepare('UPDATE user_devices SET trusted = 0 WHERE user_id = ?').run(userId)
   }
 
   // false when there was no such device of this account.

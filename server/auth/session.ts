@@ -198,3 +198,12 @@ export const profileCookie = (token: string) =>
   `${PROFILE_COOKIE}=${token}; Max-Age=${SESSION_TTL_SECONDS}; ${COOKIE_ATTRIBUTES}`
 
 export const clearedProfileCookie = () => `${PROFILE_COOKIE}=; Max-Age=0; ${COOKIE_ATTRIBUTES}`
+
+// « Ne plus demander sur cet appareil »: the device sessions (v3 tokens) of the accounts whose private profile opens
+// here without the password, joined by "~". Signing out clears it.
+export const TRUST_COOKIE = 'hodi_trusted'
+
+export const trustCookie = (tokens: string[]) =>
+  `${TRUST_COOKIE}=${tokens.join('~')}; Max-Age=${SESSION_TTL_SECONDS}; ${COOKIE_ATTRIBUTES}`
+
+export const clearedTrustCookie = () => `${TRUST_COOKIE}=; Max-Age=0; ${COOKIE_ATTRIBUTES}`

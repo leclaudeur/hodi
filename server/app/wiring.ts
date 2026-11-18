@@ -9,6 +9,7 @@ import { PIN_GLOBAL_MAX_FAILURES, PIN_MAX_FAILURES } from '../http/profile-route
 import { accountAsking, askingWithProof, proofCheck, type CheckProof } from '../http/proof.ts'
 import type { RouteProof } from '../http/plugin-routes.ts'
 import { readerContext, type ReaderContext } from '../http/reader-context.ts'
+import { type TrustedDevices, trustedDevices } from '../http/trusted-devices.ts'
 import { AI_PROVIDERS } from '../news/ai-providers.ts'
 import { YouthSources } from '../news/youth-sources.ts'
 import { householdOptionsOf } from './household-options.ts'
@@ -26,6 +27,8 @@ export interface Wiring {
   presence: Presence
   session: ReturnType<typeof accountSession>
   linkedDevices: ReturnType<typeof profileDeviceSession>
+  // « Ne plus demander sur cet appareil »; null without accounts.
+  trust: TrustedDevices | null
   // The person's own password before what cannot be undone (proof.ts).
   checkProof: CheckProof
   // In /server, the server admin's « Validation en deux étapes » must be on too.
@@ -97,6 +100,8 @@ export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
     presence: new Presence(),
     session,
     linkedDevices: profileDeviceSession(profileDevices, config.sessionSecret, now),
+    trust:
+      accounts && devices ? trustedDevices({ accounts, devices, session, secret: config.sessionSecret, now }) : null,
     ...proofsOf(options, session),
     householdOptions,
     youthSources,

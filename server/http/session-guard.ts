@@ -183,7 +183,12 @@ const serverOnlyLocals = (response: express.Response) => {
 
 // The profile a request is for, and whether it is chosen on this device or the device reads as nobody.
 const profileOfRequest = (
-  { accounts, profiles, secret }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'secret'>,
+  {
+    accounts,
+    profiles,
+    household,
+    secret
+  }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'household' | 'secret'>,
   request: express.Request,
   linkedId: number | undefined
 ) => {
@@ -193,7 +198,8 @@ const profileOfRequest = (
     id => profiles?.lock(id)?.version ?? 0
   )
   const known = profiles?.list() ?? []
-  const isGuarded = (candidate: Profile) => guardOf(candidate, accounts) !== null
+  const parentalCode = household.parentalCode() !== null
+  const isGuarded = (candidate: Profile) => guardOf(candidate, accounts, parentalCode) !== null
   // Linked by a parent's code: the device is that profile's.
   const chosen =
     linkedId !== undefined

@@ -15,6 +15,7 @@ import type { CookieFor } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
 import type { profileDeviceSession } from './profile-device-session.ts'
 import { type CheckSignIn, refuseSignIn } from './sign-in-check.ts'
+import type { TrustedDevices } from './trusted-devices.ts'
 
 const MAX_PASSWORD_LENGTH = 256
 
@@ -28,6 +29,8 @@ interface LoginRoutesOptions {
   throttle: LoginThrottle
   cookieFor: CookieFor
   linkedDevices: ReturnType<typeof profileDeviceSession>
+  // « Ne plus demander sur cet appareil », which signing out ends.
+  trust?: TrustedDevices
   secret: Buffer
   now: () => number
 }
@@ -162,12 +165,14 @@ const mountLoginRoute = (
   })
 }
 
-const mountLogoutRoute = (router: express.Router, { profileDevices, linkedDevices }: LoginRoutesOptions) => {
+const mountLogoutRoute = (router: express.Router, { profileDevices, linkedDevices, trust }: LoginRoutesOptions) => {
   // A young profile's own device that signs out is no longer linked: a parent gives it a new code.
   router.post('/logout', (request, response) => {
     const linked = linkedDevices.deviceOf(request)
     if (linked) profileDevices?.delete(linked.device.profileId, linked.device.id)
-    response.set('Set-Cookie', [clearedSessionCookie(), clearedProfileCookie()])
+    const cookies = [clearedSessionCookie(), clearedProfileCookie()]
+    if (trust) cookies.push(trust.forget(request))
+    response.set('Set-Cookie', cookies)
     response.status(204).end()
   })
 }

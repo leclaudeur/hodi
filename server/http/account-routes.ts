@@ -13,6 +13,7 @@ import { isPassword } from './household-input.ts'
 import { profileIdOf } from './profile-routes.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
+import { mountLockRoutes } from './account-lock-routes.ts'
 
 // The person's own account, after the session and profile checks: Réglages > Compte et données.
 
@@ -57,6 +58,7 @@ export const accountRoutes = (options: AccountRoutesOptions) => {
     if (session) response.json(helpers.view(session.account, session.device))
   })
   mountTwoFactorRoutes(router, options, helpers)
+  mountLockRoutes(router, options, helpers)
   mountCredentialRoutes(router, options, helpers)
   mountCopyRoute(router, options, helpers)
   mountDeleteRoute(router, options, helpers)
@@ -104,10 +106,12 @@ const accountHelpers = ({
       // No password of its own: its changes need a sign-in on this device in the last 5 minutes instead.
       loginOnly: !account.hasPassword,
       recentSignIn: recentlySignedIn(device),
-      devices: devices.list(account.id).map(({ id, userAgent, lastSeenAt }) => ({
+      privateProfile: account.privateProfile,
+      devices: devices.list(account.id).map(({ id, userAgent, lastSeenAt, trusted }) => ({
         id,
         userAgent,
         lastSeenAt,
+        trusted,
         current: id === device?.id
       })),
       // What "Supprimer ton compte" deletes, for its confirmation.
@@ -124,7 +128,7 @@ const accountHelpers = ({
   return { sessionOrRefuse, recentlySignedIn, checkProof, plan, view }
 }
 
-type AccountHelpers = ReturnType<typeof accountHelpers>
+export type AccountHelpers = ReturnType<typeof accountHelpers>
 
 const mountTwoFactorRoutes = (
   router: express.Router,

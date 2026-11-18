@@ -5,9 +5,13 @@ import { MAX_PHOTO_BYTES, PHOTO_TYPES, type PhotoType } from '../db/profile-stor
 import { isLanguage } from '../../shared/i18n.ts'
 import { aiOf, countryOf, keyHint, providersList, timeZoneOf } from './household-input.ts'
 import { photoFormatOf } from './profile-photos.ts'
+import { mountParentalCodeRoutes } from './parental-code-routes.ts'
 import type { HouseholdRoutesOptions } from './setup-routes.ts'
 
-type HouseholdOptions = Pick<HouseholdRoutesOptions, 'household' | 'providers' | 'defaultTimeZone' | 'onChange' | 'now'>
+export type HouseholdOptions = Pick<
+  HouseholdRoutesOptions,
+  'household' | 'providers' | 'defaultTimeZone' | 'onChange' | 'now'
+>
 
 // After the session and profile checks, the admin's only: Réglages > Foyer and the AI's provider and key.
 export const householdRoutes = (options: HouseholdOptions) => {
@@ -16,6 +20,7 @@ export const householdRoutes = (options: HouseholdOptions) => {
   mountSettingsRoutes(router, options, view)
   mountPhotoRoutes(router, options, view)
   mountAiRoutes(router, options, view)
+  mountParentalCodeRoutes(router, options, view)
   return router
 }
 
@@ -44,11 +49,13 @@ const householdView =
               keyHint: keyHint(current.ai.key)
             }
           : null,
-      providers: providersList(providers)
+      providers: providersList(providers),
+      // The Code parental is set: it opens the adults' profiles that are not private. Never the code itself.
+      parentalCode: household.parentalCode() !== null
     }
   }
 
-type HouseholdView = ReturnType<typeof householdView>
+export type HouseholdView = ReturnType<typeof householdView>
 
 const mountSettingsRoutes = (
   router: express.Router,

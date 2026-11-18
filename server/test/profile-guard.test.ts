@@ -22,7 +22,7 @@ const ANTHO = { email: 'antho@example.com', password: 'le mot de passe d’Antho
 const SOPHIE = { email: 'sophie@example.com', password: 'le mot de passe de Sophie' }
 const FAST = { N: 2 ** 10, r: 8, p: 1 }
 
-describe('opening a profile with its account’s password', () => {
+describe('opening a private profile with its account’s password', () => {
   let baseUrl = ''
   let close = () => {}
   let clock = Date.UTC(2026, 10, 6, 12)
@@ -78,9 +78,12 @@ describe('opening a profile with its account’s password', () => {
     new HouseholdStore(db).setUp({ name: 'Martin', timeZone: 'UTC', country: null, ai: null }, clock)
     const antho = accounts.createServerAdmin(ANTHO.email, await hashPassword(ANTHO.password, FAST), clock)!
     accounts.linkProfile(antho.id, 1)
+    accounts.setPrivateProfile(antho.id, true)
     const sophie = profiles.create('Sophie', 'tech', clock)!
     sophieId = sophie.id
-    accounts.linkProfile(accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!.id, sophieId)
+    const sophieAccount = accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!
+    accounts.linkProfile(sophieAccount.id, sophieId)
+    accounts.setPrivateProfile(sophieAccount.id, true)
     noAccountId = profiles.create('Mamie', 'world', clock)!.id
     const catalog = parseCatalog('topics:\n  - id: world\n    label: Monde\n    sources: []\n')
     const server = createApp(config, {
@@ -99,7 +102,7 @@ describe('opening a profile with its account’s password', () => {
   })
   after(() => close())
 
-  it('asks every adult for its own password, on every device, and never the young', async () => {
+  it('asks every private profile for its own password, on every device, and never the young', async () => {
     assert.deepEqual(await lockedIds(anthoDevice), [1, sophieId, noAccountId])
     assert.deepEqual(await lockedIds(sophieDevice), [1, sophieId, noAccountId])
 

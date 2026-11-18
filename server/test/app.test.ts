@@ -189,7 +189,10 @@ let adults = 0
 const openAdult = async (session: string, id: number) => {
   if (!accountStore.ofProfile(id)) {
     const hash = await hashPassword(MEMBER_PASSWORD, { N: 2 ** 10, r: 8, p: 1 })
-    accountStore.linkProfile(accountStore.create(`adult-${++adults}@example.com`, hash, clock)!.id, id)
+    const account = accountStore.create(`adult-${++adults}@example.com`, hash, clock)!
+    accountStore.linkProfile(account.id, id)
+    // Private: its password opens it, and signs the device in with its account.
+    accountStore.setPrivateProfile(account.id, true)
   }
   const opened = await fetch(`${baseUrl}/api/profiles/current`, {
     method: 'PUT',
@@ -207,8 +210,8 @@ const login = (password: string) =>
     body: JSON.stringify({ email: ADMIN_EMAIL, password })
   })
 
-// The session and, after a sign-in, the account's own profile it opens: every adult profile asks for its password,
-// so the session alone opens nothing.
+// The session and, after a sign-in, the account's own profile it opens: a private profile asks for its password, so
+// the session alone opens nothing.
 const sessionCookieFrom = (response: Response) =>
   response.headers
     .getSetCookie()
