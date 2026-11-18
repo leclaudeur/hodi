@@ -15,6 +15,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   the ones where _Ne plus demander sur cet appareil_ was ticked (_Redemander_ takes them back). _Code parental_, in
   Réglages › Foyer, asks for six digits for every adult profile that is not private. Accounts from before keep asking
   for their password: their profile is private until they turn it off.
+- **One household per account.** An account belongs to one household only. Joining another household with an
+  existing account says which household it is in, and asks to leave it first. On a server with Village, Which household? and
+  Switch household are gone.
 
 ### Fixed
 

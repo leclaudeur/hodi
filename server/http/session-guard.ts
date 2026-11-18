@@ -7,7 +7,7 @@ import type { Profile, ProfileStore } from '../db/profile-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerStatsStore } from '../db/server-stats-store.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
-import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
+import type { UserDeviceStore } from '../db/user-device-store.ts'
 import type { accountSession } from './account-session.ts'
 import type { Presence } from './presence.ts'
 import type { profileDeviceSession } from './profile-device-session.ts'
@@ -69,14 +69,9 @@ const householdHelpers = ({
   serverSettings,
   sessionOf
 }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'household' | 'serverSettings' | 'sessionOf'>) => {
-  // The household a signed-in device reads in: the one it was moved to while its account has a profile there, else
-  // its account's first.
-  const householdOfSession = ({ account, device }: { account: UserAccount; device: UserDevice | null }) => {
-    if (!accounts) return null
-    const moved = device?.householdId ?? null
-    if (moved !== null && accounts.profileOf(account.id, moved) !== null) return moved
-    return accounts.householdOf(account.id)
-  }
+  // The household a signed-in device reads in: its account's own, the only one it has.
+  const householdOfSession = ({ account }: { account: UserAccount }) =>
+    accounts ? accounts.householdOf(account.id) : null
 
   // Whether the household this request reads in is set up. isSetUp() reads the household of the scope, the first one
   // here: a server whose first household was left for later still has the households a plugin made, set up from the

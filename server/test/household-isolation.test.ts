@@ -160,6 +160,25 @@ describe('two households on one server', () => {
       ['Claire']
     )
   })
+
+  it("refuses an account of the other household with the Duponts' code, and names its household", async () => {
+    const made = await call('/codes', dupont, 'POST', {})
+    const { code } = (await made.json()) as { code: string }
+    const joined = await call('/codes/join', '', 'POST', {
+      code,
+      existing: true,
+      email: MARTIN,
+      password: PASSWORD,
+      profile: { name: 'Marc', color: 'world' }
+    })
+    assert.equal(joined.status, 409)
+    assert.deepEqual(await joined.json(), { error: 'other_household', household: 'Famille Martin' })
+    assert.equal(joined.headers.getSetCookie().length, 0)
+    assert.deepEqual(
+      (await json<{ profiles: { name: string }[] }>('/profiles', dupont)).profiles.map(p => p.name),
+      ['Claire']
+    )
+  })
 })
 
 describe("each household's catalogue in the news service", () => {

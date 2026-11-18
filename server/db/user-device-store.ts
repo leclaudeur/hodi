@@ -12,8 +12,6 @@ export interface UserDevice {
   userAgent: string
   createdAt: number
   lastSeenAt: number
-  // The household it was moved to (« Changer de foyer »); null: its account's first.
-  householdId: number | null
   // « Ne plus demander sur cet appareil »: its account's private profile opens here without the password.
   trusted: boolean
 }
@@ -23,18 +21,16 @@ interface UserDeviceRow {
   user_agent: string
   created_at: number
   last_seen_at: number
-  household_id: number | null
   trusted: number
 }
 
-const COLUMNS = 'id, user_agent, created_at, last_seen_at, household_id, trusted'
+const COLUMNS = 'id, user_agent, created_at, last_seen_at, trusted'
 
 const toDevice = (row: UserDeviceRow): UserDevice => ({
   id: row.id,
   userAgent: row.user_agent,
   createdAt: row.created_at,
   lastSeenAt: row.last_seen_at,
-  householdId: row.household_id,
   trusted: row.trusted === 1
 })
 
@@ -96,12 +92,5 @@ export class UserDeviceStore {
   // Every device of the account but this one (a new password).
   deleteOthers(userId: number, keep: number) {
     this.#db.prepare('DELETE FROM user_devices WHERE user_id = ? AND id != ?').run(userId, keep)
-  }
-
-  // « Changer de foyer »: the device reads in this household from now on.
-  moveTo(userId: number, id: number, householdId: number) {
-    this.#db
-      .prepare('UPDATE user_devices SET household_id = ? WHERE id = ? AND user_id = ?')
-      .run(householdId, id, userId)
   }
 }

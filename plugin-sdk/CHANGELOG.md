@@ -10,6 +10,13 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Removed
+
+- **One household per account.** An account now belongs to one household only, so the ways to move between
+  households are gone: the `afterSignIn` step (« Quel foyer ? »), the `whoIsReadingFooter` buttons under « Qui lit ? »,
+  and the `moveDevice` answer of a route (now ignored). `ctx.households.of()` lists at most one household, and
+  `ctx.households.create()` refuses (`invalid_household`) an `admin.accountId` that is already in a household.
+
 ## [1.0.0-beta.5] - 2026-11-18
 
 Plugins can show Hodi's − / + number picker, with a value that can be typed. Needs Hodi 1.0.0-beta.13 or later.

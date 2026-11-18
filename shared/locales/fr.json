@@ -89,7 +89,8 @@
     "existing": "J’ai déjà un compte",
     "newAccount": "Créer un nouveau compte",
     "signIn": "Rejoindre",
-    "alreadyMember": "Ce compte a déjà un profil dans ce foyer : connecte-toi avec lui."
+    "alreadyMember": "Ce compte a déjà un profil dans ce foyer : connecte-toi avec lui.",
+    "otherHousehold": "{{email}} est déjà dans le foyer {{current}}. Pour rejoindre le foyer {{household}}, quitte d’abord ton foyer dans Réglages › Compte et données."
   },
   "password": {
     "show": "Afficher le mot de passe",
