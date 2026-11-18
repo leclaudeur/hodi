@@ -19,7 +19,7 @@ to the app.
   for someone else shows _waiting for_ that person until they use their code, and **New code** replaces a lost one.
 - **Delete**, at the end of both pages, asks for the server admin's password and app code. An account goes with its
   profile, and its household's admin role passes to the oldest other adult with an account. A household goes with its
-  profiles and the accounts that read nowhere else. The server admin's own account goes from _Account and data_.
+  profiles and the accounts that read nowhere else. The server admin's own account goes from _My account_.
 - **General**: the server's addresses. **Hodi's address** is the one the e-mails' links open; it starts as the
   address the page is open at, and _Forgot password_ needs it. The **public home page** is a site's address, such as
   Hodi's presentation page. A browser that never signed in on this server, opening its bare address, goes there instead

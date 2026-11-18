@@ -57,13 +57,13 @@ device that opens the profile shares them, a phone as well as a computer.
 
 ## Two-step verification
 
-In _Settings › Account and data_, an adult adds a code from an authenticator app to their password. **Turn on** asks
-for the password, shows a QR and the key to type, and takes the app's first code. It then shows 10 recovery codes once,
-to download or copy.
+In _Settings › My account_, an adult adds a code from an authenticator app to their password. Turning the switch on
+asks for the password, shows a QR and the key to type, and takes the app's first code. It then shows 10 recovery codes
+once, to download or copy, and a _Recovery codes_ row tells how many are left.
 
 Signing in on a new device then asks for the app's code after the password, or a recovery code, and so does every moment
-that asks for the password again. _Who's in?_ never asks for it. New recovery codes and **Turn off** ask for the
-password and a code.
+that asks for the password again. _Who's in?_ never asks for it. New recovery codes and turning the switch off ask
+for the password and a code.
 
 > [!IMPORTANT]
 > Two-step verification is required for the server's account. The setup turns it on right after that account, and the
