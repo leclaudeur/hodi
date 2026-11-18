@@ -1,3 +1,5 @@
+import { serverInboxRoutes } from '../http/server-inbox-routes.ts'
+import { codeRequestKey } from '../notices/code-request.ts'
 import type express from 'express'
 import { clearedProfileCookie } from '../auth/session.ts'
 import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
@@ -83,7 +85,7 @@ const mountNotices = (api: express.Router, { options }: Wiring) => {
     serverNoticeRoutes({
       store: serverNotices.store,
       accountOf: response => accountAsking(response, accounts)?.id ?? null,
-      coreKinds: ['weekly-report'],
+      coreKinds: ['code-request', 'weekly-report'],
       plugins: noticePlugins(plugins),
       mailReady: () => serverMail?.store.get() != null,
       publicKey: serverNotices.publicKey || null,
@@ -112,6 +114,8 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
     )
   }
   mountNotices(api, wiring)
+  const inbox = options.serverInbox?.store
+  if (inbox) api.use('/server/inbox', requireServerAdmin, serverInboxRoutes(inbox))
   if (!serverStats) return
   api.use(
     '/server',
@@ -131,6 +135,14 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
         options.onHouseholdChange()
       },
       checkProof: wiring.checkProof,
+      ...(inbox
+        ? {
+            codeRequests: {
+              askedAt: (id: number) => inbox.waiting(codeRequestKey(id)),
+              handled: (id: number) => inbox.handle(codeRequestKey(id), now())
+            }
+          }
+        : {}),
       ...(twoFactor ? { twoFactorOn: (id: number) => twoFactor.isOn(id) } : {}),
       ...deletionsOf(wiring),
       now

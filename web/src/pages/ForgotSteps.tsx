@@ -1,4 +1,5 @@
 import { ArrowRight, Check, CircleCheck, KeyRound, Mail, RotateCw, Send } from 'lucide-react'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { SIGN_IN_CODE_CHARACTERS, SIGN_IN_CODE_LENGTH } from '../api.ts'
 import { EMAIL_PATTERN } from '../lib/email.ts'
@@ -22,6 +23,8 @@ interface StepProps {
 }
 
 interface AskFormProps extends StepProps {
+  // false: the server sends no e-mail, and its admin is asked for the code.
+  byMail: boolean
   email: string
   setEmail: (email: string) => void
   onAsk: () => void
@@ -30,7 +33,7 @@ interface AskFormProps extends StepProps {
 }
 
 // The account's e-mail, where the code goes.
-export const AskForm = ({ email, setEmail, error, busy, onAsk, onHaveCode, onBack }: AskFormProps) => {
+export const AskForm = ({ byMail, email, setEmail, error, busy, onAsk, onHaveCode, onBack }: AskFormProps) => {
   const { t } = useTranslation()
   const phone = useIsPhone()
   const valid = EMAIL_PATTERN.test(email.trim())
@@ -42,7 +45,7 @@ export const AskForm = ({ email, setEmail, error, busy, onAsk, onHaveCode, onBac
         if (valid) onAsk()
       }}
     >
-      <StepHeader title={t('forgot.title')} intro={t('forgot.intro')} />
+      <StepHeader title={t('forgot.title')} intro={t(byMail ? 'forgot.intro' : 'forgot.askIntro')} />
       <div className={householdStyles.field}>
         <span className={householdStyles.fieldLabel}>{t('login.email')}</span>
         <TextField
@@ -59,7 +62,7 @@ export const AskForm = ({ email, setEmail, error, busy, onAsk, onHaveCode, onBac
       </div>
       <Actions onBack={onBack} start={<Button onClick={onHaveCode}>{t('forgot.haveCode')}</Button>}>
         <Button type="submit" look="primary" icon={phone ? undefined : Send} busy={busy} disabled={!valid}>
-          {t('forgot.send')}
+          {t(byMail ? 'forgot.send' : 'forgot.ask')}
         </Button>
       </Actions>
     </form>
@@ -67,7 +70,8 @@ export const AskForm = ({ email, setEmail, error, busy, onAsk, onHaveCode, onBac
 }
 
 interface CodeFormProps extends StepProps {
-  // Where the code went; null when the person came back with it.
+  byMail: boolean
+  // Where the code went (or who asked the admin); null when the person came back with it.
   sentTo: string | null
   code: string
   setCode: (code: string) => void
@@ -76,9 +80,17 @@ interface CodeFormProps extends StepProps {
 }
 
 // « Entre le code »: the eight characters of the e-mail.
-export const CodeForm = ({ sentTo, code, setCode, error, busy, onCheck, onResend, onBack }: CodeFormProps) => {
+// The step's line: the code sent by e-mail, asked of the admin, or brought back later.
+const codeIntro = (byMail: boolean, sentTo: string | null, t: TFunction) => {
+  if (!byMail) return t(sentTo ? 'forgot.askedIntro' : 'forgot.askedIntroTyped')
+  return sentTo ? <RichText i18nKey="forgot.codeIntro" values={{ email: sentTo }} /> : t('forgot.codeIntroTyped')
+}
+
+export const CodeForm = (props: CodeFormProps) => {
+  const { byMail, sentTo, code, setCode, error, busy, onCheck, onResend, onBack } = props
   const { t } = useTranslation()
   const full = code.length === SIGN_IN_CODE_LENGTH
+  const resend = byMail && sentTo !== null
   return (
     <form
       className={styles.form}
@@ -87,10 +99,7 @@ export const CodeForm = ({ sentTo, code, setCode, error, busy, onCheck, onResend
         if (full) onCheck()
       }}
     >
-      <StepHeader
-        title={t('forgot.codeTitle')}
-        intro={sentTo ? <RichText i18nKey="forgot.codeIntro" values={{ email: sentTo }} /> : t('forgot.codeIntroTyped')}
-      />
+      <StepHeader title={t('forgot.codeTitle')} intro={codeIntro(byMail, sentTo, t)} />
       <PinField
         label={t('forgot.codeLabel')}
         labelHidden
@@ -105,9 +114,9 @@ export const CodeForm = ({ sentTo, code, setCode, error, busy, onCheck, onResend
       />
       {error && <StatusLine tone="error">{error}</StatusLine>}
       <Actions
-        onBack={sentTo ? undefined : onBack}
+        onBack={resend ? undefined : onBack}
         start={
-          sentTo ? (
+          resend ? (
             <Button icon={RotateCw} onClick={onResend}>
               {t('forgot.resend')}
             </Button>

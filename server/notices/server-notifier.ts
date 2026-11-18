@@ -1,4 +1,5 @@
 import type { MailSettings } from '../db/mail-settings-store.ts'
+import type { ServerInboxStore } from '../db/server-inbox-store.ts'
 import type { ServerNoticeStore } from '../db/server-notice-store.ts'
 import type { UserAccount } from '../db/user-account-store.ts'
 import { textsIn } from '../i18n.ts'
@@ -6,7 +7,7 @@ import { hodiFrame } from '../mail/frame.ts'
 import type { SendMail } from '../mail/mailer.ts'
 import { type MailBlock, renderMail } from '../mail/template.ts'
 import type { AlertPayload, PushTarget, SendPush } from '../news/followed-alerts.ts'
-import type { Language } from '../../shared/i18n.ts'
+import { LANGUAGES, type Language } from '../../shared/i18n.ts'
 
 // Serveur › Notifications: what happens on the server reaches each of its admins as they chose for its kind, by
 // e-mail (in Hodi's template), in push on the devices of their account, both or neither. A failure on one way or one
@@ -30,8 +31,13 @@ export interface ServerNotice {
 export type ServerNoticeIn = ServerNotice | ((language: Language) => ServerNotice)
 
 export interface ServerNotifier {
-  // How many e-mails and pushes left.
-  tell: (type: string, notice: ServerNoticeIn) => Promise<{ emails: number; pushes: number }>
+  // How many e-mails and pushes left. important: the key of a request someone waits on (« code-request:12 »): it stays
+  // « À traiter » in Serveur › Notifications until handled, and the same one waiting is not told again.
+  tell: (
+    type: string,
+    notice: ServerNoticeIn,
+    options?: { important?: string }
+  ) => Promise<{ emails: number; pushes: number }>
 }
 
 interface NotifierDeps {
@@ -41,8 +47,20 @@ interface NotifierDeps {
   mail: { settings: () => MailSettings | null; send: SendMail; home?: () => string | null }
   push: SendPush
   languageOf: (account: UserAccount) => Language
+  // Serveur › Notifications' list: every notice, whatever way each admin chose.
+  inbox?: ServerInboxStore
+  now?: () => number
   log?: (line: string) => void
 }
+
+// The notice in each language, as the list shows it in the admin's.
+const textsOf = (written: ServerNoticeIn) =>
+  Object.fromEntries(
+    LANGUAGES.map(language => {
+      const { from, title, text, push } = typeof written === 'function' ? written(language) : written
+      return [language, { from, title, text: push ?? text }]
+    })
+  )
 
 const failure = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
@@ -94,8 +112,33 @@ const payloadOf = (type: string, notice: ServerNotice): AlertPayload => ({
   badge: null
 })
 
+// 1 when the e-mail left, 0 when it failed: the others are still told.
+const mailOne = async (
+  type: string,
+  notice: ServerNotice,
+  to: { account: UserAccount; language: Language },
+  settings: MailSettings,
+  deps: NotifierDeps
+) => {
+  try {
+    await sendMail(notice, to, settings, deps)
+    return 1
+  } catch (error) {
+    deps.log?.(`Server notice ${type}: e-mail not sent: ${failure(error)}`)
+    return 0
+  }
+}
+
+// Into Serveur › Notifications' list; false when the same request already waits there.
+const record = (deps: NotifierDeps, type: string, written: ServerNoticeIn, important: string | undefined) => {
+  if (!deps.inbox) return true
+  const url = (typeof written === 'function' ? written('fr') : written).url
+  return deps.inbox.add({ type, texts: textsOf(written), url, key: important ?? null }, (deps.now ?? Date.now)())
+}
+
 export const serverNotifier = (deps: NotifierDeps): ServerNotifier => ({
-  tell: async (type, written) => {
+  tell: async (type, written, options = {}) => {
+    if (!record(deps, type, written, options.important)) return { emails: 0, pushes: 0 }
     const settings = deps.mail.settings()
     let emails = 0
     let pushes = 0
@@ -104,14 +147,7 @@ export const serverNotifier = (deps: NotifierDeps): ServerNotifier => ({
       if (!(choice.email && settings) && !choice.push) continue
       const language = deps.languageOf(account)
       const notice = typeof written === 'function' ? written(language) : written
-      if (choice.email && settings) {
-        try {
-          await sendMail(notice, { account, language }, settings, deps)
-          emails++
-        } catch (error) {
-          deps.log?.(`Server notice ${type}: e-mail not sent: ${failure(error)}`)
-        }
-      }
+      if (choice.email && settings) emails += await mailOne(type, notice, { account, language }, settings, deps)
       if (choice.push) pushes += await pushTo(deps.store.devices(account.id), payloadOf(type, notice), deps)
     }
     return { emails, pushes }

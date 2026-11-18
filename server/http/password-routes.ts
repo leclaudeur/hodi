@@ -28,6 +28,8 @@ interface PasswordRoutesOptions {
   // The new password, every device of the account signed out, and this one signed in: its cookies (none when the
   // account asks for its app's code at sign-in).
   signIn: (account: UserAccount, passwordHash: string, request: express.Request) => string[]
+  // Without e-mail: the server's admin is asked for a code for this account (Serveur › Notifications).
+  askAdmin?: (account: UserAccount) => void
   // The plugins' say on this account signing in, asked before the link is used up or the password changes.
   checkSignIn?: CheckSignIn
   now: () => number
@@ -51,6 +53,7 @@ export const passwordRoutes = ({
   const router = express.Router()
   const resolved = { ...options, checkSignIn, log, throttle }
   mountForgotRoute(router, resolved)
+  mountAskRoute(router, resolved)
   mountResetRoutes(router, resolved)
   return router
 }
@@ -111,6 +114,28 @@ const mountForgotRoute = (router: express.Router, options: ResolvedOptions) => {
     send(settings, { to: account.email, subject: t('mail.reset.subject'), text, html }).catch((error: unknown) =>
       log(`Password reset e-mail failed: ${String(error)}`)
     )
+  })
+}
+
+// « Demander un code », on a server that sends no e-mail. The answer is the same whether an account has the address or
+// not; the admin is told only of an account that reads in a household, where a code can be made for it.
+const mountAskRoute = (router: express.Router, options: ResolvedOptions) => {
+  const { mail, accounts, askAdmin } = options
+  const throttled = throttledBy(options)
+  router.post('/ask', (request, response) => {
+    if (!askAdmin || mail.get()?.appUrl) {
+      response.status(404).json({ error: 'mail_on' })
+      return
+    }
+    const email = cleanEmail(request.body?.email)
+    if (!email) {
+      response.status(400).json({ error: 'invalid_request' })
+      return
+    }
+    if (throttled(request, response)) return
+    response.status(202).json({})
+    const account = accounts.byEmail(email)
+    if (account) askAdmin(account)
   })
 }
 

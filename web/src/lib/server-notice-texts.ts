@@ -6,6 +6,10 @@ import { t } from './i18n.ts'
 // locales, else from its manifest.
 // The core's own kinds, by key.
 const CORE_KINDS: Record<string, () => { label: string; hint: string }> = {
+  'code-request': () => ({
+    label: t('server.notifications.codeRequest.label'),
+    hint: t('server.notifications.codeRequest.hint')
+  }),
   'weekly-report': () => ({
     label: t('server.notifications.weeklyReport.label'),
     hint: t('server.notifications.weeklyReport.hint')

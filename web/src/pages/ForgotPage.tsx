@@ -1,7 +1,15 @@
 import type { TFunction } from 'i18next'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RequestError, askResetCode, checkResetCode, resetWithMailedCode } from '../api.ts'
+import {
+  RequestError,
+  askAdminCode,
+  askResetCode,
+  checkResetCode,
+  checkSignInCode,
+  resetWithCode,
+  resetWithMailedCode
+} from '../api.ts'
 import { refusalText } from '../lib/sign-in-refusal.ts'
 import { showSaved } from '../lib/toast.ts'
 import { AskForm, CodeForm, DoneStep, NewPasswordForm } from './ForgotSteps.tsx'
@@ -11,6 +19,8 @@ import { SetupFrame } from './SetupParts.tsx'
 export const RESET_LINK = /^#\/reset\/([A-HJKMNP-Z2-9]{8})$/
 
 interface ForgotPageProps {
+  // false: the server sends no e-mail; its admin makes the code (a « J'ai un code » one, for a day).
+  byMail: boolean
   // From the e-mail's button: its code, checked at once.
   token?: string
   // Back to the Connexion page.
@@ -31,8 +41,16 @@ const refusalOf = (failure: unknown, t: TFunction) => {
   return t('forgot.failed')
 }
 
+// Whose account the code is for: its e-mail, or without e-mail the name of its profile.
+const ownerOf = async (byMail: boolean, code: string) => {
+  if (byMail) return (await checkResetCode(code)).email
+  const use = await checkSignInCode(code)
+  if (use.kind !== 'reset') throw new RequestError(403, 'invalid_code', null)
+  return use.profile.name
+}
+
 // What is being typed, and where it stands.
-const useForgot = (token: string | undefined) => {
+const useForgot = (byMail: boolean, token: string | undefined) => {
   const { t } = useTranslation()
   const [step, setStep] = useState<Step>(token ? 'code' : 'ask')
   const [email, setEmail] = useState('')
@@ -56,7 +74,7 @@ const useForgot = (token: string | undefined) => {
 
   const ask = (again = false) =>
     run(async () => {
-      await askResetCode(email.trim())
+      await (byMail ? askResetCode : askAdminCode)(email.trim())
       setSentTo(email.trim())
       setCode('')
       setStep('code')
@@ -65,7 +83,7 @@ const useForgot = (token: string | undefined) => {
 
   const check = () =>
     run(async () => {
-      setAccount((await checkResetCode(code)).email)
+      setAccount(await ownerOf(byMail, code))
       setStep('password')
     })
 
@@ -73,8 +91,8 @@ const useForgot = (token: string | undefined) => {
 }
 
 // « Mot de passe oublié »: the account's e-mail, the code sent to it, the new password, and done.
-const ForgotPage = ({ token, onBack, onDone }: ForgotPageProps) => {
-  const forgot = useForgot(token)
+const ForgotPage = ({ byMail, token, onBack, onDone }: ForgotPageProps) => {
+  const forgot = useForgot(byMail, token)
   const { step, setStep, busy, error, setError, run } = forgot
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -87,7 +105,9 @@ const ForgotPage = ({ token, onBack, onDone }: ForgotPageProps) => {
 
   const save = () =>
     run(async () => {
-      const answer = await resetWithMailedCode(forgot.code, password)
+      const answer = byMail
+        ? await resetWithMailedCode(forgot.code, password)
+        : await resetWithCode(forgot.code, password)
       if (answer?.signIn === false) onDone(false)
       else setStep('done')
     })
@@ -116,6 +136,7 @@ const ForgotPage = ({ token, onBack, onDone }: ForgotPageProps) => {
   else if (step === 'code')
     content = (
       <CodeForm
+        byMail={byMail}
         sentTo={forgot.sentTo}
         code={forgot.code}
         setCode={forgot.setCode}
@@ -129,6 +150,7 @@ const ForgotPage = ({ token, onBack, onDone }: ForgotPageProps) => {
   else
     content = (
       <AskForm
+        byMail={byMail}
         email={forgot.email}
         setEmail={forgot.setEmail}
         error={error}

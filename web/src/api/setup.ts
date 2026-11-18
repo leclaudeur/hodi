@@ -172,6 +172,9 @@ export const resetWithCode = (code: string, password: string) =>
 // « Mot de passe oublié »: a code by e-mail. The answer is the same whether an account has the address or not.
 export const askResetCode = (email: string) => sendJson<object>('POST', '/password/forgot', { email })
 
+// « Demander un code », on a server that sends no e-mail: its admin is told. The same answer for any address.
+export const askAdminCode = (email: string) => sendJson<object>('POST', '/password/ask', { email })
+
 // The code's account, while the code works.
 export const checkResetCode = (code: string) => sendJson<{ email: string }>('POST', '/password/check', { code })
 

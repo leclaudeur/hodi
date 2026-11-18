@@ -130,7 +130,7 @@ describe('server notices', () => {
     assert.equal(mails[0]?.subject, 'Village · Nouveau foyer')
     assert.match(mails[0]?.html ?? '', /href="https:\/\/hodi\.example\.test\/#\/server\/plugin\/village\/households"/)
     assert.match(mails[0]?.text ?? '', /La famille Dupont vient de créer son foyer\.\n\nOuvrir dans Hodi :/)
-    assert.match(mails[0]?.text ?? '', /Choisis ce qu’il te signale dans Serveur › Notifications\./)
+    assert.match(mails[0]?.text ?? '', /Choisis ce qu’il te signale dans Serveur › Alertes\./)
 
     server.store.choose(server.admin.id, TYPE, { email: false, push: true })
     server.store.addDevice(server.admin.id, PHONE, 1)

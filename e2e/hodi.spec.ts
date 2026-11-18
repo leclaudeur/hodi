@@ -223,6 +223,17 @@ test('gives Sam, who forgot their password, a new one with a code from the admin
   await before.getByRole('button', { name: 'Entrer' }).click()
   await expect(before.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
 
+  // Without a mail server, « Mot de passe oublié » asks the server's admin for the code.
+  const device = await browser.newPage()
+  await device.goto('/')
+  await device.getByRole('link', { name: 'Mot de passe oublié' }).click()
+  await device.getByRole('textbox', { name: 'E-mail' }).fill('sam@example.com')
+  await device.getByRole('button', { name: 'Demander', exact: true }).click()
+  await expect(device.getByRole('heading', { name: 'Entre le code' })).toBeVisible()
+  await page.goto('/#/server/inbox')
+  const waiting = page.getByRole('main').locator('h2:text-is("À traiter") + ul')
+  await expect(waiting.getByText('Sam demande un code')).toBeVisible()
+
   // Sam joined from another device: the list as it is now.
   await page.goto('/#/settings/profiles')
   await page.reload()
@@ -255,16 +266,19 @@ test('gives Sam, who forgot their password, a new one with a code from the admin
   await reset.getByRole('button', { name: 'Terminé' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 
-  // No « Mot de passe oublié » on the Connexion page without a mail server: « J'ai un code », then the new one.
-  const device = await browser.newPage()
-  await device.goto('/')
-  await expect(device.getByText('Mot de passe oublié')).toHaveCount(0)
-  await device.getByRole('link', { name: 'J’ai un code' }).click()
+  // The code made, the request is handled.
+  await page.goto('/#/server/inbox')
+  await expect(page.getByRole('main').getByRole('heading', { name: 'À traiter' })).toHaveCount(0)
+
+  // Sam types it where the page waited, then the new password.
   await device.getByRole('textbox', { name: 'Code' }).fill(code)
+  await device.getByRole('button', { name: 'Confirmer' }).click()
   await expect(device.getByRole('heading', { name: 'Nouveau mot de passe' })).toBeVisible()
   await device.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(SAM_PASSWORD)
   await device.getByRole('textbox', { name: 'Confirme le mot de passe' }).fill(SAM_PASSWORD)
-  await device.getByRole('button', { name: 'Valider' }).click()
+  await device.getByRole('button', { name: 'Enregistrer' }).click()
+  await expect(device.getByRole('heading', { name: 'C’est fait' })).toBeVisible()
+  await device.getByRole('button', { name: 'Entrer dans Hodi' }).click()
   await expect(device.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
   await device.close()
 

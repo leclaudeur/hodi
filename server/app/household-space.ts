@@ -1,3 +1,4 @@
+import { codeRequestKey } from '../notices/code-request.ts'
 import type express from 'express'
 import { currentHouseholdId } from '../db/household-scope.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
@@ -115,7 +116,17 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
   api.use(sessionRoutes({ accounts, household, serverSettings, twoFactor }))
   mountAccount(api, wiring)
   if (codes && profiles)
-    api.use('/codes', codeRoutes({ codes, profiles, accounts, now, checkProof: wiring.checkProof }))
+    api.use(
+      '/codes',
+      codeRoutes({
+        codes,
+        profiles,
+        accounts,
+        now,
+        checkProof: wiring.checkProof,
+        onResetCode: id => wiring.options.serverInbox?.store.handle(codeRequestKey(id), now())
+      })
+    )
   fillHouseholdHooks(wiring)
   mountProfiles(api, wiring)
   mountSourceRequests(api, wiring)
