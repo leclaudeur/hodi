@@ -25,6 +25,8 @@ export interface Session {
   content: { articleDays: number; videoDays: number; backupCopies: number } | null
   // No household yet (« Plus tard » at the setup): the server's admin, in /server only.
   serverOnly: boolean
+  // An account whose profile was deleted from its household: its own account alone.
+  noHousehold: boolean
   // « Validation en deux étapes » of the account reading here.
   twoFactor: boolean
   // The account reading here has no password of its own (« Se connecter avec Google »).
@@ -58,6 +60,7 @@ export const getSession = async (fresh = false): Promise<Session | null | 'setup
     linkedDevice: body.linkedDevice === true,
     content: body.content ?? null,
     serverOnly: body.serverOnly === true,
+    noHousehold: body.noHousehold === true,
     twoFactor: body.twoFactor === true,
     noPassword: body.noPassword === true
   }
