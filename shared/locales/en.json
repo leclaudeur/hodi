@@ -1348,7 +1348,9 @@
       "choosePasswordIntro": "You will be able to sign in with your e-mail and this password, besides your other way.",
       "signInAgain": "To confirm it is you, sign in again just before (less than 5 minutes ago), then come back here.",
       "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use “Forgot password” or ask an adult of the household for a code.",
-      "sessionHintNoPassword": "Signed in for 90 days, then you sign in again"
+      "sessionHintNoPassword": "Signed in for 90 days, then you sign in again",
+      "moreDevices_one": "See the other one",
+      "moreDevices_other": "See the {{count}} others"
     },
     "roles": {
       "admin": "Admin",
@@ -2520,11 +2522,7 @@
       "on": "On since {{date}}",
       "off": "Off",
       "required": "Required for the server’s account",
-      "turnOn": "Turn on",
-      "turnOff": "Turn off",
       "newCodes": "New codes",
-      "recoveryLeft_one": "{{count}} recovery code left",
-      "recoveryLeft_other": "{{count}} recovery codes left",
       "dialogTitle": "Two-step verification",
       "dialogIntro": "On top of the password, Hodi will ask for a code from your phone each time you sign in on a new device.",
       "done": "On: your next sign-in on a new device will ask for the code.",
@@ -2542,7 +2540,9 @@
         "title": "Turn on verification?",
         "message": "Type your password: Hodi then shows the QR to scan with your authenticator app.",
         "button": "Continue"
-      }
+      },
+      "codes": "Recovery codes",
+      "codesLeft": "{{count}} left of {{total}}"
     },
     "login": {
       "title": "Your app’s code",

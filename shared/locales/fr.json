@@ -1348,7 +1348,9 @@
       "choosePasswordIntro": "Tu pourras te connecter avec l’e-mail du compte et ce mot de passe, en plus de l’autre façon.",
       "signInAgain": "Pour confirmer que c’est toi, reconnecte-toi juste avant (il y a moins de 5 minutes), puis reviens ici.",
       "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise « Mot de passe oublié » ou demande un code à un adulte du foyer.",
-      "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter"
+      "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter",
+      "moreDevices_one": "Voir l’autre",
+      "moreDevices_other": "Voir les {{count}} autres"
     },
     "roles": {
       "admin": "Admin",
@@ -2520,11 +2522,7 @@
       "on": "Activée depuis le {{date}}",
       "off": "Désactivée",
       "required": "Obligatoire pour le compte du serveur",
-      "turnOn": "Activer",
-      "turnOff": "Désactiver",
       "newCodes": "Nouveaux codes",
-      "recoveryLeft_one": "{{count}} code de secours restant",
-      "recoveryLeft_other": "{{count}} codes de secours restants",
       "dialogTitle": "Validation en deux étapes",
       "dialogIntro": "En plus du mot de passe, Hodi demandera un code du téléphone à chaque connexion sur un nouvel appareil.",
       "done": "Activée : la prochaine connexion sur un nouvel appareil demandera le code.",
@@ -2542,7 +2540,9 @@
         "title": "Activer la validation ?",
         "message": "Tape le mot de passe : Hodi te montre ensuite le QR à scanner avec l’app d’authentification.",
         "button": "Continuer"
-      }
+      },
+      "codes": "Codes de secours",
+      "codesLeft": "{{count}} restants sur {{total}}"
     },
     "login": {
       "title": "Code de l’app",

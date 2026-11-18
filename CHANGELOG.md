@@ -8,6 +8,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Validation en deux étapes is a switch.** In Mon compte it turns on and off like any other setting, and once on, a
+  row of its own shows the recovery codes left, with « Nouveaux codes ». The server's account keeps it on.
+- **A long list of devices folds.** Mon compte shows three devices and « Voir les N autres »; unfolded, the list scrolls
+  in a box of its own.
+
 ### Fixed
 
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme
