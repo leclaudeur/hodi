@@ -57,20 +57,20 @@
     },
     "invite": {
       "title": "Rejoins {{household}}",
-      "intro": "{{name}} t’invite. Crée un compte : avec un e-mail et un mot de passe, tu te connectes sur chacun des appareils.",
+      "intro": "<b>{{name}}</b> t’invite. Crée un compte : avec un e-mail et un mot de passe, tu te connectes sur chacun des appareils.",
       "introNoName": "Crée un compte : avec un e-mail et un mot de passe, tu te connectes sur chacun des appareils."
     },
     "profile": {
       "title": "Dernière étape : le profil",
-      "intro": "Dans {{household}}. Crée un compte : ce profil y sera lié, avec ses lectures.",
-      "introExisting": "Dans {{household}}. Entre avec le compte que tu as déjà : ce profil y sera lié, avec ses lectures."
+      "intro": "Dans <b>{{household}}</b>. Crée un compte : ce profil y sera lié, avec ses lectures.",
+      "introExisting": "Dans <b>{{household}}</b>. Entre avec le compte que tu as déjà : ce profil y sera lié, avec ses lectures."
     },
     "full": {
       "title": "Le foyer est complet",
       "intro": "Il a déjà 5 profils. Demande à l’admin d’en retirer un, puis réessaie avec ce code."
     },
     "who": {
-      "intro": "Un prénom et une couleur dans le foyer. Tu pourras les changer dans Réglages."
+      "intro": "Un prénom et une couleur dans le foyer. Tu pourras les changer dans <i>Réglages</i>."
     },
     "age": "J’ai au moins 13 ans",
     "create": "Créer mon compte",
@@ -230,13 +230,13 @@
     },
     "ready": {
       "title": "Le serveur est prêt",
-      "intro": "Crée maintenant le foyer qui lira Hodi, ou va d’abord dans l’espace Serveur : un foyer s’y crée aussi plus tard, pour toi ou pour quelqu’un d’autre.",
+      "intro": "Crée maintenant le foyer qui lira Hodi, ou va d’abord dans l’espace <i>Serveur</i> : un foyer s’y crée aussi plus tard, pour toi ou pour quelqu’un d’autre.",
       "household": "Créer mon foyer",
       "server": "Plus tard"
     },
     "plugins": {
       "title": "Plugins trouvés",
-      "intro": "Ces plugins étaient déjà dans le dossier de Hodi. Garde ceux que tu veux utiliser : les autres restent installés, éteints, et s’allument plus tard dans l’espace Serveur.",
+      "intro": "Ces plugins étaient déjà dans le dossier de Hodi. Garde ceux que tu veux utiliser : les autres restent installés, éteints, et s’allument plus tard dans l’espace <i>Serveur</i>.",
       "use": "Utiliser {{name}}",
       "broken": "Ce plugin ne peut pas se charger. L’espace Serveur dit pourquoi.",
       "unsigned": "Non vérifié : ses pages ne s’afficheront pas.",
@@ -247,7 +247,7 @@
     },
     "mail": {
       "title": "E-mail du serveur",
-      "intro": "Hodi s’en sert pour envoyer les liens « Mot de passe oublié » et les e-mails des plugins. Il se règle aussi plus tard, dans Serveur › E-mail.",
+      "intro": "Hodi s’en sert pour envoyer les liens <i>Mot de passe oublié</i> et les e-mails des plugins. Il se règle aussi plus tard, dans <i>Serveur › E-mail</i>.",
       "later": "Plus tard"
     },
     "household": {
@@ -267,7 +267,7 @@
     },
     "ai": {
       "title": "L’IA, si tu veux",
-      "intro": "Résumer un article, lui poser des questions, le Résumé du jour : avec une clé d’API à soi, payée à l’usage. Sans IA, tout le reste marche pareil.",
+      "intro": "Résumer un article, lui poser des questions, le <i>Résumé du jour</i> : avec une clé d’API à soi, payée à l’usage. Sans IA, tout le reste marche pareil.",
       "helpTitle": "Rien ne part sans un clic",
       "help": "Chaque bouton violet est un appel payé sur les crédits du foyer, jamais automatique. Fixe une limite de dépense mensuelle sur la console du fournisseur. Tu pourras ajouter, changer ou retirer la clé dans Réglages › IA et crédits.",
       "label": "IA",
@@ -329,7 +329,7 @@
     "code": {
       "invite": "Inviter un adulte",
       "inviteTitle": "Inviter un adulte",
-      "inviteIntro": "Avec ce code, un adulte rejoint le foyer avec son propre compte. Sur son appareil, la personne ouvre Hodi, choisit <i>J’ai un code</i> sur la page Connexion et tape ces 8 caractères. Elle choisit ensuite son e-mail et son mot de passe.",
+      "inviteIntro": "Avec ce code, un adulte rejoint le foyer avec son propre compte. Sur son appareil, la personne ouvre Hodi, choisit <i>J’ai un code</i> sur la page <i>Connexion</i> et tape ces 8 caractères. Elle choisit ensuite son e-mail et son mot de passe.",
       "connectTitle": "Connecter {{name}}",
       "connectIntro": "Avec ce code, {{name}} se connecte à son profil avec son propre compte. Sur son appareil, {{name}} ouvre Hodi, choisit <i>J’ai un code</i> sur la page Connexion et tape ces 8 caractères, puis choisit son e-mail et son mot de passe. <b>Le profil devient le sien</b>, avec toutes ses lectures.",
       "label": "Code",
@@ -507,7 +507,7 @@
   },
   "shortcuts": {
     "title": "Raccourcis clavier",
-    "intro": "Sur ordinateur, Hodi se parcourt au clavier : passer d’un article à l’autre, changer de thème, enregistrer, masquer ou chercher. Appuie sur ? n’importe où pour revoir cette liste.",
+    "intro": "Sur ordinateur, Hodi se parcourt au clavier : passer d’un article à l’autre, changer de thème, enregistrer, masquer ou chercher. Appuie sur <b>?</b> n’importe où pour revoir cette liste.",
     "aiNote": "R affiche le bouton du résumé, il ne lance jamais l’IA tout seul.",
     "escape": "Échap",
     "groups": {
@@ -1039,7 +1039,7 @@
       }
     },
     "loading": "Chargement des statistiques",
-    "intro": "Ce que tu as lu, sur tous les appareils. Un article est lu quand tu l’as parcouru jusqu’à 80 % et que tu y as passé au moins un tiers de son temps de lecture ; une vidéo, vue à 80 %. Au-delà de 15 %, il reste en cours et t’attend dans « Reprendre » ; en dessous, il est survolé."
+    "intro": "Ce que tu as lu, sur tous les appareils. Un article est lu quand tu l’as parcouru jusqu’à 80 % et que tu y as passé au moins un tiers de son temps de lecture ; une vidéo, vue à 80 %. Au-delà de 15 %, il reste en cours et t’attend dans <i>Reprendre</i> ; en dessous, il est survolé."
   },
   "game": {
     "yourHousehold": "Le foyer",
@@ -1234,7 +1234,7 @@
       "show": "Afficher {{name}}"
     },
     "reading": {
-      "intro": "La langue de Hodi, ses couleurs et la taille du texte des articles. Ces réglages sont à toi seul et te suivent sur tous les appareils. Masquer ce que tu as lu garde le fil court : tout reste dans la recherche, les stats et l’Historique.",
+      "intro": "La langue de Hodi, ses couleurs et la taille du texte des articles. Ces réglages sont à toi seul et te suivent sur tous les appareils. Masquer ce que tu as lu garde le fil court : tout reste dans la recherche, les stats et l’<i>Historique</i>.",
       "appearance": "Apparence",
       "appearanceHint": "Poudré : le thème sombre, en rose",
       "themes": {
@@ -1264,7 +1264,7 @@
       "history": "Historique"
     },
     "followed": {
-      "intro": "Un mot ou une expression. Les articles et les vidéos qui en parlent prennent une étoile et vont dans Suivis. Avec son alerte, un sujet t’envoie une notification quand un nouvel article en parle, au plus une toutes les 3 heures.",
+      "intro": "Un mot ou une expression. Les articles et les vidéos qui en parlent prennent une étoile et vont dans <i>Suivis</i>. Avec son alerte, un sujet t’envoie une notification quand un nouvel article en parle, au plus une toutes les 3 heures.",
       "placeholder": "Ajouter un sujet, ex. « Silksong »",
       "field": "Sujet à suivre",
       "add": "Suivre",
@@ -1280,7 +1280,7 @@
       "paused": "Les alertes demandent d’activer les notifications sur cet appareil : <link>Notifications</link>."
     },
     "muted": {
-      "intro": "Les articles et les vidéos dont le titre ou le résumé contient un de ces mots disparaissent du fil, des stories et de Vidéos, mais restent dans la recherche. « foot » masque aussi « football ».",
+      "intro": "Les articles et les vidéos dont le titre ou le résumé contient un de ces mots disparaissent du fil, des stories et de <i>Vidéos</i>, mais restent dans la recherche. <i>foot</i> masque aussi <i>football</i>.",
       "placeholder": "Ajouter un mot, ex. « Kardashian »",
       "field": "Mot à masquer",
       "add": "Masquer",
@@ -1292,7 +1292,7 @@
       "unmute": "Ne plus masquer « {{word}} »"
     },
     "sharing": {
-      "intro": "Envoie des articles aux autres profils du foyer, et reçois les leurs. Dans le lecteur, « Pour… » envoie l’article à un profil, avec un mot si tu veux. Ce qu’on t’envoie arrive dans Partages, jamais dans le fil.",
+      "intro": "Envoie des articles aux autres profils du foyer, et reçois les leurs. Dans le lecteur, <i>Pour…</i> envoie l’article à un profil, avec un mot si tu veux. Ce qu’on t’envoie arrive dans <i>Partages</i>, jamais dans le fil.",
       "toggle": "Partager avec le foyer",
       "onHint": "Tu envoies et tu reçois des articles",
       "offHint": "Ni envoi ni réception, Partages est caché",
@@ -1303,7 +1303,7 @@
     },
     "account": {
       "browser": "Navigateur",
-      "intro": "Le compte, les appareils connectés et tout ce que Hodi garde de toi. Le prénom et la photo se changent dans Mon profil.",
+      "intro": "Le compte, les appareils connectés et tout ce que Hodi garde de toi. Le prénom et la photo se changent dans <i>Mon profil</i>.",
       "sessionHint": "Connecté pour 90 jours, puis le mot de passe est redemandé",
       "thisDevice": "Cet appareil",
       "offline": "Hors ligne",
@@ -1460,7 +1460,7 @@
       "passwordTitle": "Changer le mot de passe",
       "currentPassword": "Mot de passe actuel",
       "newPassword": "Nouveau mot de passe",
-      "intro": "Ce qui vaut pour toute l’installation, et que seul l’admin voit : son nom, sa langue, sa région et ce que partagent tous les profils. Le fuseau horaire fixe le changement de jour du fil, du Résumé du jour et des heures calmes ; le pays aide l’IA à situer les questions.",
+      "intro": "Ce qui vaut pour toute l’installation, et que seul l’admin voit : son nom, sa langue, sa région et ce que partagent tous les profils. Le fuseau horaire fixe le changement de jour du fil, du <i>Résumé du jour</i> et des heures calmes ; le pays aide l’IA à situer les questions.",
       "loadFailed": "Impossible de lire les réglages du foyer. Réessaie dans un instant.",
       "heading": "Le foyer",
       "photo": "Photo",
@@ -1470,7 +1470,7 @@
       "photoRemove": "Retirer",
       "photoFailed": "Impossible d’enregistrer la photo.",
       "photoRemoveTitle": "Retirer la photo du foyer ?",
-      "photoRemoveMessage": "La photo de <b>{{name}}</b> disparaît pour tout le foyer, dans Hodi et dans Serveur › Foyers : l’initiale du foyer reprend sa place. Tu pourras en ajouter une autre à tout moment.",
+      "photoRemoveMessage": "La photo de <b>{{name}}</b> disparaît pour tout le foyer, dans Hodi et dans <i>Serveur › Foyers</i> : l’initiale du foyer reprend sa place. Tu pourras en ajouter une autre à tout moment.",
       "name": "Nom",
       "rename": "Renommer",
       "region": "Région",
@@ -1863,15 +1863,15 @@
     },
     "makeAdmin": {
       "title": "Passer le rôle d’admin ?",
-      "message": "<b>{{name}}</b> gère alors les profils, les sources, la clé IA et les réglages du foyer. <b>Toi, tu deviens un adulte comme les autres</b>, et seul·e {{name}} pourra te rendre ce rôle. Confirme avec le mot de passe.",
+      "message": "<b>{{name}}</b> gère alors les profils, les sources, la clé IA et les réglages du foyer. <b>Toi, tu deviens un adulte comme les autres</b>, et seul·e <b>{{name}}</b> pourra te rendre ce rôle. Confirme avec le mot de passe.",
       "button": "Passer le rôle"
     }
   },
   "dialogIntro": {
     "ownOpen": "Tape <b>le mot de passe du compte</b> pour ouvrir ce profil.",
     "shortcuts": "Sur ordinateur, sans quitter le clavier. Appuie sur <b>?</b> n’importe où pour les revoir.",
-    "timeZone": "Il fixe <b>le début de chaque jour</b> : nouveau fil, Résumé du jour, heures calmes et temps d’écran des jeunes.",
-    "country": "Il situe les <b>recherches web de l’IA</b> : « il fera beau demain ? » cherche près de chez toi.",
+    "timeZone": "Il fixe <b>le début de chaque jour</b> : nouveau fil, <i>Résumé du jour</i>, heures calmes et temps d’écran des jeunes.",
+    "country": "Il situe les <b>recherches web de l’IA</b> : <i>il fera beau demain ?</i> cherche près de chez toi.",
     "share": "Le <b>lien d’origine</b>, vers le site qui l’a publié, à envoyer où tu veux.",
     "addSource": "Colle le <b>lien d’un site</b>, ou choisis un thème pour voir des suggestions. La source arrive dans le fil de <b>tout le foyer</b>.",
     "replaceSource": "Trouve une autre source pour remplacer <b>{{name}}</b>. Elle est masquée dès que la nouvelle est ajoutée.",
@@ -1886,10 +1886,10 @@
     "week": "Son temps à l’écran et ses lectures des 7 derniers jours, <b>jamais les titres</b>.",
     "topics": "Choisis les thèmes visibles dans son fil. Un thème coupé disparaît <b>avec ses sources</b>, sans rien supprimer : tu peux le rallumer quand tu veux.",
     "sources": "Le catalogue jeunesse, rangé par thème. Les sources de base sont allumées au départ : garde celles qui lui conviennent. <b>Seules les sources allumées</b> arrivent dans son fil.",
-    "shareTo": "Choisis un ou plusieurs profils du foyer. L’article arrive dans leurs <b>Partages</b>, avec un mot si tu en écris un.",
-    "ask": "Colle le lien d’un site ou d’une chaîne YouTube. <b>Les parents</b> reçoivent la demande : s’ils l’acceptent, elle arrive dans le fil ou dans Vidéos.",
+    "shareTo": "Choisis un ou plusieurs profils du foyer. L’article arrive dans leurs <i>Partages</i>, avec un mot si tu en écris un.",
+    "ask": "Colle le lien d’un site ou d’une chaîne YouTube. <b>Les parents</b> reçoivent la demande : s’ils l’acceptent, elle arrive dans le fil ou dans <i>Vidéos</i>.",
     "request": "<b>{{name}}</b> aimerait ajouter cette source à son fil. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, rangée dans le thème ci-dessous.",
-    "requestChannel": "<b>{{name}}</b> aimerait suivre cette chaîne. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, dans ses Vidéos.",
+    "requestChannel": "<b>{{name}}</b> aimerait suivre cette chaîne. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, dans ses <i>Vidéos</i>.",
     "passwordOpen": "<b>{{name}}</b> a son propre compte. Tape son mot de passe pour ouvrir son profil sur cet appareil."
   },
   "plugins": {
@@ -2196,7 +2196,7 @@
       "backToAccounts": "Retour aux comptes",
       "failed": "Impossible de charger la liste.",
       "household": {
-        "intro": "Créé le {{date}}. Le serveur voit ses comptes et ses nombres, jamais ce qu’on y lit. Seul l’admin du foyer passe son rôle, dans Réglages › Profils.",
+        "intro": "Créé le {{date}}. Le serveur voit ses comptes et ses nombres, jamais ce qu’on y lit. Seul l’admin du foyer passe son rôle, dans <i>Réglages › Profils</i>.",
         "this": "Ce foyer",
         "admin": "Admin du foyer",
         "waiting": "{{name}} · en attente de son compte",
@@ -2272,7 +2272,7 @@
       "oneText": "Ce serveur a déjà le sien. Pour y lire, demande à son admin de t’inviter."
     },
     "general": {
-      "intro": "L’adresse de Hodi, que les liens des e-mails ouvrent, et la page d’accueil publique. Un navigateur qui n’a jamais ouvert Hodi arrive sur ce site, par exemple ta page de présentation ; les autres arrivent sur Connexion.",
+      "intro": "L’adresse de Hodi, que les liens des e-mails ouvrent, et la page d’accueil publique. Un navigateur qui n’a jamais ouvert Hodi arrive sur ce site, par exemple ta page de présentation ; les autres arrivent sur <i>Connexion</i>.",
       "addresses": "Adresses",
       "invalid": "Écris une adresse complète, avec https://.",
       "saved": "Adresse enregistrée",
@@ -2281,14 +2281,14 @@
       "appUrl": {
         "label": "Adresse de Hodi",
         "none": "Pas encore indiquée",
-        "intro": "L’adresse à laquelle on ouvre Hodi, telle qu’on la tape dans un navigateur. Les liens des e-mails y mènent : sans elle, « Mot de passe oublié » n’apparaît pas sur Connexion.",
+        "intro": "L’adresse à laquelle on ouvre Hodi, telle qu’on la tape dans un navigateur. Les liens des e-mails y mènent : sans elle, <i>Mot de passe oublié</i> n’apparaît pas sur <i>Connexion</i>.",
         "field": "Adresse de Hodi",
         "placeholder": "https://hodi.exemple.be"
       },
       "publicHome": {
         "label": "Page d’accueil publique",
         "none": "Aucune : Connexion s’ouvre",
-        "intro": "Une personne qui n’a jamais ouvert Hodi sur son navigateur arrive sur ce site, par exemple ta page de présentation. Laisse vide pour ouvrir Connexion.",
+        "intro": "Une personne qui n’a jamais ouvert Hodi sur son navigateur arrive sur ce site, par exemple ta page de présentation. Laisse vide pour ouvrir <i>Connexion</i>.",
         "field": "Adresse du site",
         "placeholder": "https://exemple.be"
       }
@@ -2311,7 +2311,7 @@
       "videoDays": {
         "label": "Vidéos",
         "title": "Durée des vidéos",
-        "intro": "Combien de jours une vidéo ou un épisode reste dans Vidéos. Une vidéo ne prend presque pas de place : son titre et son image."
+        "intro": "Combien de jours une vidéo ou un épisode reste dans <i>Vidéos</i>. Une vidéo ne prend presque pas de place : son titre et son image."
       },
       "textDays": {
         "label": "Texte des articles",
@@ -2328,7 +2328,7 @@
       }
     },
     "backups": {
-      "intro": "Chaque nuit, une copie de toute la base et des données des plugins. Elle contient les données de tout le monde : ton mot de passe la protège, et mieux vaut en garder une hors du serveur. La copie d’un seul compte est dans Réglages › Compte et données.",
+      "intro": "Chaque nuit, une copie de toute la base et des données des plugins. Elle contient les données de tout le monde : ton mot de passe la protège, et mieux vaut en garder une hors du serveur. La copie d’un seul compte est dans <i>Réglages › Compte et données</i>.",
       "settings": "Réglages",
       "kept": "Copies gardées",
       "keptValue_one": "{{count}} copie",
@@ -2364,7 +2364,7 @@
       "restoring": "Restauration de la copie du {{date}} à {{time}}"
     },
     "mail": {
-      "intro": "Le serveur par lequel Hodi envoie ses e-mails : « Mot de passe oublié » et ceux des plugins. Tant qu’il n’est pas réglé, Hodi n’en envoie aucun et ce lien n’apparaît pas sur Connexion.",
+      "intro": "Le serveur par lequel Hodi envoie ses e-mails : <i>Mot de passe oublié</i> et ceux des plugins. Tant qu’il n’est pas réglé, Hodi n’en envoie aucun et ce lien n’apparaît pas sur <i>Connexion</i>.",
       "server": "Serveur d’envoi",
       "notSet": "Pas encore réglé",
       "set": "Régler",
@@ -2557,7 +2557,7 @@
       "signInNow": "C’est fait : connecte-toi avec l’e-mail, le mot de passe, puis le code de l’app."
     },
     "server": {
-      "intro": "Ce compte gère tout le serveur : avant d’ouvrir l’espace Serveur, ajoute un code du téléphone au mot de passe. Tape le mot de passe pour commencer.",
+      "intro": "Ce compte gère tout le serveur : avant d’ouvrir l’espace <i>Serveur</i>, ajoute un code du téléphone au mot de passe. Tape le mot de passe pour commencer.",
       "back": "Retour à l’app"
     },
     "pluginSignIn": {

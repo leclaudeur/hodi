@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Names stand out.** In dialogs and at the top of the settings, Serveur and Mon compte pages, the names of households and
+  profiles and the e-mail addresses are in bold, and the names of screens and buttons in italics.
+
 ### Fixed
 
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme
