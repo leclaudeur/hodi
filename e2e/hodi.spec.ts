@@ -270,6 +270,13 @@ test('gives Sam, who forgot their password, a new one with a code from the admin
 
   await before.reload()
   await expect(before.getByRole('textbox', { name: 'E-mail' })).toBeVisible()
+  // Signed out, the round in the corner switches the language, on Connexion and on the screens of a code.
+  await before.getByRole('button', { name: 'English' }).click()
+  await expect(before.getByRole('button', { name: 'Enter' })).toBeVisible()
+  await before.getByRole('link', { name: 'I have a code' }).click()
+  await before.getByRole('button', { name: 'Français' }).click()
+  await expect(before.getByRole('textbox', { name: 'Code' })).toBeVisible()
+  await expect(before.getByRole('button', { name: 'English' })).toBeVisible()
   await before.close()
 })
 

@@ -8,6 +8,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Language on the signed-out screens.** Sign-in, I have a code, Forgot password and the setup show the language as a
+  round button with the other language's code, as on the public site; sign-in has it too now. With three buttons in a
+  step's footer, Back keeps only its arrow at every size.
+
 ### Fixed
 
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme

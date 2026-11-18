@@ -325,6 +325,18 @@
   font-weight: 600;
 }
 
+/* Three answers on a phone: a little less padding each, so they hold one line. */
+@media (max-width: 600px) {
+  .three {
+    gap: 6px;
+  }
+
+  .three > a,
+  .three > button:not([aria-label]) {
+    padding-inline: 13px;
+  }
+}
+
 /* Under 360px (the smallest phones), the answers still on one line: tighter buttons, the main one without its
    arrow. */
 @media (max-width: 359px) {

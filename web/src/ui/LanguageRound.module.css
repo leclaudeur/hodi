@@ -1,0 +1,41 @@
+.round {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--text) 26%, transparent);
+  border-radius: 50%;
+  background: var(--control);
+  color: var(--text-2);
+  font: 500 11.5px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background-color var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .round:hover {
+    background: var(--control-hover);
+    color: var(--text);
+  }
+}
+
+/* Connexion has no top bar: the round sits in its corner, where the other signed-out screens have it. */
+.corner {
+  position: absolute;
+  top: calc(34px + env(safe-area-inset-top, 0px));
+  right: 40px;
+  z-index: 2;
+}
+
+@media (max-width: 600px) {
+  .corner {
+    top: calc(28px + env(safe-area-inset-top, 0px));
+    right: 16px;
+  }
+}
