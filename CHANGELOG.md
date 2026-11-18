@@ -10,10 +10,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
-- **Validation en deux étapes is a switch.** In Mon compte it turns on and off like any other setting, and once on, a
-  row of its own shows the recovery codes left, with « Nouveaux codes ». The server's account keeps it on.
-- **A long list of devices folds.** Mon compte shows three devices and « Voir les N autres »; unfolded, the list scrolls
-  in a box of its own.
+- **Two-step verification is a switch.** In Settings > My account it turns on and off like any other setting, and once
+  on, a row of its own shows the recovery codes left, with New codes. The server's account keeps it on.
+- **A long list of devices folds.** Settings > My account shows three devices and See the N others; unfolded, the list
+  scrolls in a box of its own.
 
 ### Fixed
 
