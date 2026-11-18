@@ -21,7 +21,7 @@ to the app.
   profile, and its household's admin role passes to the oldest other adult with an account. A household goes with its
   profiles and the accounts that read nowhere else. The server admin's own account goes from _Account and data_.
 - **General**: the server's addresses. **Hodi's address** is the one the e-mails' links open; it starts as the
-  address the page is open at, and _Forgot password_ needs it. The **public home page** is a site's address, such as
+  address the page is open at, and the e-mailed codes of _Forgot password_ need it. The **public home page** is a site's address, such as
   Hodi's presentation page. A browser that never signed in on this server, opening its bare address, goes there instead
   of _Sign in_. Once it has signed in, or with an address of the app's own (`#/sign-in`, a code's or a reset code's button),
   _Sign in_ opens as usual. Empty by default.
@@ -33,6 +33,11 @@ to the app.
 - **E-mail**: the mail server Hodi sends through, one row at a time: the server with its port and security, its user
   name and password, and the sender. Until the server and the sender are both there, Hodi sends no e-mail at all. Once
   saved, the server's password is never shown again, not even to the admin. A test goes to the admin's address.
+- **Notifications**: an inbox of what the server told its admins, in their language. A request someone waits on, such
+  as a code asked for a forgotten password, stays on top under _To handle_ until it is handled, and its count shows
+  beside _Notifications_ in the sidebar.
+- **Alerts**: for each kind of notification, Hodi's and the plugins', whether it also goes out by e-mail or push, or
+  not at all.
 - **Plugins**: the server's admin adds, turns on and off, sets and removes them. _Available_ lists the plugins of
   [Hodi's registry](https://github.com/leclaudeur/hodi-plugin-registry), to install or update from there, and
   **Install from a file** takes any other. A plugin can add its own group of sections to this sidebar, and one
@@ -41,10 +46,12 @@ to the app.
 Restoring a copy first keeps a copy of how things are now, then restarts Hodi with the copy in place. The plugins' data
 goes back to the same moment, and what was deleted since the copy, such as an account or a household, is deleted again.
 
-Once _E-mail_ is set and _General_ has Hodi's address, the sign-in page shows **Forgot password**. It always answers the same,
-whether an account has that e-mail or not. The account gets an 8-character code valid for one hour, once, with a button
-that fills it in. The person types it, chooses a new password, which signs out the account's other devices, and enters
-Hodi. **I have a code** on that page goes straight to the code, for someone coming back with it later. Wrong codes count
-against the device, as wrong passwords do.
+_Forgot password_ on the sign-in page always answers the same, whether an account has that e-mail or not. Once _E-mail_
+is set and _General_ has Hodi's address, the account gets an 8-character code valid for one hour, once, with a button
+that fills it in. On a server that sends no e-mail, the page asks the server's admin instead: the request lands in
+_Notifications_, the account's page shows _Code asked_, and **Make a code** there gives the code to hand over. Either
+way, the person types it, chooses a new password, which signs out the account's other devices, and enters Hodi. **I
+have a code** on that page goes straight to the code, for someone coming back with it later. Wrong codes count against
+the device, as wrong passwords do.
 
 [← Back to the features](../features.md)
