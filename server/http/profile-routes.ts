@@ -10,7 +10,13 @@ import {
   cleanName,
   isYoung
 } from '../db/profile-store.ts'
-import { type CurrentRoutesOptions, deviceAccountOf, guardFor, mountCurrentRoutes } from './profile-current-routes.ts'
+import {
+  type CurrentRoutesOptions,
+  deviceAccountOf,
+  guardFor,
+  isHere,
+  mountCurrentRoutes
+} from './profile-current-routes.ts'
 import { isAccountGuard, lockOf } from './profile-guard.ts'
 import { type CheckProof, askingWithProof } from './proof.ts'
 import { mountPhotoRoutes } from './profile-photos.ts'
@@ -111,7 +117,14 @@ const mountListRoutes = (router: express.Router, options: ProfileRoutesOptions) 
         // An account with no password of its own (« Se connecter avec Google »): its person opens it through the
         // plugin, which signs the device in with it.
         const loginOnly = lock === 'password' && isAccountGuard(guard) && !guard.hasPassword
-        return { ...profile, locked: lock !== null, ...(lock ? { lock } : {}), ...(loginOnly ? { loginOnly } : {}) }
+        // here: « Qui lit ? » shows it on this device (its account is signed in here, or it is young).
+        return {
+          ...profile,
+          locked: lock !== null,
+          here: isHere(options, profile, request),
+          ...(lock ? { lock } : {}),
+          ...(loginOnly ? { loginOnly } : {})
+        }
       }),
       current: profileIdOf(response),
       own: device === undefined || !accounts ? null : accounts.profileOf(device),

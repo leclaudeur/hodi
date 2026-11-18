@@ -1,11 +1,8 @@
-import { Lock, Plus, Settings } from 'lucide-react'
+import { Lock, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MAX_PROFILES, type Profile, type ProfileSecret, RequestError, UnauthorizedError } from '../api.ts'
 import { switchProfile, useProfiles } from '../lib/profiles.ts'
-import { settingsHref } from '../lib/use-hash-route.ts'
-import { PluginSlots, useScreenLayout } from '../plugins/Slots.tsx'
-import Button from '../ui/Button.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import StatusLine from '../ui/StatusLine.tsx'
 import styles from './ProfilePicker.module.css'
@@ -119,17 +116,17 @@ const Tile = ({ profile, opening, chosen }: { profile: Profile; opening: Opening
 interface WhoProps {
   opening: Opening
   chosen: boolean
-  closed: boolean
   onAdd: () => void
 }
 
-// "Qui lit ?": the profiles, "Ajouter" for an adult, then « Gérer les profils ».
-export const Who = ({ opening, chosen, closed, onAdd }: WhoProps) => {
+// "Qui lit ?": the profiles shown on this device, then « Ajouter » for one more account.
+export const Who = ({ opening, chosen, onAdd }: WhoProps) => {
   const { t } = useTranslation()
   const value: Profiles = opening.value
-  const profiles = value?.profiles ?? []
-  // Any adult adds young profiles here; an adult joins with "Inviter un adulte", so that it has its account.
-  const parent = profiles.find(profile => profile.id === value?.current)?.kind === 'adult'
+  // The accounts signed in here first, then the young profiles.
+  const profiles = (value?.profiles ?? [])
+    .filter(profile => profile.here !== false)
+    .sort((a, b) => Number(a.kind !== 'adult') - Number(b.kind !== 'adult'))
   return (
     <>
       <h1 className={styles.title}>{t('profiles.who')}</h1>
@@ -139,12 +136,12 @@ export const Who = ({ opening, chosen, closed, onAdd }: WhoProps) => {
             <Tile profile={profile} opening={opening} chosen={chosen} />
           </li>
         ))}
-        {value && parent && profiles.length < MAX_PROFILES && (
+        {value && profiles.length < MAX_PROFILES && (
           <li>
             <button type="button" className={styles.tile} onClick={onAdd}>
               <span className={styles.avatar}>
                 <span className={styles.add}>
-                  <Plus size={32} aria-hidden="true" />
+                  <UserPlus size={30} aria-hidden="true" />
                 </span>
               </span>
               <span className={styles.name}>{t('profiles.add')}</span>
@@ -158,14 +155,6 @@ export const Who = ({ opening, chosen, closed, onAdd }: WhoProps) => {
           {opening.error}
         </StatusLine>
       )}
-
-      <div className={styles.actions}>
-        {chosen && !closed && (
-          <Button icon={Settings} href={settingsHref('profiles')}>
-            {t('profiles.manage')}
-          </Button>
-        )}
-      </div>
     </>
   )
 }

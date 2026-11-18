@@ -60,6 +60,8 @@ export interface Profile {
   lock?: 'password' | 'code' | 'no_account'
   // Its account has no password of its own (« Se connecter avec Google »): it opens through the plugin's button.
   loginOnly?: boolean
+  // « Qui lit ? » shows it on this device: its account is signed in here, or it is young. Only in the list.
+  here?: boolean
   // null: no photo, the initial shows.
   photoVersion: number | null
   // Added and never opened: its first visit, on any device, opens on the guided tour.

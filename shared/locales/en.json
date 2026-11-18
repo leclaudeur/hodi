@@ -325,7 +325,6 @@
     "who": "Who’s in?",
     "locked": "Protected by a password",
     "add": "Add",
-    "manage": "Manage profiles",
     "admin": "Admin",
     "code": {
       "invite": "Invite an adult",
@@ -356,7 +355,15 @@
     "parentalCode": "Parental code",
     "wrongCode": "That code is not the right one.",
     "trustDevice": "Don’t ask again on this device",
-    "codeHint": "Ask the household’s admin."
+    "codeHint": "Ask the household’s admin.",
+    "addAccount": {
+      "title": "Add my account",
+      "intro": "Sign in to find your profile on this device, in the <b>{{household}}</b> household. The accounts already added to <i>Who’s in?</i> stay as they are.",
+      "submit": "Sign in",
+      "otherHousehold": "<b>{{email}}</b> is in the <b>{{household}}</b> household, and this device serves the <b>{{here}}</b> household.",
+      "recovery": "Recovery code",
+      "app": "App code"
+    }
   },
   "limits": {
     "fiveMinutes": "Only 5 minutes of reading left today",
@@ -1892,6 +1899,15 @@
       "title": "Make your profile private?",
       "message": "Your password will be asked to open your profile from <i>Who’s reading?</i>, on every device. On your own ones, tick <i>Don’t ask again on this device</i>.",
       "button": "Make private"
+    },
+    "signOut": {
+      "title": "Sign out of this device?",
+      "message_one": "Your profile leaves <i>Who’s in?</i> on this device, but your account and your reading stay intact. <b>{{others}}</b> stays here. To come back later, tap <i>Add</i> and enter your e-mail and password.",
+      "message_other": "Your profile leaves <i>Who’s in?</i> on this device, but your account and your reading stay intact. <b>{{others}}</b> stay here. To come back later, tap <i>Add</i> and enter your e-mail and password.",
+      "messageAlone": "This device goes back to sign-in. Your account and your reading stay intact.",
+      "messageLast_one": "No adult will be signed in on this device any more: <b>{{young}}</b> leaves <i>Who’s in?</i> too, having no account. The device goes back to sign-in, and the reading stays intact. An adult of the household can sign it in again whenever they like.",
+      "messageLast_other": "No adult will be signed in on this device any more: <b>{{young}}</b> leave <i>Who’s in?</i> too, having no account. The device goes back to sign-in, and the reading stays intact. An adult of the household can sign it in again whenever they like.",
+      "button": "Sign out"
     }
   },
   "dialogIntro": {

@@ -1,15 +1,21 @@
 import type { TFunction } from 'i18next'
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, type ReactNode, createElement, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type LoginResult, getSetup, login } from '../api.ts'
 import { setHouseholdLanguage } from '../lib/i18n.ts'
 import { publicHomeFor } from '../lib/public-home.ts'
 import { refusalText } from '../lib/sign-in-refusal.ts'
+import RichText from '../ui/RichText.tsx'
 
 type Refused = Extract<LoginResult, { ok: false }>
 
 // A refused sign-in, in words.
-const refusalOf = (result: Refused, t: TFunction) => {
+const refusalOf = (result: Refused, t: TFunction, email: string): ReactNode => {
+  if (result.reason === 'other_household')
+    return createElement(RichText, {
+      i18nKey: 'profiles.addAccount.otherHousehold',
+      values: { email, household: result.household ?? '', here: result.here ?? '' }
+    })
   if (result.reason === 'invalid_code') return t('twoFactor.login.wrong')
   if (result.reason === 'invalid_password') return t('login.wrongCredentials')
   if (result.reason === 'too_many_attempts')
@@ -47,7 +53,7 @@ export const useLogin = (onLoggedIn: () => void) => {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ReactNode>(null)
   const [submitting, setSubmitting] = useState(false)
   const [secondStep, setSecondStep] = useState<'app' | 'recovery' | null>(null)
   const [code, setCode] = useState('')
@@ -63,7 +69,7 @@ export const useLogin = (onLoggedIn: () => void) => {
         return
       }
       if (result.reason === 'two_factor') setSecondStep('app')
-      else setError(refusalOf(result, t))
+      else setError(refusalOf(result, t, email))
     } catch {
       setError(t('common.unreachable'))
     } finally {

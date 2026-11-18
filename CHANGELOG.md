@@ -10,6 +10,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **Who's in? keeps the accounts of the device.** Who's in? shows the accounts signed in on this device and the
+  household's young profiles, like a TV's streaming app. Add signs one more account in with its e-mail and password; an
+  account of another household is refused, a device serving one household. Sign out takes only the account whose
+  profile is open: the others stay, and the last adult out takes the young profiles with them, back to sign-in. New
+  profiles are made in Settings > Profiles only.
+
 - **Opening a profile.** In _Qui lit ?_, an adult profile opens at once again, unless one of two new settings says
   otherwise. _Profil privé_, in Réglages › Compte et données, asks for the account's password on every device, except
   the ones where _Ne plus demander sur cet appareil_ was ticked (_Redemander_ takes them back). _Code parental_, in

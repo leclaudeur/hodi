@@ -108,7 +108,8 @@ export const mountSignedOut = (api: express.Router, wiring: Wiring) => {
     throttle,
     cookieFor: wiring.session.cookieFor,
     linkedDevices: wiring.linkedDevices,
-    trust: wiring.trust ?? undefined,
+    session: wiring.session,
+    household: options.household,
     secret: config.sessionSecret,
     now
   })

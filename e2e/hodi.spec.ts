@@ -58,8 +58,8 @@ test.afterAll(async () => {
   await Promise.all([page, sam, teen].filter(Boolean).map(open => open.close()))
 })
 
-// A new device: Alex's account opens Alex's profile; another profile is then picked in "Qui lit ?", with its
-// account's password when it has one (Sam's). A context instead of the browser: a device whose test opens more tabs.
+// A new device: Alex's account opens Alex's profile; a young one is then picked in "Qui lit ?", and Sam adds his
+// account there with « Ajouter ». A context instead of the browser: a device whose test opens more tabs.
 const signIn = async (
   browser: Browser | BrowserContext,
   name: string,
@@ -73,14 +73,15 @@ const signIn = async (
   await device.getByLabel('Code', { exact: true }).fill(await appCode())
   // Signed in only once the app shows: a test that reads this device's session from another one must not race it.
   await expect(device.getByRole('link', { name: 'Réglages' }).first()).toBeVisible()
-  if (name !== 'Alex') {
-    await device.goto('/#/profiles')
-    await device.getByRole('button', { name: new RegExp(name) }).click()
-    if (name === 'Sam') {
-      await device.getByRole('textbox', { name: 'Mot de passe de Sam' }).fill(SAM_PASSWORD)
-      await device.getByRole('button', { name: 'Ouvrir' }).click()
-    }
-  }
+  if (name === 'Alex') return device
+  await device.goto('/#/profiles')
+  if (name === 'Sam') {
+    await device.getByRole('button', { name: 'Ajouter' }).click()
+    await device.getByRole('textbox', { name: 'E-mail' }).fill('sam@example.com')
+    await device.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(SAM_PASSWORD)
+    await device.getByRole('button', { name: 'Se connecter' }).click()
+    await expect(device.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
+  } else await device.getByRole('button', { name: new RegExp(name) }).click()
   return device
 }
 
@@ -362,7 +363,20 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await device.getByLabel('Code parental').fill(PARENTAL_CODE)
   await expect(device.getByRole('button', { name: 'Alex, mon profil' })).toBeVisible()
 
+  // Only the accounts signed in here show: Sam adds his with « Ajouter », which opens his profile.
+  await device.goto('/#/profiles')
+  await expect(device.getByRole('button', { name: /Sam/ })).toHaveCount(0)
+  await device.getByRole('button', { name: 'Ajouter' }).click()
+  await expect(device.getByRole('heading', { name: 'Ajouter mon compte' })).toBeVisible()
+  await device.getByRole('textbox', { name: 'E-mail' }).fill('sam@example.com')
+  await device.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(SAM_PASSWORD)
+  await device.getByRole('button', { name: 'Se connecter' }).click()
+  await expect(device.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
+
   // Sam's private profile: the code is no way in, Sam's password is, and Sam trusts this device.
+  await device.goto('/#/profiles')
+  await device.getByRole('button', { name: /Zoé/ }).click()
+  await expect(device.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
   await device.goto('/#/profiles')
   await device.getByRole('button', { name: /Sam/ }).click()
   await device.getByRole('textbox', { name: 'Mot de passe de Sam' }).fill(SAM_PASSWORD)
@@ -385,8 +399,8 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await expect(device.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
   await device.goto('/#/profiles')
   await device.getByRole('button', { name: /Sam/ }).click()
-  // The device was last signed in by Sam: « Mot de passe », as for one's own profile.
-  await expect(device.getByRole('textbox', { name: 'Mot de passe', exact: true })).toBeVisible()
+  await expect(device.getByRole('textbox', { name: 'Mot de passe de Sam' })).toBeVisible()
+
   await own.close()
   await device.close()
 
@@ -525,22 +539,38 @@ test('shares an article with and without a word, and the sender sees the reactio
   await expect(reactions.getByRole('link', { name: /Sam a réagi 👍 Le nouveau tram arrive à Liège/ })).toBeVisible()
 })
 
-test('opens another account’s profile only with its password, then signs out', async ({ browser }) => {
+test('adds another account to « Qui lit ? » with its password, then signs each one out', async ({ browser }) => {
   const other = await signIn(browser, 'Alex')
   await other.goto('/#/profiles')
-  await other.getByRole('button', { name: /Sam/ }).click()
-  await other.getByRole('textbox', { name: 'Mot de passe de Sam' }).fill(PASSWORD)
-  await other.getByRole('button', { name: 'Ouvrir' }).click()
-  await expect(other.getByText('Ce mot de passe n’est pas le bon.')).toBeVisible()
-  await other.getByRole('textbox', { name: 'Mot de passe de Sam' }).fill(SAM_PASSWORD)
-  await other.getByRole('button', { name: 'Ouvrir' }).click()
+  await expect(other.getByRole('button', { name: /Sam/ })).toHaveCount(0)
+  await other.getByRole('button', { name: 'Ajouter' }).click()
+  await other.getByRole('textbox', { name: 'E-mail' }).fill('sam@example.com')
+  await other.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(PASSWORD)
+  await other.getByRole('button', { name: 'Se connecter' }).click()
+  await expect(other.getByText('E-mail ou mot de passe incorrect, réessaie.')).toBeVisible()
+  await other.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(SAM_PASSWORD)
+  await other.getByRole('button', { name: 'Se connecter' }).click()
   await expect(other.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
 
   // An address from before the routes were in English still opens, under its English name.
   await other.goto('/#/reglages/compte')
   await expect(other).toHaveURL(/#\/settings\/account$/)
+  // Sam signs out of this device: Alex and Zoé stay in « Qui lit ? ».
   await other.goto('/#/settings')
   await other.getByRole('button', { name: 'Se déconnecter' }).click()
+  const out = other.getByRole('dialog', { name: 'Se déconnecter de cet appareil ?' })
+  await expect(out).toContainText('Alex et Zoé restent ici')
+  await out.getByRole('button', { name: 'Se déconnecter' }).click()
+  await expect(other.getByRole('heading', { name: 'Qui lit ?' })).toBeVisible()
+  await expect(other.getByRole('button', { name: /Sam/ })).toHaveCount(0)
+
+  // Alex, the last adult here: Zoé leaves with him, and the device goes back to Connexion.
+  await other.getByRole('button', { name: /Alex/ }).click()
+  await expect(other.getByRole('button', { name: 'Alex, mon profil' })).toBeVisible()
+  await other.goto('/#/settings')
+  await other.getByRole('button', { name: 'Se déconnecter' }).click()
+  await expect(out).toContainText('Zoé quitte aussi')
+  await out.getByRole('button', { name: 'Se déconnecter' }).click()
   await expect(other.getByRole('textbox', { name: 'Mot de passe' })).toBeVisible()
   // Signed out for good: the app does not open again without the password.
   await other.goto('/#/saved')

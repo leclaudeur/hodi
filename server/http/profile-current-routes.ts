@@ -4,7 +4,7 @@ import { hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
 import { clearedProfileCookie, profileCookie, profileToken } from '../auth/session.ts'
 import { currentHouseholdId } from '../db/household-scope.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
-import type { Profile, ProfileStore } from '../db/profile-store.ts'
+import { type Profile, type ProfileStore, isYoung } from '../db/profile-store.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
 import { clientAddressOf } from './client-address.ts'
 import { type Guard, guardOf, isAccountGuard } from './profile-guard.ts'
@@ -24,10 +24,21 @@ export interface CurrentRoutesOptions {
   accounts?: UserAccountStore
   // The household's Code parental; absent in tests without it.
   household?: HouseholdStore
-  // The session cookie of an account on this device: the one whose profile opens here becomes the device's.
-  signIn?: (account: UserAccount, request: express.Request) => string
+  // The accounts signed in on this device: only their profiles open here, with their household's young ones.
+  signedInHere?: (request: express.Request) => number[]
   // « Ne plus demander sur cet appareil ».
   trust?: TrustedDevices
+}
+
+// « Qui lit ? » on this device: the profiles of the accounts signed in here, and every young profile.
+export const isHere = (
+  { accounts, signedInHere }: Pick<CurrentRoutesOptions, 'accounts' | 'signedInHere'>,
+  profile: Profile,
+  request: express.Request
+) => {
+  if (isYoung(profile) || !accounts || !signedInHere) return true
+  const owner = profile.hasAccount ? accounts.ofProfile(profile.id) : null
+  return owner !== null && signedInHere(request).includes(owner.id)
 }
 
 // The device's account, when one is signed in here.
@@ -97,7 +108,7 @@ const openingCheck = (options: CurrentRoutesOptions) => {
 }
 
 export const mountCurrentRoutes = (router: express.Router, options: CurrentRoutesOptions) => {
-  const { profiles, accounts, secret, signIn, trust } = options
+  const { profiles, secret, trust } = options
   const guardOfProfile = guardFor(options)
   const checkOpening = openingCheck(options)
   const cookieFor = (id: number) => profileCookie(profileToken(id, profiles.lock(id)?.version ?? 0, secret))
@@ -110,17 +121,16 @@ export const mountCurrentRoutes = (router: express.Router, options: CurrentRoute
       response.status(400).json({ error: 'bad_request' })
       return
     }
+    // Another adult's profile opens on a device once its account signs in there (« Ajouter »).
+    if (!isHere(options, profile, request)) {
+      response.status(403).json({ error: 'not_signed_in' })
+      return
+    }
     const guard = guardOfProfile(profile)
     const trusted = isAccountGuard(guard) && trust ? trust.trustedFor(request, guard) : null
     if (!trusted && !(await checkOpening(guard, request, response))) return
-    // There is no device's account: whoever opens their private profile here is the one signed in, for their
-    // account's pages.
-    const cookies = [cookieFor(profile.id)]
-    if (isAccountGuard(guard) && trust && (trusted || request.body?.trust === true))
-      cookies.push(...trust.trustHere(request, guard, trusted))
-    else if (isAccountGuard(guard) && accounts && signIn && guard.id !== deviceAccountOf(response))
-      cookies.push(signIn(guard, request))
-    response.set('Set-Cookie', cookies)
+    if (isAccountGuard(guard) && request.body?.trust === true) trust?.trustHere(request, guard)
+    response.set('Set-Cookie', cookieFor(profile.id))
     response.json({ current: profile.id })
   })
 

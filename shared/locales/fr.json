@@ -325,7 +325,6 @@
     "who": "Qui lit ?",
     "locked": "Protégé par un mot de passe",
     "add": "Ajouter",
-    "manage": "Gérer les profils",
     "admin": "Admin",
     "code": {
       "invite": "Inviter un adulte",
@@ -356,7 +355,15 @@
     "parentalCode": "Code parental",
     "wrongCode": "Ce code n’est pas le bon.",
     "trustDevice": "Ne plus demander sur cet appareil",
-    "codeHint": "Demande-le à l’admin du foyer."
+    "codeHint": "Demande-le à l’admin du foyer.",
+    "addAccount": {
+      "title": "Ajouter mon compte",
+      "intro": "Connecte-toi pour retrouver ton profil sur cet appareil, dans le foyer <b>{{household}}</b>. Les comptes déjà ajoutés à <i>Qui lit ?</i> restent comme ils sont.",
+      "submit": "Se connecter",
+      "otherHousehold": "<b>{{email}}</b> est dans le foyer <b>{{household}}</b>, et cet appareil sert le foyer <b>{{here}}</b>.",
+      "recovery": "Code de secours",
+      "app": "Code de l’app"
+    }
   },
   "limits": {
     "fiveMinutes": "Plus que 5 minutes de lecture aujourd’hui",
@@ -1892,6 +1899,15 @@
       "title": "Rendre ton profil privé ?",
       "message": "Ton mot de passe sera demandé pour ouvrir ton profil depuis <i>Qui lit ?</i>, sur tous les appareils. Sur les tiens, coche <i>Ne plus demander sur cet appareil</i>.",
       "button": "Rendre privé"
+    },
+    "signOut": {
+      "title": "Se déconnecter de cet appareil ?",
+      "message_one": "Ton profil part de <i>Qui lit ?</i> sur cet appareil, mais ton compte et tes lectures restent intacts. <b>{{others}}</b> reste ici. Pour revenir plus tard, touche <i>Ajouter</i> et entre ton e-mail et ton mot de passe.",
+      "message_other": "Ton profil part de <i>Qui lit ?</i> sur cet appareil, mais ton compte et tes lectures restent intacts. <b>{{others}}</b> restent ici. Pour revenir plus tard, touche <i>Ajouter</i> et entre ton e-mail et ton mot de passe.",
+      "messageAlone": "Cet appareil revient à la connexion. Ton compte et tes lectures restent intacts.",
+      "messageLast_one": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quitte aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte du foyer pourra le reconnecter quand il veut.",
+      "messageLast_other": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quittent aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte du foyer pourra le reconnecter quand il veut.",
+      "button": "Se déconnecter"
     }
   },
   "dialogIntro": {

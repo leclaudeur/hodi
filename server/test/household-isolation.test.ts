@@ -179,6 +179,18 @@ describe('two households on one server', () => {
       ['Claire']
     )
   })
+
+  it('refuses on a device of the Duponts an account of the Martins, and keeps the Duponts signed in there', async () => {
+    const added = await call('/login', dupont, 'POST', { email: MARTIN, password: PASSWORD })
+    assert.equal(added.status, 409)
+    assert.deepEqual(await added.json(), {
+      error: 'other_household',
+      household: 'Famille Martin',
+      here: 'Famille Dupont'
+    })
+    assert.equal(added.headers.getSetCookie().length, 0)
+    assert.equal((await call('/profiles', dupont)).status, 200)
+  })
 })
 
 describe("each household's catalogue in the news service", () => {

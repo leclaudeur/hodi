@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight, KeyRound, LifeBuoy, LockKeyhole, Mail } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PluginSlots, useScreenLayout } from '../plugins/Slots.tsx'
 import Button from '../ui/Button.tsx'
@@ -12,7 +13,7 @@ import styles from './LoginPage.module.css'
 import type { Login } from './use-login.ts'
 
 // The app's code in its boxes, or a recovery code in a field.
-const SecondField = ({ login, recovery }: { login: Login; recovery: boolean }) => {
+export const SecondField = ({ login, recovery }: { login: Login; recovery: boolean }) => {
   const { t } = useTranslation()
   if (recovery) {
     return (
@@ -108,7 +109,7 @@ export const SecondStepForm = ({ login }: { login: Login }) => {
 }
 
 // The error, or else the note from a step that ended here.
-const Status = ({ error, notice }: { error: string | null; notice: string | null }) => {
+const Status = ({ error, notice }: { error: ReactNode; notice: string | null }) => {
   if (error) {
     return (
       <span id="login-error" className={`${styles.error} ${styles.underField}`}>

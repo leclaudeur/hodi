@@ -28,7 +28,9 @@ export interface AccountRoutesOptions {
   household: HouseholdStore
   // The account and device a request is signed in with.
   sessionOf: (request: express.Request) => { account: UserAccount; device: UserDevice | null } | null
-  cookieForDevice: (account: UserAccount, deviceId: number) => string
+  cookieForDevice: (account: UserAccount, deviceId: number, request: express.Request) => string
+  // The device's session cookie without that account: the others signed in here stay.
+  cookieWithout?: (accountId: number, request: express.Request) => { cookie: string }
   // The signed choice of a profile on this device, which a new password changes.
   profileCookieFor?: (profileId: number) => string
   // Wrong passwords, as on the Connexion page.
@@ -231,7 +233,7 @@ const mountCredentialRoutes = (
     else device = devices.create(id, request.get('user-agent') ?? '', now())
     // The new password proved who reads here: its profile stays open on this device.
     const own = accounts.profileOf(id)
-    const cookies = [cookieForDevice(account, device.id)]
+    const cookies = [cookieForDevice(account, device.id, request)]
     if (own !== null && profileCookieFor) cookies.push(profileCookieFor(own))
     response.set('Set-Cookie', cookies)
     response.json(view(account, device))
@@ -308,7 +310,7 @@ const mountCopyRoute = (
 
 const mountDeleteRoute = (
   router: express.Router,
-  { data, profiles, now, onDeleteProfile, onAccountDeleted, onHouseholdGone }: AccountRoutesOptions,
+  { data, profiles, now, onDeleteProfile, onAccountDeleted, onHouseholdGone, cookieWithout }: AccountRoutesOptions,
   { sessionOrRefuse, checkProof, plan }: AccountHelpers
 ) => {
   // "Supprimer ton compte", after its red confirmation and the account's password: at once, with what the plan says
@@ -326,7 +328,8 @@ const mountDeleteRoute = (
     for (const profile of going.profiles) onDeleteProfile?.(profile.id)
     for (const accountId of data.delete(session.account, going, now())) onAccountDeleted?.(accountId)
     if (going.householdGoes) onHouseholdGone?.()
-    response.set('Set-Cookie', [clearedSessionCookie(), clearedProfileCookie()])
+    const left = cookieWithout ? cookieWithout(session.account.id, request).cookie : clearedSessionCookie()
+    response.set('Set-Cookie', [left, clearedProfileCookie()])
     response.status(204).end()
   })
 }

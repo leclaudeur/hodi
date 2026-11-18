@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react'
 import { AlertCircle, Info } from 'lucide-react'
 import styles from './StatusLine.module.css'
 
 interface StatusLineProps {
   tone: 'info' | 'error'
-  children: string
+  children: ReactNode
   className?: string
 }
 
@@ -15,7 +16,8 @@ const StatusLine = ({ tone, children, className = '' }: StatusLineProps) => {
       <span className={styles.mark}>
         <Icon size={16} aria-hidden="true" />
       </span>
-      {children}
+      {/* One box for the text, so a sentence with bold words wraps as one. */}
+      <span>{children}</span>
     </p>
   )
 }

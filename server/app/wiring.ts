@@ -100,8 +100,7 @@ export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
     presence: new Presence(),
     session,
     linkedDevices: profileDeviceSession(profileDevices, config.sessionSecret, now),
-    trust:
-      accounts && devices ? trustedDevices({ accounts, devices, session, secret: config.sessionSecret, now }) : null,
+    trust: devices ? trustedDevices({ devices, session }) : null,
     ...proofsOf(options, session),
     householdOptions,
     youthSources,
