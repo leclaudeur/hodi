@@ -28,8 +28,8 @@ Codes are eight letters and digits with a QR, valid once for 24 hours, typed aft
 - **An adult profile with no account yet**: the admin gives it to its person with **Connect a device**, in its form.
 - **A teen's or child's own device**: a parent makes the code in _Settings › Profiles › Manage › Devices_. That device
   opens this profile only, with no _Who's in?_, until it goes unused for 90 days or a parent removes it.
-- **A forgotten password**: the admin makes a code with **New password** in the profile's form. Its person types it, then
-  a new password.
+- **A forgotten password**: only the server's admin makes this code, in _Server › Accounts_, never a household's admin.
+  Its person types it, then a new password.
 
 On a code's page, **I already have an account** links the profile to an existing account instead of a new one.
 
@@ -39,8 +39,8 @@ The household's first profile is its admin. It creates and deletes the other pro
 and runs the household's sources, its AI key and its settings in _Settings › Household_, photo included.
 
 The admin hands the role to another adult with an account with **Hand over the admin role**, in that adult's form, and
-becomes a member. That, deleting an adult profile that has an account, and **New password** for another adult all ask
-for the admin's own password first.
+becomes a member. That and deleting an adult profile that has an account both ask for the admin's own password first.
+No one in the household can give another adult a new password.
 
 ## Opening a profile
 
