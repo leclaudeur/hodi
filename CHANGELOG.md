@@ -14,6 +14,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   and your language, which leaves Reading and display. My profile becomes General: the guided tour and the reset.
   Clearing your reading stats moves under the stats. A teen or a child keeps its name, photo, language and time of the
   day in General.
+- **One household per account.** An account belongs to one household only. Joining another household with an
+  existing account says which household it is in, and asks to leave it first. On a server with Village, Which household? and
+  Switch household are gone.
 
 ### Fixed
 

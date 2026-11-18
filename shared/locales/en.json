@@ -89,7 +89,8 @@
     "existing": "I already have an account",
     "newAccount": "Create a new account",
     "signIn": "Join",
-    "alreadyMember": "This account already has a profile in this household: sign in with it."
+    "alreadyMember": "This account already has a profile in this household: sign in with it.",
+    "otherHousehold": "{{email}} is already in the {{current}} household. To join the {{household}} household, leave yours first in Settings › Account and data."
   },
   "password": {
     "show": "Show password",
