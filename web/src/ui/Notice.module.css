@@ -144,8 +144,9 @@
   }
 }
 
-/* On a coloured card the usual button fades: a step lighter, with a firmer edge. */
-.side :is(a, button) {
-  border-color: var(--border-strong);
-  background: var(--raised);
+/* On a coloured card the usual button fades: a step lighter, with a firmer edge. Through the tokens it draws with,
+   so a pressed or primary button keeps its own colours. */
+.side {
+  --control: var(--raised);
+  --border: var(--border-strong);
 }

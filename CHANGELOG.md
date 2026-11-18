@@ -8,6 +8,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme
+  (dark in the light theme), with its icon readable.
+
 ## [1.0.0-beta.12] - 2026-11-17
 
 Every household sees its sources' icons again.
