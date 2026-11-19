@@ -134,9 +134,16 @@ const mountResetRoutes = (router: express.Router, options: ResolvedOptions) => {
       response.status(400).json({ error: 'invalid_request' })
       return
     }
-    const peeked = resets.peek(token, now())
+    // A wrong code counts as at « Entre le code », before the password is hashed: guessing here costs the server
+    // nothing and gets no more tries.
+    const decision = throttle.check(now(), clientAddressOf(request))
+    const peeked = decision.allowed ? resets.peek(token, now()) : null
     const owner = peeked === null ? null : accounts.get(peeked)
-    const refusal = owner ? await checkSignIn(owner) : null
+    if (!owner) {
+      if (!throttled(request, response)) response.status(404).json({ error: 'invalid_code' })
+      return
+    }
+    const refusal = await checkSignIn(owner)
     if (refusal) {
       refuseSignIn(response, refusal)
       return
