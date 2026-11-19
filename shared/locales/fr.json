@@ -52,7 +52,7 @@
       "intro": "Les 8 caractères qu’un adulte du foyer t’a donnés, ou le lien qui va avec.",
       "label": "Code",
       "helpTitle": "D’où vient ce code ?",
-      "help": "Un adulte du foyer le crée dans Réglages › Profils, avec « Inviter un adulte », « Connecter un appareil » ou « Nouveau mot de passe ». Il sert une seule fois, pendant 24 h.",
+      "help": "Un adulte du foyer le crée dans Réglages › Profils, avec « Inviter un adulte » ou « Connecter un appareil ». Pour un mot de passe oublié, c’est l’admin du serveur qui le donne. Il sert une seule fois, pendant 24 h.",
       "wrong": "Ce code ne marche pas : il a peut-être déjà servi, ou ses 24 h sont passées. Demandes-en un nouveau."
     },
     "invite": {
@@ -193,9 +193,6 @@
     "noAccount": "Sans compte",
     "noAccountHint": "Un code, sur son appareil",
     "connect": "Connecter un appareil",
-    "forgotPassword": "Mot de passe oublié",
-    "forgotPasswordHint": "Un code, pour en choisir un nouveau",
-    "newPassword": "Nouveau mot de passe",
     "inviteHint": "Un adulte crée son propre compte : tu lui donnes un code d’invitation, à taper dans « J’ai un code ».",
     "invite": "Inviter",
     "makeAdmin": "Admin du foyer",
@@ -352,6 +349,15 @@
     "noAccount": "{{name}} n’a pas encore de compte. Son profil s’ouvrira quand {{name}} l’aura créé avec son code.",
     "loginOnly": "{{name}} se connecte sans mot de passe : continue avec le même bouton qu'à la connexion pour ouvrir son profil.",
     "loginOnlyNoWay": "{{name}} se connecte sans mot de passe, par un plugin qui n'est plus là. Un adulte du foyer peut lui donner un code pour choisir un mot de passe.",
+    "invite": {
+      "intro": "Un code de 8 caractères pour rejoindre le foyer avec son propre compte. Le nom sert à reconnaître l’invitation dans <i>Personnes invitées</i> : la personne choisit le sien en créant son compte.",
+      "name": "Nom",
+      "email": "E-mail (facultatif)",
+      "send": "Envoyer le code",
+      "create": "Créer le code",
+      "sent": "Code envoyé à {{email}}",
+      "invalid": "Vérifie le nom (40 caractères au plus) et l’adresse e-mail."
+    },
     "parentalCode": "Code parental",
     "wrongCode": "Ce code n’est pas le bon.",
     "trustDevice": "Ne plus demander sur cet appareil",
@@ -1363,6 +1369,8 @@
       "signInAgain": "Pour confirmer que c’est toi, reconnecte-toi juste avant (il y a moins de 5 minutes), puis reviens ici.",
       "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise « Mot de passe oublié » ou demande un code à un adulte du foyer.",
       "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter",
+      "moreDevices_one": "Voir l’autre",
+      "moreDevices_other": "Voir les {{count}} autres",
       "profile": "Profil",
       "household": "Foyer",
       "householdAdmin": "Admin du foyer",
@@ -1411,7 +1419,28 @@
       "deleted": "{{name}} supprimé",
       "deleteFailed": "La suppression a échoué. Réessaie dans un instant.",
       "active": "Actif",
-      "add": "Ajouter un profil"
+      "add": "Ajouter un profil",
+      "groups": {
+        "adults": "Adultes",
+        "teens": "Ados",
+        "children": "Enfants",
+        "invited": "Personnes invitées"
+      },
+      "ownAccount": "Son propre compte",
+      "waitingAccount": "En attente de son compte",
+      "invited": {
+        "untilToday": "jusqu’à {{time}}",
+        "untilTomorrow": "jusqu’à demain, {{time}}",
+        "code": "Code valable {{until}}",
+        "unnamed": "Invitation",
+        "resend": "Renvoyer",
+        "resendName": "Renvoyer un code à {{name}}",
+        "show": "Voir le code",
+        "showName": "Voir un code pour {{name}}",
+        "cancelName": "Annuler l’invitation de {{name}}",
+        "cancelled": "Invitation de {{name}} annulée",
+        "cancelFailed": "L’invitation n’a pas pu être annulée. Réessaie dans un instant."
+      }
     },
     "notifications": {
       "errors": {
@@ -1906,6 +1935,11 @@
       "messageAdmin": "Ton profil dans <b>{{name}}</b> s’en va, avec ce que tu y as lu, enregistré et suivi, et <b>{{heir}}</b> devient l’admin du foyer. Ton compte <b>{{email}}</b> reste : un adulte d’un foyer pourra t’y inviter avec un code.",
       "button": "Quitter le foyer"
     },
+    "cancelInvitation": {
+      "title": "Annuler l’invitation ?",
+      "message": "Le code de <b>{{name}}</b> ne marchera plus. Tu pourras l’inviter à nouveau.",
+      "button": "Annuler l’invitation"
+    },
     "parentalOn": {
       "title": "Enregistrer ce code parental ?",
       "message": "Il sera demandé pour ouvrir chaque profil adulte qui n’est pas privé, depuis <i>Qui lit ?</i>, sur tous les appareils."
@@ -2152,7 +2186,8 @@
       "backups": "Sauvegardes",
       "mail": "E-mail",
       "plugins": "Plugins",
-      "notifications": "Notifications"
+      "notifications": "Alertes",
+      "inbox": "Notifications"
     },
     "pluginsIntro": "Des fonctions en plus, pour tout le serveur, depuis le registre de Hodi ou un fichier. Chaque plugin tourne à part, avec ses propres données. Seuls les plugins vérifiés ajoutent des pages à Hodi.",
     "hints": {
@@ -2163,7 +2198,10 @@
       "content": "Durées et sources par foyer",
       "backups": "Copies de toute la base de données",
       "mail": "Le serveur d’envoi des e-mails",
-      "notifications": "Ce que le serveur te signale"
+      "notifications": "E-mail et push, pour chaque type",
+      "inbox": "Ce que le serveur te signale",
+      "inboxWaiting_one": "{{count}} demande à traiter",
+      "inboxWaiting_other": "{{count}} demandes à traiter"
     },
     "overview": {
       "introOne": "Le foyer en totaux, comparé à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
@@ -2321,7 +2359,10 @@
           "title": "Supprimer ce compte ?",
           "message": "<b>{{email}}</b> est effacé tout de suite avec son profil, ses enregistrés, ses lectures, ses partages et ses statistiques. Les copies de sauvegarde l’oublient au plus tard dans {{days}}. <b>Il n’y a pas de retour en arrière.</b>",
           "messageAdmin": "<b>{{email}}</b> est effacé tout de suite avec son profil, ses enregistrés, ses lectures, ses partages et ses statistiques. <b>C’est l’admin de {{household}}</b> : le rôle passe à l’adulte avec un compte le plus ancien du foyer, et sans autre adulte, le foyer part aussi. Les copies de sauvegarde l’oublient au plus tard dans {{days}}. <b>Il n’y a pas de retour en arrière.</b>"
-        }
+        },
+        "codeAsked": "Code demandé",
+        "codeAskedTitle": "Code demandé le {{date}} à {{time}}",
+        "codeAskedText": "{{name}} a oublié son mot de passe et ce serveur n’envoie pas d’e-mails. Fais-lui un code, puis transmets-le-lui de la main à la main ou par message."
       },
       "emptyTitle": "Aucun foyer",
       "emptyText": "Crée le foyer où tu liras, ou un foyer pour quelqu’un d’autre, qui en sera l’admin.",
@@ -2471,8 +2512,8 @@
     },
     "logout": "Se déconnecter",
     "notifications": {
-      "title": "Notifications",
-      "intro": "Ce que le serveur te signale, et comment : par e-mail à ton adresse, en push sur tes appareils, ou les deux.",
+      "title": "Alertes",
+      "intro": "Comment le serveur te prévient de chaque chose : par e-mail à ton adresse, en push sur tes appareils, ou les deux. Tout reste aussi dans <i>Notifications</i>.",
       "core": "Serveur",
       "thisDevice": "Cet appareil",
       "device": "Push sur cet appareil",
@@ -2493,7 +2534,21 @@
       "weeklyReport": {
         "label": "Rapport de la semaine",
         "hint": "Le lundi à 08:00, les chiffres de la semaine"
+      },
+      "codeRequest": {
+        "label": "Demandes de code",
+        "hint": "Quand quelqu’un a oublié son mot de passe"
       }
+    },
+    "inbox": {
+      "intro": "Ce que le serveur te signale. Les demandes à traiter restent en haut, en orange, jusqu’à ce que tu les règles.",
+      "waiting": "À traiter",
+      "earlier": "Plus tôt",
+      "open": "Voir",
+      "openName": "Voir : {{title}}",
+      "emptyTitle": "Rien pour l’instant",
+      "emptyHint": "Ce que le serveur te signale arrive ici.",
+      "choose": "Choisir comment être prévenu"
     }
   },
   "mail": {
@@ -2509,13 +2564,13 @@
       "subject": "Hodi : choisir un nouveau mot de passe",
       "eyebrow": "Ton compte",
       "title": "Nouveau mot de passe",
-      "text": "Un nouveau mot de passe a été demandé pour le compte Hodi {{email}}. Ce lien est valable une heure.",
+      "text": "Un nouveau mot de passe a été demandé pour le compte Hodi {{email}}. Entre ce code sur la page Mot de passe oublié, ou ouvre le bouton : il est valable une heure, une seule fois.",
       "button": "Choisir un mot de passe",
       "note": "Si la demande ne vient pas de toi, ignore cet e-mail : le mot de passe reste le même."
     },
     "serverNotice": {
       "open": "Ouvrir dans Hodi",
-      "note": "Tu reçois cet e-mail car tu gères ce serveur. Choisis ce qu’il te signale dans <i>Serveur › Notifications</i>."
+      "note": "Tu reçois cet e-mail car tu gères ce serveur. Choisis ce qu’il te signale dans <i>Serveur › Alertes</i>."
     },
     "weekly": {
       "eyebrow": "Rapport de la semaine",
@@ -2531,22 +2586,47 @@
         "profiles": "Nouveaux profils"
       },
       "push": "Visites : {{visits}} · Articles lus : {{articles}}"
+    },
+    "codeRequest": {
+      "eyebrow": "Serveur",
+      "title": "{{name}} demande un code",
+      "text": "{{name}} ({{email}}) a oublié son mot de passe. Crée-lui un code dans Serveur › Comptes, puis transmets-le-lui."
+    },
+    "invite": {
+      "subject": "{{name}} t’invite sur Hodi",
+      "title": "Rejoins le foyer {{household}}",
+      "text": "{{name}} t’invite dans le foyer {{household}} sur Hodi. Avec ce code, tu crées ton propre compte et ton profil y est ajouté. Il est valable 24 heures, une seule fois.",
+      "code": "Ton code : {{code}}",
+      "button": "Rejoindre le foyer",
+      "note": "Si tu ne connais pas cette personne, ignore cet e-mail : sans le code, rien ne se passe."
     }
   },
   "forgot": {
     "title": "Mot de passe oublié",
-    "intro": "Le lien pour en choisir un nouveau arrive par e-mail. Il marche une heure.",
-    "send": "Envoyer le lien",
-    "sentTitle": "Regarde la boîte mail",
-    "sentIntro": "Si un compte a l’adresse <b>{{email}}</b>, le lien vient de partir. Il marche une heure. Pense à regarder les indésirables.",
-    "failed": "Le lien n’a pas pu partir. Réessaie dans un instant.",
+    "intro": "Entre l’e-mail de ton compte. Tu y reçois un code de 8 caractères, puis tu choisis un nouveau mot de passe.",
+    "send": "Envoyer un code",
+    "haveCode": "J’ai un code",
+    "codeTitle": "Entre le code",
+    "codeIntro": "Si un compte a l’adresse <b>{{email}}</b>, un code vient de partir. Il reste valable une heure. Pas reçu ? Regarde dans les indésirables, ou renvoie-le.",
+    "codeIntroTyped": "Les 8 caractères reçus par e-mail. Le code reste valable une heure et ne sert qu’une fois.",
+    "codeLabel": "Code",
+    "resend": "Renvoyer le code",
+    "resent": "Code renvoyé à {{email}}",
+    "confirm": "Confirmer",
+    "wrongCode": "Ce code ne marche pas : il a peut-être déjà servi, ou son heure est passée. Demandes-en un autre.",
+    "failed": "Le code n’a pas pu partir. Réessaie dans un instant.",
     "newTitle": "Nouveau mot de passe",
-    "newIntro": "Pour le compte <b>{{email}}</b>. Les autres appareils de ce compte se déconnectent : ils demanderont ce nouveau mot de passe.",
-    "save": "Valider et entrer",
-    "checking": "Vérification du lien…",
-    "deadTitle": "Ce lien ne marche plus",
-    "deadIntro": "Il a déjà servi ou il a plus d’une heure. Demandes-en un autre.",
-    "askAgain": "Demander un autre lien"
+    "newIntro": "Pour <b>{{email}}</b>. Une fois enregistré, tes autres appareils se déconnectent et celui-ci se connecte avec le nouveau.",
+    "save": "Enregistrer",
+    "doneTitle": "C’est fait",
+    "doneIntro": "Ton nouveau mot de passe est enregistré. Il te sert désormais sur chacun de tes appareils : garde-le dans un gestionnaire de mots de passe pour ne plus avoir à le chercher.",
+    "doneNotice": "Mot de passe changé",
+    "doneText": "Tes autres appareils sont déconnectés, celui-ci est déjà connecté.",
+    "enter": "Entrer dans Hodi",
+    "askIntro": "Ce serveur n’envoie pas d’e-mails : c’est son admin qui te fait un code de 8 caractères. Entre l’e-mail de ton compte et demande-le : l’admin est prévenu et te transmet le code.",
+    "ask": "Demander",
+    "askedIntro": "L’admin du serveur a reçu ta demande. Dès qu’il t’a transmis le code, entre-le ici. Il reste valable 24 heures et ne sert qu’une fois.",
+    "askedIntroTyped": "Les 8 caractères que l’admin du serveur t’a transmis. Le code reste valable 24 heures et ne sert qu’une fois."
   },
   "twoFactor": {
     "failed": "La validation en deux étapes n’a pas pu démarrer. Réessaie dans un instant.",
@@ -2584,11 +2664,7 @@
       "on": "Activée depuis le {{date}}",
       "off": "Désactivée",
       "required": "Obligatoire pour le compte du serveur",
-      "turnOn": "Activer",
-      "turnOff": "Désactiver",
       "newCodes": "Nouveaux codes",
-      "recoveryLeft_one": "{{count}} code de secours restant",
-      "recoveryLeft_other": "{{count}} codes de secours restants",
       "dialogTitle": "Validation en deux étapes",
       "dialogIntro": "En plus du mot de passe, Hodi demandera un code du téléphone à chaque connexion sur un nouvel appareil.",
       "done": "Activée : la prochaine connexion sur un nouvel appareil demandera le code.",
@@ -2606,7 +2682,9 @@
         "title": "Activer la validation ?",
         "message": "Tape le mot de passe : Hodi te montre ensuite le QR à scanner avec l’app d’authentification.",
         "button": "Continuer"
-      }
+      },
+      "codes": "Codes de secours",
+      "codesLeft": "{{count}} restants sur {{total}}"
     },
     "login": {
       "title": "Code de l’app",

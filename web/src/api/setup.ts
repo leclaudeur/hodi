@@ -190,15 +190,18 @@ export const linkWithCode = (code: string) => sendJson<{ profileId: number }>('P
 export const resetWithCode = (code: string, password: string) =>
   sendJson<{ profileId: number; signIn?: false }>('POST', '/codes/reset', { code, password })
 
-// « Mot de passe oublié »: the link by e-mail. The answer is the same whether an account has the address or not.
-export const askResetLink = (email: string) => sendJson<object>('POST', '/password/forgot', { email })
+// « Mot de passe oublié »: a code by e-mail. The answer is the same whether an account has the address or not.
+export const askResetCode = (email: string) => sendJson<object>('POST', '/password/forgot', { email })
 
-// The link's account, while the link works.
-export const checkResetLink = (token: string) => sendJson<{ email: string }>('POST', '/password/check', { token })
+// « Demander un code », on a server that sends no e-mail: its admin is told. The same answer for any address.
+export const askAdminCode = (email: string) => sendJson<object>('POST', '/password/ask', { email })
+
+// The code's account, while the code works.
+export const checkResetCode = (code: string) => sendJson<{ email: string }>('POST', '/password/check', { code })
 
 // The new password: every other device of the account signs in again; this one is signed in.
-export const resetWithLink = (token: string, password: string) =>
-  sendJson<{ signIn: false } | null>('POST', '/password/reset', { token, password })
+export const resetWithMailedCode = (code: string, password: string) =>
+  sendJson<{ signIn: false } | null>('POST', '/password/reset', { code, password })
 
 // A young profile's own devices, in its form (Réglages > Profils).
 export interface ProfileDevice {

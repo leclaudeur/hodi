@@ -137,7 +137,7 @@ docker compose cp app:/app/data/backups ./hodi-backups
 
 ## Sign out every device
 
-A new password in _Settings › Account and data_ signs out that account's other devices. To sign out every device of
+A new password in _Settings › My account_ signs out that account's other devices. To sign out every device of
 every account, yours included, delete the session key and restart:
 
 ```bash

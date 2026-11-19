@@ -14,6 +14,7 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 - **Bold and italics in intros.** The intro of `Dialog`, `SectionPage` and `askToConfirm` shows `<b>…</b>` (a name, an
   e-mail) in bold and `<i>…</i>` (a screen's or a button's name) in italics, as Hodi's own texts do.
+
 - **A way on for an account in no household.** `noHouseholdActions` in `definePlugin()` draws under the text of the
   card an account lands on once it left its household (or its profile was deleted), such as « Créer mon foyer ». Only
   the plugin's public part is loaded there. A route marked `noHousehold: true` (`{ noHousehold: true, handler }`)
@@ -28,6 +29,12 @@ and never touch `version`; a small release pull request raises `version` and mov
   households are gone: the `afterSignIn` step (« Quel foyer ? »), the `whoIsReadingFooter` buttons under « Qui lit ? »,
   and the `moveDevice` answer of a route (now ignored). `ctx.households.of()` lists at most one household, and
   `ctx.households.create()` refuses (`invalid_household`) an `admin.accountId` that is already in a household.
+
+- **A green notice.** `Notice` takes `tone="success"`, for what just worked.
+- **A server notice that waits.** `ctx.notifyServerAdmin(type, { …, important: 'waitlist:12' })` marks a request
+  someone waits on: it stays under « À traiter » in Serveur › Notifications, and the same key still waiting is not
+  sent again, until `ctx.serverNoticeHandled('waitlist:12')`. Keys are the plugin's own (letters, digits, `. _ : -`,
+  100 at most). In the testing kit, such a notice in `serverNotices` has `waiting`, true until it is handled.
 
 ## [1.0.0-beta.5] - 2026-11-18
 

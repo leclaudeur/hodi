@@ -12,6 +12,7 @@ import EmptyState from '../../ui/EmptyState.tsx'
 import Notice from '../../ui/Notice.tsx'
 import Toggle from '../../ui/Toggle.tsx'
 import SectionPage from '../settings/SectionPage.tsx'
+import RichText from '../../ui/RichText.tsx'
 import SettingRow from '../settings/SettingRow.tsx'
 import styles from '../settings/Settings.module.css'
 import own from './ServerNotifications.module.css'
@@ -58,6 +59,10 @@ interface GridProps {
   onChoose: (kind: ServerNoticeKind, way: Way) => void
 }
 
+// A code asked for always reaches the admin some way: its last way checked cannot be unchecked.
+const lastWay = (kind: ServerNoticeKind, way: Way) =>
+  kind.id === 'core:code-request' && kind[way] && !WAYS.some(other => other !== way && kind[other])
+
 // One group's kinds, a row each, with its checks under the columns' names.
 const GroupGrid = ({ group, mail, push, onChoose }: GridProps) => {
   const { t, i18n } = useTranslation()
@@ -82,7 +87,7 @@ const GroupGrid = ({ group, mail, push, onChoose }: GridProps) => {
                   <span key={way}>
                     <Checkbox
                       checked={kind[way] && usable[way]}
-                      disabled={!usable[way]}
+                      disabled={!usable[way] || lastWay(kind, way)}
                       onChange={() => onChoose(kind, way)}
                     >
                       <span className={own.hidden}>
@@ -145,7 +150,11 @@ const ServerNotifications = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   // Like e-mail without Serveur › E-mail: the push checks wait for this device to take the notices.
   const push = canPush && deviceOn
   return (
-    <SectionPage title={t('server.notifications.title')} intro={t('server.notifications.intro')} layout={layout}>
+    <SectionPage
+      title={t('server.notifications.title')}
+      intro={<RichText i18nKey="server.notifications.intro" />}
+      layout={layout}
+    >
       {notices && !notices.mail && <MailMissing />}
       {canPush && notices?.publicKey && <DeviceRow publicKey={notices.publicKey} on={deviceOn} setOn={setDeviceOn} />}
       {groups.map(group => (

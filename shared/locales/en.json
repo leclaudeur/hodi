@@ -52,7 +52,7 @@
       "intro": "The 8 characters an adult of the household gave you, or the link that came with them.",
       "label": "Code",
       "helpTitle": "Where does this code come from?",
-      "help": "An adult of the household makes it in Settings › Profiles, with “Invite an adult” or “Connect a device”. It works once, for 24 hours.",
+      "help": "An adult of the household makes it in Settings › Profiles, with “Invite an adult” or “Connect a device”. For a forgotten password, the server’s admin gives it. It works once, for 24 hours.",
       "wrong": "This code doesn’t work: it may have been used already, or its 24 hours are over. Ask for a new one."
     },
     "invite": {
@@ -193,9 +193,6 @@
     "noAccount": "No account",
     "noAccountHint": "A code, on their device",
     "connect": "Connect a device",
-    "forgotPassword": "Forgotten password",
-    "forgotPasswordHint": "A code, to choose a new one",
-    "newPassword": "New password",
     "inviteHint": "An adult makes their own account: you give them an invitation code, to type in “I have a code”.",
     "invite": "Invite",
     "makeAdmin": "Household admin",
@@ -352,6 +349,15 @@
     "noAccount": "{{name}} has no account yet. This profile opens once {{name}} makes one with their code.",
     "loginOnly": "{{name}} signs in without a password: continue with the same button as at sign-in to open their profile.",
     "loginOnlyNoWay": "{{name}} signs in without a password, through a plugin that is gone. An adult of the household can give them a code to choose a password.",
+    "invite": {
+      "intro": "An 8-character code to join the household with their own account. The name is how you recognise the invitation in <i>Invited people</i>: the person picks their own when they create their account.",
+      "name": "Name",
+      "email": "E-mail (optional)",
+      "send": "Send the code",
+      "create": "Create the code",
+      "sent": "Code sent to {{email}}",
+      "invalid": "Check the name (40 characters at most) and the e-mail address."
+    },
     "parentalCode": "Parental code",
     "wrongCode": "That code is not the right one.",
     "trustDevice": "Don’t ask again on this device",
@@ -1363,6 +1369,8 @@
       "signInAgain": "To confirm it is you, sign in again just before (less than 5 minutes ago), then come back here.",
       "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use “Forgot password” or ask an adult of the household for a code.",
       "sessionHintNoPassword": "Signed in for 90 days, then you sign in again",
+      "moreDevices_one": "See the other one",
+      "moreDevices_other": "See the {{count}} others",
       "profile": "Profile",
       "household": "Household",
       "householdAdmin": "Household admin",
@@ -1411,7 +1419,28 @@
       "deleted": "{{name}} deleted",
       "deleteFailed": "The deletion failed. Try again in a moment.",
       "active": "Open",
-      "add": "Add a profile"
+      "add": "Add a profile",
+      "groups": {
+        "adults": "Adults",
+        "teens": "Teens",
+        "children": "Children",
+        "invited": "Invited people"
+      },
+      "ownAccount": "Their own account",
+      "waitingAccount": "Waiting for their account",
+      "invited": {
+        "untilToday": "until {{time}}",
+        "untilTomorrow": "until tomorrow, {{time}}",
+        "code": "Code valid {{until}}",
+        "unnamed": "Invitation",
+        "resend": "Send again",
+        "resendName": "Send a code to {{name}} again",
+        "show": "See the code",
+        "showName": "See a code for {{name}}",
+        "cancelName": "Cancel {{name}}’s invitation",
+        "cancelled": "{{name}}’s invitation cancelled",
+        "cancelFailed": "The invitation could not be cancelled. Try again in a moment."
+      }
     },
     "notifications": {
       "errors": {
@@ -1906,6 +1935,11 @@
       "messageAdmin": "Your profile in <b>{{name}}</b> goes, with what you read, saved and followed there, and <b>{{heir}}</b> becomes the household’s admin. Your account <b>{{email}}</b> stays: an adult of a household can invite you there with a code.",
       "button": "Leave the household"
     },
+    "cancelInvitation": {
+      "title": "Cancel the invitation?",
+      "message": "<b>{{name}}</b>’s code will stop working. You can invite them again.",
+      "button": "Cancel the invitation"
+    },
     "parentalOn": {
       "title": "Save this parental code?",
       "message": "It will be asked to open every adult profile that is not private, from <i>Who’s reading?</i>, on every device."
@@ -2152,7 +2186,8 @@
       "backups": "Backups",
       "mail": "E-mail",
       "plugins": "Plugins",
-      "notifications": "Notifications"
+      "notifications": "Alerts",
+      "inbox": "Notifications"
     },
     "pluginsIntro": "More features, for the whole server, from Hodi’s registry or a file. Each plugin runs apart, with its own data. Only verified plugins add pages to Hodi.",
     "hints": {
@@ -2163,7 +2198,10 @@
       "content": "Durations and sources per household",
       "backups": "Copies of the whole database",
       "mail": "The server that sends e-mails",
-      "notifications": "What the server tells you"
+      "notifications": "E-mail and push, for each kind",
+      "inbox": "What the server tells you",
+      "inboxWaiting_one": "{{count}} request to handle",
+      "inboxWaiting_other": "{{count}} requests to handle"
     },
     "overview": {
       "introOne": "The household in totals, beside the period before. The server counts, it doesn’t look: never what a person reads.",
@@ -2321,7 +2359,10 @@
           "title": "Delete this account?",
           "message": "<b>{{email}}</b> is deleted at once with its profile, saved articles, reading, shares and statistics. Backup copies forget it within {{days}} at most. <b>This can’t be undone.</b>",
           "messageAdmin": "<b>{{email}}</b> is deleted at once with its profile, saved articles, reading, shares and statistics. <b>They are {{household}}’s admin</b>: the role goes to the household’s oldest adult with an account, and with no other adult, the household goes too. Backup copies forget it within {{days}} at most. <b>This can’t be undone.</b>"
-        }
+        },
+        "codeAsked": "Code asked",
+        "codeAskedTitle": "Code asked on {{date}} at {{time}}",
+        "codeAskedText": "{{name}} forgot their password and this server sends no e-mail. Make them a code, then pass it on in person or by message."
       },
       "emptyTitle": "No household",
       "emptyText": "Create your household to read in it, or a household for someone else, who will be its admin.",
@@ -2472,8 +2513,8 @@
     },
     "logout": "Sign out",
     "notifications": {
-      "title": "Notifications",
-      "intro": "What the server tells you, and how: by e-mail to your address, in push on your devices, or both.",
+      "title": "Alerts",
+      "intro": "How the server lets you know of each thing: by e-mail to your address, in push on your devices, or both. Everything also stays in <i>Notifications</i>.",
       "core": "Server",
       "thisDevice": "This device",
       "device": "Push on this device",
@@ -2494,7 +2535,21 @@
       "weeklyReport": {
         "label": "Weekly report",
         "hint": "On Monday at 08:00, the week’s numbers"
+      },
+      "codeRequest": {
+        "label": "Code requests",
+        "hint": "When someone forgot their password"
       }
+    },
+    "inbox": {
+      "intro": "What the server tells you. Requests to handle stay at the top, in orange, until you deal with them.",
+      "waiting": "To handle",
+      "earlier": "Earlier",
+      "open": "See",
+      "openName": "See: {{title}}",
+      "emptyTitle": "Nothing yet",
+      "emptyHint": "What the server tells you lands here.",
+      "choose": "Choose how you’re told"
     }
   },
   "mail": {
@@ -2510,13 +2565,13 @@
       "subject": "Hodi: choose a new password",
       "eyebrow": "Your account",
       "title": "New password",
-      "text": "A new password was asked for the Hodi account {{email}}. This link works for an hour.",
+      "text": "A new password was asked for the Hodi account {{email}}. Enter this code on the Forgot password page, or open the button: it works for an hour, once.",
       "button": "Choose a password",
       "note": "If you didn’t ask, ignore this e-mail: the password stays the same."
     },
     "serverNotice": {
       "open": "Open in Hodi",
-      "note": "You get this e-mail because you run this server. Choose what it tells you in <i>Server › Notifications</i>."
+      "note": "You get this e-mail because you run this server. Choose what it tells you in <i>Server › Alerts</i>."
     },
     "weekly": {
       "eyebrow": "Weekly report",
@@ -2532,22 +2587,47 @@
         "profiles": "New profiles"
       },
       "push": "Visits: {{visits}} · Articles read: {{articles}}"
+    },
+    "codeRequest": {
+      "eyebrow": "Server",
+      "title": "{{name}} asks for a code",
+      "text": "{{name}} ({{email}}) forgot their password. Make them a code in Server › Accounts, then pass it on."
+    },
+    "invite": {
+      "subject": "{{name}} invites you to Hodi",
+      "title": "Join the {{household}} household",
+      "text": "{{name}} invites you to the {{household}} household on Hodi. With this code you make your own account and your profile is added to it. It works for 24 hours, once.",
+      "code": "Your code: {{code}}",
+      "button": "Join the household",
+      "note": "If you don’t know this person, ignore this e-mail: without the code, nothing happens."
     }
   },
   "forgot": {
     "title": "Forgot password",
-    "intro": "The link to choose a new one comes by e-mail. It works for an hour.",
-    "send": "Send the link",
-    "sentTitle": "Check your e-mails",
-    "sentIntro": "If an account has the address <b>{{email}}</b>, the link is on its way. It works for an hour. Check the spam folder too.",
-    "failed": "The link couldn’t be sent. Try again in a moment.",
+    "intro": "Enter your account’s e-mail. You get an 8-character code there, then you choose a new password.",
+    "send": "Send a code",
+    "haveCode": "I have a code",
+    "codeTitle": "Enter the code",
+    "codeIntro": "If an account has the address <b>{{email}}</b>, a code is on its way. It works for an hour. Not there? Look in the spam folder, or send it again.",
+    "codeIntroTyped": "The 8 characters you got by e-mail. The code works for an hour, and once.",
+    "codeLabel": "Code",
+    "resend": "Send the code again",
+    "resent": "Code sent again to {{email}}",
+    "confirm": "Confirm",
+    "wrongCode": "This code doesn’t work: it may have been used already, or its hour is over. Ask for another one.",
+    "failed": "The code could not be sent. Try again in a moment.",
     "newTitle": "New password",
-    "newIntro": "For the account <b>{{email}}</b>. This account’s other devices sign out: they will ask for this new password.",
-    "save": "Save and enter",
-    "checking": "Checking the link…",
-    "deadTitle": "This link no longer works",
-    "deadIntro": "It was used already or is more than an hour old. Ask for another one.",
-    "askAgain": "Ask for another link"
+    "newIntro": "For <b>{{email}}</b>. Once saved, your other devices sign out and this one signs in with the new one.",
+    "save": "Save",
+    "doneTitle": "All done",
+    "doneIntro": "Your new password is saved. It now works on each of your devices: keep it in a password manager so you never have to look for it again.",
+    "doneNotice": "Password changed",
+    "doneText": "Your other devices are signed out, this one is already signed in.",
+    "enter": "Enter Hodi",
+    "askIntro": "This server sends no e-mail: its admin makes you an 8-character code. Enter your account’s e-mail and ask for it: the admin is told and passes the code on to you.",
+    "ask": "Ask for it",
+    "askedIntro": "The server’s admin got your request. Once they pass you the code, enter it here. It works for 24 hours, and once.",
+    "askedIntroTyped": "The 8 characters the server’s admin passed you. The code works for 24 hours, and once."
   },
   "twoFactor": {
     "failed": "Two-step verification couldn’t start. Try again in a moment.",
@@ -2585,11 +2665,7 @@
       "on": "On since {{date}}",
       "off": "Off",
       "required": "Required for the server’s account",
-      "turnOn": "Turn on",
-      "turnOff": "Turn off",
       "newCodes": "New codes",
-      "recoveryLeft_one": "{{count}} recovery code left",
-      "recoveryLeft_other": "{{count}} recovery codes left",
       "dialogTitle": "Two-step verification",
       "dialogIntro": "On top of the password, Hodi will ask for a code from your phone each time you sign in on a new device.",
       "done": "On: your next sign-in on a new device will ask for the code.",
@@ -2607,7 +2683,9 @@
         "title": "Turn on verification?",
         "message": "Type your password: Hodi then shows the QR to scan with your authenticator app.",
         "button": "Continue"
-      }
+      },
+      "codes": "Recovery codes",
+      "codesLeft": "{{count}} left of {{total}}"
     },
     "login": {
       "title": "Your app’s code",

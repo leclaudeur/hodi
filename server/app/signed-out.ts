@@ -5,10 +5,28 @@ import { codeJoinRoutes } from '../http/code-routes.ts'
 import { setupRoutes } from '../http/setup-routes.ts'
 import { loginRoutes } from '../http/login-routes.ts'
 import { passwordRoutes } from '../http/password-routes.ts'
+import type { UserAccount } from '../db/user-account-store.ts'
+import { CODE_REQUEST, codeRequestKey, codeRequestNotice } from '../notices/code-request.ts'
 import { pluginDevRoutes, pluginPublicRoutes } from '../http/plugin-routes.ts'
 import type { Wiring } from './wiring.ts'
 
 type Login = ReturnType<typeof loginRoutes>
+
+// « Demander un code »: the server's admins hear of it, for an account with a profile in a household.
+const askAdmin = ({ serverInbox, accounts, profiles }: Wiring['options'], account: UserAccount) => {
+  const householdId = accounts?.householdOf(account.id) ?? null
+  if (!serverInbox || !profiles || householdId === null) return
+  const name = inHousehold(householdId, () => {
+    const profileId = accounts?.profileOf(account.id)
+    return profileId == null ? null : (profiles.get(profileId)?.name ?? null)
+  })
+  if (name === null) return
+  serverInbox.notifier
+    .tell(CODE_REQUEST, language => codeRequestNotice(account, name, language), {
+      important: codeRequestKey(account.id)
+    })
+    .catch((error: unknown) => console.error(`Code request not told: ${String(error)}`))
+}
 
 // « Mot de passe oublié »: as a login, its own profile opens at once.
 const mountPassword = (api: express.Router, { options }: Wiring, login: Login) => {
@@ -27,6 +45,7 @@ const mountPassword = (api: express.Router, { options }: Wiring, login: Login) =
           return profileId === null ? household.get().language : news.languageOf(profileId)
         }),
       checkSignIn: login.checkSignIn,
+      askAdmin: account => askAdmin(options, account),
       home: () => options.serverSettings?.publicHome() ?? null,
       signIn: (account, hash, request) => {
         const session = login.resetAccountPassword(account, hash, request)

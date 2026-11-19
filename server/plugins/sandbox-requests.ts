@@ -237,6 +237,10 @@ export const requestsOf = (manifest: Manifest, deps: RequestDeps) => {
       await deps.serverNotifier.send(plugin, type, notice)
       return null
     }
+    requests['serverNotify.handled'] = async ([key]) => {
+      deps.serverNotifier.handled(plugin, key)
+      return null
+    }
   }
   // The household pays for it: only a plugin a trusted key signed gets it, whatever its manifest says.
   if (manifest.permissions.ai && signed) addAi(requests, manifest, deps)

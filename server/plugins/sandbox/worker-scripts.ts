@@ -127,6 +127,9 @@ export const ctx = Object.freeze({
     ? {
         notifyServerAdmin: async (type, notice) => {
           JSON.parse(await bridge.host('serverNotify.send', json([type, notice])))
+        },
+        serverNoticeHandled: async key => {
+          JSON.parse(await bridge.host('serverNotify.handled', json([key])))
         }
       }
     : {}),

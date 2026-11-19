@@ -1,0 +1,10 @@
+/* Every device once unfolded: a box of its own height, which scrolls, so the page below stays near. */
+.scrollList {
+  max-height: 440px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.scrollList > * + * {
+  border-top: 1px solid var(--divider);
+}
