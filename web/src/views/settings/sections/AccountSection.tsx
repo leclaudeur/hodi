@@ -16,7 +16,9 @@ import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import { PluginSlots } from '../../../plugins/Slots.tsx'
+import AccountProfile from './AccountProfile.tsx'
 import { DeviceRows, TwoFactorRow, confirmDelete, labelOf } from './AccountRows.tsx'
+import PrivateProfileRow from './PrivateProfileRow.tsx'
 
 // undefined while it comes; null: no account here.
 const useAccount = (onUnauthorized: () => void) => {
@@ -137,7 +139,7 @@ interface AccountSectionProps {
   onUnauthorized: () => void
 }
 
-// Réglages > Compte et données: the account's e-mail and password, the devices signed in with it (this one's offline
+// Réglages > Mon compte: the account's profile and language, its e-mail and password, the devices signed in with it (this one's offline
 // reading among them), a copy of its data and deleting it. An install still on the household's password, or a young
 // profile open on this device, sees this device's part alone.
 const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
@@ -179,6 +181,7 @@ const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
 
   return (
     <SectionPage title={title} intro={t('settings.account.intro')} layout={layout}>
+      <AccountProfile />
       <h2 className={styles.label}>{t('settings.account.yourAccount')}</h2>
       <div className={styles.card}>
         <SettingRow
@@ -201,6 +204,7 @@ const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
             onClick: () => setEditing('password')
           }}
         />
+        <PrivateProfileRow account={account} onAccount={setAccount} />
         <TwoFactorRow account={account} onAccount={setAccount} onStarted={setStarted} onNewCodes={setNewCodes} />
         {/* A plugin's rows about the account (« Relier mon compte Google »). */}
         <PluginSlots slot="accountRows" props={{ layout }} />

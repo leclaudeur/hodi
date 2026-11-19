@@ -124,8 +124,10 @@ export const pluginHouseholds = ({
       const { name, language, adminName, accountId } = newHouseholdOf(value)
       if (accountId !== null) {
         const account = accounts.get(accountId)
-        // The server's admin enters a household only by their own choice: a plugin never puts them in one.
-        if (!account || account.serverAdmin) throw new Error('invalid_household')
+        // The server's admin enters a household only by their own choice: a plugin never puts them in one. Nor an
+        // account already in a household: one account, one household.
+        if (!account || account.serverAdmin || accounts.householdOf(account.id) !== null)
+          throw new Error('invalid_household')
       }
       const made = store.create({ name, language, plugin, admin: { name: adminName, accountId } }, now())
       const household = made.household

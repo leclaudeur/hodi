@@ -14,10 +14,7 @@ import { startLimits, useLimits, useLimitsReady } from './lib/limits.ts'
 import { PROFILE_SWITCHING } from './lib/profiles.ts'
 import { anotherTabOpen, answerOtherTabs } from './lib/other-tabs.ts'
 import { useHashRoute } from './lib/use-hash-route.ts'
-import { loadedPlugins, loadPlugins, loadPublicPlugins, usePluginSlots, usePlugins } from './plugins/registry.ts'
-import PluginSlot from './plugins/PluginSlot.tsx'
-import { useScreenLayout } from './plugins/Slots.tsx'
-import { clearSignedIn, isJustSignedIn } from './lib/after-sign-in.ts'
+import { loadedPlugins, loadPlugins, loadPublicPlugins } from './plugins/registry.ts'
 import SignedOut from './app/SignedOut.tsx'
 import Tour from './app/Tour.tsx'
 import HomePage from './pages/HomePage.tsx'
@@ -65,12 +62,6 @@ const leaveOnOpen = async (profileOpen: boolean) => {
   if (!profileOpen || (await anotherTabOpen())) return false
   await leaveProfile().catch(() => {})
   return true
-}
-
-// Lets the person in at once when a plugin's step after sign-in breaks.
-const AfterSignInFailed = ({ done }: { done: () => void }) => {
-  useEffect(done, [done])
-  return null
 }
 
 type Session = Awaited<ReturnType<typeof getSession>>
@@ -133,36 +124,6 @@ const useSessionEvents = (check: () => void, setStatus: (status: Status) => void
     window.addEventListener(PROFILE_SWITCHING, switching)
     return () => window.removeEventListener(PROFILE_SWITCHING, switching)
   }, [setStatus])
-}
-
-// A plugin's step just after sign-in (« Quel foyer ? »), before « Qui lit ? » or the app: null when there is none to
-// take, 'wait' until the plugins are known.
-const useAfterSignIn = (status: Status) => {
-  const plugins = usePlugins()
-  const [afterSignIn] = usePluginSlots('afterSignIn')
-  const [justSignedIn, setJustSignedIn] = useState(isJustSignedIn)
-  const layout = useScreenLayout()
-  // The server's admin with no household has no step to take (/server alone), nor does anyone when no plugin has one.
-  const noStep = status === 'server' || (plugins.ready && !afterSignIn)
-  useEffect(() => {
-    if (justSignedIn && noStep) clearSignedIn()
-  }, [justSignedIn, noStep])
-  if (!justSignedIn || noStep || (status !== 'choosing' && status !== 'authenticated')) return null
-  // The loading screen until the plugins are known.
-  if (!plugins.ready || !afterSignIn) return 'wait'
-  const done = () => {
-    clearSignedIn()
-    setJustSignedIn(false)
-  }
-  return (
-    <PluginSlot
-      id={afterSignIn.id}
-      component={afterSignIn.value}
-      props={{ layout, done }}
-      // A step that breaks never keeps the person out.
-      fallback={<AfterSignInFailed done={done} />}
-    />
-  )
 }
 
 const Unreachable = ({ retry }: { retry: () => void }) => {
@@ -263,7 +224,6 @@ const App = () => {
   }, [status])
 
   usePluginLoading(status)
-  const step = useAfterSignIn(status)
   useSessionEvents(check, setStatus)
 
   // The loading screen until the session answers (it stays empty for a quick answer).
@@ -290,8 +250,6 @@ const App = () => {
     )
   }
 
-  if (step === 'wait') return <LoadingScreen />
-  if (step) return step
   return <SignedIn status={status} setStatus={setStatus} />
 }
 

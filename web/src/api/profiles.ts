@@ -55,8 +55,13 @@ export interface Profile {
   // This device types a password before it opens it in "Qui lit ?": every adult. Only in the list: a profile sent
   // back after a change does not say.
   locked?: boolean
+  // What it asks: its account's password (a private profile), the household's parental code, or nothing it can
+  // give yet (an adult without an account). Absent: it opens at once on this device.
+  lock?: 'password' | 'code' | 'no_account'
   // Its account has no password of its own (« Se connecter avec Google »): it opens through the plugin's button.
   loginOnly?: boolean
+  // « Qui lit ? » shows it on this device: its account is signed in here, or it is young. Only in the list.
+  here?: boolean
   // null: no photo, the initial shows.
   photoVersion: number | null
   // Added and never opened: its first visit, on any device, opens on the guided tour.
@@ -98,8 +103,16 @@ export const deleteProfile = (id: number, proof?: AdminProof) => sendJson<null>(
 export const makeAdmin = (id: number, proof: AdminProof) => sendJson<null>('PUT', `/profiles/${id}/admin`, proof)
 
 // This device now reads as that profile, with the password it asks for, if any.
-export const chooseProfile = (id: number, password?: string) =>
-  sendJson<{ current: number }>('PUT', '/profiles/current', { id, password })
+// What « Qui lit ? » typed: a private profile's password (trust: « Ne plus demander sur cet appareil »), or the
+// household's Code parental.
+export interface ProfileSecret {
+  password?: string
+  code?: string
+  trust?: boolean
+}
+
+export const chooseProfile = (id: number, secret: ProfileSecret = {}) =>
+  sendJson<{ current: number }>('PUT', '/profiles/current', { id, ...secret })
 
 export const uploadProfilePhoto = async (id: number, photo: Blob) => {
   const response = await fetch(`/api/profiles/${id}/photo`, {
