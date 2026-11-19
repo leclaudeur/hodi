@@ -131,8 +131,8 @@ const accountHelpers = ({
         // The person runs this household: leaving hands that over to the heir.
         admin: going.profiles[0] !== undefined && profiles?.get(going.profiles[0].id)?.role === 'admin'
       },
-      // In no household: what it read and earned in the one it left, back when it joins another.
-      kept: going && going.profiles.length > 0 ? null : data.kept(account.id),
+      // In no household: what it read and earned, its own wherever it reads; in one, Réglages › Statistiques shows it.
+      stats: going && going.profiles.length > 0 ? null : data.stats(account.id),
       // « Validation en deux étapes »: the server's admin must keep it on.
       ...(twoFactor ? { twoFactor: { ...twoFactor.status(account.id), required: account.serverAdmin } } : {})
     }

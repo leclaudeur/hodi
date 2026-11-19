@@ -1,7 +1,7 @@
 import { type Database, transaction } from './database.ts'
 import { type RowKey, recordForget, resetHousehold, rowKey } from './forget-log.ts'
 import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
-import { keptRowsOf, keptStatsOf } from './kept-stats.ts'
+import { accountStatRowsOf, accountStatsOf } from './account-stats.ts'
 import type { Profile, ProfileStore } from './profile-store.ts'
 import type { UserAccount, UserAccountStore } from './user-account-store.ts'
 
@@ -213,11 +213,9 @@ const PROFILE_TABLES: { table: string; where: string; omit?: string[] }[] = [
   { table: 'profile_settings', where: 'profile_id' },
   { table: 'saved_articles', where: 'profile_id' },
   { table: 'read_articles', where: 'profile_id' },
-  { table: 'readings', where: 'profile_id' },
   { table: 'shares', where: 'profile_id' },
   { table: 'shares', where: 'from_profile' },
   { table: 'seen_stories', where: 'profile_id' },
-  { table: 'game_events', where: 'profile_id' },
   { table: 'daily_summaries', where: 'profile_id' },
   { table: 'ai_calls', where: 'profile_id' }
 ]
@@ -288,8 +286,8 @@ export const accountCopy = (
     account: { ...(user as object), serverAdmin: account.serverAdmin, devices },
     household: { ...(household as object), profiles },
     you: own,
-    // What it read and earned in a household it left, kept until it joins one again.
-    kept: keptRowsOf(db, account.id)
+    // What it read and earned, its own in any household: its readings and the game's points.
+    stats: accountStatRowsOf(db, account.id)
   }
 }
 
@@ -301,8 +299,8 @@ export class AccountDataStore {
     this.#db = db
   }
 
-  kept(accountId: number) {
-    return keptStatsOf(this.#db, accountId)
+  stats(accountId: number) {
+    return accountStatsOf(this.#db, accountId)
   }
 
   copy(account: UserAccount, profileId: number | null, now: number) {

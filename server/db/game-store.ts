@@ -4,6 +4,7 @@ import type { Language } from '../../shared/i18n.ts'
 import { type BadgeId, type GameRules, type LevelProgress, levelOf, nameIn } from '../game/rules.ts'
 import { type Database, transaction } from './database.ts'
 import { badgeCounts } from './game-badges.ts'
+import { ownerOf } from './stats-owner.ts'
 import { DAY_MS } from '../../shared/time.ts'
 
 // The household game's points: one row per thing that earned them, kept for good (the readings themselves are
@@ -121,27 +122,19 @@ export class GameStore {
     const timeZone = this.#timeZone()
     const day = dayOf(now, timeZone)
     const limit = DAILY_COUNT_LIMITS[earning.kind]
+    const owner = ownerOf(this.#db, profileId)
     if (limit !== undefined) {
       const { counted } = this.#db
-        .prepare('SELECT COUNT(*) AS counted FROM game_events WHERE profile_id = ? AND day = ? AND kind = ?')
-        .get(profileId, day, earning.kind) as { counted: number }
+        .prepare('SELECT COUNT(*) AS counted FROM game_events WHERE owner = ? AND day = ? AND kind = ?')
+        .get(owner, day, earning.kind) as { counted: number }
       if (counted >= limit) return false
     }
     const result = this.#db
       .prepare(
-        `INSERT OR IGNORE INTO game_events (profile_id, kind, ref, points, at, day, hour, topic_id)
+        `INSERT OR IGNORE INTO game_events (owner, kind, ref, points, at, day, hour, topic_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(
-        profileId,
-        earning.kind,
-        earning.ref,
-        earning.points,
-        now,
-        day,
-        hourOf(now, timeZone),
-        earning.topicId ?? null
-      )
+      .run(owner, earning.kind, earning.ref, earning.points, now, day, hourOf(now, timeZone), earning.topicId ?? null)
     return result.changes > 0
   }
 
@@ -157,9 +150,8 @@ export class GameStore {
     readAt: (id: string) => number | undefined = () => undefined,
     facts?: (id: string) => ReadFacts | null
   ) {
-    const reading = this.#db.prepare(
-      'SELECT kind, topic_id, done FROM readings WHERE profile_id = ? AND article_id = ?'
-    )
+    const reading = this.#db.prepare('SELECT kind, topic_id, done FROM readings WHERE owner = ? AND article_id = ?')
+    const owner = ownerOf(this.#db, profileId)
     transaction(this.#db, () => {
       for (const id of ids) {
         const known = facts ? facts(id) : undefined
@@ -168,7 +160,7 @@ export class GameStore {
         const sent = at !== undefined && at <= now && at > now - LATE_SYNC_MS ? at : now
         // Never read before it was published: an early-bird reading cannot be made up from yesterday's article.
         const when = known?.publishedAt != null ? Math.min(now, Math.max(sent, known.publishedAt)) : sent
-        const stored = reading.get(profileId, id) as
+        const stored = reading.get(owner, id) as
           { kind: string; topic_id: string | null; done: number | null } | undefined
         if (!stored || stored.done === 0) continue
         const row = known ? { ...stored, kind: known.kind, topic_id: known.topicId } : stored
@@ -203,8 +195,8 @@ export class GameStore {
       )
     }
     const { read } = this.#db
-      .prepare("SELECT COUNT(*) AS read FROM game_events WHERE profile_id = ? AND day = ? AND kind = 'article_read'")
-      .get(profileId, day) as { read: number }
+      .prepare("SELECT COUNT(*) AS read FROM game_events WHERE owner = ? AND day = ? AND kind = 'article_read'")
+      .get(ownerOf(this.#db, profileId), day) as { read: number }
     if (read >= points.readingDayArticles) {
       this.#earn(profileId, { kind: 'reading_day', ref: day, points: points.readingDay }, when)
     }
@@ -356,9 +348,9 @@ export class GameStore {
     const row = this.#db
       .prepare(
         `SELECT COALESCE(SUM(points), 0) AS total, COALESCE(SUM(CASE WHEN day >= ? THEN points END), 0) AS week
-         FROM game_events WHERE profile_id = ?`
+         FROM game_events WHERE owner = ?`
       )
-      .get(monday, profileId) as { total: number; week: number }
+      .get(monday, ownerOf(this.#db, profileId)) as { total: number; week: number }
     const levels = this.#rules.levels.map(level => ({ name: nameIn(level, language), points: level.points }))
     return { ...levelOf(row.total, levels), week: row.week }
   }

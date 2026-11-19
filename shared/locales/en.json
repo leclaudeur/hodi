@@ -1058,8 +1058,8 @@
         "skimmed_other": "skimmed"
       }
     },
-    "kept": {
-      "intro": "From the household you left. They stay yours and come back on your profile when you join a household.",
+    "account": {
+      "intro": "Yours, tied to your account: they follow you into any household you join.",
       "articles_one": "article read",
       "articles_other": "articles read",
       "videos_one": "video watched",

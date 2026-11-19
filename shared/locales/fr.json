@@ -1058,8 +1058,8 @@
         "skimmed_other": "survolées"
       }
     },
-    "kept": {
-      "intro": "Celles du foyer que tu as quitté. Elles restent à toi et reviennent sur ton profil quand tu rejoins un foyer.",
+    "account": {
+      "intro": "Les tiennes, liées à ton compte : elles te suivent dans chaque foyer que tu rejoins.",
       "articles_one": "article lu",
       "articles_other": "articles lus",
       "videos_one": "vidéo vue",

@@ -111,11 +111,11 @@ export interface AccountView {
   } | null
   // « Validation en deux étapes »: on since then, or null. required: the server's admin cannot turn it off.
   twoFactor: { since: number | null; required: boolean; recoveryLeft: number }
-  // In no household: what it read and earned in the one it left, back when it joins another; null when nothing.
-  kept?: KeptStats | null
+  // In no household: what it read and earned, its own wherever it reads; null when nothing yet.
+  stats?: AccountStats | null
 }
 
-export interface KeptStats {
+export interface AccountStats {
   articles: number
   videos: number
   minutes: number

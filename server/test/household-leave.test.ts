@@ -14,6 +14,7 @@ import { HouseholdStore } from '../db/household-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
+import { UserStore } from '../db/user-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { fakeFetch } from './helpers/news.ts'
@@ -101,6 +102,7 @@ const start = async () => {
     anthoAccount,
     accounts,
     profiles,
+    users: (id: number) => new UserStore(db, id),
     close: () => server.close()
   }
 }
@@ -190,68 +192,107 @@ describe('leaving the household from Mon compte', () => {
     }
   })
 
-  it('keeps what the person read and earned with the account, back on the profile of the household they join', async () => {
+  it('keeps what the person read and earned on the account, whatever household it is in', async () => {
     const env = await start()
     try {
-      const read = env.db.prepare(
-        `INSERT INTO readings (profile_id, article_id, source_id, source_name, minutes, read_at, kind, done)
-         VALUES (?, ?, 'rtbf', 'RTBF', ?, 1, ?, ?)`
+      const owner = `a${env.samAccount.id}`
+      // Read on Sam's profile: the rows are the account's.
+      env.users(env.samId).addReadings(
+        [
+          { id: 'a1', sourceId: 'rtbf', sourceName: 'RTBF', topicId: null, minutes: 4, at: 1, kind: 'article' },
+          {
+            id: 'a2',
+            sourceId: 'rtbf',
+            sourceName: 'RTBF',
+            topicId: null,
+            minutes: 2,
+            at: 2,
+            kind: 'article',
+            done: false,
+            progress: 0.3,
+            position: 0.3,
+            estimate: 5
+          },
+          { id: 'v1', sourceId: 'yt', sourceName: 'YT', topicId: null, minutes: 6, at: 3, kind: 'video' }
+        ],
+        1
       )
-      read.run(env.samId, 'a1', 4, 'article', null)
-      read.run(env.samId, 'a2', 2, 'article', 0)
-      read.run(env.samId, 'v1', 6, 'video', 1)
       env.db
         .prepare(
-          `INSERT INTO game_events (profile_id, kind, ref, points, at, day, hour) VALUES (?, 'article_read', 'a1', 10, 1, '2026-11-19', 9)`
+          `INSERT INTO game_events (owner, kind, ref, points, at, day, hour) VALUES (?, 'article_read', 'a1', 10, 1, '2026-11-19', 9)`
         )
-        .run(env.samId)
-      const view = async () => ((await (await env.call('/account', env.sam)).json()) as { kept: unknown }).kept
+        .run(owner)
+      const owners = () =>
+        env.db
+          .prepare('SELECT DISTINCT owner FROM readings')
+          .all()
+          .map(row => row.owner)
+      assert.deepEqual(owners(), [owner])
+      const view = async () => ((await (await env.call('/account', env.sam)).json()) as { stats: unknown }).stats
 
-      // In the household, the stats are on its profile: nothing kept apart.
+      // In the household, Réglages › Statistiques shows them.
       assert.equal(await view(), null)
       assert.equal((await env.call('/account/leave', env.sam, 'POST', { password: SAM_PASSWORD })).status, 204)
-      // The unfinished article does not count as read.
+      // Nothing moved: the account's rows stay as they were. The unfinished article does not count as read.
+      assert.deepEqual(owners(), [owner])
       assert.deepEqual(await view(), { articles: 1, videos: 1, minutes: 10, points: 10 })
       const copy = (await (await env.call('/account/copy', env.sam)).json()) as {
-        kept: { readings: unknown[]; gameEvents: unknown[] }
+        stats: { readings: unknown[]; gameEvents: unknown[] }
       }
-      assert.deepEqual([copy.kept.readings.length, copy.kept.gameEvents.length], [3, 1])
+      assert.deepEqual([copy.stats.readings.length, copy.stats.gameEvents.length], [3, 1])
 
-      // Back in a household: the new profile has them, the account keeps nothing apart any more.
+      // In a household again: its profile reads the account's.
       const { id: again } = (await (
         await env.call('/profiles', env.admin, 'POST', { name: 'Sam', color: 'monde', kind: 'adult' })
       ).json()) as { id: number }
       env.accounts.linkProfile(env.samAccount.id, again)
-      const back = env.db.prepare('SELECT article_id FROM readings WHERE profile_id = ? ORDER BY article_id').all(again)
       assert.deepEqual(
-        back.map(row => row.article_id),
+        env
+          .users(again)
+          .getState()
+          .readings.map(reading => reading.id),
         ['a1', 'a2', 'v1']
       )
-      const points = env.db.prepare('SELECT SUM(points) AS points FROM game_events WHERE profile_id = ?').get(again)
-      assert.equal(points?.points, 10)
-      assert.equal(env.db.prepare('SELECT COUNT(*) AS n FROM kept_readings').get()?.n, 0)
-      assert.equal(env.db.prepare('SELECT COUNT(*) AS n FROM kept_game_events').get()?.n, 0)
     } finally {
       env.close()
     }
   })
 
-  it('keeps them for an adult the admin removes too, and forgets them with the account', async () => {
+  it('hands a profile’s own over to the account it gets; a young one’s go with it, an account’s with the account', async () => {
     const env = await start()
     try {
-      env.db
-        .prepare(
-          `INSERT INTO game_events (profile_id, kind, ref, points, at, day, hour) VALUES (?, 'article_read', 'a1', 10, 1, '2026-11-19', 9)`
-        )
-        .run(env.samId)
-      env.profiles.delete(env.samId)
-      const kept = () => env.db.prepare('SELECT COUNT(*) AS n FROM kept_game_events').get()?.n
-      assert.equal(kept(), 1)
-      // A child's profile has no account: nothing to keep.
+      const reading = {
+        id: 'x',
+        sourceId: 'rtbf',
+        sourceName: 'RTBF',
+        topicId: null,
+        minutes: 1,
+        at: 1,
+        kind: 'article' as const
+      }
+      const count = (owner: string) =>
+        env.db.prepare('SELECT COUNT(*) AS n FROM readings WHERE owner = ?').get(owner)?.n
+      // An adult profile with no account yet reads: its own rows, handed over once its person joins.
+      const { id: noe } = (await (
+        await env.call('/profiles', env.admin, 'POST', { name: 'Noé', color: 'sport', kind: 'adult' })
+      ).json()) as { id: number }
+      env.users(noe).addReadings([reading], 1)
+      assert.equal(count(`p${noe}`), 1)
+      const account = env.accounts.create('noe@example.com', 'unused-hash', 0)!
+      env.accounts.linkProfile(account.id, noe)
+      assert.deepEqual([count(`p${noe}`), count(`a${account.id}`)], [0, 1])
+
+      // A child's go with its profile.
+      env.users(env.leaId).addReadings([reading], 1)
       env.profiles.delete(env.leaId)
-      assert.equal(kept(), 1)
+      assert.equal(count(`p${env.leaId}`), 0)
+
+      // Removed by the admin, Sam keeps them; deleting the account deletes them.
+      env.users(env.samId).addReadings([reading], 1)
+      env.profiles.delete(env.samId)
+      assert.equal(count(`a${env.samAccount.id}`), 1)
       env.db.prepare('DELETE FROM users WHERE id = ?').run(env.samAccount.id)
-      assert.equal(kept(), 0)
+      assert.equal(count(`a${env.samAccount.id}`), 0)
     } finally {
       env.close()
     }

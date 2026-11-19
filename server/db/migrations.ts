@@ -963,28 +963,34 @@ const MIGRATIONS: string[] = [
   ALTER TABLE article_images ADD COLUMN width INTEGER;
   ALTER TABLE article_images ADD COLUMN page_checked TEXT;
   `,
-  // What an account read and earned stays its own when its profile goes (it left the household, or was removed from
-  // it): kept with the account in no household, back on the profile it is linked to when it joins one again. Deleting
-  // the account deletes them.
+  // Reading stats and the game's points are a person's: an adult's belong to their account ('a' and its id), which
+  // keeps them whatever household it is in or leaves; a profile with no account (a young one) holds its own ('p' and
+  // its id). They go with the account, or with that profile; a profile that gets an account hands its own over to it.
   `
-  CREATE TABLE kept_readings (
-    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  CREATE TABLE readings_new (
+    owner TEXT NOT NULL,
     article_id TEXT NOT NULL,
     source_id TEXT NOT NULL,
     source_name TEXT NOT NULL,
     topic_id TEXT,
     minutes INTEGER NOT NULL,
     read_at INTEGER NOT NULL,
-    kind TEXT NOT NULL,
+    kind TEXT NOT NULL DEFAULT 'article',
     done INTEGER,
     progress REAL,
     position REAL,
     estimate REAL,
     set_aside INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (user_id, article_id)
+    PRIMARY KEY (owner, article_id)
   );
-  CREATE TABLE kept_game_events (
-    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  INSERT OR IGNORE INTO readings_new (owner, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || r.profile_id ELSE 'a' || p.user_id END, r.article_id, r.source_id, r.source_name, r.topic_id, r.minutes, r.read_at, r.kind, r.done, r.progress, r.position, r.estimate, r.set_aside FROM readings r LEFT JOIN profiles p ON p.id = r.profile_id;
+  DROP TABLE readings;
+  ALTER TABLE readings_new RENAME TO readings;
+  CREATE INDEX readings_read_at ON readings (owner, read_at);
+
+  CREATE TABLE game_events_new (
+    owner TEXT NOT NULL,
     kind TEXT NOT NULL,
     ref TEXT NOT NULL,
     points INTEGER NOT NULL,
@@ -992,21 +998,28 @@ const MIGRATIONS: string[] = [
     day TEXT NOT NULL,
     hour INTEGER NOT NULL,
     topic_id TEXT,
-    PRIMARY KEY (user_id, kind, ref)
+    PRIMARY KEY (owner, kind, ref)
   );
-  CREATE TRIGGER profiles_keep_stats BEFORE DELETE ON profiles WHEN OLD.user_id IS NOT NULL BEGIN
-    INSERT OR REPLACE INTO kept_readings (user_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside)
-      SELECT OLD.user_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside FROM readings WHERE profile_id = OLD.id;
-    INSERT OR REPLACE INTO kept_game_events (user_id, kind, ref, points, at, day, hour, topic_id)
-      SELECT OLD.user_id, kind, ref, points, at, day, hour, topic_id FROM game_events WHERE profile_id = OLD.id;
+  INSERT OR IGNORE INTO game_events_new (owner, kind, ref, points, at, day, hour, topic_id)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || e.profile_id ELSE 'a' || p.user_id END, e.kind, e.ref, e.points, e.at, e.day, e.hour, e.topic_id FROM game_events e LEFT JOIN profiles p ON p.id = e.profile_id;
+  DROP TABLE game_events;
+  ALTER TABLE game_events_new RENAME TO game_events;
+  CREATE INDEX game_events_day ON game_events (owner, day);
+
+  CREATE TRIGGER users_forget_stats AFTER DELETE ON users BEGIN
+    DELETE FROM readings WHERE owner = 'a' || OLD.id;
+    DELETE FROM game_events WHERE owner = 'a' || OLD.id;
   END;
-  CREATE TRIGGER profiles_restore_stats AFTER UPDATE OF user_id ON profiles WHEN NEW.user_id IS NOT NULL BEGIN
-    INSERT OR IGNORE INTO readings (profile_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside)
-      SELECT NEW.id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside FROM kept_readings WHERE user_id = NEW.user_id;
-    INSERT OR IGNORE INTO game_events (profile_id, kind, ref, points, at, day, hour, topic_id)
-      SELECT NEW.id, kind, ref, points, at, day, hour, topic_id FROM kept_game_events WHERE user_id = NEW.user_id;
-    DELETE FROM kept_readings WHERE user_id = NEW.user_id;
-    DELETE FROM kept_game_events WHERE user_id = NEW.user_id;
+  CREATE TRIGGER profiles_forget_stats AFTER DELETE ON profiles WHEN OLD.user_id IS NULL BEGIN
+    DELETE FROM readings WHERE owner = 'p' || OLD.id;
+    DELETE FROM game_events WHERE owner = 'p' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_hand_over_stats AFTER UPDATE OF user_id ON profiles
+  WHEN OLD.user_id IS NULL AND NEW.user_id IS NOT NULL BEGIN
+    UPDATE OR IGNORE readings SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM readings WHERE owner = 'p' || NEW.id;
+    UPDATE OR IGNORE game_events SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM game_events WHERE owner = 'p' || NEW.id;
   END;
   `
 ]

@@ -37,8 +37,8 @@ describe('server stats', () => {
     const db = openDatabase(':memory:')
     const stats = new ServerStatsStore(db, () => 'Europe/Brussels')
     const insert = db.prepare(
-      `INSERT INTO readings (profile_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done)
-       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO readings (owner, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done)
+       VALUES ('p1', ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     insert.run('a', 'rtl', 'RTL info', 'belgium', 4, NOW - 60_000, 'article', 1)
     insert.run('b', 'rtl', 'RTL info', 'belgium', 3, NOW - DAY, 'article', null)
