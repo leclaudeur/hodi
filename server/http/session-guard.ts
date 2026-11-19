@@ -63,13 +63,15 @@ const serverOnly = (request: express.Request, response: express.Response, accoun
 }
 
 // An account whose last profile was deleted from its household: the account is still the person's, but no household
-// is theirs any more. Its own account alone (Réglages › Compte et données: a copy, deletion) and nothing of the
-// household it left. False when the refusal is sent.
+// is theirs any more. Its own account alone (Réglages › Compte et données: a copy, deletion), the plugins' routes
+// marked noHousehold (the plugin routes refuse the others), and nothing of the household it left. False when the
+// refusal is sent.
 const accountOnly = (request: express.Request, response: express.Response, account: UserAccount) => {
   const open =
     (request.method === 'GET' && request.path === '/session') ||
     request.path === '/account' ||
-    request.path.startsWith('/account/')
+    request.path.startsWith('/account/') ||
+    request.path.startsWith('/plugins/')
   if (!open) {
     response.status(423).json({ error: 'no_household' })
     return false

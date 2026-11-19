@@ -94,6 +94,8 @@ export interface TestPlugin {
   route: (route: string, call?: TestCall) => Promise<TestAnswer>
   publicRoute: (route: string, call?: Omit<TestCall, 'as'>) => Promise<TestAnswer>
   serverRoute: (route: string, call?: Omit<TestCall, 'as'>) => Promise<TestAnswer>
+  // A route as an account in no household asks it (addAccount's): only those marked noHousehold: true answer it.
+  noHouseholdRoute: (route: string, accountId: number, call?: Omit<TestCall, 'as'>) => Promise<TestAnswer>
   // A click on its AiButton, by an adult of the household.
   click: (action: string, input?: unknown, as?: TestPerson) => Promise<TestAnswer>
   // What Hodi would start by itself.
@@ -225,6 +227,8 @@ export const testPlugin = async (folder = '.', options: TestPluginOptions = {}):
     route: (route, call = {}) => send('/plugins', route, call, asHeaders(call.as)),
     publicRoute: (route, call = {}) => send('/public/plugins', route, call, {}),
     serverRoute: (route, call = {}) => send('/server/plugins', route, call, { 'x-test-server-admin': '1' }),
+    noHouseholdRoute: (route, accountId, call = {}) =>
+      send('/plugins', route, call, { 'x-test-no-household': String(accountId) }),
     click: (action, input = null, as = admin) =>
       send('/plugins', `POST /ai/${action}`, { body: { input } }, asHeaders(as)),
     ...hooksOf(hodi, id, plugin.sandbox),

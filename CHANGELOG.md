@@ -10,6 +10,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Added
 
+- **A plugin's way on with no household.** The card of an account in no household can show a plugin's button, such
+  as Village's Create my household.
 - **Leave a household.** Settings > My account shows your household and your role, with Leave: your profile and what
   you read there go, your account stays and can join another household with a code. The last adult with an account
   cannot leave.

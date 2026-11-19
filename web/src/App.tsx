@@ -98,12 +98,12 @@ const applySession = (session: Session) => {
 }
 
 // The household's plugins, in the background: the first screen never waits for them. Before a profile is open, only
-// the ones that draw on Connexion and « Qui lit ? ». Signed out after the signed-in ones loaded: the app starts
+// the ones that draw on Connexion and « Qui lit ? », and on the card of an account in no household. Signed out after the signed-in ones loaded: the app starts
 // again, so that none of them stays in the page.
 const usePluginLoading = (status: Status) => {
   useEffect(() => {
     if (status === 'authenticated' || status === 'server') void loadPlugins()
-    else if (status === 'choosing') void loadPublicPlugins()
+    else if (status === 'choosing' || status === 'noHousehold') void loadPublicPlugins()
     else if (status === 'anonymous') {
       if (loadedPlugins() === 'signedIn') window.location.reload()
       else void loadPublicPlugins()

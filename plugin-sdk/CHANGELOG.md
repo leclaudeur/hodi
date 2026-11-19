@@ -10,6 +10,16 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **A way on for an account in no household.** `noHouseholdActions` in `definePlugin()` draws under the text of the
+  card an account lands on once it left its household (or its profile was deleted), such as « Créer mon foyer ». Only
+  the plugin's public part is loaded there. A route marked `noHousehold: true` (`{ noHousehold: true, handler }`)
+  answers that account, with `who.accountId` set and `who.profileId` and `who.householdId` null; every other route
+  answers it 423 `no_household`. Only a route of `routes` can be marked. Once the plugin made the household, it calls
+  `done()` and Hodi starts again on it. In the test kit, `noHouseholdRoute(route, accountId)` calls a route as such an
+  account (one `addAccount()` made).
+
 ### Removed
 
 - **One household per account.** An account now belongs to one household only, so the ways to move between

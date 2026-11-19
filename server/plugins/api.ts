@@ -162,9 +162,11 @@ export interface PluginAccount {
 
 // Who asks, as Hodi checked it. No cookie, header or session reaches the plugin.
 export interface PluginCaller {
-  // The profile open on the device; null in the server's own space for an admin outside the household.
+  // The profile open on the device; null in the server's own space for an admin outside the household, and on a
+  // route open with noHousehold for an account in none.
   profileId: number | null
-  // The household it asks for; null in the server's own space for an admin outside the household. A plugin serves
+  // The household it asks for; null in the server's own space for an admin outside the household, and on a route
+  // open with noHousehold for an account in none. A plugin serves
   // every household on the server from one database: it keeps their data apart with this.
   householdId: number | null
   kind: 'adult' | 'teen' | 'child'
@@ -224,11 +226,15 @@ export type PublicHandler = (request: PublicRequest, ctx: PluginContext) => Prom
 // their own password, and with « Validation en deux étapes » their app's code, in Hodi's dialog (askToConfirm with
 // proof, then api(path, { proof }) on the web). Hodi checks both, counting wrong ones as at Connexion; the handler
 // never sees them, and a call without them is refused with 403 proof_required before it runs.
+//
+// noHousehold: true opens a route to an account that is in no household any more (it left, or its profile was
+// deleted), as the screen it lands on draws the plugin's noHouseholdActions: who.accountId is that account, and
+// who.profileId and who.householdId are null. Every other route answers it 423 no_household.
 export type PluginRoutes = Record<
   string,
   | PluginHandler
-  | { raw: true; maxBody: number; proof?: boolean; handler: PluginHandler }
-  | { proof: boolean; handler: PluginHandler }
+  | { raw: true; maxBody: number; proof?: boolean; noHousehold?: boolean; handler: PluginHandler }
+  | { proof?: boolean; noHousehold?: boolean; handler: PluginHandler }
 >
 
 // Routes open to anyone: JSON bodies only, up to 64 KB.
