@@ -260,8 +260,11 @@ export const setHouseholdAi = (provider: string, key: string) =>
   sendJson<Household>('PUT', '/household/ai', { provider, key })
 
 // « Code parental »: six digits; the server never sends them back.
-export const setParentalCode = (code: string) => sendJson<Household>('PUT', '/household/parental-code', { code })
+// With the admin's own password, and the app's code as appCode: the body's code is the new Code parental.
+export const setParentalCode = (code: string, proof: AdminProof) =>
+  sendJson<Household>('PUT', '/household/parental-code', { code, password: proof.password, appCode: proof.code })
 
-export const removeParentalCode = () => sendJson<Household>('DELETE', '/household/parental-code')
+export const removeParentalCode = (proof: AdminProof) =>
+  sendJson<Household>('DELETE', '/household/parental-code', { password: proof.password, appCode: proof.code })
 
 export const removeHouseholdAi = () => sendJson<Household>('DELETE', '/household/ai')

@@ -6,12 +6,16 @@ import { isLanguage } from '../../shared/i18n.ts'
 import { aiOf, countryOf, keyHint, providersList, timeZoneOf } from './household-input.ts'
 import { photoFormatOf } from './profile-photos.ts'
 import { mountParentalCodeRoutes } from './parental-code-routes.ts'
+import type { CheckProof } from './proof.ts'
 import type { HouseholdRoutesOptions } from './setup-routes.ts'
 
 export type HouseholdOptions = Pick<
   HouseholdRoutesOptions,
-  'household' | 'profiles' | 'secret' | 'providers' | 'defaultTimeZone' | 'onChange' | 'now'
->
+  'household' | 'profiles' | 'secret' | 'providers' | 'defaultTimeZone' | 'onChange' | 'now' | 'accounts'
+> & {
+  // The admin's own password (and the app's code) before the Code parental changes. Absent in tests without accounts.
+  checkProof?: CheckProof
+}
 
 // After the session and profile checks, the admin's only: Réglages > Foyer and the AI's provider and key.
 export const householdRoutes = (options: HouseholdOptions) => {
