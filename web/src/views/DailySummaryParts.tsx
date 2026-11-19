@@ -59,21 +59,19 @@ const SPEECH_ICONS = { playing: Pause, loading: LoaderCircle, paused: AudioLines
 
 interface ListenProps {
   state: SpeechState
-  layout: 'desktop' | 'phone'
   onToggle: () => void
 }
 
 // Reads the daily summary aloud, in the browser's voice.
-export const ListenButton = ({ state, layout, onToggle }: ListenProps) => {
+export const ListenButton = ({ state, onToggle }: ListenProps) => {
   const { t } = useTranslation()
-  const idleLook = layout === 'phone' ? 'image' : 'default'
   return (
     <RoundButton
       icon={SPEECH_ICONS[state]}
       busy={state === 'loading'}
       label={t(SPEECH_LABELS[state])}
       size={44}
-      variant={state === 'idle' ? idleLook : 'on'}
+      variant={state === 'idle' ? 'default' : 'on'}
       aria-pressed={state !== 'idle'}
       onClick={onToggle}
     />

@@ -136,7 +136,7 @@ const DailySummaryStory = ({ layout, onUnauthorized }: SummaryStoryProps) => {
     ),
     // From the page shown, not from the first topic.
     listen: shown && speech.supported && (
-      <ListenButton state={speech.state} layout={layout} onToggle={() => speech.toggle(sectionOf(index))} />
+      <ListenButton state={speech.state} onToggle={() => speech.toggle(sectionOf(index))} />
     ),
     waiting: summaryWaiting({ dailySummary, writing, shown, capped, onWrite: write, t }),
     topic: group && <SummaryTopic group={group} />,

@@ -1,8 +1,7 @@
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { type PointerEvent, type ReactNode, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { DailySummaryGroup } from '../lib/daily-summary.ts'
-import { FRONT_PAGE_HREF } from '../lib/use-hash-route.ts'
 import RoundButton from '../ui/RoundButton.tsx'
 import SparkleIcon from '../ui/SparkleIcon.tsx'
 import { CloseStories } from './StoryFrames.tsx'
@@ -137,9 +136,9 @@ export const PhoneSummary = (props: SummaryFrameProps) => {
           </span>
           <span className={styles.phoneTools}>
             {listen}
-            <a className={storyStyles.close} href={FRONT_PAGE_HREF} aria-label={t('common.close')} data-shortcut="back">
-              <X size={18} aria-hidden="true" />
-            </a>
+            <span className={storyStyles.close}>
+              <CloseStories />
+            </span>
           </span>
         </div>
       </div>
