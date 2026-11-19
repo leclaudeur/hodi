@@ -10,6 +10,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **Names stand out.** In dialogs and at the top of the Settings, Server and My account pages, the names of households and
+  profiles and the e-mail addresses are in bold, and the names of screens and buttons in italics.
+
+- **One household per account.** An account belongs to one household only. Joining another household with an
+  existing account says which household it is in, and asks to leave it first. On a server with Village, Which household? and
+  Switch household are gone.
+
 - **Who's in? keeps the accounts of the device.** Who's in? shows the accounts signed in on this device and the
   household's young profiles, like a TV's streaming app. Add signs one more account in with its e-mail and password; an
   account of another household is refused, a device serving one household. Sign out takes only the account whose

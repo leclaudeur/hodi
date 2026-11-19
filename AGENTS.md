@@ -68,6 +68,7 @@ The design is consistent on purpose. Reuse what exists before writing new CSS.
 - **Destructive actions** use `look="danger"` and ask first with `askToConfirm` from `lib/confirm.ts`.
 - **Toasts** (`lib/toast.ts`) only report what happened; they never ask a question or carry a form.
 - **Empty states**: a title and one line of text at most.
+- **Emphasis in texts**: in every dialog text and every intro at the top of a Réglages, Serveur or Mon compte page, a household's or a profile's name and an e-mail go in `<b>`, a screen's, page's or button's name in `<i>` (never « » quotes). Locale strings carry the tags; `Dialog`, `SectionPage`, `StepHeader` and `askToConfirm` render them (`ui/rich.tsx`, or `ui/RichText` for a node).
 - **Colours** come from the CSS variables in `styles/tokens.css`, which change with the theme (Clair, Sombre, Poudré). Never hard-code a colour.
 - **Icons**: `lucide-react`.
 - **Captions and metadata** use the mono font (`--font-mono`).
