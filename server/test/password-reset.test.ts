@@ -220,6 +220,17 @@ describe('Mot de passe oublié', () => {
       204
     )
   })
+  it('counts a wrong code at the new password too', async () => {
+    const tries: number[] = []
+    for (let attempt = 0; attempt < 12; attempt++)
+      tries.push((await post('/password/reset', { code: 'ZZZZ3333', password: NEW_PASSWORD })).status)
+    assert.ok(tries.includes(429), tries.join(' '))
+    assert.ok(
+      tries.slice(0, tries.indexOf(429)).every(status => status === 404),
+      tries.join(' ')
+    )
+  })
+
   it('stops a device that tries codes one after the other', async () => {
     const tries: number[] = []
     for (let attempt = 0; attempt < 12; attempt++)
