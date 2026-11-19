@@ -52,7 +52,7 @@
       "intro": "Les 8 caractères qu’un adulte du foyer t’a donnés, ou le lien qui va avec.",
       "label": "Code",
       "helpTitle": "D’où vient ce code ?",
-      "help": "Un adulte du foyer le crée dans Réglages › Profils, avec « Inviter un adulte » ou « Connecter un appareil ». Pour un mot de passe oublié, c’est l’admin du serveur qui le donne. Il sert une seule fois, pendant 24 h.",
+      "help": "Un adulte du foyer le crée dans <i>Réglages › Profils</i>, avec <i>Inviter un adulte</i> ou <i>Connecter un appareil</i>. Pour un mot de passe oublié, c’est l’admin du serveur qui le donne. Il sert une seule fois, pendant 24 h.",
       "wrong": "Ce code ne marche pas : il a peut-être déjà servi, ou ses 24 h sont passées. Demandes-en un nouveau."
     },
     "invite": {
@@ -193,7 +193,7 @@
     "noAccount": "Sans compte",
     "noAccountHint": "Un code, sur son appareil",
     "connect": "Connecter un appareil",
-    "inviteHint": "Un adulte crée son propre compte : tu lui donnes un code d’invitation, à taper dans « J’ai un code ».",
+    "inviteHint": "Un adulte crée son propre compte : tu lui donnes un code d’invitation, à taper dans <i>J’ai un code</i>.",
     "invite": "Inviter",
     "makeAdmin": "Admin du foyer",
     "makeAdminHint": "Lui passer le rôle : un seul admin par foyer.",
@@ -574,7 +574,7 @@
     "sources": {
       "title": "Les sources",
       "what": "Les sites et les chaînes que Hodi lit pour toi.",
-      "open": "Ouvre « Sources »."
+      "open": "Ouvre <i>Sources</i>."
     },
     "add": {
       "title": "Ajouter une source",
@@ -585,11 +585,11 @@
       "title": "Pour un thème",
       "noLink": "Pas de lien sous la main ?",
       "offers": "Hodi te propose des sites par thème.",
-      "pick": "Choisis « Pour un thème »."
+      "pick": "Choisis <i>Pour un thème</i>."
     },
     "topic": {
       "suggestions": "Chaque thème a ses suggestions.",
-      "pick": "Choisis « {{topic}} »."
+      "pick": "Choisis <i>{{topic}}</i>."
     },
     "site": {
       "title": "Choisis un site",
@@ -796,19 +796,19 @@
     "shares": {
       "title": "Partages",
       "desktop": [
-        "Ce que les autres profils du foyer t’ont envoyé avec « Pour… », pendant 7 jours. Un article lu ou masqué s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
+        "Ce que les autres profils du foyer t’ont envoyé avec <i>Pour…</i>, pendant 7 jours. Un article lu ou masqué s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
       ],
       "phone": [
-        "Ce que les autres profils du foyer t’ont envoyé avec « Pour… », pendant 7 jours. Un article lu, ou glissé vers la gauche, s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
+        "Ce que les autres profils du foyer t’ont envoyé avec <i>Pour…</i>, pendant 7 jours. Un article lu, ou glissé vers la gauche, s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
       ]
     },
     "videos": {
       "title": "Vidéos",
       "desktop": [
-        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Elles se lisent ici, à côté de la liste. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans « Reprendre » sur Le fil. Ajoute des chaînes dans Réglages › Sources."
+        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Elles se lisent ici, à côté de la liste. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans <i>Reprendre</i> sur Le fil. Ajoute des chaînes dans Réglages › Sources."
       ],
       "phone": [
-        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans « Reprendre » sur l’accueil. Ajoute des chaînes dans Réglages › Sources."
+        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans <i>Reprendre</i> sur l’accueil. Ajoute des chaînes dans Réglages › Sources."
       ]
     }
   },
@@ -1367,7 +1367,7 @@
       "choosePasswordTitle": "Choisir un mot de passe",
       "choosePasswordIntro": "Tu pourras te connecter avec l’e-mail du compte et ce mot de passe, en plus de l’autre façon.",
       "signInAgain": "Pour confirmer que c’est toi, reconnecte-toi juste avant (il y a moins de 5 minutes), puis reviens ici.",
-      "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise « Mot de passe oublié » ou demande un code à un adulte du foyer.",
+      "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise <i>Mot de passe oublié</i> ou demande un code à un adulte du foyer.",
       "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter",
       "moreDevices_one": "Voir l’autre",
       "moreDevices_other": "Voir les {{count}} autres",
@@ -1465,7 +1465,7 @@
       "noSubject": "Tu ne suis encore aucun sujet.",
       "subjects": "Un nouvel article sur un sujet avec alerte : {{alerts}} sur {{total}}. Une par sujet toutes les 3 heures, 12 par jour au plus.",
       "shares": "Articles partagés",
-      "sharesHint": "Quand quelqu’un du foyer t’envoie un article ou une vidéo avec « Pour… ».",
+      "sharesHint": "Quand quelqu’un du foyer t’envoie un article ou une vidéo",
       "reactions": "Réactions aux partages",
       "reactionsHint": "Quand quelqu’un réagit d’un emoji à un article que tu lui as envoyé.",
       "badge": "Pastille sur l’icône",
@@ -2134,7 +2134,7 @@
       "aiHint": "Un clic sur son bouton violet pose une question à l’IA, payée sur les crédits du foyer. Seulement s’il est Vérifié.",
       "feeds_one": "Proposer {{count}} source",
       "feeds_other": "Proposer {{count}} sources",
-      "feedsHint": "Dans « Ajouter une source » : {{names}}"
+      "feedsHint": "Proposées en ajoutant une source : {{names}}"
     },
     "aiButton": {
       "unavailable": "L’IA n’est pas activée pour ce foyer.",

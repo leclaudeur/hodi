@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { Trans } from 'react-i18next'
 import type { TopicSummary } from '../api.ts'
 import { t } from '../lib/i18n.ts'
 import { endTour, goToTourStep } from '../lib/tour.ts'
@@ -23,7 +24,8 @@ export interface Hole {
 const Lines = ({ text }: { text: string[] }) =>
   text.map(line => (
     <span key={line} className={styles.line}>
-      {line}
+      {/* A screen's or a button's name in italics: the line is translated already, Trans only marks it. */}
+      <Trans defaults={line} components={{ i: <i /> }} />
     </span>
   ))
 

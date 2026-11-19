@@ -52,7 +52,7 @@
       "intro": "The 8 characters an adult of the household gave you, or the link that came with them.",
       "label": "Code",
       "helpTitle": "Where does this code come from?",
-      "help": "An adult of the household makes it in Settings › Profiles, with “Invite an adult” or “Connect a device”. For a forgotten password, the server’s admin gives it. It works once, for 24 hours.",
+      "help": "An adult of the household makes it in <i>Settings › Profiles</i>, with <i>Invite an adult</i> or <i>Connect a device</i>. For a forgotten password, the server’s admin gives it. It works once, for 24 hours.",
       "wrong": "This code doesn’t work: it may have been used already, or its 24 hours are over. Ask for a new one."
     },
     "invite": {
@@ -193,7 +193,7 @@
     "noAccount": "No account",
     "noAccountHint": "A code, on their device",
     "connect": "Connect a device",
-    "inviteHint": "An adult makes their own account: you give them an invitation code, to type in “I have a code”.",
+    "inviteHint": "An adult makes their own account: you give them an invitation code, to type in <i>I have a code</i>.",
     "invite": "Invite",
     "makeAdmin": "Household admin",
     "makeAdminHint": "Hand over your role: a household has one admin.",
@@ -574,7 +574,7 @@
     "sources": {
       "title": "Sources",
       "what": "The sites and channels Hodi reads for you.",
-      "open": "Open “Sources”."
+      "open": "Open <i>Sources</i>."
     },
     "add": {
       "title": "Add a source",
@@ -585,11 +585,11 @@
       "title": "By topic",
       "noLink": "No link at hand?",
       "offers": "Hodi suggests sites by topic.",
-      "pick": "Pick “By topic”."
+      "pick": "Pick <i>By topic</i>."
     },
     "topic": {
       "suggestions": "Each topic has its suggestions.",
-      "pick": "Pick “{{topic}}”."
+      "pick": "Pick <i>{{topic}}</i>."
     },
     "site": {
       "title": "Pick a site",
@@ -796,19 +796,19 @@
     "shares": {
       "title": "Shared",
       "desktop": [
-        "What other profiles of the household sent you with “For…”, for 7 days. A read or hidden article goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
+        "What other profiles of the household sent you with <i>For…</i>, for 7 days. A read or hidden article goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
       ],
       "phone": [
-        "What other profiles of the household sent you with “For…”, for 7 days. A read article, or one swiped left, goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
+        "What other profiles of the household sent you with <i>For…</i>, for 7 days. A read article, or one swiped left, goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
       ]
     },
     "videos": {
       "title": "Videos",
       "desktop": [
-        "Videos and episodes from the channels you follow, one week at a time, without Shorts. They play here, beside the list. A video watched to the end leaves the list; once started, it waits for you in “Pick up” on the feed. Add channels in Settings › Sources."
+        "Videos and episodes from the channels you follow, one week at a time, without Shorts. They play here, beside the list. A video watched to the end leaves the list; once started, it waits for you in <i>Pick up</i> on the feed. Add channels in Settings › Sources."
       ],
       "phone": [
-        "Videos and episodes from the channels you follow, one week at a time, without Shorts. A video watched to the end leaves the list; once started, it waits for you in “Pick up” on the home screen. Add channels in Settings › Sources."
+        "Videos and episodes from the channels you follow, one week at a time, without Shorts. A video watched to the end leaves the list; once started, it waits for you in <i>Pick up</i> on the home screen. Add channels in Settings › Sources."
       ]
     }
   },
@@ -1367,7 +1367,7 @@
       "choosePasswordTitle": "Choose a password",
       "choosePasswordIntro": "You will be able to sign in with your e-mail and this password, besides your other way.",
       "signInAgain": "To confirm it is you, sign in again just before (less than 5 minutes ago), then come back here.",
-      "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use “Forgot password” or ask an adult of the household for a code.",
+      "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use <i>Forgot password</i> or ask an adult of the household for a code.",
       "sessionHintNoPassword": "Signed in for 90 days, then you sign in again",
       "moreDevices_one": "See the other one",
       "moreDevices_other": "See the {{count}} others",
@@ -1465,7 +1465,7 @@
       "noSubject": "You follow no subject yet.",
       "subjects": "A new article on a subject with an alert: {{alerts}} of {{total}}. One per subject every 3 hours, 12 a day at most.",
       "shares": "Shared articles",
-      "sharesHint": "When someone in the household sends you an article or video with “For…”.",
+      "sharesHint": "When someone in the household sends you an article or a video",
       "reactions": "Reactions to your shares",
       "reactionsHint": "When someone reacts with an emoji to an article you sent them.",
       "badge": "Badge on the icon",
@@ -2134,7 +2134,7 @@
       "aiHint": "A click on its violet button asks the AI one question, paid from the household’s credits. Only if it is Verified.",
       "feeds_one": "Offer {{count}} source",
       "feeds_other": "Offer {{count}} sources",
-      "feedsHint": "In « Add a source »: {{names}}"
+      "feedsHint": "Offered when adding a source: {{names}}"
     },
     "aiButton": {
       "unavailable": "AI isn’t turned on for this household.",
@@ -2433,7 +2433,6 @@
       }
     },
     "backups": {
-      "intro": "Every night, a copy of the whole database and of the plugins’ data. It holds everyone’s data: your password protects it, and keeping one off the server is wise. A single account’s copy is in Settings › My account.",
       "intro": "Every night, a copy of the whole database and of the plugins’ data. It holds everyone’s data: your password protects it, and keeping one off the server is wise. A single account’s copy is in <i>Settings › My account</i>.",
       "settings": "Settings",
       "kept": "Copies kept",
