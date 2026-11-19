@@ -350,10 +350,12 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await page.getByRole('switch', { name: 'Code parental' }).click()
   const choose = page.getByRole('dialog', { name: 'Code parental' })
   await choose.getByLabel('Nouveau code').fill(PARENTAL_CODE)
-  // Alex's own password first: a profile left open does not prove who changes the code.
-  await choose.getByLabel('Mon mot de passe').fill(PASSWORD)
-  await choose.getByLabel('Code de l’app d’authentification').fill(await appCode())
   await choose.getByRole('button', { name: 'Enregistrer' }).click()
+  // Then Alex's own password: a profile left open does not prove who changes the code.
+  const proof = page.getByRole('dialog', { name: 'Enregistrer ce code parental ?' })
+  await proof.getByLabel('Mon mot de passe').fill(PASSWORD)
+  await proof.getByLabel('Code de l’app d’authentification').fill(await appCode())
+  await proof.getByRole('button', { name: 'Enregistrer' }).click()
   await expect(page.getByText('6 chiffres')).toBeVisible()
 
   // Alex's account on a shared device: Zoé opens at once, Alex's profile with the code, its last digit opens it.
