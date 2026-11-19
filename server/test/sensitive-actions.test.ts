@@ -158,6 +158,27 @@ describe('« Passer le rôle d’admin »', () => {
   })
 })
 
+describe('another adult’s name, colour and photo', () => {
+  it('are theirs alone: the admin changes only its own and the young ones’', async () => {
+    const { call, admin, sam, samId, leaId, profiles, close } = await start()
+    try {
+      const refused = await call(`/profiles/${samId}`, admin, 'PATCH', { name: 'Samuel', color: 'sport' })
+      assert.deepEqual([refused.status, await refused.json()], [403, { error: 'own_profile' }])
+      assert.equal((await call(`/profiles/${samId}`, admin, 'PATCH', { kind: 'teen' })).status, 403)
+      assert.equal((await call(`/profiles/${samId}/photo`, admin, 'DELETE')).status, 403)
+      assert.equal(profiles.get(samId)!.name, 'Sam')
+      assert.equal(profiles.get(samId)!.kind, 'adult')
+
+      // Sam changes their own; the admin still changes a child's.
+      assert.equal((await call(`/profiles/${samId}`, sam, 'PATCH', { name: 'Samuel' })).status, 200)
+      assert.equal(profiles.get(samId)!.name, 'Samuel')
+      assert.equal((await call(`/profiles/${leaId}`, admin, 'PATCH', { name: 'Léana' })).status, 200)
+    } finally {
+      close()
+    }
+  })
+})
+
 describe('the admin’s password before what cannot be undone for another adult', () => {
   it('asks for it before deleting the profile of an adult with an account, not a child’s', async () => {
     const { call, admin, samId, leaId, accounts, close } = await start()

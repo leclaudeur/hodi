@@ -85,8 +85,15 @@ const profileHelpers = ({ profiles, accounts, checkProof }: ProfileRoutesOptions
   // A member changes its own name, colour and photo; the admin every profile's; a parent the young profiles'.
   const mayManage = (target: Profile, response: express.Response) =>
     isAdminOf(response) || (isParentOf(response) && isYoung(target))
+  // Another adult's name, colour and photo are theirs, with their account: not even the admin changes them.
   const mayChange = (id: number, response: express.Response) => {
-    if (id === profileIdOf(response) || mayManage(profiles.get(id)!, response)) return true
+    if (id === profileIdOf(response)) return true
+    const target = profiles.get(id)!
+    if (target.kind === 'adult' && target.hasAccount) {
+      response.status(403).json({ error: 'own_profile' })
+      return false
+    }
+    if (mayManage(target, response)) return true
     response.status(403).json({ error: 'admin_only' })
     return false
   }

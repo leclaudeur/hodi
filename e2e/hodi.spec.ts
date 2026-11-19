@@ -247,14 +247,14 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   const waiting = page.getByRole('main').locator('h2:text-is("À traiter") + ul')
   await expect(waiting.getByText('Sam demande un code')).toBeVisible()
 
-  // Sam's password is Sam's: the household's admin has no way to give a new one in Profils.
+  // Sam's profile and password are Sam's: in Profils, the household's admin only hands over the role or takes Sam
+  // out of the household.
   await page.goto('/#/settings/profiles')
   await page.reload()
-  await page.getByRole('button', { name: 'Modifier Sam' }).click()
-  const edit = page.getByRole('dialog', { name: 'Modifier le profil' })
-  await expect(edit.getByRole('button', { name: 'Passer le rôle d’admin' })).toBeVisible()
-  await expect(edit.getByRole('button', { name: 'Nouveau mot de passe' })).toHaveCount(0)
-  await page.keyboard.press('Escape')
+  await expect(page.getByRole('button', { name: 'Retirer Sam du foyer' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Passer le rôle d’admin à Sam' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Modifier Sam' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Nouveau mot de passe' })).toHaveCount(0)
 
   // The server's admin opens the request, then makes the code: their own password first, and a wrong one stays in
   // the question.
@@ -545,6 +545,8 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
     await page.goto('/#/settings/profiles')
     await page.getByRole('button', { name: 'Inviter un adulte' }).click()
     const invite = page.getByRole('dialog', { name: 'Inviter un adulte' })
+    await invite.getByRole('textbox', { name: 'Nom' }).fill('Noé')
+    await invite.getByRole('button', { name: 'Créer le code' }).click()
     // The code comes with its QR.
     await expect(invite.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
     const code = await invite.getByRole('textbox', { name: 'Code' }).inputValue()
@@ -586,8 +588,9 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
   await expect(noe.getByRole('button', { name: 'Quitter' })).toHaveCount(0)
   await noe.getByRole('button', { name: 'Retour' }).click()
   await expect(noe.getByRole('heading', { name: 'Tu n’as plus de foyer' })).toBeVisible()
-  // Noé's profile left the household's list.
+  // Noé's profile left the household's list, and the invitation used is gone.
   await page.goto('/#/settings/profiles')
+  await page.reload()
   await expect(page.getByRole('main').getByText('Noé')).toHaveCount(0)
 
   // Signed out, Noé joins again with a new code and the same account.

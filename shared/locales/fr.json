@@ -194,10 +194,7 @@
     "noAccountHint": "Un code, sur son appareil",
     "connect": "Connecter un appareil",
     "inviteHint": "Un adulte crée son propre compte : tu lui donnes un code d’invitation, à taper dans « J’ai un code ».",
-    "invite": "Inviter",
-    "makeAdmin": "Admin du foyer",
-    "makeAdminHint": "Lui passer le rôle : un seul admin par foyer.",
-    "makeAdminButton": "Passer le rôle d’admin"
+    "invite": "Inviter"
   },
   "setup": {
     "step": "Étape {{step}} sur {{total}}",
@@ -1413,7 +1410,7 @@
       "tourHintTeen": "Le fil et comment demander une source, pas à pas"
     },
     "profiles": {
-      "intro": "Jusqu’à {{max}} lecteurs sur ce compte, chacun avec ses enregistrés, ses lectures, ses statistiques et ses réglages. L’admin ajoute et supprime les profils, les autres modifient le leur. Un profil adulte qui a son compte demande son mot de passe sur l’appareil d’un autre compte.",
+      "intro": "Jusqu’à {{max}} lecteurs dans le foyer, chacun avec ses enregistrés, ses lectures et ses réglages. Chaque adulte modifie son propre profil et s’occupe des ados et des enfants. Seul l’admin retire un adulte du foyer ou lui passe son rôle.",
       "deleteTitle": "Supprimer {{name}} ?",
       "deleteMessage": "Ses enregistrés, ses lectures et ses réglages sont supprimés aussi. Impossible d’annuler.",
       "deleted": "{{name}} supprimé",
@@ -1440,7 +1437,10 @@
         "cancelName": "Annuler l’invitation de {{name}}",
         "cancelled": "Invitation de {{name}} annulée",
         "cancelFailed": "L’invitation n’a pas pu être annulée. Réessaie dans un instant."
-      }
+      },
+      "handOver": "Passer le rôle d’admin à {{name}}",
+      "remove": "Retirer",
+      "removeName": "Retirer {{name}} du foyer"
     },
     "notifications": {
       "errors": {
@@ -1826,7 +1826,7 @@
       "title": "Supprimer ce profil ?",
       "message": "Le profil de <b>{{name}}</b> est supprimé avec ses enregistrés, ses lectures, ses points et ses réglages. <b>Il n’y a pas de retour en arrière.</b>",
       "button": "Supprimer le profil",
-      "messageAccount": "Le profil de <b>{{name}}</b> est supprimé avec ses enregistrés, ses lectures, ses points et ses réglages, et <b>son compte n’ouvre plus ce foyer</b>. Il n’y a pas de retour en arrière : confirme avec le mot de passe."
+      "messageAccount": "<b>{{name}}</b> quitte le foyer : son profil part avec ses enregistrés, ses lectures et ses réglages d’ici. <b>Son compte reste le sien</b> et pourra rejoindre un foyer avec un nouveau code. Confirme avec ton mot de passe."
     },
     "deleteSource": {
       "title": "Supprimer la source ?",
@@ -1962,6 +1962,10 @@
       "messageLast_one": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quitte aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte du foyer pourra le reconnecter quand il veut.",
       "messageLast_other": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quittent aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte du foyer pourra le reconnecter quand il veut.",
       "button": "Se déconnecter"
+    },
+    "removeAdult": {
+      "title": "Retirer {{name}} du foyer ?",
+      "button": "Retirer"
     }
   },
   "dialogIntro": {

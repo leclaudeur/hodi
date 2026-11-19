@@ -194,10 +194,7 @@
     "noAccountHint": "A code, on their device",
     "connect": "Connect a device",
     "inviteHint": "An adult makes their own account: you give them an invitation code, to type in “I have a code”.",
-    "invite": "Invite",
-    "makeAdmin": "Household admin",
-    "makeAdminHint": "Hand over your role: a household has one admin.",
-    "makeAdminButton": "Hand over the admin role"
+    "invite": "Invite"
   },
   "setup": {
     "step": "Step {{step}} of {{total}}",
@@ -1413,7 +1410,7 @@
       "tourHintTeen": "The feed and asking for a source, step by step"
     },
     "profiles": {
-      "intro": "Up to {{max}} readers on this account, each with their own saved articles, reads, stats and settings. The admin adds and deletes profiles, the others change their own. An adult profile with its own account asks for its password on another account’s device.",
+      "intro": "Up to {{max}} readers in the household, each with their own saved articles, reads and settings. Every adult changes their own profile and looks after the teens and children. Only the admin removes an adult from the household or hands them the role.",
       "deleteTitle": "Delete {{name}}?",
       "deleteMessage": "Their saved articles, reads and settings are deleted too. This cannot be undone.",
       "deleted": "{{name}} deleted",
@@ -1440,7 +1437,10 @@
         "cancelName": "Cancel {{name}}’s invitation",
         "cancelled": "{{name}}’s invitation cancelled",
         "cancelFailed": "The invitation could not be cancelled. Try again in a moment."
-      }
+      },
+      "handOver": "Hand the admin role to {{name}}",
+      "remove": "Remove",
+      "removeName": "Remove {{name}} from the household"
     },
     "notifications": {
       "errors": {
@@ -1826,7 +1826,7 @@
       "title": "Delete this profile?",
       "message": "<b>{{name}}</b>’s profile is deleted with its saved articles, reading history, points and settings. <b>This can’t be undone.</b>",
       "button": "Delete profile",
-      "messageAccount": "<b>{{name}}</b>’s profile is deleted with its saved articles, reading history, points and settings, and <b>their account no longer opens this household</b>. This can’t be undone: type your password to confirm."
+      "messageAccount": "<b>{{name}}</b> leaves the household: their profile goes with its saved articles, reads and settings here. <b>Their account stays theirs</b>, and can join a household again with a new code. Type your password to confirm."
     },
     "deleteSource": {
       "title": "Delete the source?",
@@ -1962,6 +1962,10 @@
       "messageLast_one": "No adult will be signed in on this device any more: <b>{{young}}</b> leaves <i>Who’s in?</i> too, having no account. The device goes back to sign-in, and the reading stays intact. An adult of the household can sign it in again whenever they like.",
       "messageLast_other": "No adult will be signed in on this device any more: <b>{{young}}</b> leave <i>Who’s in?</i> too, having no account. The device goes back to sign-in, and the reading stays intact. An adult of the household can sign it in again whenever they like.",
       "button": "Sign out"
+    },
+    "removeAdult": {
+      "title": "Remove {{name}} from the household?",
+      "button": "Remove"
     }
   },
   "dialogIntro": {
@@ -2433,7 +2437,6 @@
       }
     },
     "backups": {
-      "intro": "Every night, a copy of the whole database and of the plugins’ data. It holds everyone’s data: your password protects it, and keeping one off the server is wise. A single account’s copy is in Settings › My account.",
       "intro": "Every night, a copy of the whole database and of the plugins’ data. It holds everyone’s data: your password protects it, and keeping one off the server is wise. A single account’s copy is in <i>Settings › My account</i>.",
       "settings": "Settings",
       "kept": "Copies kept",

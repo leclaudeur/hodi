@@ -1,4 +1,4 @@
-import { Camera, Crown, Smartphone, Trash2 } from 'lucide-react'
+import { Camera, Smartphone, Trash2 } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -215,7 +215,6 @@ export const ColorField = ({ color, onColor }: { color: ProfileColor; onColor: (
 
 interface AccountProps {
   onConnect?: () => void
-  onMakeAdmin?: () => void
 }
 
 const AccountRow = ({ label, hint, children }: { label: string; hint: string; children: ReactNode }) => (
@@ -224,11 +223,10 @@ const AccountRow = ({ label, hint, children }: { label: string; hint: string; ch
   </SettingRow>
 )
 
-// An adult's account, for the admin: a code to connect it, and the admin role. Its password is the person's alone.
-// Nothing on a profile that is not an adult's, or for one who is not the admin.
-export const AccountRows = ({ onConnect, onMakeAdmin }: AccountProps) => {
+// An adult's profile with no account yet, for the admin: a code to connect it. Nothing on any other profile.
+export const AccountRows = ({ onConnect }: AccountProps) => {
   const { t } = useTranslation()
-  if (!onConnect && !onMakeAdmin) return null
+  if (!onConnect) return null
   return (
     <div className={styles.field}>
       <span className={styles.label}>{t('profileForm.account')}</span>
@@ -238,13 +236,6 @@ export const AccountRows = ({ onConnect, onMakeAdmin }: AccountProps) => {
           <AccountRow label={t('profileForm.noAccount')} hint={t('profileForm.noAccountHint')}>
             <Button icon={Smartphone} wide onClick={onConnect}>
               {t('profileForm.connect')}
-            </Button>
-          </AccountRow>
-        )}
-        {onMakeAdmin && (
-          <AccountRow label={t('profileForm.makeAdmin')} hint={t('profileForm.makeAdminHint')}>
-            <Button icon={Crown} wide onClick={onMakeAdmin}>
-              {t('profileForm.makeAdminButton')}
             </Button>
           </AccountRow>
         )}

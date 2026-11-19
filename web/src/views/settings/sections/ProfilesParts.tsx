@@ -1,4 +1,4 @@
-import { Pencil, SlidersHorizontal } from 'lucide-react'
+import { Crown, Pencil, SlidersHorizontal, UserMinus } from 'lucide-react'
 import type { TFunction } from 'i18next'
 import { PROFILE_COLORS, type Profile, type ProfileKind, makeAdmin } from '../../../api.ts'
 import { addProfile, editProfile, isYoung, removeProfile } from '../../../lib/profiles.ts'
@@ -9,6 +9,7 @@ import Chip from '../../../ui/Chip.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
 import ProfileAvatarButton from '../../../ui/ProfileAvatarButton.tsx'
 import RichText from '../../../ui/RichText.tsx'
+import RoundButton from '../../../ui/RoundButton.tsx'
 import ProfileForm from '../../profiles/ProfileForm.tsx'
 import styles from '../Settings.module.css'
 import { RowButton } from '../SettingRow.tsx'
@@ -44,7 +45,8 @@ export const profileConfirms = ({ t, onEditing }: Confirms) => ({
   // An adult with an account: their account goes too, with the admin's password.
   remove: ({ id, name, hasAccount, kind }: Profile) =>
     askToConfirm({
-      title: t('confirm.deleteProfile.title'),
+      title:
+        hasAccount && kind === 'adult' ? t('confirm.removeAdult.title', { name }) : t('confirm.deleteProfile.title'),
       message: (
         <RichText
           i18nKey={
@@ -53,7 +55,7 @@ export const profileConfirms = ({ t, onEditing }: Confirms) => ({
           values={{ name }}
         />
       ),
-      label: t('confirm.deleteProfile.button'),
+      label: hasAccount && kind === 'adult' ? t('confirm.removeAdult.button') : t('confirm.deleteProfile.button'),
       proof: hasAccount && kind === 'adult' ? {} : undefined,
       onConfirm: async proof => {
         if (hasAccount && kind === 'adult') await removeProfile(id, proof)
@@ -87,7 +89,6 @@ export const profileConfirms = ({ t, onEditing }: Confirms) => ({
 
 interface EditActionsInput {
   admin: boolean
-  current: number | null
   withAccounts: boolean
   confirms: ReturnType<typeof profileConfirms>
   onGiving: (giving: Giving) => void
@@ -96,18 +97,15 @@ interface EditActionsInput {
 // What the admin may do from a profile's form, beside saving it.
 export const editActionsOf = (
   edited: Profile | undefined,
-  { admin, current, withAccounts, confirms, onGiving }: EditActionsInput
+  { admin, withAccounts, confirms, onGiving }: EditActionsInput
 ) => {
   if (!edited || !admin) return {}
-  // An adult with an account, other than the admin: the admin role. Their password is theirs alone.
-  const otherAccount = edited.id !== current && edited.kind === 'adult' && edited.hasAccount
   return {
     onDelete: edited.role !== 'admin' ? () => confirms.remove(edited) : undefined,
     onConnect:
       withAccounts && edited.kind === 'adult' && !edited.hasAccount
         ? () => onGiving({ id: edited.id, name: edited.name })
-        : undefined,
-    onMakeAdmin: otherAccount && withAccounts ? () => confirms.handOver(edited) : undefined
+        : undefined
   }
 }
 
@@ -119,9 +117,22 @@ interface ProfileRowProps {
   editable: boolean
   hint: string
   onEdit: () => void
+  // Another adult with their account, for the household's admin: their profile is theirs, the admin only hands over
+  // its role or takes them out of the household.
+  onHandOver?: () => void
+  onRemove?: () => void
 }
 
-export const ProfileRow = ({ profile, active, managed, editable, hint, onEdit }: ProfileRowProps) => {
+export const ProfileRow = ({
+  profile,
+  active,
+  managed,
+  editable,
+  hint,
+  onEdit,
+  onHandOver,
+  onRemove
+}: ProfileRowProps) => {
   const { t } = useTranslation()
   return (
     <li className={styles.row}>
@@ -149,6 +160,23 @@ export const ProfileRow = ({ profile, active, managed, editable, hint, onEdit }:
           ariaLabel={t('settings.editName', { name: profile.name })}
           icon={Pencil}
           onClick={onEdit}
+        />
+      )}
+      {onHandOver && (
+        <RoundButton
+          icon={Crown}
+          label={t('settings.profiles.handOver', { name: profile.name })}
+          size={38}
+          onClick={onHandOver}
+        />
+      )}
+      {onRemove && (
+        <RowButton
+          label={t('settings.profiles.remove')}
+          ariaLabel={t('settings.profiles.removeName', { name: profile.name })}
+          icon={UserMinus}
+          look="danger"
+          onClick={onRemove}
         />
       )}
     </li>
@@ -192,7 +220,6 @@ interface EditProfileProps {
   onDelete?: () => void
   onConnect?: () => void
   onResetPassword?: () => void
-  onMakeAdmin?: () => void
 }
 
 export const EditProfileDialog = ({ edited, kinds, onClose, ...actions }: EditProfileProps) => {

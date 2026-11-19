@@ -1,7 +1,7 @@
 import { Plus, UserPlus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MAX_PROFILES, PROFILE_COLORS, type Profile, getYouthRules } from '../../../api.ts'
+import { MAX_PROFILES, PROFILE_COLORS, getYouthRules } from '../../../api.ts'
 import { isYoung, useProfiles } from '../../../lib/profiles.ts'
 import { PROFILES_HREF } from '../../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../../lib/use-media.ts'
@@ -12,7 +12,7 @@ import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
 import profileStyles from './ProfilesSection.module.css'
 import InvitedGroup, { useInvitations } from './InvitedGroup.tsx'
-import ProfileGroups from './ProfileGroups.tsx'
+import ProfileGroups, { mayEditOf } from './ProfileGroups.tsx'
 import {
   EditProfileDialog,
   type Giving,
@@ -112,10 +112,9 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const parent = own?.kind === 'adult'
   // Codes come with personal accounts: on an install still on the household's password, its admin moves first.
   const withAccounts = own?.hasAccount === true
-  const mayEdit = (profile: Profile) => admin || profile.id === current || (parent && isYoung(profile))
   const edited = typeof editing === 'number' ? profiles.find(profile => profile.id === editing) : undefined
   const confirms = profileConfirms({ t, onEditing: setEditing })
-  const editActions = editActionsOf(edited, { admin, current, withAccounts, confirms, onGiving: setGiving })
+  const editActions = editActionsOf(edited, { admin, withAccounts, confirms, onGiving: setGiving })
 
   return (
     <SectionPage title={title} intro={intro} layout={layout}>
@@ -124,8 +123,9 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
         current={current}
         parent={parent}
         daily={daily}
-        mayEdit={mayEdit}
+        mayEdit={profile => mayEditOf(profile, { current, parent, admin })}
         onEdit={setEditing}
+        others={admin && withAccounts ? { handOver: confirms.handOver, remove: confirms.remove } : undefined}
       />
       {parent && withAccounts && <InvitedGroup invitations={invited.invitations} onChange={invited.reload} />}
 

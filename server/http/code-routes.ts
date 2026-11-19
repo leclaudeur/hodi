@@ -235,8 +235,8 @@ export const codeRoutes = (options: CodeRoutesOptions) => {
   const router = express.Router()
 
   // Without profileId, "Inviter un adulte": any adult's. With one, "Connecter un appareil": for an adult profile
-  // without an account, the admin's; for a young profile, any of its parents'. For another adult who has an account,
-  // "Mot de passe oublié", the admin's.
+  // without an account, the admin's; for a young profile, any of its parents'. Never for an adult who has an account:
+  // their password is theirs, and only the server's admin makes a code for a forgotten one.
   router.post('/', async (request, response) => {
     if (response.locals.profileChosen !== true || !isParentOf(response)) {
       response.status(403).json({ error: 'adults_only' })

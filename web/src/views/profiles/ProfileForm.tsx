@@ -49,8 +49,6 @@ interface ProfileFormProps {
   // The admin, on a member's private profile: takes its forgotten code off.
   // The admin, on an adult profile without an account: a code for its person ("Connecter un appareil").
   onConnect?: () => void
-  // « Passer le rôle d'admin »: from the household's admin, to another adult with an account.
-  onMakeAdmin?: () => void
   // A new profile from « Qui lit ? »: picking Adulte invites one with a code instead, so that it has its account.
   onInvite?: () => void
 }
@@ -180,7 +178,6 @@ const ProfileForm = ({
   onCancel,
   onDelete,
   onConnect,
-  onMakeAdmin,
   onInvite
 }: ProfileFormProps) => {
   const { t } = useTranslation()
@@ -230,7 +227,7 @@ const ProfileForm = ({
           )}
           {child && !invite && <AvatarPicker avatar={avatar} color={color} onAvatar={setAvatar} />}
           {!invite && <ColorField color={color} onColor={setColor} />}
-          <AccountRows onConnect={onConnect} onMakeAdmin={onMakeAdmin} />
+          <AccountRows onConnect={onConnect} />
         </div>
       </div>
       {error && <StatusLine tone="error">{error}</StatusLine>}
