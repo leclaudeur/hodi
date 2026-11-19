@@ -8,6 +8,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Another adult's profile is theirs.** In Settings > Profiles, the household's admin no longer edits the name, colour
+  or photo of an adult who has their own account: their row has Remove (from the household) and a round button to hand
+  over the admin role. The server refuses the change too.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My
