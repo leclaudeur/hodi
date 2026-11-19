@@ -52,6 +52,8 @@ export const useArrowKeys = (next: () => void, previous: () => void) =>
 
 // On a phone, each story stays this long, then the next one comes (not with reduced motion).
 const STORY_MS = 7000
+// The frame is as wide as a phone, and 640 pixels at most.
+const FRAME_SIZES = '(max-width: 640px) 100vw, 640px'
 
 // A story's picture, at the width it takes. One that doesn't load leaves the place plain, not a broken image.
 const StoryImage = ({
@@ -125,11 +127,12 @@ export const DesktopStory = ({
         ))}
       </div>
       <figure className={styles.figure}>
-        <StoryImage key={item.id} item={item} sizes="(max-width: 640px) 100vw, 640px" fade />
-        <figcaption className={styles.caption}>
-          <h2 className={styles.title}>{item.title}</h2>
-        </figcaption>
+        <StoryImage key={item.id} item={item} sizes={FRAME_SIZES} fade />
       </figure>
+      <span className={styles.phoneTopic}>
+        <TopicCapsule topicId={section.id} label={section.label} href={null} />
+      </span>
+      <h2 className={styles.title}>{item.title}</h2>
       {item.summary && <p className={styles.summary}>{item.summary}</p>}
       <div className={styles.meta}>
         <span className={styles.source}>
@@ -151,7 +154,7 @@ export const DesktopStory = ({
   )
 }
 
-// On a phone: full screen over its picture, a bar running per story.
+// On a phone and a tablet: full screen, the story laid out as on a computer, a bar running per story.
 export const PhoneStory = ({ section, item, index, age, open, next, previous }: StoryFrameProps) => {
   const { t } = useTranslation()
   const reducedMotion = useMedia('(prefers-reduced-motion: reduce)')
@@ -176,7 +179,6 @@ export const PhoneStory = ({ section, item, index, age, open, next, previous }: 
       aria-modal="true"
       aria-label={t('stories.of', { topic: section.label })}
     >
-      <StoryImage key={item.id} item={item} sizes="100vw" className={styles.backdrop} />
       <div
         className={styles.tapArea}
         onPointerDown={event => {
@@ -208,22 +210,29 @@ export const PhoneStory = ({ section, item, index, age, open, next, previous }: 
             <SourceAvatar sourceId={item.sourceId} sourceName={item.sourceName} size={26} />
             {item.sourceName}
           </span>
-          <a className={styles.close} href={FRONT_PAGE_HREF} aria-label={t('common.close')} data-shortcut="back">
-            <X size={18} aria-hidden="true" />
-          </a>
+          {/* The app's own round button, as on every phone screen. */}
+          <span className={styles.close}>
+            <CloseStories />
+          </span>
         </div>
       </div>
+      {/* The same frame as on a computer: the picture is never spread over the whole screen, where a small one would
+          be blown up into pixels. */}
       <div className={styles.bottom}>
-        {/* A capsule, as everywhere else: its dark fill keeps it readable on any photo. */}
+        <figure className={`${styles.figure} ${styles.phoneFigure}`}>
+          <StoryImage key={item.id} item={item} sizes={FRAME_SIZES} fade />
+        </figure>
         <span className={styles.phoneTopic}>
           <TopicCapsule topicId={section.id} label={section.label} href={null} />
         </span>
         <h2 className={styles.phoneTitle}>{item.title}</h2>
         {item.summary && <p className={styles.phoneSummary}>{item.summary}</p>}
-        {age && <span className={styles.age}>{t('stories.published', { age })}</span>}
-        <div className={styles.phoneActions}>
-          <ReadPill item={item} size={44} onOpen={open} />
-          <BookmarkButton item={item} variant="round" size={44} />
+        <div className={styles.phoneMeta}>
+          {age && <span className={styles.age}>{t('stories.published', { age })}</span>}
+          <div className={styles.phoneActions}>
+            <ReadPill item={item} size={44} onOpen={open} />
+            <BookmarkButton item={item} variant="round" size={44} />
+          </div>
         </div>
       </div>
     </div>
