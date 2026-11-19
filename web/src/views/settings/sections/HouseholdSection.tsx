@@ -23,6 +23,7 @@ import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import { GameCard, PhotoRow, RegionChoices, useHouseholdPhoto } from './HouseholdParts.tsx'
 import ServerData from './ServerData.tsx'
+import ParentalCodeCard from './ParentalCodeCard.tsx'
 
 type Editing = 'name' | 'timeZone' | null
 
@@ -189,6 +190,8 @@ const HouseholdSection = ({ layout, onUnauthorized }: HouseholdSectionProps) => 
             />
           </div>
           {regionFailed && <StatusLine tone="error">{t('settings.household.regionFailed')}</StatusLine>}
+
+          <ParentalCodeCard household={household} onSaved={saved} />
 
           {gameEnabled !== null && <GameCard enabled={gameEnabled} switching={switching} onSwitching={setSwitching} />}
 

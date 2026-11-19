@@ -10,6 +10,7 @@ import DialogActions from './DialogActions.tsx'
 import PasswordField from './PasswordField.tsx'
 import PinField from './PinField.tsx'
 import StatusLine from './StatusLine.tsx'
+import { rich } from './rich.tsx'
 
 // The question asked by askToConfirm, once for the app. Escape, the cross, "Annuler" or a click outside say no.
 const ConfirmDialog = () => {
@@ -113,7 +114,7 @@ const Question = ({ confirmation }: { confirmation: Confirmation }) => {
   return (
     <form className={styles.form} onSubmit={event => void submit(event)}>
       <p id="confirm-message" className={styles.message}>
-        {confirmation.message}
+        {rich(confirmation.message)}
       </p>
       {proof && (
         <ProofFields
