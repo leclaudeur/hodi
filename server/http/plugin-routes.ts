@@ -9,12 +9,12 @@ import { mountCatalogRoutes } from './plugin-catalog-routes.ts'
 import { describeStaged } from './plugin-staged.ts'
 import type { PluginCatalog } from '../plugins/catalog.ts'
 import { LOCALE_FILE, WEB_FILE, sendWebFile } from './plugin-files.ts'
-import { type MoveDevice, type RouteProof, sandboxRoutes } from './plugin-sandbox-routes.ts'
+import { type RouteProof, sandboxRoutes } from './plugin-sandbox-routes.ts'
 import { isServerAdminOf, requireServerAdmin } from './profile-routes.ts'
 
 export { pluginDevRoutes } from './plugin-dev-routes.ts'
 export { pluginPublicRoutes } from './plugin-public-routes.ts'
-export { type MoveDevice, type RouteProof } from './plugin-sandbox-routes.ts'
+export { type RouteProof } from './plugin-sandbox-routes.ts'
 
 // Serveur › Plugins: what is installed, on or off, and each plugin's settings; then each plugin's own routes.
 
@@ -23,8 +23,6 @@ export interface PluginRoutesOptions {
   installer?: PluginInstaller
   // Hodi stops once the answer is sent; Docker starts it again (restart: unless-stopped), with the new plugins.
   restart?: () => void
-  // « Changer de foyer » for a route's moveDevice: the cookies that go with it, or null when refused.
-  moveDevice?: MoveDevice
   // The household's AI, for the plugins' AiButtons; absent in tests that do not need it.
   ai?: PluginAi
   // The server admin's own password, before a plugin comes in or goes, or the developer mode starts: false when the
@@ -221,11 +219,7 @@ const mountFilesRoute = (router: express.Router, plugins: PluginRegistry) => {
 }
 
 // Each plugin's own routes. Hodi checks before the plugin's code runs: the plugin is on, and meant for this profile.
-const mountOwnRoutes = (
-  router: express.Router,
-  plugins: PluginRegistry,
-  { moveDevice, routeProof }: PluginRoutesOptions
-) => {
+const mountOwnRoutes = (router: express.Router, plugins: PluginRegistry, { routeProof }: PluginRoutesOptions) => {
   for (const plugin of plugins.list()) {
     if (!plugin.shape?.routes.length) continue
     router.use(
@@ -235,7 +229,7 @@ const mountOwnRoutes = (
         else if (!isFor(plugin, response)) response.status(403).json({ error: 'admin_only' })
         else next()
       },
-      sandboxRoutes(plugins, plugin, 'routes', undefined, [], moveDevice, routeProof)
+      sandboxRoutes(plugins, plugin, 'routes', undefined, [], routeProof)
     )
   }
 }
@@ -270,7 +264,7 @@ export const pluginServerRoutes = (plugins: PluginRegistry, { routeProof }: { ro
         if (plugins.enabled(plugin.id)) next()
         else response.status(404).json({ error: 'not_found' })
       },
-      sandboxRoutes(plugins, plugin, 'serverRoutes', undefined, [], undefined, routeProof)
+      sandboxRoutes(plugins, plugin, 'serverRoutes', undefined, [], routeProof)
     )
   }
   return router

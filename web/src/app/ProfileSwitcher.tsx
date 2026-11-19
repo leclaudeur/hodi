@@ -1,104 +1,20 @@
 import { ChevronsUpDown, Lock, Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MAX_PROFILES, PROFILE_COLORS, type Profile, RequestError } from '../api.ts'
+import { MAX_PROFILES, PROFILE_COLORS, type Profile } from '../api.ts'
 import { t as textNow } from '../lib/i18n.ts'
 import { addProfile, switchProfile, useProfiles } from '../lib/profiles.ts'
 import { showError, showSaved } from '../lib/toast.ts'
-import Button from '../ui/Button.tsx'
 import Dialog from '../ui/Dialog.tsx'
 import Menu, { MenuItem, MenuSeparator } from '../ui/Menu.tsx'
-import DialogActions from '../ui/DialogActions.tsx'
-import PasswordField from '../ui/PasswordField.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import { Bar } from '../ui/Skeleton.tsx'
-import StatusLine from '../ui/StatusLine.tsx'
-import CodeDialog from '../views/profiles/CodeDialog.tsx'
+import InviteDialog from '../views/profiles/InviteDialog.tsx'
 import ProfileForm from '../views/profiles/ProfileForm.tsx'
 import styles from './ProfileSwitcher.module.css'
-import RichText from '../ui/RichText.tsx'
 import { isLinkedDevice } from '../lib/linked-device.ts'
 import { useAvatarMenu } from '../plugins/Slots.tsx'
-
-// The password an adult profile asks for here before it opens: its own person's.
-const PasswordDialog = ({ profile, own, onClose }: { profile: Profile; own: number | null; onClose: () => void }) => {
-  const { t } = useTranslation()
-  const [password, setPassword] = useState('')
-  const [wrong, setWrong] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [opening, setOpening] = useState(false)
-  const theirs = profile.hasAccount && profile.id !== own
-  const label = theirs ? t('profiles.passwordOf', { name: profile.name }) : t('profiles.yourPassword')
-
-  const unlock = async () => {
-    if (!password || opening) return
-    setOpening(true)
-    try {
-      if ((await switchProfile(profile.id, true, password)) === 'pending') {
-        setError(t('profiles.pending'))
-        setOpening(false)
-      }
-    } catch (failure) {
-      if (failure instanceof RequestError && failure.code === 'wrong_password') {
-        setError(t('profiles.wrongPassword'))
-        setWrong(true)
-      } else if (failure instanceof RequestError && failure.code === 'too_many_attempts')
-        setError(
-          t('common.tooManyAttempts', { minutes: Math.max(1, Math.ceil((failure.retryAfterSeconds ?? 60) / 60)) })
-        )
-      else setError(t('profiles.openFailed'))
-      setPassword('')
-      setOpening(false)
-    }
-  }
-
-  return (
-    <Dialog
-      open
-      onClose={onClose}
-      title={profile.name}
-      intro={
-        <RichText
-          i18nKey={theirs ? 'dialogIntro.passwordOpen' : 'dialogIntro.ownOpen'}
-          values={{ name: profile.name }}
-        />
-      }
-    >
-      <form
-        id="profile-password"
-        className={styles.pin}
-        onSubmit={event => {
-          event.preventDefault()
-          void unlock()
-        }}
-      >
-        <ProfileAvatar profile={profile} size={72} plain />
-        <PasswordField
-          className={styles.password}
-          aria-label={label}
-          placeholder={label}
-          autoComplete="current-password"
-          autoFocus
-          required
-          value={password}
-          onChange={event => {
-            setPassword(event.target.value)
-            setWrong(false)
-            setError(null)
-          }}
-          invalid={wrong}
-        />
-        {error && <StatusLine tone="error">{error}</StatusLine>}
-      </form>
-      <DialogActions>
-        <Button onClick={onClose}>{t('common.cancel')}</Button>
-        <Button type="submit" form="profile-password" look="primary" busy={opening} disabled={!password}>
-          {t('profiles.open')}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
+import UnlockDialog from './UnlockDialog.tsx'
 
 // The menu spans the footer's row, from the selector to the settings' round button at its end.
 const footerRow = (wrapper: HTMLElement) => ({
@@ -163,11 +79,7 @@ const AddProfile = ({
           />
         )}
       </Dialog>
-      <CodeDialog
-        key={inviting ? 'invite' : 'closed'}
-        target={inviting ? null : undefined}
-        onClose={() => setInviting(false)}
-      />
+      <InviteDialog open={inviting} onClose={() => setInviting(false)} />
     </>
   )
 }
@@ -305,7 +217,7 @@ const ProfileSwitcher = () => {
         <ChevronsUpDown size={16} className={styles.chevrons} aria-hidden="true" />
       </button>
 
-      {unlocking && <PasswordDialog profile={unlocking} own={value?.own ?? null} onClose={() => setUnlocking(null)} />}
+      {unlocking && <UnlockDialog profile={unlocking} own={value?.own ?? null} onClose={() => setUnlocking(null)} />}
       <AddProfile adding={adding} setAdding={setAdding} profiles={profiles} />
     </div>
   )

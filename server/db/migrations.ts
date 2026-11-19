@@ -929,6 +929,20 @@ const MIGRATIONS: string[] = [
     updated_at INTEGER NOT NULL
   );
   `,
+  // « Profil privé » asks the account's password to open its profile in « Qui lit ? »; without it, the household's
+  // Code parental (six digits, when set) or nothing. Adults with an account asked their password until now: they
+  // keep doing so until they turn it off. « Ne plus demander sur cet appareil » marks a device of the account.
+  `
+  ALTER TABLE users ADD COLUMN private_profile INTEGER NOT NULL DEFAULT 0;
+  UPDATE users SET private_profile = 1;
+  ALTER TABLE user_devices ADD COLUMN trusted INTEGER NOT NULL DEFAULT 0;
+  `,
+  // Réglages › Profils › Personnes invitées: an invitation keeps the name it was given, to be recognised in the list (the
+  // person picks their own on joining), and the address it was sent to, when it was.
+  `
+  ALTER TABLE sign_in_codes ADD COLUMN invite_name TEXT;
+  ALTER TABLE sign_in_codes ADD COLUMN invite_email TEXT;
+  `,
   // Serveur › Notifications: what the server told its admins, written in each language, and the requests someone
   // waits on (important_key) until they are handled.
   `

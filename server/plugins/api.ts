@@ -70,12 +70,13 @@ export interface PluginContext {
     send: (message: PluginMailMessage) => Promise<void>
   }
   // With permissions.households: the server's households. create() sets one up with its admin: an existing account
-  // (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
+  // in no household yet (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
   // once, through « J'ai un code »). suspend(), resume() and remove() only take a household this plugin made, else
   // refuse with 'not_allowed'; remove() deletes it and all it holds, its people's accounts stay.
   households: {
     list: () => Promise<PluginHousehold[]>
     get: (id: number) => Promise<PluginHousehold | null>
+    // The household of an account, as a list of at most one: an account belongs to one household only.
     of: (accountId: number) => Promise<PluginHousehold[]>
     create: (household: {
       name: string
@@ -204,9 +205,6 @@ export type PluginResponse =
       status?: number
       body?: unknown
       headers?: { 'Cache-Control'?: string }
-      // routes only, with permissions.households: « Changer de foyer », this device reads in that household from now on,
-      // when the signed-in account has a profile there; « Qui lit ? » comes back. Anything else is refused and logged.
-      moveDevice?: number
     }
   | { zip: { filename: string; entries: PluginZipEntry[] } }
 

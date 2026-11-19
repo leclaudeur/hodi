@@ -1,6 +1,5 @@
 import { Flower2, Moon, Sun } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { LANGUAGES, LANGUAGE_NAMES, useLanguage } from '../../../lib/i18n.ts'
 import { ACCENT_COLORS, type Accent, type Theme, updatePreferences, usePreferences } from '../../../lib/preferences.ts'
 import { shownTheme } from '../../../lib/theme.ts'
 import { TEXT_SCALES } from '../../../lib/text-size.ts'
@@ -62,27 +61,10 @@ const ReadingSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
   const preferences = usePreferences()
   const theme = shownTheme(preferences.theme)
-  const language = useLanguage()
 
   return (
     <SectionPage title={t('settings.nav.reading')} intro={t('settings.reading.intro')} layout={layout}>
       <div className={styles.card}>
-        <SettingRow
-          label={t('language.label')}
-          hint={t('language.profileHint')}
-          choice={
-            <Segmented
-              label={t('language.label')}
-              value={language}
-              onChange={language => updatePreferences({ language })}
-              options={LANGUAGES.map(option => ({
-                value: option,
-                title: LANGUAGE_NAMES[option],
-                label: LANGUAGE_NAMES[option]
-              }))}
-            />
-          }
-        />
         <SettingRow
           label={t('settings.reading.appearance')}
           hint={t('settings.reading.appearanceHint')}
