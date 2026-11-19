@@ -72,6 +72,11 @@ session cookie holds one token per account signed in on the device, and `http/ac
 (`sessionsOf`), finds the one whose profile is open (`sessionOf`) and drops one at sign-out (`cookieWithout`). A trusted
 device is a flag on the account's own row in `user_devices` (`http/trusted-devices.ts`).
 
+What opens a profile in _Who's in?_ is decided by `http/profile-guard.ts`: a private profile's password
+(`users.private_profile`), the household's parental code (`accounts.parental_pin_hash`) or nothing.
+`http/profile-current-routes.ts` checks it. `http/trusted-devices.ts` keeps the browsers that skip a private profile's
+password: the `hodi_trusted` cookie, checked against `user_devices.trusted`.
+
 Every sign-in of an existing account first asks `http/sign-in-check.ts`, which runs each plugin's `checkSignIn` hook.
 The server admin's sign-in is never asked, so a broken plugin cannot lock them out.
 

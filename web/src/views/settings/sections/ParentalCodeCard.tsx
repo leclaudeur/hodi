@@ -2,29 +2,41 @@ import { KeyRound } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type Household, removeParentalCode, setParentalCode } from '../../../api.ts'
-import { showError } from '../../../lib/toast.ts'
+import { askToConfirm } from '../../../lib/confirm.ts'
+import { hasNoPassword, useTwoFactorOn } from '../../../lib/two-factor.ts'
 import Button from '../../../ui/Button.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
 import DialogActions from '../../../ui/DialogActions.tsx'
 import PinField from '../../../ui/PinField.tsx'
+import ProofFields, { type ProofError, proofErrorOf } from '../../../ui/ProofFields.tsx'
 import RichText from '../../../ui/RichText.tsx'
+import StatusLine from '../../../ui/StatusLine.tsx'
 import Toggle from '../../../ui/Toggle.tsx'
 import SettingRow from '../SettingRow.tsx'
+import householdStyles from '../../household/Household.module.css'
 import styles from '../Settings.module.css'
 
 const CODE_LENGTH = 6
 
-// Its six digits, shown while typed: a code the admin will give out reads better than dots.
+// Its six digits, shown while typed: a code the admin will give out reads better than dots. Then the admin's own
+// password (and the app's code), as a profile left open on a shared device does not prove who changes it.
 const CodeDialog = ({ onClose, onSaved }: { onClose: () => void; onSaved: (next: Household) => void }) => {
   const { t } = useTranslation()
   const [code, setCode] = useState('')
+  const [password, setPassword] = useState('')
+  const [appCode, setAppCode] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<ProofError | null>(null)
+  const askPassword = !hasNoPassword()
+  const askCode = useTwoFactorOn()
+  const ready = code.length === CODE_LENGTH && (!askPassword || password !== '') && (!askCode || appCode.length === 6)
   const save = () => {
-    if (code.length < CODE_LENGTH || saving) return
+    if (!ready || saving) return
     setSaving(true)
-    setParentalCode(code).then(onSaved, () => {
+    setError(null)
+    setParentalCode(code, { password, code: appCode }).then(onSaved, (failure: unknown) => {
       setSaving(false)
-      showError(t('settings.household.codeFailed'))
+      setError(proofErrorOf(failure))
     })
   }
   return (
@@ -35,6 +47,7 @@ const CodeDialog = ({ onClose, onSaved }: { onClose: () => void; onSaved: (next:
       intro={<RichText i18nKey="settings.household.codeIntro" />}
     >
       <form
+        className={householdStyles.form}
         onSubmit={event => {
           event.preventDefault()
           save()
@@ -49,9 +62,20 @@ const CodeDialog = ({ onClose, onSaved }: { onClose: () => void; onSaved: (next:
           value={code}
           onChange={setCode}
         />
+        <ProofFields
+          askPassword={askPassword}
+          askCode={askCode}
+          autoFocus={false}
+          error={error}
+          password={password}
+          code={appCode}
+          onPassword={setPassword}
+          onCode={setAppCode}
+        />
+        {error && <StatusLine tone="error">{t(`confirm.proof.${error}`)}</StatusLine>}
         <DialogActions>
           <Button onClick={onClose}>{t('common.cancel')}</Button>
-          <Button type="submit" look="primary" busy={saving} disabled={code.length < CODE_LENGTH}>
+          <Button type="submit" look="primary" busy={saving} disabled={!ready}>
             {t('common.save')}
           </Button>
         </DialogActions>
@@ -76,7 +100,13 @@ const ParentalCodeCard = ({ household, onSaved }: { household: Household; onSave
             onChange={next =>
               next
                 ? setChoosing(true)
-                : void removeParentalCode().then(onSaved, () => showError(t('settings.household.codeFailed')))
+                : askToConfirm({
+                    title: t('confirm.parentalOff.title'),
+                    message: <RichText i18nKey="confirm.parentalOff.message" />,
+                    label: t('confirm.parentalOff.button'),
+                    proof: hasNoPassword() ? { noPassword: true } : {},
+                    onConfirm: async proof => onSaved(await removeParentalCode(proof))
+                  })
             }
           />
         </SettingRow>

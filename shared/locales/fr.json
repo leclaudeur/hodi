@@ -1510,8 +1510,7 @@
       "codeValue": "6 chiffres",
       "codeTitle": "Code parental",
       "codeIntro": "Six chiffres, demandés pour ouvrir un profil adulte depuis <i>Qui lit ?</i>. Un profil privé demande son mot de passe à la place.",
-      "newCode": "Nouveau code",
-      "codeFailed": "Le code parental n’a pas pu être enregistré. Réessaie dans un instant."
+      "newCode": "Nouveau code"
     },
     "proposals": {
       "errors": {
@@ -1894,6 +1893,11 @@
       "title": "Passer le rôle d’admin ?",
       "message": "<b>{{name}}</b> gère alors les profils, les sources, la clé IA et les réglages du foyer. <b>Toi, tu deviens un adulte comme les autres</b>, et seul·e {{name}} pourra te rendre ce rôle. Confirme avec le mot de passe.",
       "button": "Passer le rôle"
+    },
+    "parentalOff": {
+      "title": "Désactiver le code parental ?",
+      "message": "Les profils adultes qui ne sont pas privés s’ouvriront de nouveau sans code depuis <i>Qui lit ?</i>, sur tous les appareils.",
+      "button": "Désactiver"
     },
     "privateOn": {
       "title": "Rendre ton profil privé ?",

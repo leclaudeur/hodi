@@ -350,6 +350,9 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await page.getByRole('switch', { name: 'Code parental' }).click()
   const choose = page.getByRole('dialog', { name: 'Code parental' })
   await choose.getByLabel('Nouveau code').fill(PARENTAL_CODE)
+  // Alex's own password first: a profile left open does not prove who changes the code.
+  await choose.getByLabel('Mon mot de passe').fill(PASSWORD)
+  await choose.getByLabel('Code de l’app d’authentification').fill(await appCode())
   await choose.getByRole('button', { name: 'Enregistrer' }).click()
   await expect(page.getByText('6 chiffres')).toBeVisible()
 
@@ -404,8 +407,12 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await own.close()
   await device.close()
 
-  // No code any more: Alex's profile opens at once again.
+  // No code any more, with Alex's password: Alex's profile opens at once again.
   await page.getByRole('switch', { name: 'Code parental' }).click()
+  const off = page.getByRole('dialog', { name: 'Désactiver le code parental ?' })
+  await off.getByLabel('Mon mot de passe').fill(PASSWORD)
+  await off.getByLabel('Code de l’app d’authentification').fill(await appCode())
+  await off.getByRole('button', { name: 'Désactiver' }).click()
   await expect(page.getByRole('switch', { name: 'Code parental' })).toHaveAttribute('aria-checked', 'false')
 })
 

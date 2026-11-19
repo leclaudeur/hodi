@@ -123,5 +123,6 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
   mountProfiles(api, wiring)
   mountSourceRequests(api, wiring)
   api.use(householdPhotoRoutes({ household, profiles, accounts }))
-  if (wiring.householdOptions) api.use('/household', requireAdmin, householdRoutes(wiring.householdOptions))
+  if (wiring.householdOptions)
+    api.use('/household', requireAdmin, householdRoutes({ ...wiring.householdOptions, checkProof: wiring.checkProof }))
 }

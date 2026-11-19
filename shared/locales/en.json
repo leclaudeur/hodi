@@ -1510,8 +1510,7 @@
       "codeValue": "6 digits",
       "codeTitle": "Parental code",
       "codeIntro": "Six digits, asked to open an adult profile from <i>Who’s reading?</i>. A private profile asks for its password instead.",
-      "newCode": "New code",
-      "codeFailed": "The parental code couldn’t be saved. Try again in a moment."
+      "newCode": "New code"
     },
     "proposals": {
       "errors": {
@@ -1894,6 +1893,11 @@
       "title": "Hand over the admin role?",
       "message": "<b>{{name}}</b> then manages the household’s profiles, sources, AI key and settings. <b>You become an adult like the others</b>, and only {{name}} can give the role back. Type your password to confirm.",
       "button": "Hand over"
+    },
+    "parentalOff": {
+      "title": "Turn the parental code off?",
+      "message": "Adult profiles that are not private will open again without a code from <i>Who’s reading?</i>, on every device.",
+      "button": "Turn off"
     },
     "privateOn": {
       "title": "Make your profile private?",

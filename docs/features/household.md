@@ -52,7 +52,8 @@ in the same browser. What a profile asks for there depends on two settings, both
   open at once on that device. The **Trusted devices** row lists how many do, and **Ask again** takes them all back.
   Signing out of a device, signing it out from the list or a new password take it back too.
 - **Parental code**, in _Settings › Household_: the admin sets six digits. Every adult profile that is not private then
-  asks for them, and opens at the last digit. A forgotten code is never shown again: the admin types a new one.
+  asks for them, and opens at the last digit. Setting, changing or turning it off asks for the admin's own password
+  (and the authenticator app's code when it is on). A forgotten code is never shown again: the admin types a new one.
 - Without either, an adult profile opens at once. Teen and child profiles never ask for anything: their parents open
   them for them.
 

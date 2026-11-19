@@ -124,7 +124,11 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     assert.equal((await call('PUT', '/household/parental-code', asSophie, { code: CODE })).status, 403)
     assert.equal((await call('PUT', '/household/parental-code', anthoPhone, { code: '1234' })).status, 400)
     assert.equal((await call('PUT', '/household/parental-code', anthoPhone, { code: '12345a' })).status, 400)
-    const set = await call('PUT', '/household/parental-code', anthoPhone, { code: CODE })
+    // His own password first: a profile left open on a shared device does not prove who changes it.
+    assert.equal((await call('PUT', '/household/parental-code', anthoPhone, { code: CODE })).status, 403)
+    const wrong = { code: CODE, password: 'faux' }
+    assert.equal((await call('PUT', '/household/parental-code', anthoPhone, wrong)).status, 403)
+    const set = await call('PUT', '/household/parental-code', anthoPhone, { code: CODE, password: ANTHO.password })
     assert.equal(set.status, 200)
     const view = (await set.json()) as Record<string, unknown>
     assert.equal(view.parentalCode, true)
@@ -241,7 +245,8 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     // His profile stays open on the phone, now that the Code parental would open it.
     anthoPhone = after_(anthoPhone, off)
     assert.equal(await chosen(anthoPhone), true)
-    const removed = await call('DELETE', '/household/parental-code', anthoPhone)
+    assert.equal((await call('DELETE', '/household/parental-code', anthoPhone)).status, 403)
+    const removed = await call('DELETE', '/household/parental-code', anthoPhone, { password: ANTHO.password })
     assert.equal(((await removed.json()) as { parentalCode: boolean }).parentalCode, false)
     assert.deepEqual(await locks(tablet), { Admin: null, Sophie: null, Max: null })
   })
