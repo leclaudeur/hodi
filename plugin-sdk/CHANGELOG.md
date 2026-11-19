@@ -10,6 +10,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **Bold and italics in intros.** The intro of `Dialog`, `SectionPage` and `askToConfirm` shows `<b>…</b>` (a name, an
+  e-mail) in bold and `<i>…</i>` (a screen's or a button's name) in italics, as Hodi's own texts do.
+
 ### Removed
 
 - **One household per account.** An account now belongs to one household only, so the ways to move between
@@ -19,13 +24,17 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [1.0.0-beta.5] - 2026-11-18
 
-Plugins can show Hodi's − / + number picker, with a value that can be typed. Needs Hodi 1.0.0-beta.13 or later.
+Plugins can show Hodi's − / + number picker, with a value that can be typed, and its multi-select of a source's
+topics. Needs Hodi 1.0.0-beta.13 or later.
 
 ### Added
 
 - **`Stepper` in `hodi:sdk`.** The number picked with − and + of Server › Content, faster when clicked quickly or
   held. With `editable`, the value in the middle can also be typed: a number within `min` and `max` counts at once,
   one outside them is brought back inside when the field is left.
+- **`ChoiceField` in `hodi:sdk`.** The multi-select of a source's topics: picked choices become tags, typing filters
+  the list, and the list opens above the dialog so its edge never cuts it. `choices` are `{ id, label, icon? }`, with
+  `selected`, `onChange` and an optional `max`.
 
 ## [1.0.0-beta.4] - 2026-11-16
 
