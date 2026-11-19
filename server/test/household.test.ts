@@ -320,6 +320,9 @@ describe('household', () => {
   })
 
   it('is the admin’s only', async () => {
+    // A private profile: the session alone opens it no more than Léa's.
+    const own = await signIn()
+    assert.equal((await post('/account/private', { on: true, password: PASSWORD }, { cookie: own }, 'PUT')).status, 200)
     // The session alone: the device then picks the profile it reads with.
     const cookie = (await signIn())
       .split('; ')
@@ -509,7 +512,8 @@ describe('an account with no password of its own (« Se connecter avec Google »
       recentSignIn: boolean
     }
 
-  it('says so in « Qui lit ? », where its profile opens through the plugin', async () => {
+  it('says so in « Qui lit ? », where its private profile opens through the plugin', async () => {
+    install.db.prepare('UPDATE users SET private_profile = 1').run()
     const list = (await (await fetch(`${baseUrl}/api/profiles`, { headers: { cookie: antho } })).json()) as {
       profiles: { name: string; locked: boolean; loginOnly?: boolean }[]
     }
@@ -517,6 +521,7 @@ describe('an account with no password of its own (« Se connecter avec Google »
       list.profiles.map(({ name, locked, loginOnly }) => ({ name, locked, loginOnly })),
       [{ name: 'Antho', locked: true, loginOnly: true }]
     )
+    install.db.prepare('UPDATE users SET private_profile = 0').run()
   })
 
   it('changes its e-mail without a password only within 5 minutes of a sign-in on this device', async () => {

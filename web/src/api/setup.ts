@@ -87,6 +87,8 @@ export interface AccountDevice {
   userAgent: string
   lastSeenAt: number
   current: boolean
+  // « Ne plus demander sur cet appareil »: the private profile opens here without its password.
+  trusted?: boolean
 }
 
 export interface AccountView {
@@ -95,6 +97,8 @@ export interface AccountView {
   // No password of its own: a change needs a sign-in on this device in the last 5 minutes (recentSignIn).
   loginOnly: boolean
   recentSignIn: boolean
+  // « Profil privé »: its profile asks for this password in « Qui lit ? », on every device it does not trust.
+  privateProfile?: boolean
   devices: AccountDevice[]
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: { householdGoes: boolean; household: string; others: string[] } | null
@@ -116,6 +120,13 @@ export const changeAccountEmail = (email: string, password: string) =>
 
 export const changeAccountPassword = (current: string, next: string) =>
   sendJson<AccountView>('PUT', '/account/password', { current, next })
+
+// « Profil privé »: turning it on asks for the password (and the app's code), never for turning it off.
+export const setPrivateProfile = (on: boolean, proof?: AdminProof) =>
+  sendJson<AccountView>('PUT', '/account/private', { on, ...proof })
+
+// « Redemander »: every device asks for the password again.
+export const forgetTrustedDevices = () => sendJson<AccountView>('DELETE', '/account/trusted')
 
 export const signOutDevice = (id: number) => sendJson<AccountView>('DELETE', `/account/devices/${id}`)
 
@@ -214,6 +225,8 @@ export interface Household {
   photo: string | null
   ai: { provider: string; providerName: string; model: string; keyHint: string } | null
   providers: AiProviderInfo[]
+  // « Code parental »: six digits asked to open an adult profile that is not private.
+  parentalCode?: boolean
 }
 
 export const getHousehold = () => getJson<Household>('/household')
@@ -245,5 +258,13 @@ export const checkAiKey = async (provider: string, key: string) =>
 // Kept only once the provider took it.
 export const setHouseholdAi = (provider: string, key: string) =>
   sendJson<Household>('PUT', '/household/ai', { provider, key })
+
+// « Code parental »: six digits; the server never sends them back.
+// With the admin's own password, and the app's code as appCode: the body's code is the new Code parental.
+export const setParentalCode = (code: string, proof: AdminProof) =>
+  sendJson<Household>('PUT', '/household/parental-code', { code, password: proof.password, appCode: proof.code })
+
+export const removeParentalCode = (proof: AdminProof) =>
+  sendJson<Household>('DELETE', '/household/parental-code', { password: proof.password, appCode: proof.code })
 
 export const removeHouseholdAi = () => sendJson<Household>('DELETE', '/household/ai')

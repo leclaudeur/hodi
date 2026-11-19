@@ -7,17 +7,17 @@ import { PROFILES_HREF } from '../../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../../lib/use-media.ts'
 import Button from '../../../ui/Button.tsx'
 import CodeDialog from '../../profiles/CodeDialog.tsx'
+import InviteDialog from '../../profiles/InviteDialog.tsx'
 import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
-import styles from '../Settings.module.css'
 import profileStyles from './ProfilesSection.module.css'
+import InvitedGroup, { useInvitations } from './InvitedGroup.tsx'
+import ProfileGroups from './ProfileGroups.tsx'
 import {
   EditProfileDialog,
   type Giving,
   NewProfileDialog,
   editActionsOf,
-  ProfileRow,
-  hintOf,
   kindsOf,
   profileConfirms
 } from './ProfilesParts.tsx'
@@ -85,11 +85,15 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   // The profile being changed, 'new' for one being added.
   const [editing, setEditing] = useState<number | 'new' | null>(null)
   const [giving, setGiving] = useState<Giving>(undefined)
+  const [inviting, setInviting] = useState(false)
   // Its parents see a young profile's time a day under its name.
   const viewer = value?.profiles.find(profile => profile.id === value.current)
   const daily = useDailyMinutes(
     viewer?.kind === 'adult' ? (value?.profiles ?? []).filter(isYoung).map(profile => profile.id) : []
   )
+
+  // Personnes invitées: an adult's with an account, as invitations come with personal accounts.
+  const invited = useInvitations(viewer?.kind === 'adult' && viewer.hasAccount === true)
 
   const title = t('settings.nav.profiles')
   const intro = t('settings.profiles.intro', { max: MAX_PROFILES })
@@ -115,19 +119,15 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
 
   return (
     <SectionPage title={title} intro={intro} layout={layout}>
-      <ul className={styles.card}>
-        {profiles.map(profile => (
-          <ProfileRow
-            key={profile.id}
-            profile={profile}
-            active={profile.id === current}
-            managed={parent && isYoung(profile)}
-            editable={mayEdit(profile)}
-            hint={hintOf(profile, parent, daily, t)}
-            onEdit={() => setEditing(profile.id)}
-          />
-        ))}
-      </ul>
+      <ProfileGroups
+        profiles={profiles}
+        current={current}
+        parent={parent}
+        daily={daily}
+        mayEdit={mayEdit}
+        onEdit={setEditing}
+      />
+      {parent && withAccounts && <InvitedGroup invitations={invited.invitations} onChange={invited.reload} />}
 
       <AddButtons
         parent={parent}
@@ -135,7 +135,7 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
         adding={editing === 'new'}
         withAccounts={withAccounts}
         onAdd={() => setEditing('new')}
-        onInvite={() => setGiving(null)}
+        onInvite={() => setInviting(true)}
       />
 
       {/* Adding and changing a profile happen in a dialog, as every action in Réglages. */}
@@ -143,6 +143,14 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
         open={editing === 'new'}
         defaultColor={PROFILE_COLORS.find(color => !profiles.some(profile => profile.color === color))}
         kinds={kindsOf(undefined, current, admin)}
+        onInvite={
+          withAccounts
+            ? () => {
+                setEditing(null)
+                setInviting(true)
+              }
+            : undefined
+        }
         onClose={() => setEditing(null)}
       />
       <EditProfileDialog
@@ -151,6 +159,7 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
         onClose={() => setEditing(null)}
         {...editActions}
       />
+      <InviteDialog open={inviting} onClose={() => setInviting(false)} onInvited={invited.reload} />
       {/* Remade at each opening: a new code, nothing left of the one before. Opened from the profile's dialog, it takes
           that one's place as the same card, with a way back to it (lib/dialog-stack.ts). */}
       <CodeDialog
