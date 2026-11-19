@@ -1886,6 +1886,10 @@
       "message": "<b>{{name}}</b> gère alors les profils, les sources, la clé IA et les réglages du foyer. <b>Toi, tu deviens un adulte comme les autres</b>, et seul·e {{name}} pourra te rendre ce rôle. Confirme avec le mot de passe.",
       "button": "Passer le rôle"
     },
+    "parentalOn": {
+      "title": "Enregistrer ce code parental ?",
+      "message": "Il sera demandé pour ouvrir chaque profil adulte qui n’est pas privé, depuis <i>Qui lit ?</i>, sur tous les appareils."
+    },
     "parentalOff": {
       "title": "Désactiver le code parental ?",
       "message": "Les profils adultes qui ne sont pas privés s’ouvriront de nouveau sans code depuis <i>Qui lit ?</i>, sur tous les appareils.",

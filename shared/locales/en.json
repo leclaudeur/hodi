@@ -1886,6 +1886,10 @@
       "message": "<b>{{name}}</b> then manages the household’s profiles, sources, AI key and settings. <b>You become an adult like the others</b>, and only {{name}} can give the role back. Type your password to confirm.",
       "button": "Hand over"
     },
+    "parentalOn": {
+      "title": "Save this parental code?",
+      "message": "It will be asked to open every adult profile that is not private, from <i>Who’s reading?</i>, on every device."
+    },
     "parentalOff": {
       "title": "Turn the parental code off?",
       "message": "Adult profiles that are not private will open again without a code from <i>Who’s reading?</i>, on every device.",
