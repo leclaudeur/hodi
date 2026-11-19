@@ -1,4 +1,5 @@
 import { KeyRound, Mail } from 'lucide-react'
+import RichText from '../../../ui/RichText.tsx'
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type AccountView, RequestError, changeAccountEmail, changeAccountPassword } from '../../../api.ts'
@@ -50,7 +51,9 @@ const SignInFirst = ({
   return (
     <Dialog open onClose={onClose} title={title}>
       <div className={householdStyles.form}>
-        <StatusLine tone="info">{t(ways ? 'settings.account.signInAgain' : 'settings.account.noWayIn')}</StatusLine>
+        <StatusLine tone="info">
+          <RichText i18nKey={ways ? 'settings.account.signInAgain' : 'settings.account.noWayIn'} />
+        </StatusLine>
         <PluginSlots slot="signInExtras" props={{ layout, signedIn: () => window.location.reload() }} />
         <DialogActions>
           <Button onClick={onClose}>{t('common.cancel')}</Button>

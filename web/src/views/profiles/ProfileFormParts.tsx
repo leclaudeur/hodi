@@ -1,4 +1,5 @@
 import { Camera, Crown, Smartphone, Trash2 } from 'lucide-react'
+import RichText from '../../ui/RichText.tsx'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -156,7 +157,9 @@ export const KindField = ({ kinds, kind, color, soon, invite, onKind }: KindProp
           </span>
         </div>
       ) : (
-        <StatusLine tone="info">{invite ? t('profileForm.inviteHint') : t(`profileForm.kindHints.${kind}`)}</StatusLine>
+        <StatusLine tone="info">
+          {invite ? <RichText i18nKey="profileForm.inviteHint" /> : t(`profileForm.kindHints.${kind}`)}
+        </StatusLine>
       )}
     </div>
   )

@@ -7,11 +7,11 @@ export type HelpPage = 'followed' | 'shares' | 'videos'
 const PageHelp = ({ page, layout }: { page: HelpPage; layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
   const paragraphs = t(`help.${page}.${layout}`, { returnObjects: true })
-  // Trans only marks the <b> in the text already translated: array items have no typed key of their own.
+  // Trans only marks the <b> and <i> in the text already translated: array items have no typed key of their own.
   return paragraphs.map((text, index) => (
     // eslint-disable-next-line @eslint-react/no-array-index-key -- the paragraphs are fixed text, never reordered
     <p key={index}>
-      <Trans defaults={text} components={{ b: <b /> }} />
+      <Trans defaults={text} components={{ b: <b />, i: <i /> }} />
     </p>
   ))
 }
