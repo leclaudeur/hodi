@@ -4,6 +4,7 @@ import {
   type Profile,
   type ProfileChanges,
   type ProfileColor,
+  type ProfileSecret,
   chooseProfile,
   clearDataCache,
   createProfile,
@@ -193,7 +194,7 @@ export type SwitchResult = 'switched' | 'pending'
 export const switchProfile = async (
   id: number,
   chosen: boolean,
-  password?: string,
+  secret?: ProfileSecret,
   opened?: () => Promise<void>
 ): Promise<SwitchResult> => {
   const same = id === state?.current
@@ -203,7 +204,7 @@ export const switchProfile = async (
   }
   if (!same && !(await sendPendingChanges())) return 'pending'
 
-  await chooseProfile(id, password)
+  await chooseProfile(id, secret)
   await opened?.()
   window.dispatchEvent(new Event(PROFILE_SWITCHING))
   if (!same) {

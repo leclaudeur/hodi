@@ -1,10 +1,12 @@
 import { noteResponse } from '../lib/connection.ts'
+import { isServerOnly } from '../lib/server-only.ts'
 import { type SignInRefusal, refusalOf } from '../lib/sign-in-refusal.ts'
 
 // Thrown when the session expired: the app goes back to the login page.
 export class UnauthorizedError extends Error {}
 
-// Sent on window when the server answers that this device's profile is closed: the app goes back to « Qui lit ? ».
+// Sent on window when the server answers that this device's profile is closed: the app goes back to « Qui lit ? », or
+// to its account alone when its profile was deleted from the household.
 export const PROFILE_CLOSED = 'hodi:profile-closed'
 const noteProfileClosed = async (response: Response) => {
   if (response.status !== 423) return
@@ -12,7 +14,8 @@ const noteProfileClosed = async (response: Response) => {
     .clone()
     .json()
     .catch(() => null)) as { error?: string } | null
-  if (body?.error === 'profile_locked') window.dispatchEvent(new Event(PROFILE_CLOSED))
+  if (body?.error === 'profile_locked' || (body?.error === 'no_household' && !isServerOnly()))
+    window.dispatchEvent(new Event(PROFILE_CLOSED))
 }
 
 export const getJson = async <T>(route: string, accept: number[] = []): Promise<T> => {
@@ -40,8 +43,19 @@ export const sendJson = async <T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', r
   if (response.status === 401) throw new UnauthorizedError('Session expired')
   await noteProfileClosed(response)
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: string; retryAfterSeconds?: number } | null
-    throw new RequestError(response.status, body?.error ?? null, body?.retryAfterSeconds ?? null, refusalOf(body))
+    const body = (await response.json().catch(() => null)) as {
+      error?: string
+      retryAfterSeconds?: number
+      household?: unknown
+    } | null
+    const household = typeof body?.household === 'string' ? body.household : null
+    throw new RequestError(
+      response.status,
+      body?.error ?? null,
+      body?.retryAfterSeconds ?? null,
+      refusalOf(body),
+      household
+    )
   }
   return (response.status === 204 ? null : await response.json()) as T
 }
@@ -53,17 +67,21 @@ export class RequestError extends Error {
   readonly retryAfterSeconds: number | null
   // A plugin refused the sign-in ('sign_in_refused').
   readonly refusal: SignInRefusal | null
+  // The household the account already reads in ('other_household'), to name it.
+  readonly household: string | null
 
   constructor(
     status: number,
     code: string | null,
     retryAfterSeconds: number | null,
-    refusal: SignInRefusal | null = null
+    refusal: SignInRefusal | null = null,
+    household: string | null = null
   ) {
     super(`Request failed with status ${status}${code ? ` (${code})` : ''}`)
     this.status = status
     this.code = code
     this.retryAfterSeconds = retryAfterSeconds
     this.refusal = refusal
+    this.household = household
   }
 }

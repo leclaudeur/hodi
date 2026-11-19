@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useIsPhone } from '../../lib/use-media.ts'
 import { HeaderActions } from '../MobilePage.tsx'
 import styles from './Settings.module.css'
+import { rich } from '../../ui/rich.tsx'
 
 interface SectionPageProps {
   title: string
@@ -26,7 +27,7 @@ const SectionPage = ({ title, intro, aside, layout, children }: SectionPageProps
         <div className={styles.header}>
           <div>
             {layout === 'desktop' && <h1 className={`${styles.title} screen-title`}>{title}</h1>}
-            {intro && <p className={styles.intro}>{intro}</p>}
+            {intro && <p className={styles.intro}>{rich(intro)}</p>}
           </div>
           {layout === 'desktop' && aside}
         </div>

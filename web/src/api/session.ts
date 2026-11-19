@@ -11,6 +11,8 @@ export type LoginResult =
   | { ok: false; reason: 'invalid_password' | 'error' | 'two_factor' | 'invalid_code' }
   | { ok: false; reason: 'too_many_attempts'; retryAfterSeconds: number }
   | { ok: false; reason: 'refused'; refusal: SignInRefusal }
+  // An account of another household than the one this device serves: both their names.
+  | { ok: false; reason: 'other_household'; household: string | null; here: string | null }
 
 export interface Session {
   // False: the household's profiles are not picked on this device yet ("Qui lit ?").
@@ -25,6 +27,8 @@ export interface Session {
   content: { articleDays: number; videoDays: number; backupCopies: number } | null
   // No household yet (« Plus tard » at the setup): the server's admin, in /server only.
   serverOnly: boolean
+  // An account whose profile was deleted from its household: its own account alone.
+  noHousehold: boolean
   // « Validation en deux étapes » of the account reading here.
   twoFactor: boolean
   // The account reading here has no password of its own (« Se connecter avec Google »).
@@ -58,6 +62,7 @@ export const getSession = async (fresh = false): Promise<Session | null | 'setup
     linkedDevice: body.linkedDevice === true,
     content: body.content ?? null,
     serverOnly: body.serverOnly === true,
+    noHousehold: body.noHousehold === true,
     twoFactor: body.twoFactor === true,
     noPassword: body.noPassword === true
   }
@@ -83,6 +88,11 @@ export const login = async (email: string, password: string, code?: string): Pro
   if (response.status === 429) {
     const body = (await response.json()) as { retryAfterSeconds?: number }
     return { ok: false, reason: 'too_many_attempts', retryAfterSeconds: body.retryAfterSeconds ?? 900 }
+  }
+
+  if (response.status === 409) {
+    const body = (await response.json().catch(() => null)) as { household?: string; here?: string } | null
+    return { ok: false, reason: 'other_household', household: body?.household ?? null, here: body?.here ?? null }
   }
 
   if (response.status === 403) {

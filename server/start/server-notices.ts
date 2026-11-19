@@ -3,6 +3,7 @@ import type { HouseholdStore } from '../db/household-store.ts'
 import { inHousehold } from '../db/household-scope.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
+import type { ServerInboxStore } from '../db/server-inbox-store.ts'
 import type { ServerNoticeStore } from '../db/server-notice-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
 import { smtpSend } from '../mail/mailer.ts'
@@ -17,6 +18,7 @@ export const createServerNotifier = ({
   config,
   outside,
   serverNotices,
+  serverInbox,
   accounts,
   mailSettings,
   serverSettings,
@@ -25,6 +27,7 @@ export const createServerNotifier = ({
   config: Config
   outside: Outside
   serverNotices: ServerNoticeStore
+  serverInbox: ServerInboxStore
   accounts: UserAccountStore
   mailSettings: MailSettingsStore
   serverSettings: ServerSettingsStore
@@ -32,6 +35,7 @@ export const createServerNotifier = ({
 }) =>
   serverNotifier({
     store: serverNotices,
+    inbox: serverInbox,
     admins: () => accounts.serverAdmins(),
     mail: { settings: () => mailSettings.get(), send: smtpSend, home: () => serverSettings.publicHome() },
     push: (target, payload) => outside.sendPush(target, payload, config.vapid),

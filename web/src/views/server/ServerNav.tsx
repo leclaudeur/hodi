@@ -6,6 +6,7 @@ import {
   Clock,
   Globe,
   Heart,
+  Inbox,
   Mail,
   House,
   LogOut,
@@ -13,9 +14,10 @@ import {
   UserRound,
   UsersRound
 } from 'lucide-react'
-import type { ComponentType, ReactNode } from 'react'
+import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import { SUPPORT_URL, logout } from '../../api.ts'
+import { SUPPORT_URL, getServerInbox, logout } from '../../api.ts'
 import sidebarStyles from '../../app/Sidebar.module.css'
 import { isServerOnly } from '../../lib/server-only.ts'
 import { type ServerSection, SERVER_HREF, serverHref, serverPluginPageHref } from '../../lib/use-hash-route.ts'
@@ -28,6 +30,7 @@ import RoundButton from '../../ui/RoundButton.tsx'
 import ScrollArea from '../../ui/ScrollArea.tsx'
 import navStyles from '../settings/SettingsNav.module.css'
 import styles from './Server.module.css'
+import inboxStyles from './ServerInbox.module.css'
 import { pluginName, pluginDescription } from '../../plugins/plugin-texts.ts'
 
 interface Entry {
@@ -39,31 +42,60 @@ interface Entry {
   icon: ComponentType<{ size?: number }>
   // A page out of Hodi, opened in a new tab.
   external?: true
+  // Requests to handle, counted in orange beside its name.
+  count?: number
 }
 
 // A plugin's section, as the sidebar knows it.
 export const serverPluginKey = (plugin: string, section: string) => `plugin/${plugin}/${section}`
 
 // The server's sections, in groups, as Réglages lists its own; each plugin's own group under them, named after it.
+// How many requests wait in Notifications, read again at each change of page (one may have just been handled).
+const useWaiting = () => {
+  const [waiting, setWaiting] = useState(0)
+  useEffect(() => {
+    const read = () =>
+      void getServerInbox()
+        .then(answer => setWaiting(answer.waiting))
+        .catch(() => {})
+    read()
+    window.addEventListener('hashchange', read)
+    return () => window.removeEventListener('hashchange', read)
+  }, [])
+  return waiting
+}
+
+type CoreGroup = { id: string; label: string; entries: (Omit<Entry, 'href' | 'id'> & { id: ServerSection })[] }
+
+// The server at a glance, first and with no heading, as Réglages opens on the profile.
+const serverGroup = (t: TFunction, waiting: number): CoreGroup => ({
+  id: 'server',
+  label: '',
+  entries: [
+    { id: 'overview', label: t('server.titles.overview'), hint: t('server.hints.overview'), icon: ChartColumn },
+    {
+      id: 'inbox',
+      label: t('server.titles.inbox'),
+      hint: waiting ? t('server.hints.inboxWaiting', { count: waiting }) : t('server.hints.inbox'),
+      icon: Inbox,
+      count: waiting
+    },
+    {
+      id: 'households',
+      label: t('server.titles.households'),
+      hint: t('server.hints.households'),
+      icon: UsersRound
+    },
+    { id: 'accounts', label: t('server.titles.accounts'), hint: t('server.hints.accounts'), icon: UserRound }
+  ]
+})
+
 const useGroups = (): { id: string; label: string; entries: Entry[] }[] => {
   const { t, i18n } = useTranslation()
   const { plugins, web } = usePlugins()
-  const core: { id: string; label: string; entries: (Omit<Entry, 'href' | 'id'> & { id: ServerSection })[] }[] = [
-    // The server at a glance, first and with no heading, as Réglages opens on the profile.
-    {
-      id: 'server',
-      label: '',
-      entries: [
-        { id: 'overview', label: t('server.titles.overview'), hint: t('server.hints.overview'), icon: ChartColumn },
-        {
-          id: 'households',
-          label: t('server.titles.households'),
-          hint: t('server.hints.households'),
-          icon: UsersRound
-        },
-        { id: 'accounts', label: t('server.titles.accounts'), hint: t('server.hints.accounts'), icon: UserRound }
-      ]
-    },
+  const waiting = useWaiting()
+  const core: CoreGroup[] = [
+    serverGroup(t, waiting),
     {
       id: 'settings',
       label: t('server.groups.settings'),
@@ -174,7 +206,7 @@ export const ServerSidebar = ({ active }: { active: string }) => {
             {index > 0 && <div className={sidebarStyles.divider} />}
             {group.label && <span className={sidebarStyles.heading}>{group.label}</span>}
             <ul className={sidebarStyles.links}>
-              {group.entries.map(({ id, href, label, icon: Icon, external }) => (
+              {group.entries.map(({ id, href, label, icon: Icon, external, count }) => (
                 <li key={id}>
                   <a
                     className={sidebarStyles.link}
@@ -186,6 +218,7 @@ export const ServerSidebar = ({ active }: { active: string }) => {
                       <Icon size={14} aria-hidden="true" />
                     </span>
                     <span className={sidebarStyles.label}>{label}</span>
+                    {count ? <span className={inboxStyles.count}>{count}</span> : null}
                   </a>
                 </li>
               ))}

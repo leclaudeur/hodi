@@ -10,15 +10,45 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **Bold and italics in intros.** The intro of `Dialog`, `SectionPage` and `askToConfirm` shows `<b>…</b>` (a name, an
+  e-mail) in bold and `<i>…</i>` (a screen's or a button's name) in italics, as Hodi's own texts do.
+
+- **A way on for an account in no household.** `noHouseholdActions` in `definePlugin()` draws under the text of the
+  card an account lands on once it left its household (or its profile was deleted), such as « Créer mon foyer ». Only
+  the plugin's public part is loaded there. A route marked `noHousehold: true` (`{ noHousehold: true, handler }`)
+  answers that account, with `who.accountId` set and `who.profileId` and `who.householdId` null; every other route
+  answers it 423 `no_household`. Only a route of `routes` can be marked. Once the plugin made the household, it calls
+  `done()` and Hodi starts again on it. In the test kit, `noHouseholdRoute(route, accountId)` calls a route as such an
+  account (one `addAccount()` made).
+
+### Removed
+
+- **One household per account.** An account now belongs to one household only, so the ways to move between
+  households are gone: the `afterSignIn` step (« Quel foyer ? »), the `whoIsReadingFooter` buttons under « Qui lit ? »,
+  and the `moveDevice` answer of a route (now ignored). `ctx.households.of()` lists at most one household, and
+  `ctx.households.create()` refuses (`invalid_household`) an `admin.accountId` that is already in a household.
+
+- **A green notice.** `Notice` takes `tone="success"`, for what just worked.
+- **A server notice that waits.** `ctx.notifyServerAdmin(type, { …, important: 'waitlist:12' })` marks a request
+  someone waits on: it stays under « À traiter » in Serveur › Notifications, and the same key still waiting is not
+  sent again, until `ctx.serverNoticeHandled('waitlist:12')`. Keys are the plugin's own (letters, digits, `. _ : -`,
+  100 at most). In the testing kit, such a notice in `serverNotices` has `waiting`, true until it is handled.
+
 ## [1.0.0-beta.5] - 2026-11-18
 
-Plugins can show Hodi's − / + number picker, with a value that can be typed. Needs Hodi 1.0.0-beta.13 or later.
+Plugins can show Hodi's − / + number picker, with a value that can be typed, and its multi-select of a source's
+topics. Needs Hodi 1.0.0-beta.13 or later.
 
 ### Added
 
 - **`Stepper` in `hodi:sdk`.** The number picked with − and + of Server › Content, faster when clicked quickly or
   held. With `editable`, the value in the middle can also be typed: a number within `min` and `max` counts at once,
   one outside them is brought back inside when the field is left.
+- **`ChoiceField` in `hodi:sdk`.** The multi-select of a source's topics: picked choices become tags, typing filters
+  the list, and the list opens above the dialog so its edge never cuts it. `choices` are `{ id, label, icon? }`, with
+  `selected`, `onChange` and an optional `max`.
 
 ## [1.0.0-beta.4] - 2026-11-16
 

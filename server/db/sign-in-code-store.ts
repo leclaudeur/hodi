@@ -24,6 +24,19 @@ export interface SignInCode {
   expiresAt: number
 }
 
+// What an invitation was given: a name, and the address its code was sent to.
+export interface Invite {
+  name: string
+  email: string | null
+}
+
+export interface Invitation {
+  id: number
+  name: string | null
+  email: string | null
+  expiresAt: number
+}
+
 interface SignInCodeRow {
   account_id: number
   profile_id: number | null
@@ -79,12 +92,15 @@ export class SignInCodeStore {
       profileId = null,
       createdBy,
       reset = false,
+      invite = null,
       householdId = currentHouseholdId()
     }: {
       profileId?: number | null
       // null: the server's admin, who has no profile in the household.
       createdBy: number | null
       reset?: boolean
+      // « Inviter un adulte »: the name it is known by in Personnes invitées, and the address it went to.
+      invite?: Invite | null
       householdId?: number
     },
     now: number
@@ -97,10 +113,21 @@ export class SignInCodeStore {
       const code = drawCode()
       const { changes } = this.#db
         .prepare(
-          `INSERT OR IGNORE INTO sign_in_codes (code_hash, account_id, profile_id, created_by, reset, created_at, expires_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`
+          `INSERT OR IGNORE INTO sign_in_codes
+             (code_hash, account_id, profile_id, created_by, reset, created_at, expires_at, invite_name, invite_email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
-        .run(this.#hash(code), householdId, profileId, createdBy, reset ? 1 : 0, now, expiresAt)
+        .run(
+          this.#hash(code),
+          householdId,
+          profileId,
+          createdBy,
+          reset ? 1 : 0,
+          now,
+          expiresAt,
+          invite?.name ?? null,
+          invite?.email ?? null
+        )
       if (changes === 1) return { code, expiresAt }
     }
   }
@@ -124,5 +151,42 @@ export class SignInCodeStore {
       )
       .get(this.#hash(code), now) as SignInCodeRow | undefined
     return row ? toCode(row) : null
+  }
+
+  // Personnes invitées: the household's invitations still waiting, oldest first. An invitation made before names were
+  // kept has none.
+  invitations(now: number, householdId = currentHouseholdId()): Invitation[] {
+    return (
+      this.#db
+        .prepare(
+          `SELECT rowid AS id, invite_name AS name, invite_email AS email, expires_at AS expiresAt FROM sign_in_codes
+           WHERE account_id = ? AND profile_id IS NULL AND reset = 0 AND expires_at > ? ORDER BY created_at, rowid`
+        )
+        .all(householdId, now) as unknown as Invitation[]
+    ).map(row => ({ ...row }))
+  }
+
+  // « Annuler »: the invitation's code works no more. false when there was no such invitation in the household.
+  cancelInvitation(id: number, householdId = currentHouseholdId()) {
+    return (
+      this.#db
+        .prepare('DELETE FROM sign_in_codes WHERE rowid = ? AND account_id = ? AND profile_id IS NULL AND reset = 0')
+        .run(id, householdId).changes === 1
+    )
+  }
+
+  // « Voir le code », « Renvoyer »: a hash cannot be read back, so the invitation gets a new code for another day, under
+  // the same name and address. null when there was no such invitation.
+  renewInvitation(id: number, createdBy: number | null, now: number, householdId = currentHouseholdId()) {
+    const row = this.#db
+      .prepare(
+        `SELECT invite_name AS name, invite_email AS email FROM sign_in_codes
+         WHERE rowid = ? AND account_id = ? AND profile_id IS NULL AND reset = 0 AND expires_at > ?`
+      )
+      .get(id, householdId, now) as { name: string | null; email: string | null } | undefined
+    if (!row) return null
+    this.cancelInvitation(id, householdId)
+    const invite = row.name === null ? null : { name: row.name, email: row.email }
+    return { ...this.create({ createdBy, invite, householdId }, now), invite }
   }
 }

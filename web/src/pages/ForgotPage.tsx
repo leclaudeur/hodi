@@ -1,25 +1,27 @@
 import type { TFunction } from 'i18next'
-import { ArrowRight, Mail, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RequestError, askResetLink, checkResetLink, resetWithLink } from '../api.ts'
-import { EMAIL_PATTERN } from '../lib/email.ts'
-import { passwordStrength } from '../lib/password-strength.ts'
-import Button from '../ui/Button.tsx'
-import NewPasswordFields from '../ui/NewPasswordFields.tsx'
-import RichText from '../ui/RichText.tsx'
-import StatusLine from '../ui/StatusLine.tsx'
-import TextField from '../ui/TextField.tsx'
-import householdStyles from '../views/household/Household.module.css'
-import { Actions, SetupFrame, StepHeader } from './SetupParts.tsx'
-import styles from './SetupPage.module.css'
+import {
+  RequestError,
+  askAdminCode,
+  askResetCode,
+  checkResetCode,
+  checkSignInCode,
+  resetWithCode,
+  resetWithMailedCode
+} from '../api.ts'
 import { refusalText } from '../lib/sign-in-refusal.ts'
+import { showSaved } from '../lib/toast.ts'
+import { AskForm, CodeForm, DoneStep, NewPasswordForm } from './ForgotSteps.tsx'
+import { SetupFrame } from './SetupParts.tsx'
 
-// The link of the e-mail: the Connexion page opens on « Nouveau mot de passe ».
-export const RESET_LINK = /^#\/reset\/([A-Za-z0-9_-]{43})$/
+// The e-mail's button: the Connexion page opens on « Entre le code », filled in.
+export const RESET_LINK = /^#\/reset\/([A-HJKMNP-Z2-9]{8})$/
 
 interface ForgotPageProps {
-  // From the e-mail's link: the link's token, checked at once.
+  // false: the server sends no e-mail; its admin makes the code (a « J'ai un code » one, for a day).
+  byMail: boolean
+  // From the e-mail's button: its code, checked at once.
   token?: string
   // Back to the Connexion page.
   onBack: () => void
@@ -28,212 +30,99 @@ interface ForgotPageProps {
   onDone: (signedIn: boolean) => void
 }
 
+type Step = 'ask' | 'code' | 'password' | 'done'
+
 const refusalOf = (failure: unknown, t: TFunction) => {
   if (!(failure instanceof RequestError)) return t('common.unreachable')
   if (failure.refusal) return refusalText(failure.refusal)
   if (failure.code === 'too_many_attempts' && failure.retryAfterSeconds)
     return t('common.tooManyAttempts', { minutes: Math.ceil(failure.retryAfterSeconds / 60) })
+  if (failure.code === 'invalid_code') return t('forgot.wrongCode')
   return t('forgot.failed')
 }
 
-interface AskFormProps {
-  email: string
-  setEmail: (email: string) => void
-  error: string | null
-  busy: boolean
-  onAsk: () => void
-  onBack: () => void
+// Whose account the code is for: its e-mail, or without e-mail the name of its profile.
+const ownerOf = async (byMail: boolean, code: string) => {
+  if (byMail) return (await checkResetCode(code)).email
+  const use = await checkSignInCode(code)
+  if (use.kind !== 'reset') throw new RequestError(403, 'invalid_code', null)
+  return use.profile.name
 }
 
-// The e-mail to send the link to.
-const AskForm = ({ email, setEmail, error, busy, onAsk, onBack }: AskFormProps) => {
+// What is being typed, and where it stands.
+const useForgot = (byMail: boolean, token: string | undefined) => {
   const { t } = useTranslation()
-  return (
-    <form
-      className={styles.form}
-      onSubmit={event => {
-        event.preventDefault()
-        if (EMAIL_PATTERN.test(email.trim())) onAsk()
-      }}
-    >
-      <StepHeader title={t('forgot.title')} intro={t('forgot.intro')} />
-      <div className={householdStyles.field}>
-        <span className={householdStyles.fieldLabel}>{t('login.email')}</span>
-        <TextField
-          icon={Mail}
-          type="email"
-          autoComplete="username"
-          autoFocus
-          required
-          aria-label={t('login.email')}
-          value={email}
-          onChange={event => setEmail(event.target.value)}
-        />
-        {error && <StatusLine tone="error">{error}</StatusLine>}
-      </div>
-      <Actions onBack={onBack}>
-        <Button type="submit" look="primary" icon={Send} busy={busy} disabled={!EMAIL_PATTERN.test(email.trim())}>
-          {t('forgot.send')}
-        </Button>
-      </Actions>
-    </form>
-  )
-}
-
-interface NewPasswordFormProps {
-  account: string
-  password: string
-  confirm: string
-  setPassword: (password: string) => void
-  setConfirm: (confirm: string) => void
-  error: string | null
-  busy: boolean
-  onSave: () => void
-  onBack: () => void
-}
-
-// From the link: the account's new password.
-const NewPasswordForm = (props: NewPasswordFormProps) => {
-  const { t } = useTranslation()
-  const { account, password, confirm, error, busy } = props
-  const ready = passwordStrength(password).score > 0 && password === confirm
-  return (
-    <form
-      className={styles.form}
-      onSubmit={event => {
-        event.preventDefault()
-        if (ready) props.onSave()
-      }}
-    >
-      <StepHeader
-        title={t('forgot.newTitle')}
-        intro={<RichText i18nKey="forgot.newIntro" values={{ email: account }} />}
-      />
-      {/* For the browser's password manager: whose password this is. */}
-      <input type="email" autoComplete="username" value={account} readOnly hidden />
-      <NewPasswordFields
-        password={password}
-        confirm={confirm}
-        onPassword={props.setPassword}
-        onConfirm={props.setConfirm}
-        autoFocus
-      />
-      {error && <StatusLine tone="error">{error}</StatusLine>}
-      <Actions onBack={props.onBack}>
-        <Button type="submit" look="primary" busy={busy} disabled={!ready}>
-          {t('forgot.save')}
-          {!busy && <ArrowRight size={16} aria-hidden="true" />}
-        </Button>
-      </Actions>
-    </form>
-  )
-}
-
-// The link's account: undefined while it is checked, null when it no longer works.
-const useResetLink = (token: string | undefined) => {
-  const [account, setAccount] = useState<string | null | undefined>(undefined)
-  useEffect(() => {
-    if (!token) return
-    checkResetLink(token)
-      .then(({ email: owner }) => setAccount(owner))
-      .catch(() => setAccount(null))
-  }, [token])
-  return [account, setAccount] as const
-}
-
-const SentStep = ({ sentTo, onBack }: { sentTo: string; onBack: () => void }) => {
-  const { t } = useTranslation()
-  return (
-    <div className={styles.form}>
-      <StepHeader
-        title={t('forgot.sentTitle')}
-        intro={<RichText i18nKey="forgot.sentIntro" values={{ email: sentTo }} />}
-      />
-      <Actions onBack={onBack}>{null}</Actions>
-    </div>
-  )
-}
-
-// A link that no longer works: another one is asked.
-const DeadLink = ({ onAskAgain, onBack }: { onAskAgain: () => void; onBack: () => void }) => {
-  const { t } = useTranslation()
-  return (
-    <div className={styles.form}>
-      <StepHeader title={t('forgot.deadTitle')} intro={t('forgot.deadIntro')} />
-      <Actions onBack={onBack}>
-        <Button look="primary" onClick={onAskAgain}>
-          {t('forgot.askAgain')}
-          <ArrowRight size={16} aria-hidden="true" />
-        </Button>
-      </Actions>
-    </div>
-  )
-}
-
-// « Mot de passe oublié »: the e-mail to send the link to, then, from the link, the new password.
-const ForgotPage = ({ token, onBack, onDone }: ForgotPageProps) => {
-  const { t } = useTranslation()
+  const [step, setStep] = useState<Step>(token ? 'code' : 'ask')
   const [email, setEmail] = useState('')
   const [sentTo, setSentTo] = useState<string | null>(null)
-  const [account, setAccount] = useResetLink(token)
-  const [asking, setAsking] = useState(token === undefined)
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
+  const [code, setCode] = useState(token ?? '')
+  const [account, setAccount] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const refusal = (failure: unknown) => refusalOf(failure, t)
-
-  const ask = async () => {
+  // Each step's call: busy meanwhile, its refusal under the field.
+  const run = async (call: () => Promise<void>) => {
     setBusy(true)
     setError(null)
     try {
-      await askResetLink(email.trim())
-      setSentTo(email.trim())
+      await call()
     } catch (failure) {
-      setError(refusal(failure))
+      setError(refusalOf(failure, t))
     }
     setBusy(false)
   }
 
-  const save = async () => {
-    if (!token) return
-    setBusy(true)
-    setError(null)
-    try {
-      const answer = await resetWithLink(token, password)
-      onDone(answer?.signIn !== false)
-    } catch (failure) {
-      if (failure instanceof RequestError && failure.code === 'invalid_link') setAccount(null)
-      else setError(refusal(failure))
-      setBusy(false)
-    }
-  }
+  const ask = (again = false) =>
+    run(async () => {
+      await (byMail ? askResetCode : askAdminCode)(email.trim())
+      setSentTo(email.trim())
+      setCode('')
+      setStep('code')
+      if (again) showSaved(t('forgot.resent', { email: email.trim() }))
+    })
 
-  const askAgain = () => {
-    setAsking(true)
+  const check = () =>
+    run(async () => {
+      setAccount(await ownerOf(byMail, code))
+      setStep('password')
+    })
+
+  return { step, setStep, email, setEmail, sentTo, code, setCode, account, busy, error, setError, run, ask, check }
+}
+
+// « Mot de passe oublié »: the account's e-mail, the code sent to it, the new password, and done.
+const ForgotPage = ({ byMail, token, onBack, onDone }: ForgotPageProps) => {
+  const forgot = useForgot(byMail, token)
+  const { step, setStep, busy, error, setError, run } = forgot
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+
+  // From the e-mail's button: the code is checked at once.
+  useEffect(() => {
+    if (token) void forgot.check()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, for the code the page opened with
+  }, [token])
+
+  const save = () =>
+    run(async () => {
+      const answer = byMail
+        ? await resetWithMailedCode(forgot.code, password)
+        : await resetWithCode(forgot.code, password)
+      if (answer?.signIn === false) onDone(false)
+      else setStep('done')
+    })
+
+  const goTo = (next: Step) => {
     setError(null)
+    setStep(next)
   }
 
   let content
-  if (asking && sentTo) {
-    content = <SentStep sentTo={sentTo} onBack={onBack} />
-  } else if (asking) {
-    content = (
-      <AskForm email={email} setEmail={setEmail} error={error} busy={busy} onAsk={() => void ask()} onBack={onBack} />
-    )
-  } else if (account === undefined) {
-    content = (
-      <div className={styles.form}>
-        <StepHeader title={t('forgot.newTitle')} intro={t('forgot.checking')} />
-      </div>
-    )
-  } else if (account === null) {
-    content = <DeadLink onAskAgain={askAgain} onBack={onBack} />
-  } else {
+  if (step === 'done') content = <DoneStep onEnter={() => onDone(true)} />
+  else if (step === 'password')
     content = (
       <NewPasswordForm
-        account={account}
+        account={forgot.account}
         password={password}
         confirm={confirm}
         setPassword={setPassword}
@@ -244,7 +133,33 @@ const ForgotPage = ({ token, onBack, onDone }: ForgotPageProps) => {
         onBack={onBack}
       />
     )
-  }
+  else if (step === 'code')
+    content = (
+      <CodeForm
+        byMail={byMail}
+        sentTo={forgot.sentTo}
+        code={forgot.code}
+        setCode={forgot.setCode}
+        error={error}
+        busy={busy}
+        onCheck={() => void forgot.check()}
+        onResend={() => void forgot.ask(true)}
+        onBack={() => goTo('ask')}
+      />
+    )
+  else
+    content = (
+      <AskForm
+        byMail={byMail}
+        email={forgot.email}
+        setEmail={forgot.setEmail}
+        error={error}
+        busy={busy}
+        onAsk={() => void forgot.ask()}
+        onHaveCode={() => goTo('code')}
+        onBack={onBack}
+      />
+    )
 
   return <SetupFrame>{content}</SetupFrame>
 }

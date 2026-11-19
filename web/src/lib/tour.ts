@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { FRONT_PAGE_HREF } from './use-hash-route.ts'
 
 // The guided tour ("ajouter une source pas à pas"): the step shown, or null. Shown once to a profile just added, the
-// first time it is opened, on any device (Profile.tourPending); again from Réglages > Ton profil.
+// first time it is opened, on any device (Profile.tourPending); again from Réglages > Général.
 
 let step: number | null = null
 const listeners = new Set<() => void>()

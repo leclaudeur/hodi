@@ -4,7 +4,7 @@ import Button from './Button.tsx'
 import styles from './Notice.module.css'
 import RoundButton from './RoundButton.tsx'
 
-export type NoticeTone = 'info' | 'warning' | 'error'
+export type NoticeTone = 'info' | 'warning' | 'error' | 'success'
 
 export interface NoticeAction {
   label: string

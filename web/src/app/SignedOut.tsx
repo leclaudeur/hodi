@@ -1,4 +1,3 @@
-import { markSignedIn } from '../lib/after-sign-in.ts'
 import LoginPage from '../pages/LoginPage.tsx'
 
 // A device on no household: Connexion, drawn at once (no plugin stands in front of it). Once signed in, the app
@@ -6,7 +5,6 @@ import LoginPage from '../pages/LoginPage.tsx'
 const SignedOut = ({ onLoggedIn }: { onLoggedIn: () => void }) => {
   const signedIn = () => {
     window.history.replaceState(null, '', '/')
-    markSignedIn()
     onLoggedIn()
   }
   return <LoginPage onLoggedIn={signedIn} />

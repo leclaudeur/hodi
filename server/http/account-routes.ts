@@ -13,6 +13,8 @@ import { isPassword } from './household-input.ts'
 import { profileIdOf } from './profile-routes.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
+import { mountLeaveRoute } from './account-leave-route.ts'
+import { mountLockRoutes } from './account-lock-routes.ts'
 
 // The person's own account, after the session and profile checks: Réglages > Compte et données.
 
@@ -27,7 +29,9 @@ export interface AccountRoutesOptions {
   household: HouseholdStore
   // The account and device a request is signed in with.
   sessionOf: (request: express.Request) => { account: UserAccount; device: UserDevice | null } | null
-  cookieForDevice: (account: UserAccount, deviceId: number) => string
+  cookieForDevice: (account: UserAccount, deviceId: number, request: express.Request) => string
+  // The device's session cookie without that account: the others signed in here stay.
+  cookieWithout?: (accountId: number, request: express.Request) => { cookie: string }
   // The signed choice of a profile on this device, which a new password changes.
   profileCookieFor?: (profileId: number) => string
   // Wrong passwords, as on the Connexion page.
@@ -57,9 +61,11 @@ export const accountRoutes = (options: AccountRoutesOptions) => {
     if (session) response.json(helpers.view(session.account, session.device))
   })
   mountTwoFactorRoutes(router, options, helpers)
+  mountLockRoutes(router, options, helpers)
   mountCredentialRoutes(router, options, helpers)
   mountCopyRoute(router, options, helpers)
   mountDeleteRoute(router, options, helpers)
+  mountLeaveRoute(router, options, helpers)
   return router
 }
 
@@ -104,17 +110,25 @@ const accountHelpers = ({
       // No password of its own: its changes need a sign-in on this device in the last 5 minutes instead.
       loginOnly: !account.hasPassword,
       recentSignIn: recentlySignedIn(device),
-      devices: devices.list(account.id).map(({ id, userAgent, lastSeenAt }) => ({
+      privateProfile: account.privateProfile,
+      devices: devices.list(account.id).map(({ id, userAgent, lastSeenAt, trusted }) => ({
         id,
         userAgent,
         lastSeenAt,
+        trusted,
         current: id === device?.id
       })),
       // What "Supprimer ton compte" deletes, for its confirmation.
       deletion: going && {
         householdGoes: going.householdGoes,
         household: going.household,
-        others: going.profiles.slice(1).map(profile => profile.name)
+        others: going.profiles.slice(1).map(profile => profile.name),
+        // Who becomes the household's admin when the person leaves or goes.
+        heir: going.heir?.name ?? null,
+        // The person reads in this household: an account with no profile here has nothing to leave.
+        member: going.profiles.length > 0,
+        // The person runs this household: leaving hands that over to the heir.
+        admin: going.profiles[0] !== undefined && profiles?.get(going.profiles[0].id)?.role === 'admin'
       },
       // « Validation en deux étapes »: the server's admin must keep it on.
       ...(twoFactor ? { twoFactor: { ...twoFactor.status(account.id), required: account.serverAdmin } } : {})
@@ -124,7 +138,7 @@ const accountHelpers = ({
   return { sessionOrRefuse, recentlySignedIn, checkProof, plan, view }
 }
 
-type AccountHelpers = ReturnType<typeof accountHelpers>
+export type AccountHelpers = ReturnType<typeof accountHelpers>
 
 const mountTwoFactorRoutes = (
   router: express.Router,
@@ -227,7 +241,7 @@ const mountCredentialRoutes = (
     else device = devices.create(id, request.get('user-agent') ?? '', now())
     // The new password proved who reads here: its profile stays open on this device.
     const own = accounts.profileOf(id)
-    const cookies = [cookieForDevice(account, device.id)]
+    const cookies = [cookieForDevice(account, device.id, request)]
     if (own !== null && profileCookieFor) cookies.push(profileCookieFor(own))
     response.set('Set-Cookie', cookies)
     response.json(view(account, device))
@@ -304,7 +318,7 @@ const mountCopyRoute = (
 
 const mountDeleteRoute = (
   router: express.Router,
-  { data, profiles, now, onDeleteProfile, onAccountDeleted, onHouseholdGone }: AccountRoutesOptions,
+  { data, profiles, now, onDeleteProfile, onAccountDeleted, onHouseholdGone, cookieWithout }: AccountRoutesOptions,
   { sessionOrRefuse, checkProof, plan }: AccountHelpers
 ) => {
   // "Supprimer ton compte", after its red confirmation and the account's password: at once, with what the plan says
@@ -322,7 +336,8 @@ const mountDeleteRoute = (
     for (const profile of going.profiles) onDeleteProfile?.(profile.id)
     for (const accountId of data.delete(session.account, going, now())) onAccountDeleted?.(accountId)
     if (going.householdGoes) onHouseholdGone?.()
-    response.set('Set-Cookie', [clearedSessionCookie(), clearedProfileCookie()])
+    const left = cookieWithout ? cookieWithout(session.account.id, request).cookie : clearedSessionCookie()
+    response.set('Set-Cookie', [left, clearedProfileCookie()])
     response.status(204).end()
   })
 }

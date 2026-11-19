@@ -25,6 +25,10 @@ export const deletionPlan = (
   householdId = currentHouseholdId()
 ): DeletionPlan => {
   const own = accounts.profileOf(account.id, householdId)
+  // No profile here any more (deleted from the household): the account goes alone, never the household it left. The
+  // server's admin still hands /server over to an heir.
+  if (own === null && !account.serverAdmin)
+    return { householdGoes: false, household: householdName, profiles: [], heir: null }
   const all = profiles.list()
   const others = all.filter(profile => profile.kind === 'adult' && profile.hasAccount && profile.id !== own)
   const householdGoes = others.length === 0
@@ -52,6 +56,19 @@ export const deleteAccount = (
     const others = leaveHousehold(db, account, plan, now, householdId)
     forgetAccount(db, account.id)
     return [account.id, ...others]
+  })
+
+// Mon compte › Foyer › « Quitter »: the plan's profile goes, the account stays, in no household. The server's admin
+// keeps /server: only deleting the account hands it over.
+export const leaveHouseholdOnly = (
+  db: Database,
+  account: UserAccount,
+  plan: DeletionPlan,
+  now: number,
+  householdId = currentHouseholdId()
+): void =>
+  transaction(db, () => {
+    leaveHousehold(db, { ...account, serverAdmin: false }, plan, now, householdId)
   })
 
 // The account's row, written down first.
@@ -98,7 +115,9 @@ const leaveHousehold = (
   const keyOf = (table: 'profiles' | 'users' | 'accounts', id: number) => rowKey(db, table, id)
   if (plan.householdGoes) return wipeHousehold(db, account, householdId, now)
   const own = plan.profiles[0]
-  const heir = plan.heir!
+  // Nothing of the household is the account's: it goes alone.
+  if (!plan.heir) return []
+  const heir = plan.heir
   const heirKey = keyOf('profiles', heir.id)
   if (own) {
     const wasAdmin =
@@ -285,6 +304,10 @@ export class AccountDataStore {
 
   delete(account: UserAccount, plan: DeletionPlan, now: number): number[] {
     return deleteAccount(this.#db, account, plan, now)
+  }
+
+  leave(account: UserAccount, plan: DeletionPlan, now: number) {
+    leaveHouseholdOnly(this.#db, account, plan, now)
   }
 
   householdsOf(accountId: number) {

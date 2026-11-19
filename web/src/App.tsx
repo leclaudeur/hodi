@@ -14,13 +14,11 @@ import { startLimits, useLimits, useLimitsReady } from './lib/limits.ts'
 import { PROFILE_SWITCHING } from './lib/profiles.ts'
 import { anotherTabOpen, answerOtherTabs } from './lib/other-tabs.ts'
 import { useHashRoute } from './lib/use-hash-route.ts'
-import { loadedPlugins, loadPlugins, loadPublicPlugins, usePluginSlots, usePlugins } from './plugins/registry.ts'
-import PluginSlot from './plugins/PluginSlot.tsx'
-import { useScreenLayout } from './plugins/Slots.tsx'
-import { clearSignedIn, isJustSignedIn } from './lib/after-sign-in.ts'
+import { loadedPlugins, loadPlugins, loadPublicPlugins } from './plugins/registry.ts'
 import SignedOut from './app/SignedOut.tsx'
 import Tour from './app/Tour.tsx'
 import HomePage from './pages/HomePage.tsx'
+import NoHouseholdPage from './pages/NoHouseholdPage.tsx'
 import ProfilePicker from './pages/ProfilePicker.tsx'
 import TimeUpPage from './pages/TimeUpPage.tsx'
 import EmptyState from './ui/EmptyState.tsx'
@@ -46,7 +44,7 @@ const SetupPage = (props: ComponentProps<typeof LazySetupPage>) => (
 
 // setup: a new install, before its first-run screens. choosing: logged in, but no profile picked on this device yet.
 // server: the server's admin with no household yet, in /server alone.
-type Status = 'loading' | 'setup' | 'anonymous' | 'choosing' | 'authenticated' | 'server' | 'error'
+type Status = 'loading' | 'setup' | 'anonymous' | 'choosing' | 'authenticated' | 'server' | 'noHousehold' | 'error'
 
 // Each time the app opens (not on a reload in the same tab), it starts on « Qui lit ? », as Netflix does: the device
 // may be shared, and the profile open when it closed may not be the reader's. Not while another tab of Hodi is open in
@@ -67,12 +65,6 @@ const leaveOnOpen = async (profileOpen: boolean) => {
   return true
 }
 
-// Lets the person in at once when a plugin's step after sign-in breaks.
-const AfterSignInFailed = ({ done }: { done: () => void }) => {
-  useEffect(done, [done])
-  return null
-}
-
 type Session = Awaited<ReturnType<typeof getSession>>
 
 // The session as the app opens: the one preload.js asked for, then a fresh one if the profile it had was just closed.
@@ -80,7 +72,7 @@ const openingSession = async () => {
   const session = await getSession()
   const signedIn = session !== null && session !== 'setup'
   // The server's admin outside any household opens /server alone: preload.js's requests would all be refused.
-  rememberSession(signedIn && !session.serverOnly)
+  rememberSession(signedIn && !session.serverOnly && !session.noHousehold)
   const left = await leaveOnOpen(signedIn && session.profileChosen)
   return left ? getSession(true) : session
 }
@@ -89,6 +81,7 @@ const statusOf = (session: Session): Status => {
   if (session === 'setup') return 'setup'
   if (!session) return 'anonymous'
   if (session.serverOnly) return 'server'
+  if (session.noHousehold) return 'noHousehold'
   return session.profileChosen ? 'authenticated' : 'choosing'
 }
 
@@ -105,12 +98,12 @@ const applySession = (session: Session) => {
 }
 
 // The household's plugins, in the background: the first screen never waits for them. Before a profile is open, only
-// the ones that draw on Connexion and « Qui lit ? ». Signed out after the signed-in ones loaded: the app starts
+// the ones that draw on Connexion and « Qui lit ? », and on the card of an account in no household. Signed out after the signed-in ones loaded: the app starts
 // again, so that none of them stays in the page.
 const usePluginLoading = (status: Status) => {
   useEffect(() => {
     if (status === 'authenticated' || status === 'server') void loadPlugins()
-    else if (status === 'choosing') void loadPublicPlugins()
+    else if (status === 'choosing' || status === 'noHousehold') void loadPublicPlugins()
     else if (status === 'anonymous') {
       if (loadedPlugins() === 'signedIn') window.location.reload()
       else void loadPublicPlugins()
@@ -133,36 +126,6 @@ const useSessionEvents = (check: () => void, setStatus: (status: Status) => void
     window.addEventListener(PROFILE_SWITCHING, switching)
     return () => window.removeEventListener(PROFILE_SWITCHING, switching)
   }, [setStatus])
-}
-
-// A plugin's step just after sign-in (« Quel foyer ? »), before « Qui lit ? » or the app: null when there is none to
-// take, 'wait' until the plugins are known.
-const useAfterSignIn = (status: Status) => {
-  const plugins = usePlugins()
-  const [afterSignIn] = usePluginSlots('afterSignIn')
-  const [justSignedIn, setJustSignedIn] = useState(isJustSignedIn)
-  const layout = useScreenLayout()
-  // The server's admin with no household has no step to take (/server alone), nor does anyone when no plugin has one.
-  const noStep = status === 'server' || (plugins.ready && !afterSignIn)
-  useEffect(() => {
-    if (justSignedIn && noStep) clearSignedIn()
-  }, [justSignedIn, noStep])
-  if (!justSignedIn || noStep || (status !== 'choosing' && status !== 'authenticated')) return null
-  // The loading screen until the plugins are known.
-  if (!plugins.ready || !afterSignIn) return 'wait'
-  const done = () => {
-    clearSignedIn()
-    setJustSignedIn(false)
-  }
-  return (
-    <PluginSlot
-      id={afterSignIn.id}
-      component={afterSignIn.value}
-      props={{ layout, done }}
-      // A step that breaks never keeps the person out.
-      fallback={<AfterSignInFailed done={done} />}
-    />
-  )
 }
 
 const Unreachable = ({ retry }: { retry: () => void }) => {
@@ -263,7 +226,6 @@ const App = () => {
   }, [status])
 
   usePluginLoading(status)
-  const step = useAfterSignIn(status)
   useSessionEvents(check, setStatus)
 
   // The loading screen until the session answers (it stays empty for a quick answer).
@@ -280,6 +242,8 @@ const App = () => {
   }
   if (status === 'setup') return <SetupPage onDone={signedIn} />
   if (status === 'anonymous') return <SignedOut onLoggedIn={signedIn} />
+  if (status === 'noHousehold')
+    return <NoHouseholdPage account={route.name === 'settings' && route.section === 'account'} />
 
   // No household yet: the server's space whatever the address, with its plugins' sections.
   if (status === 'server') {
@@ -290,8 +254,6 @@ const App = () => {
     )
   }
 
-  if (step === 'wait') return <LoadingScreen />
-  if (step) return step
   return <SignedIn status={status} setStatus={setStatus} />
 }
 

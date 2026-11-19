@@ -94,12 +94,6 @@ export type SetupStep =
     }
   | { id: string; core: 'mail' }
 
-// What a plugin's step just after sign-in gets: done() lets the person in.
-export interface AfterSignInProps {
-  layout: 'desktop' | 'phone'
-  done: () => void
-}
-
 // A line « J'ai au moins 13 ans » goes on with, on « Rejoins le foyer »: a key of the plugin's locales, whose <name>…</name>
 // tags become links to links[name], opened in a new tab (an address of this server, or https).
 export type AgeConsent = string | { text: string; links: Record<string, string> }
@@ -140,12 +134,12 @@ export interface WebPlugin {
   // manifest may open pages without sign-in (permissions.publicRoutes) is loaded, so only such a plugin fills them there.
   // Under Connexion's form, after Hodi's links: one more way in (« Créer mon foyer », another sign-in).
   signInExtras?: ComponentType<{ layout: 'desktop' | 'phone'; signedIn: () => void }>
-  // A step once signed in, before the app (« Quel foyer ? »): one plugin's (the first one that has one).
-  afterSignIn?: ComponentType<AfterSignInProps>
-  // Beside « Gérer les profils » under « Qui lit ? »'s tiles: buttons at the same height (« Changer de foyer »).
-  whoIsReadingFooter?: ComponentType<{ layout: 'desktop' | 'phone' }>
   // After « J'ai au moins 13 ans » (« et j'accepte les conditions d'utilisation »).
   ageConsent?: AgeConsent
+  // On the card of an account in no household (it left, or its profile was deleted), under its text: one more way
+  // on, such as « Créer mon foyer ». Only the public part is loaded there; it calls the routes marked noHousehold,
+  // then done(), and Hodi starts again on the account's new household.
+  noHouseholdActions?: ComponentType<{ layout: 'desktop' | 'phone'; done: () => void }>
   // Rows at the end of « Ton compte » in Réglages › Compte et données: SettingRows.
   accountRows?: ComponentType<{ layout: 'desktop' | 'phone' }>
   // Entries of the avatar's menu.

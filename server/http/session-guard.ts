@@ -7,10 +7,11 @@ import type { Profile, ProfileStore } from '../db/profile-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerStatsStore } from '../db/server-stats-store.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
-import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
+import type { UserDeviceStore } from '../db/user-device-store.ts'
 import type { accountSession } from './account-session.ts'
 import type { Presence } from './presence.ts'
 import type { profileDeviceSession } from './profile-device-session.ts'
+import { isHere } from './profile-current-routes.ts'
 import { guardOf } from './profile-guard.ts'
 
 export interface SessionGuardOptions {
@@ -22,6 +23,8 @@ export interface SessionGuardOptions {
   serverStats?: ServerStatsStore
   presence: Presence
   sessionOf: ReturnType<typeof accountSession>['sessionOf']
+  // Every account signed in on this device; absent in tests without accounts.
+  sessionsOf?: ReturnType<typeof accountSession>['sessionsOf']
   cookieFor: ReturnType<typeof accountSession>['cookieFor']
   linkedDevices: ReturnType<typeof profileDeviceSession>
   secret: Buffer
@@ -62,6 +65,25 @@ const serverOnly = (request: express.Request, response: express.Response, accoun
   return true
 }
 
+// An account whose last profile was deleted from its household: the account is still the person's, but no household
+// is theirs any more. Its own account alone (Réglages › Compte et données: a copy, deletion), the plugins' routes
+// marked noHousehold (the plugin routes refuse the others), and nothing of the household it left. False when the
+// refusal is sent.
+const accountOnly = (request: express.Request, response: express.Response, account: UserAccount) => {
+  const open =
+    (request.method === 'GET' && request.path === '/session') ||
+    request.path === '/account' ||
+    request.path.startsWith('/account/') ||
+    request.path.startsWith('/plugins/')
+  if (!open) {
+    response.status(423).json({ error: 'no_household' })
+    return false
+  }
+  response.locals.accountId = account.id
+  response.locals.noHousehold = true
+  return true
+}
+
 const householdHelpers = ({
   accounts,
   profiles,
@@ -69,14 +91,9 @@ const householdHelpers = ({
   serverSettings,
   sessionOf
 }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'household' | 'serverSettings' | 'sessionOf'>) => {
-  // The household a signed-in device reads in: the one it was moved to while its account has a profile there, else
-  // its account's first.
-  const householdOfSession = ({ account, device }: { account: UserAccount; device: UserDevice | null }) => {
-    if (!accounts) return null
-    const moved = device?.householdId ?? null
-    if (moved !== null && accounts.profileOf(account.id, moved) !== null) return moved
-    return accounts.householdOf(account.id)
-  }
+  // The household a signed-in device reads in: its account's own, the only one it has.
+  const householdOfSession = ({ account }: { account: UserAccount }) =>
+    accounts ? accounts.householdOf(account.id) : null
 
   // Whether the household this request reads in is set up. isSetUp() reads the household of the scope, the first one
   // here: a server whose first household was left for later still has the households a plugin made, set up from the
@@ -135,6 +152,14 @@ const answerBeforeSetup = (
   response.status(401).json({ error: 'setup_required' })
 }
 
+// A session with no profile in the household it reads in: the server's admin gets /server, any other account its own
+// account alone. Without accounts (older tests), every session reads in the one household.
+const gateOf = (accounts: UserAccountStore | undefined, account: UserAccount, householdId: number) => {
+  if (!accounts) return null
+  if (account.serverAdmin) return accounts.profileOf(account.id, householdId) === null ? serverOnly : null
+  return accounts.householdOf(account.id) === null ? accountOnly : null
+}
+
 const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
   const { accounts, devices, profiles, sessionOf, cookieFor, linkedDevices } = options
   const { householdOfSession, readsInSetUpHousehold } = householdHelpers(options)
@@ -157,8 +182,9 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
 
     const session = sessionOf(request)
     const householdId = (session && householdOfSession(session)) ?? DEFAULT_ACCOUNT_ID
-    if (session?.account.serverAdmin && accounts?.profileOf(session.account.id, householdId) === null) {
-      if (serverOnly(request, response, session.account)) inHousehold(householdId, next)
+    const gate = session && gateOf(accounts, session.account, householdId)
+    if (session && gate) {
+      if (gate(request, response, session.account)) inHousehold(householdId, next)
       return
     }
     if (session) {
@@ -181,9 +207,23 @@ const serverOnlyLocals = (response: express.Response) => {
   response.locals.profileChosen = false
 }
 
+// An account with no household left: no profile, no right in any household.
+const noHouseholdLocals = (response: express.Response) => {
+  response.locals.profileId = 0
+  response.locals.admin = false
+  response.locals.serverAdmin = false
+  response.locals.profileChosen = false
+}
+
 // The profile a request is for, and whether it is chosen on this device or the device reads as nobody.
 const profileOfRequest = (
-  { accounts, profiles, secret }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'secret'>,
+  {
+    accounts,
+    profiles,
+    household,
+    sessionsOf,
+    secret
+  }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'household' | 'sessionsOf' | 'secret'>,
   request: express.Request,
   linkedId: number | undefined
 ) => {
@@ -193,13 +233,20 @@ const profileOfRequest = (
     id => profiles?.lock(id)?.version ?? 0
   )
   const known = profiles?.list() ?? []
-  const isGuarded = (candidate: Profile) => guardOf(candidate, accounts) !== null
+  const parentalCode = household.parentalCode() !== null
+  const signedIn = sessionsOf ? sessionsOf(request).map(session => session.account.id) : []
+  const here = (candidate: Profile) =>
+    isHere({ accounts, signedInHere: sessionsOf && (() => signedIn) }, candidate, request)
+  // An adult whose account is not signed in here never opens on this device.
+  const isGuarded = (candidate: Profile) => !here(candidate) || guardOf(candidate, accounts, parentalCode) !== null
   // Linked by a parent's code: the device is that profile's.
   const chosen =
     linkedId !== undefined
       ? known.find(candidate => candidate.id === linkedId)
       : token
-        ? known.find(candidate => candidate.id === token.id && (token.signed || !isGuarded(candidate)))
+        ? known.find(
+            candidate => candidate.id === token.id && here(candidate) && (token.signed || !isGuarded(candidate))
+          )
         : undefined
   const profile = chosen ?? known.find(candidate => !isGuarded(candidate)) ?? known[0]
   // Only profiles that ask for a password, and none given here: the device reads as nobody, with no right of any
@@ -215,6 +262,11 @@ const chooseProfileOf = (options: SessionGuardOptions): RequestHandler => {
   return (request, response, next) => {
     if (response.locals.serverOnly === true) {
       serverOnlyLocals(response)
+      next()
+      return
+    }
+    if (response.locals.noHousehold === true) {
+      noHouseholdLocals(response)
       next()
       return
     }

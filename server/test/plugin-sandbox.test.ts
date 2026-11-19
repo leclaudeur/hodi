@@ -88,7 +88,8 @@ describe('plugin sandbox', () => {
       feeds: [],
       aiActions: [],
       rawRoutes: {},
-      proofRoutes: []
+      proofRoutes: [],
+      noHouseholdRoutes: []
     })
     assert.deepEqual(await sandbox.call('routes', 'GET /hello', { name: 'Léa' }), {
       body: { hi: 'Léa', setting: 'bonjour' }
@@ -294,6 +295,20 @@ describe('plugin sandbox', () => {
     assert.deepEqual(shape.proofRoutes, ['routes DELETE /all', 'routes PUT /photo', 'serverRoutes DELETE /all'])
     await failsWith(
       sandboxOf(`export default { routes: { 'DELETE /all': { proof: 'yes', handler: async () => ({}) } } }`).start(),
+      'failed'
+    )
+  })
+
+  it('lists the routes open with no household, and refuses anything but true or false', async () => {
+    const sandbox = sandboxOf(`export default {
+      routes: {
+        'POST /mine': { noHousehold: true, handler: async () => ({}) },
+        'GET /notes': { noHousehold: false, handler: async () => ({}) }
+      }
+    }`)
+    assert.deepEqual((await sandbox.start()).noHouseholdRoutes, ['routes POST /mine'])
+    await failsWith(
+      sandboxOf(`export default { routes: { 'POST /mine': { noHousehold: 1, handler: async () => ({}) } } }`).start(),
       'failed'
     )
   })

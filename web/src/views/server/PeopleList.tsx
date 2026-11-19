@@ -1,3 +1,4 @@
+import Chip from '../../ui/Chip.tsx'
 import { AlertCircle, ChevronRight, Home, Search, SearchX } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -25,6 +26,8 @@ interface ListRow {
   hint: string
   // What the search looks in.
   search: string
+  // « Code demandé »: the person waits on a code for a new password.
+  flag?: string
 }
 
 // The rows of Réglages' list, as they are: the initial, the name, one line under it; the chevron on a phone; a line
@@ -50,6 +53,11 @@ const Rows = ({ kind, rows, active }: { kind: PeopleKind; rows: ListRow[]; activ
                     <span className={navStyles.label}>{row.name}</span>
                     <span className={navStyles.hint}>{row.hint}</span>
                   </span>
+                  {row.flag && (
+                    <Chip tone="warning" size="row">
+                      {row.flag}
+                    </Chip>
+                  )}
                   {phone && <ChevronRight size={16} aria-hidden="true" className={navStyles.chevron} />}
                 </a>
               </li>
@@ -94,7 +102,8 @@ const accountRow = (account: ServerAccount, t: TFunction): ListRow => ({
       : `/api/server/accounts/photos/${account.profile.id}?v=${account.profile.photoVersion}`,
   name: account.email,
   hint: account.household?.name ?? t('server.people.noHousehold'),
-  search: `${account.email} ${account.profile?.name ?? ''} ${account.household?.name ?? ''}`
+  search: `${account.email} ${account.profile?.name ?? ''} ${account.household?.name ?? ''}`,
+  ...(account.codeAskedAt ? { flag: t('server.people.account.codeAsked') } : {})
 })
 
 const rowsOf = (kind: PeopleKind, loaded: People | null, t: TFunction): ListRow[] => {
