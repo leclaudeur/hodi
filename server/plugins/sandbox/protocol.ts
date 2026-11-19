@@ -37,6 +37,8 @@ export interface SandboxShape {
   // The routes Hodi runs only once the person typed their own password (and code) on that very request, as
   // '<group> <METHOD> <path>'.
   proofRoutes: string[]
+  // The routes an account in no household may ask too, as '<group> <METHOD> <path>': routes only.
+  noHouseholdRoutes: string[]
 }
 
 export type SandboxCallKind = 'routes' | 'serverRoutes' | 'publicRoutes' | 'hook' | 'task' | 'feed' | 'aiAction'

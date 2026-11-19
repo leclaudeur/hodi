@@ -7,6 +7,7 @@ import { askToConfirm } from '../../lib/confirm.ts'
 import { contentDays } from '../../lib/content-days.ts'
 import { clockTime } from '../../lib/format.ts'
 import { serverHref } from '../../lib/use-hash-route.ts'
+import Notice from '../../ui/Notice.tsx'
 import RichText from '../../ui/RichText.tsx'
 import CodeDialog from '../profiles/CodeDialog.tsx'
 import SectionPage from '../settings/SectionPage.tsx'
@@ -71,6 +72,21 @@ const confirmDelete = (account: ServerAccount, t: TFunction) =>
     }
   })
 
+// « Mot de passe oublié » on a server without e-mail: the person waits for a code, until one is made.
+const CodeAsked = ({ at, name, onMake }: { at: number; name: string; onMake: () => void }) => {
+  const { t } = useTranslation()
+  return (
+    <Notice
+      tone="warning"
+      icon={KeyRound}
+      title={t('server.people.account.codeAskedTitle', { date: dateOf(at), time: clockTime(at) })}
+      action={{ label: t('server.people.account.resetLabel'), icon: KeyRound, onClick: onMake }}
+    >
+      {t('server.people.account.codeAskedText', { name })}
+    </Notice>
+  )
+}
+
 // One account: what it is, and the one thing the server's admin does for it, a code for a new password.
 const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
@@ -97,6 +113,9 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
       intro={t('server.people.account.intro')}
       layout={layout}
     >
+      {account.codeAskedAt && account.profile && (
+        <CodeAsked at={account.codeAskedAt} name={account.profile.name} onMake={() => reset(account.profile!.name)} />
+      )}
       <h2 className={styles.label}>{t('server.people.account.section')}</h2>
       <AccountFacts account={account} role={role} />
 

@@ -70,12 +70,13 @@ export interface PluginContext {
     send: (message: PluginMailMessage) => Promise<void>
   }
   // With permissions.households: the server's households. create() sets one up with its admin: an existing account
-  // (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
+  // in no household yet (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
   // once, through « J'ai un code »). suspend(), resume() and remove() only take a household this plugin made, else
   // refuse with 'not_allowed'; remove() deletes it and all it holds, its people's accounts stay.
   households: {
     list: () => Promise<PluginHousehold[]>
     get: (id: number) => Promise<PluginHousehold | null>
+    // The household of an account, as a list of at most one: an account belongs to one household only.
     of: (accountId: number) => Promise<PluginHousehold[]>
     create: (household: {
       name: string
@@ -103,10 +104,14 @@ export interface PluginContext {
   // Serveur › Notifications. title (80 characters) and text (240), plain text, one or one per language; path: one of the plugin's sections of
   // /server and maybe a screen under it (#/server/plugin/<id>/<path>), Serveur › Notifications without one.
   // 'unknown_type' for a kind the manifest does not list; fifty a day per plugin at most, 'too_many_notices' past them.
+  // important: the plugin's key of a request someone waits on (« waitlist:12 », letters, digits and . _ : -, 100 at
+  // most): it stays under « À traiter » until serverNoticeHandled(key), and the same key still waiting is not sent again.
   notifyServerAdmin?: (
     type: string,
-    notice: { title: PluginWritten; text: PluginWritten; path?: string }
+    notice: { title: PluginWritten; text: PluginWritten; path?: string; important?: string }
   ) => Promise<void>
+  // The request of that key is handled (the person invited, refused): its notice leaves « À traiter ».
+  serverNoticeHandled?: (key: string) => Promise<void>
   // With permissions.ai, for a signed plugin ("Vérifié"): one question to the household's AI, only inside an aiActions
   // handler, which only a click on the plugin's AiButton (hodi:sdk) runs, and once per click: anywhere else it refuses
   // with 'ai_no_click', a second time with 'ai_already_asked'. Plain text: prompt (8000 characters), system (2000),
@@ -161,9 +166,11 @@ export interface PluginAccount {
 
 // Who asks, as Hodi checked it. No cookie, header or session reaches the plugin.
 export interface PluginCaller {
-  // The profile open on the device; null in the server's own space for an admin outside the household.
+  // The profile open on the device; null in the server's own space for an admin outside the household, and on a
+  // route open with noHousehold for an account in none.
   profileId: number | null
-  // The household it asks for; null in the server's own space for an admin outside the household. A plugin serves
+  // The household it asks for; null in the server's own space for an admin outside the household, and on a route
+  // open with noHousehold for an account in none. A plugin serves
   // every household on the server from one database: it keeps their data apart with this.
   householdId: number | null
   kind: 'adult' | 'teen' | 'child'
@@ -200,9 +207,6 @@ export type PluginResponse =
       status?: number
       body?: unknown
       headers?: { 'Cache-Control'?: string }
-      // routes only, with permissions.households: « Changer de foyer », this device reads in that household from now on,
-      // when the signed-in account has a profile there; « Qui lit ? » comes back. Anything else is refused and logged.
-      moveDevice?: number
     }
   | { zip: { filename: string; entries: PluginZipEntry[] } }
 
@@ -226,11 +230,15 @@ export type PublicHandler = (request: PublicRequest, ctx: PluginContext) => Prom
 // their own password, and with « Validation en deux étapes » their app's code, in Hodi's dialog (askToConfirm with
 // proof, then api(path, { proof }) on the web). Hodi checks both, counting wrong ones as at Connexion; the handler
 // never sees them, and a call without them is refused with 403 proof_required before it runs.
+//
+// noHousehold: true opens a route to an account that is in no household any more (it left, or its profile was
+// deleted), as the screen it lands on draws the plugin's noHouseholdActions: who.accountId is that account, and
+// who.profileId and who.householdId are null. Every other route answers it 423 no_household.
 export type PluginRoutes = Record<
   string,
   | PluginHandler
-  | { raw: true; maxBody: number; proof?: boolean; handler: PluginHandler }
-  | { proof: boolean; handler: PluginHandler }
+  | { raw: true; maxBody: number; proof?: boolean; noHousehold?: boolean; handler: PluginHandler }
+  | { proof?: boolean; noHousehold?: boolean; handler: PluginHandler }
 >
 
 // Routes open to anyone: JSON bodies only, up to 64 KB.

@@ -13,6 +13,7 @@ import PeriodPicker, { type Period } from './overview/PeriodPicker.tsx'
 import ProfilesCard from './overview/ProfilesCard.tsx'
 import { SourcesCard, TopicsCard } from './overview/ReadsCards.tsx'
 import styles from './overview/Overview.module.css'
+import { rich } from '../../ui/rich.tsx'
 
 // The server's totals for the period, and the topics' names and colours.
 const useOverview = (period: Period) => {
@@ -94,7 +95,7 @@ const ServerOverview = ({ layout }: { layout: 'desktop' | 'phone' }) => {
       <div className={styles.head}>
         <div>
           <h1 className={`${settingStyles.title} screen-title`}>{title}</h1>
-          <p className={settingStyles.intro}>{intro}</p>
+          <p className={settingStyles.intro}>{rich(intro)}</p>
         </div>
         {periods}
       </div>

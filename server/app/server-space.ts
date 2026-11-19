@@ -1,5 +1,6 @@
+import { serverInboxRoutes } from '../http/server-inbox-routes.ts'
+import { codeRequestKey } from '../notices/code-request.ts'
 import type express from 'express'
-import { clearedProfileCookie } from '../auth/session.ts'
 import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
 import { mailRoutes } from '../http/mail-routes.ts'
 import { pluginRoutes, pluginServerRoutes } from '../http/plugin-routes.ts'
@@ -9,19 +10,6 @@ import { serverNoticeRoutes } from '../http/server-notice-routes.ts'
 import { serverRoutes } from '../http/server-routes.ts'
 import type { Wiring } from './wiring.ts'
 
-// « Changer de foyer », a plugin's moveDevice: this device reads in that household from now on, when its account has
-// a profile there. Its profile is chosen again in « Qui lit ? ». null: refused, nothing changed.
-const moveDeviceOf =
-  ({ options, session }: Wiring) =>
-  (request: express.Request, householdId: number) => {
-    const { accounts, devices } = options
-    const asking = session.sessionOf(request)
-    if (!asking?.device || !accounts || !devices) return null
-    if (accounts.profileOf(asking.account.id, householdId) === null) return null
-    devices.moveTo(asking.account.id, asking.device.id, householdId)
-    return [clearedProfileCookie()]
-  }
-
 const mountPlugins = (api: express.Router, wiring: Wiring) => {
   const { plugins, pluginInstaller, pluginAi, accounts } = wiring.options
   if (!plugins) return
@@ -29,7 +17,6 @@ const mountPlugins = (api: express.Router, wiring: Wiring) => {
     '/plugins',
     pluginRoutes(plugins, {
       ...pluginInstaller,
-      moveDevice: moveDeviceOf(wiring),
       ...(pluginAi ? { ai: pluginAi } : {}),
       ...(accounts
         ? {
@@ -83,7 +70,7 @@ const mountNotices = (api: express.Router, { options }: Wiring) => {
     serverNoticeRoutes({
       store: serverNotices.store,
       accountOf: response => accountAsking(response, accounts)?.id ?? null,
-      coreKinds: ['weekly-report'],
+      coreKinds: ['code-request', 'weekly-report'],
       plugins: noticePlugins(plugins),
       mailReady: () => serverMail?.store.get() != null,
       publicKey: serverNotices.publicKey || null,
@@ -112,6 +99,8 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
     )
   }
   mountNotices(api, wiring)
+  const inbox = options.serverInbox?.store
+  if (inbox) api.use('/server/inbox', requireServerAdmin, serverInboxRoutes(inbox))
   if (!serverStats) return
   api.use(
     '/server',
@@ -131,6 +120,14 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
         options.onHouseholdChange()
       },
       checkProof: wiring.checkProof,
+      ...(inbox
+        ? {
+            codeRequests: {
+              askedAt: (id: number) => inbox.waiting(codeRequestKey(id)),
+              handled: (id: number) => inbox.handle(codeRequestKey(id), now())
+            }
+          }
+        : {}),
       ...(twoFactor ? { twoFactorOn: (id: number) => twoFactor.isOn(id) } : {}),
       ...deletionsOf(wiring),
       now

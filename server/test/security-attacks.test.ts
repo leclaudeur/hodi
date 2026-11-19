@@ -227,7 +227,14 @@ describe('a row that goes never lets its cookie open the next one given its id',
     assert.equal(deleted.status, 204)
 
     clock += 60_000
-    await invite('ines@example.com', 'Inès')
+    const ines = await invite('ines@example.com', 'Inès')
+    // Private: only a cookie signed for her profile opens it (another adult's opens at once anyway).
+    const madePrivate = await install.call('/account/private', {
+      method: 'PUT',
+      cookie: ines,
+      body: { on: true, password: PASSWORD }
+    })
+    assert.equal(madePrivate.status, 200)
     assert.equal(install.profiles.list().find(profile => profile.name === 'Inès')!.id, max)
     const session = (await (
       await install.call('/session', { cookie: withCookie(install.admin, maxCookie) })
@@ -238,9 +245,10 @@ describe('a row that goes never lets its cookie open the next one given its id',
   })
 })
 
-// A household's admin gives codes for a new password: never to the server's admin, nor to someone who also reads in
-// another household.
-describe('reset codes stay within what a household admin may do', () => {
+// A household's admin never gives another adult a new password: their password is theirs. A reset code comes from
+// the server's admin only (Serveur › Comptes), and even then never opens the server's admin account, nor an account
+// that also reads in another household.
+describe('codes for a new password', () => {
   const clock = Date.UTC(2026, 10, 9, 9)
   let install: Awaited<ReturnType<typeof startInstall>>
   let anthoProfile: number
@@ -271,27 +279,32 @@ describe('reset codes stay within what a household admin may do', () => {
   after(() => install.close())
 
   const profileOf = (name: string) => install.profiles.list().find(profile => profile.name === name)!.id
-  // Marie's own password, as « Nouveau mot de passe » asks for it.
-  const makeCode = (profileId: number) =>
+  // Marie, the household's admin, with her own password.
+  const askCode = (profileId: number) =>
     install.call('/codes', { method: 'POST', cookie: marie, body: { profileId, password: PASSWORD } })
+  // A reset code as Serveur › Comptes makes it.
+  const serverCode = (profileId: number) =>
+    new SignInCodeStore(install.db, SECRET).create({ profileId, createdBy: anthoProfile, reset: true }, clock).code
+  const reset = (code: string) =>
+    install.call('/codes/reset', { method: 'POST', body: { code, password: 'une autre phrase de passe assez longue' } })
+
+  it('never lets the household admin make one, for anyone with an account', async () => {
+    const before = install.db.prepare('SELECT COUNT(*) AS n FROM sign_in_codes').get() as { n: number }
+    for (const profileId of [anthoProfile, profileOf('Sophie'), profileOf('Paul')]) {
+      const refused = await askCode(profileId)
+      assert.deepEqual([refused.status, await refused.json()], [403, { error: 'own_password' }])
+    }
+    assert.deepEqual(install.db.prepare('SELECT COUNT(*) AS n FROM sign_in_codes').get(), before)
+  })
 
   it("refuses a code for the server admin's password", async () => {
-    const refused = await makeCode(anthoProfile)
-    assert.equal(refused.status, 403)
-    assert.deepEqual(await refused.json(), { error: 'server_admin' })
+    assert.equal((await reset(serverCode(anthoProfile))).status, 403)
   })
 
   it('refuses a code made before its account became the server admin', async () => {
-    const sophie = profileOf('Sophie')
-    const made = await makeCode(sophie)
-    assert.equal(made.status, 201)
-    const { code } = (await made.json()) as { code: string }
+    const code = serverCode(profileOf('Sophie'))
     install.db.prepare('UPDATE users SET server_admin = 1 WHERE email = ?').run('sophie@example.com')
-    const reset = await install.call('/codes/reset', {
-      method: 'POST',
-      body: { code, password: 'une autre phrase de passe assez longue' }
-    })
-    assert.equal(reset.status, 403)
+    assert.equal((await reset(code)).status, 403)
     assert.equal(
       (
         await install.call('/login', {
@@ -313,9 +326,22 @@ describe('reset codes stay within what a household admin may do', () => {
       .run(now, now)
     const elsewhere = new ProfileStore(install.db, 2).create('Paul', 'world', now)!
     install.accounts.linkProfile(install.accounts.byEmail('paul@example.com')!.id, elsewhere.id)
-    const refused = await makeCode(profileOf('Paul'))
-    assert.equal(refused.status, 403)
-    assert.deepEqual(await refused.json(), { error: 'other_households' })
+    assert.equal((await reset(serverCode(profileOf('Paul')))).status, 403)
+    assert.equal(
+      (await install.call('/login', { method: 'POST', body: { email: 'paul@example.com', password: PASSWORD } }))
+        .status,
+      204
+    )
+  })
+
+  it('lets a code from the server admin give anyone else a new password', async () => {
+    const done = await reset(serverCode(profileOf('Marie')))
+    assert.equal(done.status, 200)
+    const login = await install.call('/login', {
+      method: 'POST',
+      body: { email: 'marie@example.com', password: 'une autre phrase de passe assez longue' }
+    })
+    assert.equal(login.status, 204)
   })
 })
 

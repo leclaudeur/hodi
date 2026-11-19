@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Copyright from '../ui/Copyright.tsx'
+import LanguageRound from '../ui/LanguageRound.tsx'
+import roundStyles from '../ui/LanguageRound.module.css'
 import PageGlows from '../ui/PageGlows.tsx'
 import ForgotPage, { RESET_LINK } from './ForgotPage.tsx'
 import JoinPage, { CODE_LINK } from './JoinPage.tsx'
@@ -40,6 +42,7 @@ const LoginPage = ({ onLoggedIn }: LoginPageProps) => {
   if (forgot) {
     return (
       <ForgotPage
+        byMail={resetByMail}
         token={resetToken}
         onBack={() => {
           setForgot(false)
@@ -75,6 +78,9 @@ const LoginPage = ({ onLoggedIn }: LoginPageProps) => {
   return (
     <main className={styles.page}>
       <PageGlows />
+      <span className={roundStyles.corner}>
+        <LanguageRound />
+      </span>
       {login.secondStep ? (
         <SecondStepForm login={login} />
       ) : (
@@ -82,7 +88,6 @@ const LoginPage = ({ onLoggedIn }: LoginPageProps) => {
           login={login}
           name={name}
           notice={notice}
-          resetByMail={resetByMail}
           onJoin={() => setJoining(true)}
           onForgot={() => setForgot(true)}
           onLoggedIn={onLoggedIn}

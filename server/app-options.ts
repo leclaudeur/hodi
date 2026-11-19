@@ -26,6 +26,8 @@ import type { FollowedAlerts } from './news/followed-alerts.ts'
 import type { NewsService } from './news/news-service.ts'
 import type { FindResult } from './news/source-finder.ts'
 import type { SourceIcons } from './news/source-icons.ts'
+import type { ServerInboxStore } from './db/server-inbox-store.ts'
+import type { ServerNotifier } from './notices/server-notifier.ts'
 import type { ServerNoticeStore } from './db/server-notice-store.ts'
 import type { PluginAi } from './plugins/ai.ts'
 import type { HouseholdHooks } from './plugins/households.ts'
@@ -86,6 +88,8 @@ export interface AppOptions {
   serverMail?: { store: MailSettingsStore; send: SendMail }
   // Serveur › Notifications: how each kind reaches the server's admin, and the key their devices subscribe with.
   serverNotices?: { store: ServerNoticeStore; publicKey: string }
+  // Serveur › Notifications' list, and what tells the admins: « Mot de passe oublié » without e-mail asks them a code.
+  serverInbox?: { store: ServerInboxStore; notifier: ServerNotifier }
   // « Mot de passe oublié »: the links sent by e-mail, once Serveur › E-mail is set.
   passwordResets?: PasswordResetStore
   // Réglages > Compte et données > Appareils: each device signed in with an account; with accounts.

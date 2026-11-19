@@ -39,6 +39,7 @@ export type Route =
 // The server's sections, in their order in its sidebar. Each comes with its page.
 export const SERVER_SECTIONS = [
   'overview',
+  'inbox',
   'households',
   'accounts',
   'general',
@@ -58,7 +59,7 @@ export const SETTINGS_SECTIONS = [
   'followed',
   'muted',
   'notifications',
-  'me',
+  'general',
   'stats',
   'sharing',
   'household',
@@ -79,7 +80,7 @@ const SECTION_SLUGS: Record<SettingsSection, string> = {
   followed: 'followed',
   muted: 'muted',
   notifications: 'notifications',
-  me: 'me',
+  general: 'general',
   stats: 'stats',
   ai: 'ai',
   plugin: 'plugin',
@@ -115,7 +116,7 @@ const LEGACY_SECTIONS = new Map<string, string>(
     themes: 'topics',
     suivis: 'followed',
     masques: 'muted',
-    moi: 'me',
+    moi: 'general',
     ia: 'ai',
     foyer: 'household',
     profils: 'profiles',
@@ -152,7 +153,9 @@ const SIMPLE_ROUTES = new Map<string, () => Route>([
   ['stats', () => ({ name: 'settings', section: 'stats' })],
   ['summary', () => ({ name: 'dailySummary' })],
   ['history', () => ({ name: 'history' })],
-  ['profiles', () => ({ name: 'profiles' })]
+  ['profiles', () => ({ name: 'profiles' })],
+  // The site's « Mon compte » link (get-hodi.com/account), whether the account reads in a household or not.
+  ['account', () => ({ name: 'settings', section: 'account' })]
 ])
 
 const settingsRoute = (second: string, third: string, path: string): Route => {
@@ -161,6 +164,8 @@ const settingsRoute = (second: string, third: string, path: string): Route => {
   // Réglages › Plugins went: its list is Serveur › Plugins now, and a plugin's page for profiles is its own entry.
   if (second === 'plugins')
     return third ? { name: 'settings', section: 'plugin', item: third } : { name: 'settings', section: null }
+  // Mon profil became Général: its name and photo moved to Mon compte.
+  if (second === 'me') return { name: 'settings', section: 'general' }
   return {
     name: 'settings',
     section: sectionOf(second),

@@ -16,7 +16,10 @@ import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import { PluginSlots } from '../../../plugins/Slots.tsx'
+import AccountProfile from './AccountProfile.tsx'
+import HouseholdCard from './HouseholdCard.tsx'
 import { DeviceRows, TwoFactorRow, confirmDelete, labelOf } from './AccountRows.tsx'
+import PrivateProfileRow from './PrivateProfileRow.tsx'
 
 // undefined while it comes; null: no account here.
 const useAccount = (onUnauthorized: () => void) => {
@@ -135,12 +138,35 @@ const TwoFactorDialogs = ({
 interface AccountSectionProps {
   layout: 'desktop' | 'phone'
   onUnauthorized: () => void
+  // In place of the usual one: the page of an account in no household, which has no profile to show.
+  intro?: string
 }
 
-// Réglages > Compte et données: the account's e-mail and password, the devices signed in with it (this one's offline
+// Réglages > Mon compte: the account's profile and language, its e-mail and password, the devices signed in with it (this one's offline
 // reading among them), a copy of its data and deleting it. An install still on the household's password, or a young
 // profile open on this device, sees this device's part alone.
-const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
+const PasswordRow = ({ account, onEdit }: { account: AccountView; onEdit: () => void }) => {
+  const { t } = useTranslation()
+  return (
+    <SettingRow
+      label={t('settings.account.password')}
+      value={
+        account.loginOnly
+          ? t('settings.account.noPassword')
+          : t('settings.account.passwordChanged', {
+              date: numericDate(new Date(account.passwordChangedAt).toISOString())
+            })
+      }
+      action={{
+        label: t(account.loginOnly ? 'settings.account.choose' : 'settings.account.change'),
+        icon: KeyRound,
+        onClick: onEdit
+      }}
+    />
+  )
+}
+
+const AccountSection = ({ layout, onUnauthorized, intro: ownIntro }: AccountSectionProps) => {
   const { t } = useTranslation()
   const [account, setAccount] = useAccount(onUnauthorized)
   const [editing, setEditing] = useState<'email' | 'password' | null>(null)
@@ -150,9 +176,10 @@ const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
   const [newCodes, setNewCodes] = useState<string[] | null>(null)
 
   const title = t('settings.nav.account')
+  const intro = ownIntro ?? t('settings.account.intro')
   if (account === undefined) {
     return (
-      <SectionPage title={title} intro={t('settings.account.intro')} layout={layout}>
+      <SectionPage title={title} intro={intro} layout={layout}>
         <RowsSkeleton rows={2} end="button" />
       </SectionPage>
     )
@@ -178,7 +205,8 @@ const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
   const dialogProps = { account, layout, onSaved: setAccount, onClose: () => setEditing(null) }
 
   return (
-    <SectionPage title={title} intro={t('settings.account.intro')} layout={layout}>
+    <SectionPage title={title} intro={intro} layout={layout}>
+      <AccountProfile />
       <h2 className={styles.label}>{t('settings.account.yourAccount')}</h2>
       <div className={styles.card}>
         <SettingRow
@@ -186,21 +214,8 @@ const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
           value={account.email}
           action={{ label: t('settings.account.change'), icon: Pencil, onClick: () => setEditing('email') }}
         />
-        <SettingRow
-          label={t('settings.account.password')}
-          value={
-            account.loginOnly
-              ? t('settings.account.noPassword')
-              : t('settings.account.passwordChanged', {
-                  date: numericDate(new Date(account.passwordChangedAt).toISOString())
-                })
-          }
-          action={{
-            label: t(account.loginOnly ? 'settings.account.choose' : 'settings.account.change'),
-            icon: KeyRound,
-            onClick: () => setEditing('password')
-          }}
-        />
+        <PasswordRow account={account} onEdit={() => setEditing('password')} />
+        <PrivateProfileRow account={account} onAccount={setAccount} />
         <TwoFactorRow account={account} onAccount={setAccount} onStarted={setStarted} onNewCodes={setNewCodes} />
         {/* A plugin's rows about the account (« Relier mon compte Google »). */}
         <PluginSlots slot="accountRows" props={{ layout }} />
@@ -211,6 +226,8 @@ const AccountSection = ({ layout, onUnauthorized }: AccountSectionProps) => {
         <DeviceRows account={account} onAccount={setAccount} thisDevice={thisDeviceChip} />
         {offlineRow}
       </div>
+
+      <HouseholdCard account={account} />
 
       <DataRows account={account} />
 

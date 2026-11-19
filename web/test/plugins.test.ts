@@ -271,13 +271,13 @@ describe('plugin places around sign-in', () => {
       plugin({ id: 'second' })
     ]
     const web = new Map<string, WebPlugin>([
-      ['second', { signInExtras: Page, whoIsReadingFooter: Footer }],
+      ['second', { signInExtras: Page, accountRows: Footer }],
       ['off', { signInExtras: Page }],
-      ['broken', { whoIsReadingFooter: Footer }],
+      ['broken', { accountRows: Footer }],
       ['quiet', {}],
-      ['first', { whoIsReadingFooter: Footer, ageConsent: 'consent' }]
+      ['first', { accountRows: Footer, ageConsent: 'consent' }]
     ])
-    expect(slotsOf({ plugins, web }, 'whoIsReadingFooter').map(slot => slot.id)).toEqual(['first', 'second'])
+    expect(slotsOf({ plugins, web }, 'accountRows').map(slot => slot.id)).toEqual(['first', 'second'])
     expect(slotsOf({ plugins, web }, 'signInExtras')).toEqual([{ id: 'second', value: Page }])
     expect(slotsOf({ plugins, web }, 'ageConsent')).toEqual([{ id: 'first', value: 'consent' }])
     expect(slotsOf({ plugins, web }, 'avatarMenu')).toEqual([])

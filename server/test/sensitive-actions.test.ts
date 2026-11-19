@@ -413,8 +413,11 @@ describe('« Validation en deux étapes »', () => {
       const { secret } = (await started.json()) as { secret: string }
       await env.call('/account/two-factor', env.sam, 'PUT', { code: appCode(secret, env.clock.now) })
 
-      const made = await env.call('/codes', env.admin, 'POST', { profileId: env.samId, password: ADMIN_PASSWORD })
-      const { code } = (await made.json()) as { code: string }
+      // A code for a new password, as Serveur › Comptes makes it.
+      const { code } = new SignInCodeStore(env.db, Buffer.alloc(32, 6)).create(
+        { profileId: env.samId, createdBy: 1, reset: true },
+        env.clock.now
+      )
       const NEW_PASSWORD = 'une nouvelle phrase pour Sam'
       const reset = await env.call('/codes/reset', '', 'POST', { code, password: NEW_PASSWORD })
       assert.deepEqual(await reset.json(), { profileId: env.samId, signIn: false })

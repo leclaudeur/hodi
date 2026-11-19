@@ -8,7 +8,80 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **A plugin's way on with no household.** The card of an account in no household can show a plugin's button, such
+  as Village's Create my household.
+- **Leave a household.** Settings > My account shows your household and your role, with Leave: your profile and what
+  you read there go, your account stays and can join another household with a code. The last adult with an account
+  cannot leave.
+- **An account with no household.** After leaving, or once its profile is deleted, an account signs in to a card that
+  says so, with My account on a page of its own (e-mail, password, devices, a copy, deleting it) and Sign out.
+  `#/account` opens My account in every case.
+
+### Changed
+
+- **Names stand out.** In dialogs and at the top of the Settings, Server and My account pages, the names of households and
+  profiles and the e-mail addresses are in bold, and the names of screens and buttons in italics.
+
+- **One household per account.** An account belongs to one household only. Joining another household with an
+  existing account says which household it is in, and asks to leave it first. On a server with Village, Which household? and
+  Switch household are gone.
+
+- **Who's in? keeps the accounts of the device.** Who's in? shows the accounts signed in on this device and the
+  household's young profiles, like a TV's streaming app. Add signs one more account in with its e-mail and password; an
+  account of another household is refused, a device serving one household. Sign out takes only the account whose
+  profile is open: the others stay, and the last adult out takes the young profiles with them, back to sign-in. New
+  profiles are made in Settings > Profiles only.
+
+- **Opening a profile.** In _Qui lit ?_, an adult profile opens at once again, unless one of two new settings says
+  otherwise. _Profil privé_, in Réglages › Compte et données, asks for the account's password on every device, except
+  the ones where _Ne plus demander sur cet appareil_ was ticked (_Redemander_ takes them back). _Code parental_, in
+  Réglages › Foyer, asks for six digits for every adult profile that is not private; the admin sets, changes or turns
+  it off with their own password (and the app's code). Accounts from before keep asking
+  for their password: their profile is private until they turn it off.
+
+- **My account.** Settings > Account and data becomes My account, and starts with your profile (name, photo, colour)
+  and your language, which leaves Reading and display. My profile becomes General: the guided tour and the reset.
+  Clearing your reading stats moves under the stats. A teen or a child keeps its name, photo, language and time of the
+  day in General.
+
+- **Two-step verification is a switch.** In Settings > My account it turns on and off like any other setting, and once
+  on, a row of its own shows the recovery codes left, with New codes. The server's account keeps it on.
+- **A long list of devices folds.** Settings > My account shows three devices and See the N others; unfolded, the list
+  scrolls in a box of its own.
+
+### Added
+
+- **Server > Notifications.** A new inbox lists what the server told its admins, in their language. A request someone
+  waits on stays on top, in orange, under To handle, until it is handled; its count shows beside Notifications in the
+  menu. How each kind reaches the admins moves to Server > Alerts.
+- **Forgot password without e-mail.** On a server that sends no e-mail, Forgot password asks the server's admin for a
+  code: the admin is told (Server > Notifications, and by e-mail or push as chosen), the account shows Code asked, and
+  Make a code there hands the person their 8-character code to type on the same page.
+
+- **Plugin requests under To handle.** A plugin can mark what it tells the server's admin as a request someone waits
+  on, such as a waitlist sign-up: it stays under To handle in Server > Notifications until the plugin closes it.
+- **Invited people.** Settings > Profiles shows its profiles under Adults, Teens and Children, then the invitations
+  nobody used yet under Invited people. Invite an adult asks a name to recognise the invitation by and, once
+  Server > E-mail is set, an address to send the code to. Each invitation can be sent again (or its code shown again)
+  and cancelled.
+
+- **Settings > Profiles** no longer gives another adult a new password, not even for the household's admin. The code
+  for a forgotten password comes from the server's admin only, in Server > Accounts.
+- **Forgot password with a code.** Forgot password now e-mails an 8-character code (valid an hour, once) instead of a
+  link: the person types it on the page, or opens the e-mail's button, then chooses a new password and lands on a
+  done screen. I have a code goes straight to the code, for someone coming back with it later. Wrong codes count
+  against the device, as sign-in attempts do.
+
+- **Language on the signed-out screens.** Sign-in, I have a code, Forgot password and the setup show the language as a
+  round button with the other language's code, as on the public site; sign-in has it too now. With three buttons in a
+  step's footer, Back keeps only its arrow at every size.
+
 ### Fixed
+
+- **Info lines and checkboxes.** The icon of an info or error line sits on the middle of its text, and the
+  _J’ai au moins 13 ans_ box lines up with the icon of the field above it.
 
 - **À la une.** A story has the same layout on a phone, a tablet and a computer: its picture in a frame, then its
   topic, title, summary and buttons. On a phone the picture is no longer stretched over the whole screen, where a news

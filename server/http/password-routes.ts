@@ -2,7 +2,8 @@ import express from 'express'
 import { LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword } from '../auth/password.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
-import { type PasswordResetStore, isResetToken } from '../db/password-reset-store.ts'
+import type { PasswordResetStore } from '../db/password-reset-store.ts'
+import { codeForPeople, signInCodeOf } from '../db/sign-in-code-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import { textsIn } from '../i18n.ts'
 import { hodiFrame } from '../mail/frame.ts'
@@ -13,7 +14,7 @@ import { clientAddressOf } from './client-address.ts'
 import { isPassword } from './household-input.ts'
 import { ANYONE_IN, type CheckSignIn, refuseSignIn } from './sign-in-check.ts'
 
-// « Mot de passe oublié », before the session check: a link by e-mail, then a new password. It exists only once
+// « Mot de passe oublié », before the session check: a code by e-mail, then a new password. It exists only once
 // Serveur › E-mail is set with Hodi's address. The answer is the same whether an account has the e-mail or not, and
 // the e-mail leaves after it, so neither its words nor its time say who has an account.
 
@@ -27,6 +28,8 @@ interface PasswordRoutesOptions {
   // The new password, every device of the account signed out, and this one signed in: its cookies (none when the
   // account asks for its app's code at sign-in).
   signIn: (account: UserAccount, passwordHash: string, request: express.Request) => string[]
+  // Without e-mail: the server's admin is asked for a code for this account (Serveur › Notifications).
+  askAdmin?: (account: UserAccount) => void
   // The plugins' say on this account signing in, asked before the link is used up or the password changes.
   checkSignIn?: CheckSignIn
   now: () => number
@@ -42,22 +45,23 @@ type ResolvedOptions = PasswordRoutesOptions & Required<Pick<PasswordRoutesOptio
 export const passwordRoutes = ({
   checkSignIn = ANYONE_IN,
   log = console.error,
-  // Every request for a link counts: ten from a device in a quarter of an hour, a hundred from all of them.
+  // Every request for a code and every wrong code counts: ten from a device in a quarter of an hour, a hundred from
+  // all of them.
   throttle = new LoginThrottle(),
   ...options
 }: PasswordRoutesOptions) => {
   const router = express.Router()
   const resolved = { ...options, checkSignIn, log, throttle }
   mountForgotRoute(router, resolved)
+  mountAskRoute(router, resolved)
   mountResetRoutes(router, resolved)
   return router
 }
 
-const mountForgotRoute = (
-  router: express.Router,
-  { mail, send, resets, accounts, languageOf, home, now, log, throttle }: ResolvedOptions
-) => {
-  const throttled = (request: express.Request, response: express.Response) => {
+// A request for a code, or a wrong code: refused (true) while the device or the server has had too many.
+const throttledBy =
+  ({ throttle, now }: ResolvedOptions) =>
+  (request: express.Request, response: express.Response) => {
     const client = clientAddressOf(request)
     const decision = throttle.check(now(), client)
     if (!decision.allowed) {
@@ -69,6 +73,9 @@ const mountForgotRoute = (
     return false
   }
 
+const mountForgotRoute = (router: express.Router, options: ResolvedOptions) => {
+  const { mail, send, resets, accounts, languageOf, home, now, log } = options
+  const throttled = throttledBy(options)
   router.post('/forgot', (request, response) => {
     const settings = mail.get()
     if (!settings?.appUrl) {
@@ -84,16 +91,17 @@ const mountForgotRoute = (
     response.status(202).json({})
 
     const account = accounts.byEmail(email)
-    const token = account ? resets.create(account.id, now()) : null
-    if (!account || !token) return
+    const code = account ? resets.create(account.id, now()) : null
+    if (!account || !code) return
     const language = languageOf(account)
     const t = textsIn(language)
-    const link = `${settings.appUrl}/#/reset/${token}`
+    const link = `${settings.appUrl}/#/reset/${code}`
     const content = {
       eyebrow: t('mail.reset.eyebrow'),
       title: t('mail.reset.title'),
       blocks: [
         { kind: 'text' as const, text: t('mail.reset.text', { email: account.email }) },
+        { kind: 'code' as const, code: codeForPeople(code) },
         { kind: 'action' as const, label: t('mail.reset.button'), url: link },
         { kind: 'note' as const, text: t('mail.reset.note') }
       ]
@@ -109,29 +117,58 @@ const mountForgotRoute = (
   })
 }
 
-const mountResetRoutes = (router: express.Router, { resets, accounts, signIn, checkSignIn, now }: ResolvedOptions) => {
-  // « Nouveau mot de passe »: whose account the link is for, while it works.
-  router.post('/check', (request, response) => {
-    const token: unknown = request.body?.token
-    const userId = isResetToken(token) ? resets.peek(token, now()) : null
-    const account = userId === null ? null : accounts.get(userId)
-    if (!account) {
-      response.status(404).json({ error: 'invalid_link' })
+// « Demander un code », on a server that sends no e-mail. The answer is the same whether an account has the address or
+// not; the admin is told only of an account that reads in a household, where a code can be made for it.
+const mountAskRoute = (router: express.Router, options: ResolvedOptions) => {
+  const { mail, accounts, askAdmin } = options
+  const throttled = throttledBy(options)
+  router.post('/ask', (request, response) => {
+    if (!askAdmin || mail.get()?.appUrl) {
+      response.status(404).json({ error: 'mail_on' })
       return
     }
-    response.json({ email: account.email })
-  })
-
-  router.post('/reset', async (request, response) => {
-    const token: unknown = request.body?.token
-    const password: unknown = request.body?.password
-    if (!isResetToken(token) || !isPassword(password)) {
+    const email = cleanEmail(request.body?.email)
+    if (!email) {
       response.status(400).json({ error: 'invalid_request' })
       return
     }
-    const peeked = resets.peek(token, now())
+    if (throttled(request, response)) return
+    response.status(202).json({})
+    const account = accounts.byEmail(email)
+    if (account) askAdmin(account)
+  })
+}
+
+const mountResetRoutes = (router: express.Router, options: ResolvedOptions) => {
+  const { resets, accounts, signIn, checkSignIn, now, throttle } = options
+  const throttled = throttledBy(options)
+  // « Entre le code »: whose account the code is for, while it works. Only a wrong code counts against the device.
+  router.post('/check', (request, response) => {
+    const code = signInCodeOf(request.body?.code)
+    const decision = throttle.check(now(), clientAddressOf(request))
+    const userId = code && decision.allowed ? resets.peek(code, now()) : null
+    const account = userId === null ? null : accounts.get(userId)
+    if (account) response.json({ email: account.email })
+    else if (!throttled(request, response)) response.status(404).json({ error: 'invalid_code' })
+  })
+
+  router.post('/reset', async (request, response) => {
+    const token = signInCodeOf(request.body?.code)
+    const password: unknown = request.body?.password
+    if (!token || !isPassword(password)) {
+      response.status(400).json({ error: 'invalid_request' })
+      return
+    }
+    // A wrong code counts as at « Entre le code », before the password is hashed: guessing here costs the server
+    // nothing and gets no more tries.
+    const decision = throttle.check(now(), clientAddressOf(request))
+    const peeked = decision.allowed ? resets.peek(token, now()) : null
     const owner = peeked === null ? null : accounts.get(peeked)
-    const refusal = owner ? await checkSignIn(owner) : null
+    if (!owner) {
+      if (!throttled(request, response)) response.status(404).json({ error: 'invalid_code' })
+      return
+    }
+    const refusal = await checkSignIn(owner)
     if (refusal) {
       refuseSignIn(response, refusal)
       return
@@ -141,7 +178,7 @@ const mountResetRoutes = (router: express.Router, { resets, accounts, signIn, ch
     const userId = resets.take(token, now())
     const account = userId === null ? null : accounts.get(userId)
     if (!account) {
-      response.status(404).json({ error: 'invalid_link' })
+      response.status(404).json({ error: 'invalid_code' })
       return
     }
     const cookies = signIn(account, passwordHash, request)

@@ -35,6 +35,14 @@
   --notice-icon: var(--destructive-text);
 }
 
+/* Done, in the green of the « Actif » chip. */
+.success {
+  --notice-surface: color-mix(in srgb, var(--approve) 55%, var(--column));
+  --notice-border: var(--approve-border);
+  --notice-mark: var(--approve);
+  --notice-icon: var(--approve-text);
+}
+
 /* Clickable all over: a link under the content, the round buttons above it. */
 .linked {
   position: relative;

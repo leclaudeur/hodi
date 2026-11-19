@@ -1,0 +1,26 @@
+/* The requests someone waits on: their card in orange, as their squares, until each is handled. */
+.waiting {
+  border-color: var(--rust-border);
+  background: var(--rust-surface);
+}
+
+.more {
+  width: 100%;
+}
+
+/* The sidebar's count of requests to handle, orange as their squares. */
+.count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: auto;
+  padding: 0 5px;
+  border: 1px solid var(--rust-border);
+  border-radius: var(--radius-pill);
+  background: var(--rust-surface-2);
+  color: var(--rust-text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}

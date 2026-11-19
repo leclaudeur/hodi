@@ -18,8 +18,8 @@ import type { ProfileDraft } from '../views/profiles/ProfileForm.tsx'
 
 export type JoinStep = 'code' | 'account' | 'who'
 
-// What the server refused, in words.
-const refusalOf = (failure: unknown, t: TFunction) => {
+// What the server refused, in words. joining: the address typed and the household of the code, to name them.
+const refusalOf = (failure: unknown, t: TFunction, joining?: { email: string; household: string }) => {
   if (!(failure instanceof RequestError)) return t('common.unreachable')
   if (failure.refusal) return refusalText(failure.refusal)
   if (failure.code === 'too_many_attempts' && failure.retryAfterSeconds) {
@@ -28,6 +28,9 @@ const refusalOf = (failure: unknown, t: TFunction) => {
   if (failure.code === 'email_taken') return t('join.emailTaken')
   if (failure.code === 'invalid_credentials') return t('login.wrongCredentials')
   if (failure.code === 'already_member') return t('join.alreadyMember')
+  if (failure.code === 'other_household' && failure.household && joining) {
+    return t('join.otherHousehold', { ...joining, current: failure.household })
+  }
   if (failure.code === 'invalid_code') return t('join.code.wrong')
   if (failure.code === 'household_full') return t('join.full.intro')
   return t('join.failed')
@@ -36,7 +39,7 @@ const refusalOf = (failure: unknown, t: TFunction) => {
 // A taken address, or a wrong one for an existing account, is fixed on the account's screen.
 const fixedOnAccount = (failure: unknown) =>
   failure instanceof RequestError &&
-  ['email_taken', 'invalid_credentials', 'already_member'].includes(failure.code ?? '')
+  ['email_taken', 'invalid_credentials', 'already_member', 'other_household'].includes(failure.code ?? '')
 
 // The fields the person fills in along the way.
 const useJoinFields = () => {
@@ -74,7 +77,7 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
       await request()
     } catch (failure) {
       onRefused?.(failure)
-      setError(refusalOf(failure, t))
+      setError(refusalOf(failure, t, use ? { email: fields.email.trim(), household: use.household } : undefined))
       setBusy(false)
     }
   }

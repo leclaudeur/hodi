@@ -219,8 +219,13 @@ describe('server overview route', () => {
       0
     )!
     accounts.linkProfile(sam.id, id)
-    const chosen = await call('/profiles/current', adminCookie, 'PUT', { id, password: 'la phrase de Sam' })
-    memberCookie = `${adminCookie.split('; ').find(cookie => !cookie.startsWith('hodi_profile'))}; ${cookiesFrom(chosen)}`
+    // Sam signs in on his own device, which opens his profile.
+    const signedIn = await fetch(`${baseUrl}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'sam@example.com', password: 'la phrase de Sam' })
+    })
+    memberCookie = cookiesFrom(signedIn)
   })
 
   after(() => close())
