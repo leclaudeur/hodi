@@ -60,7 +60,7 @@ const addedBy = (db: ReturnType<typeof openDatabase>) =>
   )
 
 describe('source store', () => {
-  it('starts a new household with the base sources only, the others proposed', () => {
+  it('starts a new household with the base sources of every language only, the others proposed', () => {
     const store = new SourceStore(openDatabase(':memory:'))
     const catalog = store.load(file(BETA), NOW, 'fr')
 
@@ -105,20 +105,22 @@ describe('source store', () => {
     )
     assert.equal(count(db), 0)
 
+    // Set up in English, the French base sources come in too: each profile has the other language's off.
     assert.deepEqual(
       store.load(both, NOW + 1, 'en').topics.map(topic => topic.sources.map(source => source.id)),
-      [['gamma'], []]
+      [['alpha', 'gamma'], []]
     )
-    // French base sources stay proposed.
     assert.deepEqual(
       store.proposals(both).map(({ source }) => source.id),
-      ['alpha', 'delta']
+      ['delta']
     )
-    // Once filled, the household's later language changes keep its sources.
+    // Filled once: a later start, in any language, keeps its sources.
     assert.deepEqual(
       store.load(both, NOW + 2, 'fr').topics.map(topic => topic.sources.map(source => source.id)),
-      [['gamma'], []]
+      [['alpha', 'gamma'], []]
     )
+    // Already in every language: nothing more to follow.
+    assert.deepEqual(store.followEveryBase(both, 'en', NOW + 3), [])
   })
 
   it('takes the file once: later starts keep the database’s sources, removed ones stay gone', () => {

@@ -8,6 +8,16 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Language is each person's.** Settings > Household no longer has a household language: each adult picks theirs in
+  My account, and a young profile starts in the language of the parent who made it, who changes it on its General
+  page. Someone who joins with a code starts in the language of the screens they joined on.
+- **Base sources in every language.** The household follows the French and the English base sources, and each
+  profile starts with the ones of its own language: the others are off, in Settings > Sources, for whoever wants
+  them. An existing household gets the other language's base sources once, off for the profiles that read in
+  another language.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My

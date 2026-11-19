@@ -12,6 +12,8 @@ import type { CookieFor } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
 import { type CheckSignIn, refuseSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
+import type { Language } from '../news/catalog.ts'
+import { isLanguage } from '../../shared/i18n.ts'
 
 const MAX_PASSWORD_LENGTH = 256
 
@@ -31,7 +33,8 @@ export interface CodeJoinOptions {
   // this device signs in on the Connexion page instead (« Validation en deux étapes »).
   resetPassword?: (account: UserAccount, passwordHash: string, request: express.Request) => string | null
   // What a new profile starts with, as one added in Réglages > Profils.
-  onProfileCreated?: (profileId: number) => void
+  // language: the one the person reads the join screens in, which their new profile starts in.
+  onProfileCreated?: (profileId: number, language: Language | null) => void
   // The plugins' say on an existing account signing in (« J'ai déjà un compte », a new password).
   checkSignIn?: CheckSignIn
   // false for an account with « Validation en deux étapes » on: what the code does is done, but this device signs in
@@ -134,7 +137,8 @@ export const joinRequestOf = (body: Record<string, unknown>) => {
   const passwordSent =
     typeof body.password === 'string' && body.password.length > 0 && body.password.length <= MAX_PASSWORD_LENGTH
   if (!email || (existing ? !passwordSent : !isPassword(body.password) || body.ageConfirmed !== true)) return null
-  return { existing, email, password: body.password as string, draft }
+  const language = isLanguage(body.language) ? body.language : null
+  return { existing, email, password: body.password as string, draft, language }
 }
 
 type JoinRequest = NonNullable<ReturnType<typeof joinRequestOf>>

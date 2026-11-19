@@ -99,7 +99,8 @@ export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
   }
   const session = accountSession(accounts, devices, config.sessionSecret, now, profileVersionOf)
   const youthSources = youthSourcesOf(options)
-  const householdOptions = householdOptionsOf(config, options, session)
+  const profileHooks = profileHooksOf(options, youthSources)
+  const householdOptions = householdOptionsOf(config, options, session, profileHooks)
   return {
     config,
     options,
@@ -111,6 +112,6 @@ export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
     householdOptions,
     youthSources,
     reader: readerContext({ news, users, profiles, youthSources }),
-    profileHooks: profileHooksOf(options, youthSources)
+    profileHooks
   }
 }

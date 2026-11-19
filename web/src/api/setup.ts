@@ -1,4 +1,4 @@
-import { type Language as InterfaceLanguage } from '../lib/i18n.ts'
+import { type Language as InterfaceLanguage, getLanguage } from '../lib/i18n.ts'
 import type { PluginTranslations } from '../plugins/plugin-texts.ts'
 import { RequestError, UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
@@ -171,8 +171,9 @@ export type CodeUse =
 
 export const checkSignInCode = (code: string) => sendJson<CodeUse>('POST', '/codes/check', { code })
 
-// The account, and for an invitation the new profile; this device is then signed in with both.
-// existing: « J'ai déjà un compte », that account's e-mail and password instead of a new account.
+// The account, and for an invitation the new profile; this device is then signed in with both. The new profile
+// reads in the language these screens show. existing: « J'ai déjà un compte », that account's e-mail and password
+// instead of a new account.
 export const joinWithCode = (join: {
   code: string
   email: string
@@ -181,7 +182,7 @@ export const joinWithCode = (join: {
   existing?: true
   profile?: { name: string; color: ProfileColor }
   // signIn false: the account has « Validation en deux étapes », so this device signs in on Connexion with its code.
-}) => sendJson<{ profileId: number; signIn?: false }>('POST', '/codes/join', join)
+}) => sendJson<{ profileId: number; signIn?: false }>('POST', '/codes/join', { ...join, language: getLanguage() })
 
 // A young profile's code: this device opens that profile only, from now on.
 export const linkWithCode = (code: string) => sendJson<{ profileId: number }>('POST', '/codes/link', { code })

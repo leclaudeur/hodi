@@ -1,13 +1,15 @@
 import type { Catalog, Language, Source } from '../news/catalog.ts'
 import { type Database, transaction } from './database.ts'
 import { currentHouseholdId } from './household-scope.ts'
+export { createPauseCheck } from './source-pause.ts'
 import { followFileReaderOff, ownOldBaseSources, ownOldChannels, tidyOldSourceNames } from './source-upkeep.ts'
 
-// The sources' catalogue in the database, which holds them for good. sources.yml's base sources for the household's
-// language fill it once, when the household is set up (no "Vidéos" channel is a base one); its other sources are only offered ("Sources proposées") until a
-// profile adds one. Then the admin removes any source and profiles add theirs, each in one topic or more (the
-// topics and their labels stay in the file). Each profile turns sources off in its preferences
-// (hiddenSources); a profile only starts with the base sources, and sources nobody reads are paused.
+// The sources' catalogue in the database, which holds them for good. sources.yml's base sources, in every language,
+// fill it once when the household is set up (no "Vidéos" channel is a base one); each profile has the ones of another
+// language than its own off. Its other sources are only offered ("Sources proposées") until a profile adds one. Then
+// the admin removes any source and profiles add theirs, each in one topic or more (the topics and their labels stay in
+// the file). Each profile turns sources off in its preferences (hiddenSources); a profile only starts with the base
+// sources, and sources nobody reads are paused.
 //
 // A feed is one row of sources for the whole server, fetched once. Which household follows it, in which topics and
 // added by whom is that household's row of household_sources: every method here is for the household of the request
@@ -43,6 +45,8 @@ const toSource = (row: SourceRow): Source => ({
 // A household's source: the feed, with that household's topics, order and adder.
 const SELECT_FOLLOWED = `SELECT s.id, s.name, s.url, s.kind, s.lang, s.domains, s.reader, s.skip, h.section, h.section_id, h.topics,
   h.added_by FROM household_sources h JOIN sources s ON s.id = h.source_id WHERE h.household_id = ?`
+
+const isBase = (source: Source) => (source.base?.length ?? 0) > 0
 
 const topicsOf = (row: SourceRow) =>
   row.section !== 'topic' ? [] : row.topics ? (JSON.parse(row.topics) as string[]) : [row.section_id]
@@ -109,22 +113,42 @@ export class SourceStore {
   // its language. Nothing when it already follows some.
   seed(file: Catalog, language: Language, now: number) {
     transaction(this.#db, () => {
-      if (this.count() > 0) return
-      for (const topic of file.topics) {
-        topic.sources
-          .filter(source => source.base?.includes(language))
-          .forEach((source, position) =>
-            this.#follow(source, {
-              section: 'topic',
-              sectionId: topic.id,
-              topics: JSON.stringify([topic.id]),
-              position,
-              addedBy: null,
-              now
-            })
-          )
-      }
+      if (this.count() === 0) this.#followBases(file, now, source => source.base!.includes(language))
     })
+  }
+
+  // Once, on a household set up when only its own language's base sources came in: the other languages' come too
+  // (its own ones it removed stay gone). The ids it adds, for the profiles that read in another language to have them
+  // off.
+  followEveryBase(file: Catalog, language: Language, now: number): string[] {
+    return transaction(this.#db, () => {
+      if (!this.#seeded('catalog') || this.#seeded('every-base')) return []
+      const added = this.#followBases(file, now, source => !source.base!.includes(language))
+      this.#markSeeded('every-base', now)
+      return added
+    })
+  }
+
+  // The file's base sources the household does not follow yet, under their topic.
+  #followBases(file: Catalog, now: number, wanted: (source: Source) => boolean = () => true) {
+    const added: string[] = []
+    for (const topic of file.topics) {
+      topic.sources
+        .filter(source => isBase(source) && wanted(source))
+        .forEach((source, position) => {
+          if (this.has(source.id)) return
+          this.#follow(source, {
+            section: 'topic',
+            sectionId: topic.id,
+            topics: JSON.stringify([topic.id]),
+            position,
+            addedBy: null,
+            now
+          })
+          added.push(source.id)
+        })
+    }
+    return added
   }
 
   #seeded(name: string) {
@@ -135,9 +159,8 @@ export class SourceStore {
     this.#db.prepare('INSERT OR IGNORE INTO seeds (name, done_at) VALUES (?, ?)').run(name, now)
   }
 
-  // The first time: the file's base sources in the household's language.
-  #seedCatalog(file: Catalog, now: number, language: Language, admin: number | null) {
-    const isBase = (source: Source) => source.base?.includes(language) ?? false
+  // The first time: the file's base sources, in every language.
+  #seedCatalog(file: Catalog, now: number, admin: number | null) {
     // A household older than the catalogue keeps every source it already fetched articles from: they become
     // its admin's own. A new one starts with the base sources only.
     const fetched = new Set(
@@ -174,10 +197,11 @@ export class SourceStore {
     this.#markSeeded('catalog', now)
     this.#markSeeded('base-sources', now)
     this.#markSeeded('own-channels', now)
+    this.#markSeeded('every-base', now)
   }
 
-  // Fills the catalogue with the file's base sources in the household's language the first time, then gives it as
-  // the database has it. language: null before setup, which fills it once the language is known.
+  // Fills the catalogue with the file's base sources the first time, then gives it as the database has it.
+  // language: null before setup, which fills it once the household is set up.
   load(file: Catalog, now: number, language: Language | null): Catalog {
     transaction(this.#db, () => {
       const admin = (
@@ -185,7 +209,7 @@ export class SourceStore {
           .prepare("SELECT MIN(id) AS id FROM profiles WHERE role = 'admin' AND account_id = ?")
           .get(this.#household) as { id: number | null }
       ).id
-      if (!this.#seeded('catalog') && language !== null) this.#seedCatalog(file, now, language, admin)
+      if (!this.#seeded('catalog') && language !== null) this.#seedCatalog(file, now, admin)
 
       // Once: the names of the sites added before names were tidied ("https://www.voici.fr : flux d'articles"),
       // in the lists already shown too. Without the site's page at hand, a name may fall back to its address.
@@ -342,30 +366,5 @@ export class SourceStore {
         .filter(source => source.adults !== false && !this.has(source.id) && !urls.has(source.url))
         .map(source => ({ source, topicId: topic.id }))
     )
-  }
-}
-
-// Sources that every profile turned off: nobody reads them, so their feeds are not fetched.
-// Asked often (each list), so the answer is kept a minute.
-export const createPauseCheck = ({
-  hiddenByProfile,
-  now,
-  ttlMs = 60 * 1000
-}: {
-  // Each profile's hidden sources.
-  hiddenByProfile: () => string[][]
-  now: () => number
-  ttlMs?: number
-}) => {
-  let paused = new Set<string>()
-  let checkedAt = -Infinity
-  return (sourceId: string) => {
-    if (now() - checkedAt > ttlMs) {
-      const lists = hiddenByProfile()
-      paused =
-        lists.length === 0 ? new Set() : new Set(lists[0]!.filter(id => lists.every(hidden => hidden.includes(id))))
-      checkedAt = now()
-    }
-    return paused.has(sourceId)
   }
 }

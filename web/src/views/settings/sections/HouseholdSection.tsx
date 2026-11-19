@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { type Household, MAX_HOUSEHOLD_NAME_LENGTH, UnauthorizedError, updateHousehold } from '../../../api.ts'
 import { type HourCycle, setHourCycle } from '../../../lib/format.ts'
 import { useGameEnabled } from '../../../lib/game.ts'
-import { type Language, setHouseholdLanguage } from '../../../lib/i18n.ts'
 import { timeZoneCity, timeZoneOffset } from '../../../lib/regions.ts'
 import { useHousehold } from '../../../lib/settings-data.ts'
 import { showSaved } from '../../../lib/toast.ts'
@@ -21,7 +20,7 @@ import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
-import { GameCard, PhotoRow, RegionChoices, useHouseholdPhoto } from './HouseholdParts.tsx'
+import { GameCard, HourCycleRow, PhotoRow, useHouseholdPhoto } from './HouseholdParts.tsx'
 import ServerData from './ServerData.tsx'
 import ParentalCodeCard from './ParentalCodeCard.tsx'
 
@@ -107,20 +106,7 @@ const useRegionSaving = (saved: (next: Household) => void, onUnauthorized: () =>
         else setRegionFailed(true)
       })
   }
-
-  const saveLanguage = (language: Language) => {
-    setRegionFailed(false)
-    updateHousehold({ language })
-      .then(next => {
-        saved(next)
-        setHouseholdLanguage(next.language)
-      })
-      .catch((error: unknown) => {
-        if (error instanceof UnauthorizedError) onUnauthorized()
-        else setRegionFailed(true)
-      })
-  }
-  return { regionFailed, saveRegion, saveHourCycle, saveLanguage }
+  return { regionFailed, saveRegion, saveHourCycle }
 }
 
 interface HouseholdSectionProps {
@@ -142,7 +128,7 @@ const HouseholdSection = ({ layout, onUnauthorized }: HouseholdSectionProps) => 
     showSaved()
   }
 
-  const { regionFailed, saveRegion, saveHourCycle, saveLanguage } = useRegionSaving(saved, onUnauthorized)
+  const { regionFailed, saveRegion, saveHourCycle } = useRegionSaving(saved, onUnauthorized)
 
   const { photoInput, photoBusy, pickPhoto, removePhoto } = useHouseholdPhoto(
     household?.name ?? '',
@@ -175,7 +161,7 @@ const HouseholdSection = ({ layout, onUnauthorized }: HouseholdSectionProps) => 
               value={household.name}
               action={{ label: t('settings.household.rename'), icon: Pencil, onClick: () => setEditing('name') }}
             />
-            <RegionChoices household={household} onLanguage={saveLanguage} onHourCycle={saveHourCycle} />
+            <HourCycleRow household={household} onHourCycle={saveHourCycle} />
           </div>
 
           <h2 className={styles.label}>{t('settings.household.region')}</h2>

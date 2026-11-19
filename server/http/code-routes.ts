@@ -1,5 +1,6 @@
 import express from 'express'
 import { hashPassword } from '../auth/password.ts'
+import type { Language } from '../news/catalog.ts'
 import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
 import { MAX_PROFILES, type ProfileStore, cleanName, isYoung, profileColorOf } from '../db/profile-store.ts'
 import { type SignInCodeStore, signInCodeOf } from '../db/sign-in-code-store.ts'
@@ -33,13 +34,14 @@ interface JoinChecked {
   passwordHash: string
   name: ReturnType<typeof cleanName>
   color: ReturnType<typeof profileColorOf>
+  language: Language | null
 }
 
 // The account, its profile, and this device signed in with both, once every check passed.
 // From here on nothing waits: no other request runs between the checks and the writes.
 const completeJoin = (
   options: ResolvedJoinOptions,
-  { valid, existing, email, known, passwordHash, name, color }: JoinChecked,
+  { valid, existing, email, known, passwordHash, name, color, language }: JoinChecked,
   request: express.Request,
   response: express.Response
 ) => {
@@ -62,7 +64,7 @@ const completeJoin = (
   if (profileId === null) {
     const profile = profiles.create(name!, color!, now())!
     profileId = profile.id
-    onProfileCreated?.(profileId)
+    onProfileCreated?.(profileId, language)
   }
   accounts.linkProfile(account.id, profileId)
   if (!signsInHere(account)) {
@@ -110,7 +112,8 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
       }
       passwordHash = await hashPassword(asked.password)
     }
-    const checked = { valid, existing: asked.existing, email: asked.email, known, passwordHash, name, color }
+    const { existing, email, language } = asked
+    const checked = { valid, existing, email, known, passwordHash, name, color, language }
     completeJoin(options, checked, request, response)
   })
 }

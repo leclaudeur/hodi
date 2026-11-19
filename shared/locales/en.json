@@ -22,8 +22,6 @@
   "language": {
     "label": "Language",
     "profileHint": "The interface’s; articles stay in their own",
-    "householdLabel": "Home language",
-    "householdHint": "For the sign-in screen and the profiles that haven’t picked one",
     "in": {
       "fr": "In French",
       "en": "In English"
@@ -1515,7 +1513,7 @@
       "passwordTitle": "Change the password",
       "currentPassword": "Current password",
       "newPassword": "New password",
-      "intro": "What holds for the whole install, and only the admin sees: its name, its language, its region and what all profiles share. The time zone sets when the day changes for the feed, the <i>Daily summary</i> and quiet hours; the country helps the AI place your questions.",
+      "intro": "What holds for the whole install, and only the admin sees: its name, its region and what all profiles share. The time zone sets when the day changes for the feed, the <i>Daily summary</i> and quiet hours; the country helps the AI place your questions.",
       "loadFailed": "The household’s settings could not be read. Try again in a moment.",
       "heading": "Household",
       "photo": "Photo",

@@ -2,6 +2,7 @@ import type { Config } from '../config.ts'
 import type { accountSession } from '../http/account-session.ts'
 import type { HouseholdRoutesOptions } from '../http/setup-routes.ts'
 import type { Language } from '../news/catalog.ts'
+import type { ProfileHooks } from './profile-hooks.ts'
 import type { Options } from './wiring.ts'
 
 // « Plugins trouvés »: the plugins put in data/plugins before the first start, and their switch.
@@ -22,9 +23,10 @@ const setupPluginsOf = ({ plugins }: Options) =>
       }
     : undefined
 
-// The catalogue waited for the household's language: its base sources are listed from now on.
+// The catalogue waited for the household's setup: its base sources are listed from now on, each profile with the
+// ones of another language than its own off.
 const onSetUpOf =
-  ({ sources, news, now }: Options) =>
+  ({ sources, news, profiles, now }: Options, hooks: ProfileHooks) =>
   (language: Language) => {
     if (!sources) return
     const filled = sources.store.load(sources.file, now(), language)
@@ -34,13 +36,15 @@ const onSetUpOf =
         if (!listed.some(candidate => candidate.id === source.id)) news.addSource(source, 'topic', [topic.id])
       }
     }
+    profiles?.list().forEach(profile => hooks.hideOtherBases(profile.id))
   }
 
 // The setup and Réglages › Foyer routes' options; null in tests without profiles.
 export const householdOptionsOf = (
   config: Config,
   options: Options,
-  { accountOf, cookieFor }: ReturnType<typeof accountSession>
+  { accountOf, cookieFor }: ReturnType<typeof accountSession>,
+  hooks: ProfileHooks
 ): HouseholdRoutesOptions | null => {
   const { profiles, household, aiProviders, now, setupCode, throttle, accounts } = options
   const { passwordResets, serverMail, serverSettings, onHouseholdChange } = options
@@ -65,6 +69,6 @@ export const householdOptionsOf = (
       : undefined,
     publicHome: serverSettings ? () => serverSettings.publicHome() : undefined,
     setupPlugins: setupPluginsOf(options),
-    onSetUp: onSetUpOf(options)
+    onSetUp: onSetUpOf(options, hooks)
   }
 }

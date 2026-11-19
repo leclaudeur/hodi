@@ -56,7 +56,7 @@ export const requireServerAdmin: express.RequestHandler = (_request, response, n
 
 interface ProfileRoutesOptions extends CurrentRoutesOptions {
   // What a new profile starts with (the base sources only).
-  onCreate?: (profileId: number) => void
+  onCreate?: (profileId: number, from: { creator: number }) => void
   // What else goes with a deleted profile (its devices' alerts).
   onDelete?: (profileId: number) => void
   // A profile changed (its kind among others).
@@ -152,7 +152,8 @@ const mountListRoutes = (router: express.Router, options: ProfileRoutesOptions) 
       response.status(409).json({ error: 'limit' })
       return
     }
-    onCreate?.(profile.id)
+    // A young profile reads in its parent's language until they change it on its Général page.
+    onCreate?.(profile.id, { creator: profileIdOf(response) })
     response.status(201).json(profile)
   })
 }

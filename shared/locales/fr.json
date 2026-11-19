@@ -22,8 +22,6 @@
   "language": {
     "label": "Langue",
     "profileHint": "Celle de l’interface ; les articles restent dans la leur",
-    "householdLabel": "Langue du foyer",
-    "householdHint": "Pour l’écran de connexion et les profils qui n’en ont pas choisi",
     "in": {
       "fr": "En français",
       "en": "En anglais"
@@ -1515,7 +1513,7 @@
       "passwordTitle": "Changer le mot de passe",
       "currentPassword": "Mot de passe actuel",
       "newPassword": "Nouveau mot de passe",
-      "intro": "Ce qui vaut pour toute l’installation, et que seul l’admin voit : son nom, sa langue, sa région et ce que partagent tous les profils. Le fuseau horaire fixe le changement de jour du fil, du <i>Résumé du jour</i> et des heures calmes ; le pays aide l’IA à situer les questions.",
+      "intro": "Ce qui vaut pour toute l’installation, et que seul l’admin voit : son nom, sa région et ce que partagent tous les profils. Le fuseau horaire fixe le changement de jour du fil, du <i>Résumé du jour</i> et des heures calmes ; le pays aide l’IA à situer les questions.",
       "loadFailed": "Impossible de lire les réglages du foyer. Réessaie dans un instant.",
       "heading": "Le foyer",
       "photo": "Photo",

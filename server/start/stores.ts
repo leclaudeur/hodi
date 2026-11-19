@@ -29,6 +29,7 @@ import { loadCatalog } from '../news/catalog.ts'
 import { ArticleImages } from '../news/article-images.ts'
 import { ServerInboxStore } from '../db/server-inbox-store.ts'
 import { ServerNoticeStore } from '../db/server-notice-store.ts'
+import { followEveryBase } from './every-base.ts'
 import type { Outside } from './outside.ts'
 
 // The stores over Hodi's database, and the nightly upkeep of what they keep (start.ts).
@@ -64,10 +65,11 @@ export const openStores = (
   const household = new HouseholdStore(db)
   // The young profiles' days, Serveur › Vue d'ensemble's and the game's run in the household's time zone.
   const timeZone = () => household.get().timeZone ?? config.timeZone
-  // The database's catalogue, filled once from sources.yml's base sources in the household's language (at setup on a
-  // new install), with the sources profiles added.
+  // The database's catalogue, filled once from sources.yml's base sources (at setup on a new install), with the
+  // sources profiles added.
   const sources = new SourceStore(db)
   const file = loadCatalog(config.sourcesFile)
+  followEveryBase(db, { sources, file, household, profiles }, Date.now())
   return {
     serverSettings,
     store,

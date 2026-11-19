@@ -6,7 +6,6 @@ import { askToConfirm } from '../../../lib/confirm.ts'
 import { MAX_PICKED_PHOTO_BYTES, PHOTO_ACCEPT, makePhoto } from '../../../lib/profiles.ts'
 import { type HourCycle } from '../../../lib/format.ts'
 import { switchGame } from '../../../lib/game.ts'
-import { LANGUAGES, LANGUAGE_NAMES, type Language } from '../../../lib/i18n.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
 import HouseholdAvatar from '../../../ui/HouseholdAvatar.tsx'
 import Segmented from '../../../ui/Segmented.tsx'
@@ -135,51 +134,32 @@ export const GameCard = ({
   )
 }
 
-// The household's language and its time format.
-export const RegionChoices = ({
+// The household's time format. Each person picks their language in Mon compte, a young profile's parent on its
+// Général page.
+export const HourCycleRow = ({
   household,
-  onLanguage,
   onHourCycle
 }: {
   household: Household
-  onLanguage: (language: Language) => void
   onHourCycle: (hourCycle: HourCycle) => void
 }) => {
   const { t } = useTranslation()
   return (
-    <>
-      <SettingRow
-        label={t('language.householdLabel')}
-        hint={t('language.householdHint')}
-        choice={
-          <Segmented
-            label={t('language.householdLabel')}
-            value={household.language}
-            onChange={onLanguage}
-            options={LANGUAGES.map(option => ({
-              value: option,
-              title: LANGUAGE_NAMES[option],
-              label: LANGUAGE_NAMES[option]
-            }))}
-          />
-        }
-      />
-      <SettingRow
-        label={t('hourCycle.label')}
-        hint={t('hourCycle.hint')}
-        choice={
-          <Segmented
-            label={t('hourCycle.label')}
-            value={household.hourCycle}
-            onChange={onHourCycle}
-            options={([24, 12] as const).map(option => ({
-              value: option,
-              title: t(`hourCycle.example${option}`),
-              label: t(`hourCycle.option${option}`)
-            }))}
-          />
-        }
-      />
-    </>
+    <SettingRow
+      label={t('hourCycle.label')}
+      hint={t('hourCycle.hint')}
+      choice={
+        <Segmented
+          label={t('hourCycle.label')}
+          value={household.hourCycle}
+          onChange={onHourCycle}
+          options={([24, 12] as const).map(option => ({
+            value: option,
+            title: t(`hourCycle.example${option}`),
+            label: t(`hourCycle.option${option}`)
+          }))}
+        />
+      }
+    />
   )
 }
