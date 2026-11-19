@@ -17,6 +17,8 @@ export interface UserAccount {
   // Raised to sign out every device of this account at once, see userSessionKey.
   sessionGeneration: number
   serverAdmin: boolean
+  // « Profil privé »: its password opens its profile in « Qui lit ? », the Code parental never does.
+  privateProfile: boolean
   // When the account was made: SQLite may give a deleted account's id to a new one, and a session made before this
   // time was not made for it.
   createdAt: number
@@ -30,6 +32,7 @@ interface UserAccountRow {
   has_password: number
   session_generation: number
   server_admin: number
+  private_profile: number
   created_at: number
 }
 
@@ -41,6 +44,7 @@ const toAccount = (row: UserAccountRow): UserAccount => ({
   hasPassword: row.has_password === 1,
   sessionGeneration: row.session_generation,
   serverAdmin: row.server_admin === 1,
+  privateProfile: row.private_profile === 1,
   createdAt: row.created_at
 })
 
@@ -53,7 +57,7 @@ export const cleanEmail = (value: unknown) => {
 }
 
 const COLUMNS =
-  'id, email, password_hash, password_changed_at, has_password, session_generation, server_admin, created_at'
+  'id, email, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, created_at'
 
 export class UserAccountStore {
   readonly #db: Database
@@ -172,6 +176,12 @@ export class UserAccountStore {
     const row = this.#db.prepare('SELECT user_id FROM profiles WHERE id = ?').get(profileId) as
       { user_id: number | null } | undefined
     return row?.user_id ? this.get(row.user_id) : null
+  }
+
+  // Turned on, its profiles' choice on every device is signed again: one open elsewhere asks for the password.
+  setPrivateProfile(id: number, on: boolean) {
+    this.#db.prepare('UPDATE users SET private_profile = ? WHERE id = ?').run(on ? 1 : 0, id)
+    if (on) this.#db.prepare('UPDATE profiles SET pin_version = pin_version + 1 WHERE user_id = ?').run(id)
   }
 
   linkProfile(id: number, profileId: number) {

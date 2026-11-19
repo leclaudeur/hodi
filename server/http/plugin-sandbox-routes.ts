@@ -19,7 +19,6 @@ export type PluginSignIn = (
 ) => Promise<{ cookies: string[] } | { refusal: SignInRefusal } | { secondStep: string } | null>
 
 // Moves the signed-in device to a household its account has a profile in: the cookies to set, or null when refused.
-export type MoveDevice = (request: express.Request, householdId: number) => string[] | null
 
 // What a plugin's handler answers may set: only how long the answer may be kept.
 const CACHE_CONTROL = /^(?:no-store|no-cache|(?:private|public), max-age=\d{1,6}|max-age=\d{1,6})$/
@@ -145,7 +144,6 @@ interface RouteCall {
   method: string
   maxBody: number | undefined
   signIn: PluginSignIn | undefined
-  moveDevice: MoveDevice | undefined
 }
 
 // The clean request the plugin gets: no cookie, no header, who Hodi says asks.
@@ -254,21 +252,6 @@ const applySignIn = async (
   return true
 }
 
-const applyMoveDevice = (
-  { plugins, plugin, key, moveDevice }: RouteCall,
-  answer: object,
-  request: express.Request,
-  response: express.Response
-) => {
-  if (!('moveDevice' in answer) || answer.moveDevice === undefined || answer.moveDevice === null) return
-  const asked = answer.moveDevice
-  const id = typeof asked === 'number' && Number.isSafeInteger(asked) && asked > 0 ? asked : null
-  // Only from a signed-in route, by a plugin allowed to, to a household the account has a profile in.
-  const cookies = id !== null && moveDevice && plugin.manifest?.permissions.households ? moveDevice(request, id) : null
-  if (cookies) response.append('Set-Cookie', cookies)
-  else plugins.log(plugin.id, `${key}: moveDevice refused for household ${JSON.stringify(asked).slice(0, 40)}`)
-}
-
 // Runs the plugin's handler and writes its answer: JSON, a 2xx or 4xx status, no header but Cache-Control; or a zip.
 const callRoute = (call: RouteCall) => async (request: express.Request, response: express.Response) => {
   const householdId = call.group === 'publicRoutes' || response.locals.serverOnly === true ? null : currentHouseholdId()
@@ -295,7 +278,6 @@ const callRoute = (call: RouteCall) => async (request: express.Request, response
     return
   }
   if (!(await applySignIn(call, answer, context, request, response))) return
-  applyMoveDevice(call, answer, request, response)
   const cache = (headers as Record<string, unknown> | undefined)?.['Cache-Control']
   response.set('Cache-Control', typeof cache === 'string' && CACHE_CONTROL.test(cache) ? cache : 'no-store')
   if (status === 204) response.status(204).end()
@@ -312,8 +294,6 @@ export const sandboxRoutes = (
   signIn: PluginSignIn | undefined,
   // What runs once the request is known to come from Hodi's page, before the plugin's code.
   guards: express.RequestHandler[] = [],
-  // routes only: « Changer de foyer ».
-  moveDevice?: MoveDevice,
   // routes and serverRoutes: the check of a route marked proof: true.
   routeProof?: RouteProof
 ) => {
@@ -328,7 +308,7 @@ export const sandboxRoutes = (
     const limit = Math.min(maxBody ?? 0, MAX_RAW_BYTES)
     const proof = shape.proofRoutes.includes(`${group} ${key}`) ? [proofGuard(routeProof)] : []
     const raw = maxBody === undefined ? [] : rawBodyGuards(sandbox, limit)
-    const call = { plugins, plugin, sandbox, group, key, method, maxBody, signIn, moveDevice }
+    const call = { plugins, plugin, sandbox, group, key, method, maxBody, signIn }
     own[method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete'](route, ...proof, ...raw, callRoute(call))
   }
   return own

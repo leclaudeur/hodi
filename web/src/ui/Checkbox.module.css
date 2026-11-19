@@ -42,3 +42,9 @@
 .row:disabled {
   opacity: 0.4;
 }
+
+/* Under a field, its check lines up with the field's icon, as a status line's icon does: the 20px check centred on
+   the 16px icon, past the pill's padding and border. */
+.underField {
+  padding-left: 15px;
+}

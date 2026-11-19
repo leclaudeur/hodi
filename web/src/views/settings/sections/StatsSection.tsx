@@ -10,6 +10,7 @@ import DaySeparator, { type CountUnit } from '../../../ui/DaySeparator.tsx'
 import SectionPage from '../SectionPage.tsx'
 import DayBars, { type Day } from './DayBars.tsx'
 import StatsFavourites from './StatsFavourites.tsx'
+import StatsClear from './StatsClear.tsx'
 import StatsHousehold from './StatsHousehold.tsx'
 import styles from '../Settings.module.css'
 import statStyles from './StatsSection.module.css'
@@ -302,6 +303,7 @@ const StatsSection = ({ topics, layout }: StatsSectionProps) => {
 
       <DaySeparator label={t('stats.favourites')} still className={statStyles.separator} />
       <StatsFavourites entries={inPeriod} topics={topics} periodLabel={periodLabel} />
+      <StatsClear />
     </SectionPage>
   )
 }
