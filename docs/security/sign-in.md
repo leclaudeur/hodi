@@ -18,7 +18,12 @@ A sign-in sets a signed, stateless cookie: `HttpOnly`, `Secure`, `SameSite=Lax`,
 The cookie is signed with a key derived from the session secret, the account's password hash and its session
 generation. A new password therefore signs out that account's other devices, and no one else's.
 
-Signing out clears the cookie on that device. [Deployment](../deployment.md#sign-out-every-device) shows how to sign
+One device may hold up to 5 accounts of the same household, for _Who's in?_: the cookie then carries one token per
+account, joined by `~`, and each is checked on its own. A profile opens only for an account whose token is there, and
+an account of another household is refused at sign-in.
+
+Signing out removes only the token of the account whose profile is open, and that device's row in the account's
+devices. [Deployment](../deployment.md#sign-out-every-device) shows how to sign
 out every device at once. The web bundle holds no data and is public, so the sign-in page can load.
 
 ## One-time codes
@@ -38,12 +43,28 @@ no list of devices.
 
 ## Profiles in _Who's in?_
 
-An adult profile asks for its account's password each time it opens, and the server checks it against that account's
-hash. Each device may fail an account's password 5 times in 15 minutes, so a child guessing on a tablet never blocks the
-parents' own devices. All devices together stop after 50 failures for that account.
+What an adult profile asks for before it opens depends on two settings, both off on a new install:
 
-The device's choice of an adult profile is signed with a version that changes with the account's password. After a new
-password, every device therefore asks for it again before the profile opens.
+- A **private profile** asks for its account's password, which the server checks against that account's hash. The
+  parental code never opens it.
+- Any other adult profile asks for the household's **parental code** when the admin has set one: six digits, kept as a
+  hash like a password and never sent back. Setting, changing or turning it off asks for the admin's own password (and
+  the authenticator app's code when it is on).
+- Without either, it opens at once. Teen and child profiles always do.
+
+Each device may fail an account's password, or the household's code, 5 times in 15 minutes, so a child guessing on a
+tablet never blocks the parents' own devices. All devices together stop after 50 failures.
+
+**Don't ask again on this device**, under a private profile's password, marks that account's own session row on the
+device as trusted. The private profile opens there without the password only while that session still exists and is
+still marked trusted. **Ask again**, signing the device out from the list, a new password or signing out on that device
+all end it. A tablet shared by a parent and a teen therefore opens the parent's private profile only if the parent chose
+so.
+
+The device's choice of an adult profile is signed with a version that changes with the account's password, with
+**Private profile** being turned on and, for a profile the parental code opens, with that code. After any of them, every
+other device asks again before the profile opens. Only that signed choice says which account signed in on the device is
+asking: a profile id written in the cookie by hand reads as nobody's.
 
 ## Actions that ask again
 
@@ -62,7 +83,7 @@ without a password of its own, made by a plugin's sign-in, shows a sign-in on th
 ## Two-step verification
 
 _Two-step verification_ (TOTP, RFC 6238) is required for the server's account and optional for every other adult, in
-_Settings › Account and data_. Codes have 6 digits and 30-second steps, with one step of drift either way.
+_Settings › My account_. Codes have 6 digits and 30-second steps, with one step of drift either way.
 
 With it on, a sign-in asks for the app's code after the right password, and so does every action above. Each code
 works once: the last step used is kept, and an older or equal one is refused. A wrong code counts against the

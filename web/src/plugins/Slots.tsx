@@ -8,7 +8,7 @@ import { type AgeConsent, type WebPlugin, pluginNamespace, usePluginSlots } from
 // The layout a full-page slot gets: the phone's below 600 px, the computer's above.
 export const useScreenLayout = (): 'desktop' | 'phone' => (useIsPhone() ? 'phone' : 'desktop')
 
-type SlotKey = 'signInExtras' | 'whoIsReadingFooter' | 'accountRows'
+type SlotKey = 'signInExtras' | 'accountRows'
 type PropsOf<Key extends SlotKey> = NonNullable<WebPlugin[Key]> extends ComponentType<infer Props> ? Props : never
 
 // Every plugin's component for a slot that stacks, in the order of the plugins.

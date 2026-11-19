@@ -1,7 +1,6 @@
 import { serverInboxRoutes } from '../http/server-inbox-routes.ts'
 import { codeRequestKey } from '../notices/code-request.ts'
 import type express from 'express'
-import { clearedProfileCookie } from '../auth/session.ts'
 import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
 import { mailRoutes } from '../http/mail-routes.ts'
 import { pluginRoutes, pluginServerRoutes } from '../http/plugin-routes.ts'
@@ -11,19 +10,6 @@ import { serverNoticeRoutes } from '../http/server-notice-routes.ts'
 import { serverRoutes } from '../http/server-routes.ts'
 import type { Wiring } from './wiring.ts'
 
-// « Changer de foyer », a plugin's moveDevice: this device reads in that household from now on, when its account has
-// a profile there. Its profile is chosen again in « Qui lit ? ». null: refused, nothing changed.
-const moveDeviceOf =
-  ({ options, session }: Wiring) =>
-  (request: express.Request, householdId: number) => {
-    const { accounts, devices } = options
-    const asking = session.sessionOf(request)
-    if (!asking?.device || !accounts || !devices) return null
-    if (accounts.profileOf(asking.account.id, householdId) === null) return null
-    devices.moveTo(asking.account.id, asking.device.id, householdId)
-    return [clearedProfileCookie()]
-  }
-
 const mountPlugins = (api: express.Router, wiring: Wiring) => {
   const { plugins, pluginInstaller, pluginAi, accounts } = wiring.options
   if (!plugins) return
@@ -31,7 +17,6 @@ const mountPlugins = (api: express.Router, wiring: Wiring) => {
     '/plugins',
     pluginRoutes(plugins, {
       ...pluginInstaller,
-      moveDevice: moveDeviceOf(wiring),
       ...(pluginAi ? { ai: pluginAi } : {}),
       ...(accounts
         ? {

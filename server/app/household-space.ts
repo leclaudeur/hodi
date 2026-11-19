@@ -3,6 +3,7 @@ import { currentHouseholdId } from '../db/household-scope.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
 import { accountRoutes } from '../http/account-routes.ts'
 import { codeRoutes } from '../http/code-routes.ts'
+import type { InvitationMail } from '../http/invitation-routes.ts'
 import { householdRoutes } from '../http/household-routes.ts'
 import { householdPhotoRoutes } from '../http/household-photo.ts'
 import { profileDeviceRoutes } from '../http/profile-device-routes.ts'
@@ -27,6 +28,7 @@ const mountAccount = (api: express.Router, { options, config, session, profileHo
       household,
       sessionOf: session.sessionOf,
       cookieForDevice: session.cookieForDevice,
+      cookieWithout: session.cookieWithout,
       profileCookieFor: id => profileCookie(profileToken(id, profiles?.lock(id)?.version ?? 0, config.sessionSecret)),
       throttle,
       now,
@@ -52,7 +54,9 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
       secret: wiring.config.sessionSecret,
       pinThrottle,
       accounts,
-      signIn: accounts ? wiring.session.cookieFor : undefined,
+      household: wiring.options.household,
+      signedInHere: request => wiring.session.sessionsOf(request).map(session => session.account.id),
+      trust: wiring.trust ?? undefined,
       onCreate: wiring.profileHooks.created,
       onChange: profile => wiring.youthSources?.start(profile),
       onDelete: wiring.profileHooks.deleted,
@@ -104,6 +108,18 @@ const fillHouseholdHooks = ({ options, householdOptions, profileHooks }: Wiring)
   householdHooks.removed = id => plugins?.householdRemoved(id)
 }
 
+// Personnes invitées: an invitation's code by e-mail, once Serveur › E-mail is set, in the inviter's language.
+const invitationMail = ({ options }: Wiring): InvitationMail | undefined => {
+  const { serverMail, news, profiles, household, serverSettings } = options
+  if (!serverMail || !profiles) return undefined
+  return {
+    ...serverMail,
+    languageOf: profileId => news.languageOf(profileId),
+    inviterOf: profileId => ({ name: profiles.get(profileId)?.name ?? '', household: household.get().name }),
+    home: () => serverSettings?.publicHome() ?? null
+  }
+}
+
 // The signed-in household's own routes: the session, the account, profiles and young profiles' rules.
 export const mountHousehold = (api: express.Router, wiring: Wiring) => {
   const { youth, accounts, household, serverSettings, twoFactor, codes, profiles, now } = wiring.options
@@ -121,12 +137,14 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
         codes,
         profiles,
         accounts,
-        now
+        now,
+        mail: invitationMail(wiring)
       })
     )
   fillHouseholdHooks(wiring)
   mountProfiles(api, wiring)
   mountSourceRequests(api, wiring)
   api.use(householdPhotoRoutes({ household, profiles, accounts }))
-  if (wiring.householdOptions) api.use('/household', requireAdmin, householdRoutes(wiring.householdOptions))
+  if (wiring.householdOptions)
+    api.use('/household', requireAdmin, householdRoutes({ ...wiring.householdOptions, checkProof: wiring.checkProof }))
 }

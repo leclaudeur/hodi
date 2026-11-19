@@ -34,6 +34,7 @@ const apiRouter = (config: Config, appOptions: AppOptions) => {
     serverStats: options.serverStats,
     presence: wiring.presence,
     sessionOf: wiring.session.sessionOf,
+    sessionsOf: wiring.session.sessionsOf,
     cookieFor: wiring.session.cookieFor,
     linkedDevices: wiring.linkedDevices,
     secret: config.sessionSecret,

@@ -76,6 +76,8 @@ describe('households as a plugin sees and makes them', () => {
     for (const wrong of [
       { name: 'X', admin: { name: 'Admin', accountId: admin.id } },
       { name: 'X', admin: { name: 'Paul', accountId: 999 } },
+      // Marie reads in the Duponts now: one account, one household.
+      { name: 'X', admin: { name: 'Marie', accountId: marie.id } },
       { name: '', admin: null },
       { name: 'X', admin: null, extra: true },
       { name: 'X', language: 'de', admin: null },

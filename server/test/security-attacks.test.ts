@@ -227,7 +227,14 @@ describe('a row that goes never lets its cookie open the next one given its id',
     assert.equal(deleted.status, 204)
 
     clock += 60_000
-    await invite('ines@example.com', 'Inès')
+    const ines = await invite('ines@example.com', 'Inès')
+    // Private: only a cookie signed for her profile opens it (another adult's opens at once anyway).
+    const madePrivate = await install.call('/account/private', {
+      method: 'PUT',
+      cookie: ines,
+      body: { on: true, password: PASSWORD }
+    })
+    assert.equal(madePrivate.status, 200)
     assert.equal(install.profiles.list().find(profile => profile.name === 'Inès')!.id, max)
     const session = (await (
       await install.call('/session', { cookie: withCookie(install.admin, maxCookie) })

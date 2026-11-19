@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { TOPICS_CHANGED, logout } from '../api.ts'
+import { TOPICS_CHANGED } from '../api.ts'
 import MobileNav from '../app/MobileNav.tsx'
 import ShortcutsHelp from '../app/ShortcutsHelp.tsx'
 import Sidebar from '../app/Sidebar.tsx'
 import { refreshDayFeed } from '../lib/day-feed.ts'
+import { confirmSignOut } from '../lib/sign-out.ts'
 import { useKeyboardShortcuts } from '../lib/keyboard-shortcuts.ts'
 import { refreshListen } from '../lib/listen.ts'
 import { useNotificationSync } from '../lib/notifications.ts'
@@ -45,10 +46,7 @@ const useHome = (onLoggedOut: () => void, isDesktop: boolean, isTablet: boolean)
   const { routeList, list, listKey } = useList(route)
   const readerId = useReaderId(route, routeList, isDesktop)
   const { onBack, onWatchBack } = useBackWays(listKey, route)
-  const onLogout = async () => {
-    await logout()
-    onLoggedOut()
-  }
+  const onLogout = confirmSignOut
   const home: Home = {
     ...{ route, list, topics, allTopics, error, readerId, isDesktop, isTablet, onBack, onWatchBack, onLogout, t },
     onUnauthorized: handleUnauthorized

@@ -1,4 +1,4 @@
-import { Pencil, Play, RotateCcw, Trash2 } from 'lucide-react'
+import { Pencil, Play, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Profile } from '../../../api.ts'
@@ -6,7 +6,6 @@ import { askToConfirm } from '../../../lib/confirm.ts'
 import { useCountdown, useLimits } from '../../../lib/limits.ts'
 import { resetPreferences } from '../../../lib/preferences.ts'
 import { editProfile, isYoung, useProfiles } from '../../../lib/profiles.ts'
-import { clearReadings } from '../../../lib/reading-stats.ts'
 import { showDone, showSaved } from '../../../lib/toast.ts'
 import { startTour } from '../../../lib/tour.ts'
 import Chip from '../../../ui/Chip.tsx'
@@ -18,6 +17,8 @@ import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow, { RowButton } from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
+import ClearStatsRow from './ClearStatsRow.tsx'
+import LanguageRow from './LanguageRow.tsx'
 import { formatMinutes } from './young/format.ts'
 
 // "00:34:52": the time left, every second.
@@ -55,7 +56,7 @@ const OwnRow = ({ own, onEdit }: { own: Profile; onEdit: () => void }) => {
 }
 
 // This device's settings and this profile's stats, each put back to nothing after a confirm.
-const ResetRows = () => {
+const ResetRows = ({ young }: { young: boolean }) => {
   const { t } = useTranslation()
   return (
     <>
@@ -80,32 +81,16 @@ const ResetRows = () => {
               })
           }}
         />
-        <SettingRow
-          label={t('settings.me.clearStats')}
-          hint={t('settings.me.clearStatsHint')}
-          action={{
-            label: t('settings.me.clearAction'),
-            look: 'danger',
-            icon: Trash2,
-            onClick: () =>
-              askToConfirm({
-                title: t('confirm.clearStats.title'),
-                message: <RichText i18nKey="confirm.clearStats.message" />,
-                label: t('confirm.clearStats.button'),
-                onConfirm: () => {
-                  clearReadings()
-                  showDone(t('settings.me.clearStatsDone'))
-                }
-              })
-          }}
-        />
+        {/* An adult clears them under its stats; a young profile, which has no Mon compte, here. */}
+        {young && <ClearStatsRow />}
       </div>
     </>
   )
 }
 
-// Réglages > Ton profil: the open profile's own things, gathered from Profils, Lecture and Compte.
-const MeSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
+// Réglages > Général: the guided tour and the reset. A young profile, which has no Mon compte, also finds its name,
+// photo, language and time of the day here.
+const GeneralSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
   const value = useProfiles({ fresh: true })
   const [editing, setEditing] = useState(false)
@@ -113,8 +98,8 @@ const MeSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const limits = useLimits()
   const left = useCountdown()
   const daily = limits?.limits.rules.dailyMinutes ?? null
-  const title = t('settings.nav.me')
-  const intro = own && isYoung(own) ? t('limits.meIntro') : t('settings.me.intro')
+  const title = t('settings.nav.general')
+  const intro = own && isYoung(own) ? t('limits.meIntro') : <RichText i18nKey="settings.me.intro" />
 
   if (!own)
     return (
@@ -125,7 +110,14 @@ const MeSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
 
   return (
     <SectionPage title={title} intro={intro} layout={layout}>
-      <OwnRow own={own} onEdit={() => setEditing(true)} />
+      {isYoung(own) && (
+        <>
+          <OwnRow own={own} onEdit={() => setEditing(true)} />
+          <div className={styles.card}>
+            <LanguageRow />
+          </div>
+        </>
+      )}
 
       {/* A young profile's time of the day, counted down. */}
       {daily !== null && left !== null && (
@@ -155,7 +147,7 @@ const MeSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
         </>
       )}
 
-      <ResetRows />
+      <ResetRows young={isYoung(own)} />
 
       <Dialog open={editing} onClose={() => setEditing(false)} title={t('settings.editProfileTitle')}>
         {editing && (
@@ -176,4 +168,4 @@ const MeSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   )
 }
 
-export default MeSection
+export default GeneralSection

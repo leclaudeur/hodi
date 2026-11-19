@@ -136,15 +136,12 @@ export const ProfileRow = ({ profile, active, managed, editable, hint, onEdit }:
         </Chip>
       )}
       {managed && (
-        <>
-          <Chip size="row">{t(`profileForm.kinds.${profile.kind}`)}</Chip>
-          <RowButton
-            label={t('young.manage')}
-            ariaLabel={t('young.manageLabel', { name: profile.name })}
-            icon={SlidersHorizontal}
-            href={youngProfileHref(profile.id)}
-          />
-        </>
+        <RowButton
+          label={t('young.manage')}
+          ariaLabel={t('young.manageLabel', { name: profile.name })}
+          icon={SlidersHorizontal}
+          href={youngProfileHref(profile.id)}
+        />
       )}
       {!managed && editable && (
         <RowButton
@@ -162,10 +159,12 @@ interface NewProfileProps {
   open: boolean
   defaultColor: (typeof PROFILE_COLORS)[number] | undefined
   kinds: ProfileKind[]
+  // Picking Adulte invites one instead: an adult comes with their own account.
+  onInvite?: () => void
   onClose: () => void
 }
 
-export const NewProfileDialog = ({ open, defaultColor, kinds, onClose }: NewProfileProps) => {
+export const NewProfileDialog = ({ open, defaultColor, kinds, onInvite, onClose }: NewProfileProps) => {
   const { t } = useTranslation()
   return (
     <Dialog open={open} onClose={onClose} title={t('profiles.new')}>
@@ -173,6 +172,7 @@ export const NewProfileDialog = ({ open, defaultColor, kinds, onClose }: NewProf
         <ProfileForm
           defaultColor={defaultColor}
           kinds={kinds}
+          onInvite={onInvite}
           onCancel={onClose}
           onSave={async ({ name, color, photo, kind, avatar }) => {
             await addProfile(name, color, photo ?? null, { kind, avatar })

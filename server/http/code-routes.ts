@@ -17,6 +17,7 @@ import {
 } from './code-join.ts'
 import { ANYONE_IN, refuseSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
+import { type InvitationMail, invitationRoutes, inviteOf, mailInvitation } from './invitation-routes.ts'
 import { isAdminOf, isParentOf, profileIdOf } from './profile-routes.ts'
 
 // "J'ai un code": an adult of the household invites a new adult, or the admin gives an adult profile without an
@@ -43,7 +44,7 @@ const completeJoin = (
   response: express.Response
 ) => {
   const { codes, accounts, profiles, now, cookieFor, onProfileCreated, signsInHere } = options
-  if (existing ? accounts.profileOf(known!.id) !== null : accounts.byEmail(email)) {
+  if (existing ? accounts.householdOf(known!.id) !== null : accounts.byEmail(email)) {
     response.status(409).json({ error: existing ? 'already_member' : 'email_taken' })
     return
   }
@@ -203,6 +204,8 @@ interface CodeRoutesOptions {
   profiles: ProfileStore
   accounts?: UserAccountStore
   now: () => number
+  // Personnes invitées: an invitation's code by e-mail, once Serveur › E-mail is set.
+  mail?: InvitationMail
 }
 
 // "Connecter un appareil" for one profile: the code, or the refusal sent.
@@ -248,8 +251,19 @@ export const codeRoutes = (options: CodeRoutesOptions) => {
       response.status(409).json({ error: 'household_full' })
       return
     }
-    response.status(201).json(codes.create({ createdBy: profileIdOf(response) }, now()))
+    const invite = inviteOf(request.body)
+    if (invite === 'invalid') {
+      response.status(400).json({ error: 'invalid_request' })
+      return
+    }
+    const inviter = profileIdOf(response)
+    const made = codes.create({ createdBy: inviter, invite }, now())
+    const sent = invite?.email
+      ? mailInvitation(options.mail, { to: invite.email, code: made.code, inviter, now: now() })
+      : false
+    response.status(201).json({ ...made, sent })
   })
+  router.use('/invitations', invitationRoutes({ codes, now, mail: options.mail }))
 
   return router
 }
