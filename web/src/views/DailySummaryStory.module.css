@@ -191,7 +191,7 @@
 .phoneTools {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* The topic's paragraphs, scrolled when longer than the screen. */
