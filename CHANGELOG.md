@@ -10,6 +10,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **Names stand out.** In dialogs and at the top of the Settings, Server and My account pages, the names of households and
+  profiles and the e-mail addresses are in bold, and the names of screens and buttons in italics.
+
+- **One household per account.** An account belongs to one household only. Joining another household with an
+  existing account says which household it is in, and asks to leave it first. On a server with Village, Which household? and
+  Switch household are gone.
+
 - **Opening a profile.** In _Qui lit ?_, an adult profile opens at once again, unless one of two new settings says
   otherwise. _Profil privé_, in Réglages › Compte et données, asks for the account's password on every device, except
   the ones where _Ne plus demander sur cet appareil_ was ticked (_Redemander_ takes them back). _Code parental_, in

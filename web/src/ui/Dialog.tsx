@@ -7,6 +7,7 @@ import { raiseToasts } from '../lib/toast.ts'
 import { typesAtOnce, useIsPhone } from '../lib/use-media.ts'
 import styles from './Dialog.module.css'
 import RoundButton from './RoundButton.tsx'
+import { rich } from './rich.tsx'
 
 interface DialogProps {
   open: boolean
@@ -143,7 +144,7 @@ const Dialog = ({
           <div className={styles.body}>
             {intro && (
               <p id={introId} className={styles.intro}>
-                {intro}
+                {rich(intro)}
               </p>
             )}
             {children}
