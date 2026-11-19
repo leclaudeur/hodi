@@ -17,7 +17,7 @@ import statStyles from './StatsSection.module.css'
 import { DAY_MS } from '../../../../../shared/time.ts'
 
 // "2 H 40", "45 MIN".
-const durationLabel = (total: number) => {
+export const durationLabel = (total: number) => {
   const minutes = Math.round(total)
   return minutes < 60 ? `${minutes} MIN` : `${Math.floor(minutes / 60)} H ${String(minutes % 60).padStart(2, '0')}`
 }
