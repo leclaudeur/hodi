@@ -23,15 +23,22 @@ for themselves.
 
 Codes are eight letters and digits with a QR, valid once for 24 hours, typed after **I have a code** on the sign-in page.
 
-- **A new adult**: another adult makes the code with **Invite an adult**, in _Settings › Profiles_. The new person then
-  chooses an e-mail and a password, ticks **I am at least 13 years old** and makes their profile.
+- **A new adult**: another adult makes the code with **Invite an adult**, in _Settings › Profiles_, under a name that
+  tells the invitation apart. Once _Server › E-mail_ is set, an address sends the code by e-mail; without one, the
+  dialog shows it. The new person then chooses an e-mail and a password, ticks **I am at least 13 years old** and makes
+  their profile.
 - **An adult profile with no account yet**: the admin gives it to its person with **Connect a device**, in its form.
 - **A teen's or child's own device**: a parent makes the code in _Settings › Profiles › Manage › Devices_. That device
   opens this profile only, with no _Who's in?_, until it goes unused for 90 days or a parent removes it.
-- **A forgotten password**: the admin makes a code with **New password** in the profile's form. Its person types it, then
-  a new password.
+- **A forgotten password**: only the server's admin makes this code, in _Server › Accounts_, never a household's admin.
+  Its person types it, then a new password.
 
-On a code's page, **I already have an account** links the profile to an existing account instead of a new one.
+Until it is used, the invitation waits under _Invited people_, below the profiles' groups (_Adults_, _Teens_,
+_Children_). **Send again** or **See the code** replaces its code with a new one for another 24 hours, as only a hash of
+a code is kept, and the red cross cancels it.
+
+On a code's page, **I already have an account** links the profile to an existing account instead of a new one, as long
+as that account reads in no other household: one account belongs to one household.
 
 ## The admin
 
@@ -39,8 +46,8 @@ The household's first profile is its admin. It creates and deletes the other pro
 and runs the household's sources, its AI key and its settings in _Settings › Household_, photo included.
 
 The admin hands the role to another adult with an account with **Hand over the admin role**, in that adult's form, and
-becomes a member. That, deleting an adult profile that has an account, and **New password** for another adult all ask
-for the admin's own password first.
+becomes a member. That and deleting an adult profile that has an account both ask for the admin's own password first.
+No one in the household can give another adult a new password.
 
 ## Leaving the household
 
@@ -85,13 +92,13 @@ device that opens the profile shares them, a phone as well as a computer.
 
 ## Two-step verification
 
-In _Settings › Account and data_, an adult adds a code from an authenticator app to their password. **Turn on** asks
-for the password, shows a QR and the key to type, and takes the app's first code. It then shows 10 recovery codes once,
-to download or copy.
+In _Settings › My account_, an adult adds a code from an authenticator app to their password. Turning the switch on
+asks for the password, shows a QR and the key to type, and takes the app's first code. It then shows 10 recovery codes
+once, to download or copy, and a _Recovery codes_ row tells how many are left.
 
 Signing in on a new device then asks for the app's code after the password, or a recovery code, and so does every moment
-that asks for the password again. _Who's in?_ never asks for it. New recovery codes and **Turn off** ask for the
-password and a code.
+that asks for the password again. _Who's in?_ never asks for it. New recovery codes and turning the switch off ask
+for the password and a code.
 
 > [!IMPORTANT]
 > Two-step verification is required for the server's account. The setup turns it on right after that account, and the

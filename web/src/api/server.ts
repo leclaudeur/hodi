@@ -60,7 +60,23 @@ export interface ServerAccount {
   household: { id: number; name: string } | null
   lastSeenAt: number | null
   devices: number
+  // « Mot de passe oublié » on a server without e-mail: when the person asked for a code, until one is made.
+  codeAskedAt: number | null
 }
+
+// Serveur › Notifications: what the server told its admins, in each language. important: a request someone waits on,
+// « À traiter » until handled.
+export interface InboxItem {
+  id: number
+  type: string
+  texts: Partial<Record<'fr' | 'en', { from: string; title: string; text: string }>>
+  url: string
+  important: boolean
+  createdAt: number
+  handledAt: number | null
+}
+
+export const getServerInbox = () => getJson<{ items: InboxItem[]; waiting: number }>('/server/inbox')
 
 export const getServerHouseholds = () =>
   getJson<{ households: ServerHousehold[]; maxProfiles: number; canCreate?: boolean }>('/server/households')

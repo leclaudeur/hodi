@@ -40,6 +40,7 @@ const LoginPage = ({ onLoggedIn }: LoginPageProps) => {
   if (forgot) {
     return (
       <ForgotPage
+        byMail={resetByMail}
         token={resetToken}
         onBack={() => {
           setForgot(false)
@@ -82,7 +83,6 @@ const LoginPage = ({ onLoggedIn }: LoginPageProps) => {
           login={login}
           name={name}
           notice={notice}
-          resetByMail={resetByMail}
           onJoin={() => setJoining(true)}
           onForgot={() => setForgot(true)}
           onLoggedIn={onLoggedIn}

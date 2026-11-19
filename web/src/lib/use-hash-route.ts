@@ -39,6 +39,7 @@ export type Route =
 // The server's sections, in their order in its sidebar. Each comes with its page.
 export const SERVER_SECTIONS = [
   'overview',
+  'inbox',
   'households',
   'accounts',
   'general',

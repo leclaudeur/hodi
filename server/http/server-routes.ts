@@ -56,6 +56,8 @@ interface ServerRoutesOptions {
   // The server admin's own password, before what cannot be undone: a copy of the server, « Restaurer », a code for a
   // new password, deleting an account or a household. Absent in tests without accounts.
   checkProof?: CheckProof
+  // « Mot de passe oublié » without e-mail: when an account asked for a code, while it waits; and done, once one is made.
+  codeRequests?: { askedAt: (accountId: number) => number | null; handled: (accountId: number) => void }
   // false: the server admin has not turned « Validation en deux étapes » on yet, which these moments need first.
   twoFactorOn?: (accountId: number) => boolean
   // Comptes and Foyers › « Supprimer ».
@@ -134,7 +136,7 @@ const mountOverviewRoute = (
 
 const mountPeopleRoutes = (
   router: express.Router,
-  { people, codes, profiles, household, settings, onHouseholdSetUp, now }: ServerRoutesOptions
+  { people, codes, profiles, household, settings, onHouseholdSetUp, codeRequests, now }: ServerRoutesOptions
 ) => {
   if (!people) return
   // Foyers and Comptes: who has an account, in which household, and when it was last used. Nothing they read.
@@ -184,7 +186,11 @@ const mountPeopleRoutes = (
     response.status(201).json({ profile: { id: first.id, name: adminName }, ...code })
   })
   router.get('/accounts', (_request, response) => {
-    response.json({ accounts: people.accounts() })
+    response.json({
+      accounts: people
+        .accounts()
+        .map(account => ({ ...account, codeAskedAt: codeRequests?.askedAt(account.id) ?? null }))
+    })
   })
   // An account's profile photo, for its row, as a household's: the server's admin sees the accounts' names already.
   // ?v=<photoVersion>: a new photo has a new address, so each one is kept by the browser for good.
@@ -203,7 +209,7 @@ const mountPeopleRoutes = (
 
 const mountInviteRoutes = (
   router: express.Router,
-  { people, codes, profiles, now }: ServerRoutesOptions,
+  { people, codes, profiles, codeRequests, now }: ServerRoutesOptions,
   { createdByOf, proven }: ServerHelpers
 ) => {
   if (!people || !codes || !profiles) return
@@ -252,9 +258,9 @@ const mountInviteRoutes = (
       return
     }
     if (!(await proven(request, response))) return
-    response
-      .status(201)
-      .json(codes.create({ profileId: profile.id, createdBy: createdByOf(response), reset: true }, now()))
+    const made = codes.create({ profileId: profile.id, createdBy: createdByOf(response), reset: true }, now())
+    codeRequests?.handled(account.id)
+    response.status(201).json(made)
   })
 }
 

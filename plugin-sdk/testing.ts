@@ -111,7 +111,8 @@ export interface TestPlugin {
   // accounts a route signed in.
   mails: MailMessage[]
   notifications: { profileId: number; payload: AlertPayload }[]
-  serverNotices: (ServerNotice & { type: string })[]
+  // waiting: an important notice, true while it is under « À traiter », false once the plugin handled it.
+  serverNotices: (ServerNotice & { type: string; waiting?: boolean })[]
   questions: PluginQuestion[]
   signedIn: number[]
   // Its log lines, and Hodi's lines about it (a refused permission, a hook that failed).

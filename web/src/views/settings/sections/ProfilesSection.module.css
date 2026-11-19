@@ -9,3 +9,15 @@
   flex: 1 1 0;
   min-width: max-content;
 }
+
+/* An invitation's mark, where a profile has its avatar: dashed, as nobody has it yet. */
+.inviteMark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1.5px dashed var(--border);
+  border-radius: 50%;
+  color: var(--text-2);
+}

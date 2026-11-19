@@ -130,14 +130,13 @@ interface SignInFormProps {
   login: Login
   name: string | null
   notice: string | null
-  resetByMail: boolean
   onJoin: () => void
   onForgot: () => void
   onLoggedIn: () => void
 }
 
 // The e-mail and password, and the other ways in under them.
-export const SignInForm = ({ login, name, notice, resetByMail, onJoin, onForgot, onLoggedIn }: SignInFormProps) => {
+export const SignInForm = ({ login, name, notice, onJoin, onForgot, onLoggedIn }: SignInFormProps) => {
   const { t } = useTranslation()
   const layout = useScreenLayout()
   const { error, submitting } = login
@@ -196,19 +195,18 @@ export const SignInForm = ({ login, name, notice, resetByMail, onJoin, onForgot,
           <KeyRound size={14} aria-hidden="true" />
           {t('login.haveCode')}
         </a>
-        {resetByMail && (
-          <a
-            href="#/forgot"
-            className={styles.code}
-            onClick={event => {
-              event.preventDefault()
-              onForgot()
-            }}
-          >
-            <LockKeyhole size={14} aria-hidden="true" />
-            {t('login.forgot')}
-          </a>
-        )}
+        {/* Without e-mail on the server, its admin is asked for the code. */}
+        <a
+          href="#/forgot"
+          className={styles.code}
+          onClick={event => {
+            event.preventDefault()
+            onForgot()
+          }}
+        >
+          <LockKeyhole size={14} aria-hidden="true" />
+          {t('login.forgot')}
+        </a>
       </div>
       {/* A plugin's other ways in (« Créer mon foyer »), under Hodi's. */}
       <PluginSlots slot="signInExtras" props={{ layout, signedIn: onLoggedIn }} />

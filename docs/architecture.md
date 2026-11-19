@@ -89,7 +89,10 @@ and `/account*`, so it reaches only its own account.
 The routes of `#/server` are in `http/server-routes.ts`, behind `requireServerAdmin`. Its totals come from
 `db/server-stats-store.ts`, which keeps each finished day's totals for good in `server_days` and `server_day_reads`
 (`db/server-day-counts.ts`). Its durations and backup settings come from `server_settings`, and e-mail from
-`server_mail`.
+`server_mail`. Everything the server tells its admins goes through `notices/server-notifier.ts`, which first records it
+in `server_inbox` (`db/server-inbox-store.ts`, read by _Notifications_), then sends it by e-mail or push as _Alerts_
+says. A notice marked `important` stays on top until handled and is not sent twice, such as a code asked for a
+forgotten password (`notices/code-request.ts`).
 
 A backup copies the database and the plugins' databases of the same moment. **Restore** sets a copy aside, and the
 next start puts it in place, then replays every deletion made since (`db/forget-log.ts`) before anything reads it.

@@ -34,7 +34,8 @@ HMAC of it, keyed with the session secret. A wrong code counts against the same 
 
 - **Who makes one**: an adult profile only, and only the admin for a profile that already exists.
 - **A young profile's code** is any parent's to make, and links one device to that profile.
-- **A new password**: the admin's code for another adult only sets a new password, and signs out their devices.
+- **A new password**: only the server's admin makes this code for an adult, in _Server › Accounts_. It only sets a new
+  password, and signs out that account's devices.
 
 A young profile's device holds a signed `y1` cookie that names its row in `profile_devices`. The row goes after 90
 days unused, when a parent removes it, or with the profile. That device never changes profile, makes no code and sees
@@ -71,10 +72,10 @@ The actions that can't be undone ask for the person's own password again, whatev
 left open, or a stolen cookie, therefore can't do any of them:
 
 - deleting one's account, or another adult's profile that has an account;
-- a **New password** code for another adult, or handing over the household's admin role;
+- handing over the household's admin role;
 - installing or removing a plugin, or starting the developer mode;
 - downloading or restoring a backup;
-- deleting an account or a household in the _Server_ space.
+- a code for a new password, or deleting an account or a household, in the _Server_ space.
 
 The password is the one of the profile open on the device, and a wrong one counts against the throttle. An account
 without a password of its own, made by a plugin's sign-in, shows a sign-in on that device in the last 5 minutes instead.
@@ -82,7 +83,7 @@ without a password of its own, made by a plugin's sign-in, shows a sign-in on th
 ## Two-step verification
 
 _Two-step verification_ (TOTP, RFC 6238) is required for the server's account and optional for every other adult, in
-_Settings › Account and data_. Codes have 6 digits and 30-second steps, with one step of drift either way.
+_Settings › My account_. Codes have 6 digits and 30-second steps, with one step of drift either way.
 
 With it on, a sign-in asks for the app's code after the right password, and so does every action above. Each code
 works once: the last step used is kept, and an older or equal one is refused. A wrong code counts against the
