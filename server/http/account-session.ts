@@ -5,6 +5,7 @@ import {
   clearedSessionCookie,
   createDeviceSessionToken,
   readCookie,
+  readProfileToken,
   sessionCookie,
   userSessionKey,
   verifyAccountToken
@@ -37,7 +38,9 @@ export const accountSession = (
   accounts: UserAccountStore | undefined,
   devices: UserDeviceStore | undefined,
   secret: Buffer,
-  now: () => number
+  now: () => number,
+  // The version a profile's cookie is signed for (see profileToken); null for no such profile.
+  profileVersionOf: (profileId: number) => number | string | null = () => null
 ) => {
   // A token's time is in whole seconds: a row made in the same second as it still counts as made before.
   const madeBefore = (createdAt: number, issuedAt: number) => createdAt < issuedAt + 1000
@@ -73,11 +76,20 @@ export const accountSession = (
           session !== null && all.findIndex(other => other?.account.id === session.account.id) === index
       )
 
+  // The account of the profile open here, from a cookie Hodi signed when it opened: an id typed in the cookie by hand
+  // never makes another account signed in on the device the one asking.
+  const ownerOfOpenProfile = (request: express.Request) => {
+    const raw = readCookie(request.get('cookie'), PROFILE_COOKIE)
+    const profileId = Number((raw ?? '').split('.')[0])
+    const version = Number.isInteger(profileId) && profileId > 0 ? profileVersionOf(profileId) : null
+    if (version === null || !readProfileToken(raw, secret, () => version)?.signed) return null
+    return accounts?.ofProfile(profileId) ?? null
+  }
+
   // The account whose profile is open here, else the first one signed in: the one its pages and checks are for.
   const sessionOf = (request: express.Request): Session | null => {
     const all = sessionsOf(request)
-    const profileId = Number((readCookie(request.get('cookie'), PROFILE_COOKIE) ?? '').split('.')[0])
-    const owner = Number.isInteger(profileId) && profileId > 0 ? accounts?.ofProfile(profileId) : null
+    const owner = ownerOfOpenProfile(request)
     const session = all.find(candidate => candidate.account.id === owner?.id) ?? all[0] ?? null
     if (session?.device) devices?.touch(session.device, now())
     return session
@@ -86,11 +98,17 @@ export const accountSession = (
   const accountOf: AccountOf = request => sessionOf(request)?.account ?? null
 
   // The device's cookie with this token of the account in place of any it had. The others of another household go:
-  // a device serves one household.
+  // a device serves one household. An account in no household is alone on its device: nothing else would tell which
+  // of two such accounts asks.
   const cookieWith = (account: UserAccount, token: string, request: express.Request) => {
     const household = accounts?.householdOf(account.id) ?? null
     const others = sessionsOf(request)
-      .filter(session => session.account.id !== account.id && accounts?.householdOf(session.account.id) === household)
+      .filter(
+        session =>
+          household !== null &&
+          session.account.id !== account.id &&
+          accounts?.householdOf(session.account.id) === household
+      )
       .map(session => session.token)
     return sessionCookie([...others, token].slice(-MAX_SESSIONS).join('~'))
   }

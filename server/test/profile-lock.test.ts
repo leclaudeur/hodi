@@ -245,6 +245,41 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     assert.equal(((await removed.json()) as { parentalCode: boolean }).parentalCode, false)
     assert.deepEqual(await locks(tablet), { Admin: null, Sophie: null, Max: null })
   })
+
+  it('never reads as another account signed in on the device from a profile id typed in the cookie', async () => {
+    // Sophie's laptop, where Antho signed in after her; his profile is private again.
+    const on = await call('PUT', '/account/private', anthoPhone, { on: true, password: ANTHO.password })
+    anthoPhone = after_(anthoPhone, on)
+    const laptop = await signIn(ANTHO, await signIn(SOPHIE))
+    const forged = [...laptop.split('; ').filter(part => !part.startsWith('hodi_profile=')), 'hodi_profile=1'].join(
+      '; '
+    )
+    assert.equal((await locks(forged)).Admin, 'password')
+    // The device reads as Sophie: her account answers, never Antho's.
+    const asking = await call('GET', '/account', forged)
+    assert.equal(asking.status, 200)
+    assert.equal(((await asking.json()) as { email: string }).email, SOPHIE.email)
+    // Signing out is Sophie's too: Antho stays signed in on the laptop.
+    const left = after_(forged, await call('POST', '/logout', forged))
+    assert.equal((await call('PUT', '/profiles/current', left, { id: 1, password: ANTHO.password })).status, 200)
+  })
+
+  it('keeps one account at a time on a device when it is in no household', async () => {
+    const lone = { email: 'lone@example.com', password: 'une autre phrase assez longue' }
+    const other = { email: 'other@example.com', password: 'encore une phrase assez longue' }
+    for (const account of [lone, other])
+      accounts.create(account.email, await hashPassword(account.password, FAST), clock)
+    const device = await signIn(other, await signIn(lone))
+    const asking = await call('GET', '/account', device)
+    assert.equal(((await asking.json()) as { email: string }).email, other.email)
+    assert.equal(
+      device
+        .split('; ')
+        .find(part => part.startsWith('hodi_session='))
+        ?.includes('~'),
+      false
+    )
+  })
 })
 
 describe('the accounts from before « Profil privé »', () => {

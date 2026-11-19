@@ -2,6 +2,7 @@ import type express from 'express'
 import { LoginThrottle } from '../auth/login-throttle.ts'
 import type { AppOptions } from '../app-options.ts'
 import type { Config } from '../config.ts'
+import { inHousehold } from '../db/household-scope.ts'
 import { accountSession } from '../http/account-session.ts'
 import { Presence } from '../http/presence.ts'
 import { profileDeviceSession } from '../http/profile-device-session.ts'
@@ -91,7 +92,12 @@ const youthSourcesOf = ({ youth, sources, users, profiles, news, now }: Options)
 export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
   const options = withDefaults(appOptions)
   const { accounts, devices, profileDevices, news, users, profiles, now } = options
-  const session = accountSession(accounts, devices, config.sessionSecret, now)
+  // The version a profile's cookie is signed for, in that profile's household: null for no such profile.
+  const profileVersionOf = (id: number) => {
+    const householdId = profiles?.householdOf(id) ?? null
+    return householdId === null ? null : inHousehold(householdId, () => profiles?.lock(id)?.version ?? null)
+  }
+  const session = accountSession(accounts, devices, config.sessionSecret, now, profileVersionOf)
   const youthSources = youthSourcesOf(options)
   const householdOptions = householdOptionsOf(config, options, session)
   return {
