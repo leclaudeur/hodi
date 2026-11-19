@@ -84,6 +84,8 @@ interface AfterProps {
 interface ReadableProps extends AfterProps {
   item: FeedItem
   canSummarize: boolean
+  // Already written for this article in the reader's language, by anyone on the server.
+  summary: string[] | null
   contentRef: RefObject<HTMLDivElement | null>
   contentHtml: string
   onUnauthorized: () => void
@@ -91,12 +93,12 @@ interface ReadableProps extends AfterProps {
 
 // The text, read in Hodi, with its source, the AI's summary and questions, and what to read after.
 export const ReadableBody = (props: ReadableProps) => {
-  const { item, canSummarize, contentRef, contentHtml, related, next, layout, onUnauthorized } = props
+  const { item, canSummarize, summary, contentRef, contentHtml, related, next, layout, onUnauthorized } = props
   const { t } = useTranslation()
   const textSize = useTextSize()
   return (
     <div className={`${styles.body} appear`}>
-      {canSummarize && <SummaryCard articleId={item.id} onUnauthorized={onUnauthorized} />}
+      {canSummarize && <SummaryCard articleId={item.id} stored={summary} onUnauthorized={onUnauthorized} />}
       {/* Sanitized by DOMPurify above: scripts, styles, forms and frames are removed. */}
       <div
         ref={contentRef}

@@ -33,11 +33,14 @@ interface SiteRowProps {
   // Another one is being added: one at a time.
   busy: boolean
   onAdd: () => void
+  // In the AI's violet list, its buttons take the card's colour without looking like a paid click.
+  tone?: 'neutral' | 'ai'
 }
 
 // One site: its name and address, a link to look at it, then "Ajouter" until it is in.
-export const SiteRow = ({ name, link, lang, children, added, adding, busy, onAdd }: SiteRowProps) => {
+export const SiteRow = ({ name, link, lang, children, added, adding, busy, onAdd, tone = 'neutral' }: SiteRowProps) => {
   const { t } = useTranslation()
+  const ai = tone === 'ai'
   return (
     <li className={styles.item}>
       <span className={styles.text}>
@@ -50,14 +53,21 @@ export const SiteRow = ({ name, link, lang, children, added, adding, busy, onAdd
         {children}
       </span>
       <span className={styles.actions}>
-        <RoundButton icon={ExternalLink} label={t('addSource.seeSite', { name })} size={44} href={link} external />
+        <RoundButton
+          icon={ExternalLink}
+          label={t('addSource.seeSite', { name })}
+          size={44}
+          variant={ai ? 'aiQuiet' : 'default'}
+          href={link}
+          external
+        />
         {added ? (
           <span className={styles.added}>
             <Check size={14} aria-hidden="true" />
             {t('addSource.added')}
           </span>
         ) : (
-          <Button look="primary" icon={Plus} busy={adding} disabled={busy} onClick={onAdd}>
+          <Button look={ai ? 'aiQuiet' : 'primary'} icon={Plus} busy={adding} disabled={busy} onClick={onAdd}>
             {t('profiles.add')}
           </Button>
         )}

@@ -248,3 +248,13 @@
 .questions {
   margin-top: 52px;
 }
+
+/* Fermer, at the end of the summary's header: the card folds back to its line. */
+.cardClose {
+  margin-left: auto;
+}
+
+/* A written summary's line or header: a click anywhere on it opens or folds it. */
+.openable {
+  cursor: pointer;
+}

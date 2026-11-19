@@ -3,6 +3,7 @@ import type { ExtractedArticle } from '../news/extract.ts'
 import type { FeedEntry, FeedItem } from '../news/feed-parser.ts'
 import { foldText, romanNumeral } from '../../shared/word-match.ts'
 import { type Database, transaction } from './database.ts'
+import { currentHouseholdId } from './household-scope.ts'
 import {
   type AiCall,
   type AiCallKind,
@@ -253,11 +254,11 @@ export class NewsStore {
       .run(article.title, article.byline, article.contentHtml, article.textLength, article.image, now, id)
   }
 
-  // An article's summary in the given language, if one was written.
+  // An article's summary in the given language, if the household's AI wrote one.
   getSummary(id: string, language: Language): string[] | null {
     const row = this.#db
-      .prepare('SELECT points FROM ai_summaries WHERE article_id = ? AND language = ?')
-      .get(id, language) as { points: string } | undefined
+      .prepare('SELECT points FROM ai_summaries WHERE household_id = ? AND article_id = ? AND language = ?')
+      .get(currentHouseholdId(), id, language) as { points: string } | undefined
 
     return row ? (JSON.parse(row.points) as string[]) : null
   }
@@ -265,10 +266,10 @@ export class NewsStore {
   saveSummary(id: string, language: Language, points: string[], now: number) {
     this.#db
       .prepare(
-        `INSERT OR REPLACE INTO ai_summaries (article_id, language, points, created_at)
-         SELECT id, ?, ?, ? FROM articles WHERE id = ?`
+        `INSERT OR REPLACE INTO ai_summaries (household_id, article_id, language, points, created_at)
+         SELECT ?, id, ?, ?, ? FROM articles WHERE id = ?`
       )
-      .run(language, JSON.stringify(points), now, id)
+      .run(currentHouseholdId(), language, JSON.stringify(points), now, id)
   }
 
   // Each profile's last Résumé du jour.

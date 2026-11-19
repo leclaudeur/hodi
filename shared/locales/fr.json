@@ -866,7 +866,10 @@
       "unknown": "Cet article n’est plus dans les flux.",
       "unavailable": "Les résumés IA ne sont pas activés sur le serveur.",
       "failed": "Le résumé n’a pas pu être généré."
-    }
+    },
+    "read": "Lire le résumé",
+    "close": "Fermer",
+    "ready": "Un résumé de l’article est déjà prêt."
   },
   "questions": {
     "ask": "Poser une question",

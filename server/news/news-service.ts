@@ -371,7 +371,12 @@ export class NewsService {
     return this.#loader.getArticle(itemId)
   }
 
-  // The API is called once per article and language (news-ai.ts).
+  // The household's summary already written, read without calling the AI (news-ai.ts).
+  storedSummary(itemId: string, profileId = DEFAULT_PROFILE_ID) {
+    return this.#newsAi.storedSummary(itemId, profileId)
+  }
+
+  // The API is called once per article, language and household (news-ai.ts).
   getSummary(itemId: string, profileId = DEFAULT_PROFILE_ID) {
     return this.#newsAi.getSummary(itemId, profileId)
   }

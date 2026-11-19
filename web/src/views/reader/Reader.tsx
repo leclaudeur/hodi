@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import type { ArticleResult } from '../../api.ts'
 import { useSpeech } from '../../lib/speech.ts'
 import { nextArticle } from '../../lib/reading-list.ts'
 import { relatedOf, topicOfArticle } from '../../lib/related.ts'
@@ -21,6 +22,9 @@ interface ReaderProps {
 // Rendered with key={articleId}: each article starts from its own state.
 // The article, read in Hodi: in the panel beside the list on a computer, full screen on a phone.
 // Rendered with key={articleId}: each article starts from its own state.
+// The household's summary of the article, already written: shown closed, read without a call.
+const storedSummary = (result: ArticleResult) => (result.status === 'ok' && result.summary) || null
+
 const Reader = ({ articleId, layout, withBack = false, onBack, onUnauthorized }: ReaderProps) => {
   const { result, error, retry, contentHtml, readingMinutes, exactMinutes } = useArticle(articleId, onUnauthorized)
   const content = useRef<HTMLDivElement>(null)
@@ -79,6 +83,7 @@ const Reader = ({ articleId, layout, withBack = false, onBack, onUnauthorized }:
       <ReadableBody
         item={item}
         canSummarize={canSummarize}
+        summary={storedSummary(result)}
         contentRef={content}
         contentHtml={contentHtml}
         onUnauthorized={onUnauthorized}

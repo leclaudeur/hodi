@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
+import { inHousehold } from '../db/household-scope.ts'
 import { SCHEMA_VERSION, migrate, versionBefore } from '../db/migrations.ts'
 import { CONTENT_RETENTION_MS, NewsStore } from '../db/news-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
@@ -89,6 +90,8 @@ describe('NewsStore', () => {
 
     const second = start(store, responses, { summarize })
     await listAll(second.news)
+    // The reader gets it with the article, to show it closed: reading it calls nothing.
+    assert.deepEqual(second.news.storedSummary(sommet), ['Un point'])
     assert.deepEqual(await second.news.getSummary(sommet), { status: 'ok', points: ['Un point'] })
     assert.equal(calls, 1)
     assert.deepEqual(store.aiCalls(NOW - 24 * HOUR), [{ kind: 'summary', at: NOW, profileId: 1 }])
@@ -306,6 +309,38 @@ describe('backupDatabase', () => {
         .map(row => row.kind),
       ['dailySummary']
     )
+  })
+
+  it("keeps each household's summaries to itself, and gives those written before to the first household", () => {
+    const db = new DatabaseSync(':memory:')
+    db.exec('PRAGMA foreign_keys = ON')
+    migrate(db, versionBefore('CREATE TABLE ai_summaries_by_household'))
+    db.prepare(
+      `INSERT INTO articles (id, source_id, source_name, kind, lang, title, summary, link, first_seen_at, last_seen_at)
+       VALUES (?, 'alpha', 'Alpha', 'article', 'fr', 'Sommet', '', 'https://alpha.example/sommet', ?, ?)`
+    ).run(sommet, NOW, NOW)
+    db.prepare("INSERT INTO ai_summaries (article_id, language, points, created_at) VALUES (?, 'fr', ?, ?)").run(
+      sommet,
+      '["Un point"]',
+      NOW
+    )
+
+    migrate(db)
+    db.prepare("INSERT INTO accounts (id, name, created_at) VALUES (2, 'Les Martin', ?)").run(NOW)
+    const store = new NewsStore(db)
+
+    assert.deepEqual(store.getSummary(sommet, 'fr'), ['Un point'])
+    // Another household neither sees the first one's summary nor gives its own to it.
+    assert.equal(
+      inHousehold(2, () => store.getSummary(sommet, 'fr')),
+      null
+    )
+    inHousehold(2, () => store.saveSummary(sommet, 'fr', ['Leur point'], NOW))
+    assert.deepEqual(
+      inHousehold(2, () => store.getSummary(sommet, 'fr')),
+      ['Leur point']
+    )
+    assert.deepEqual(store.getSummary(sommet, 'fr'), ['Un point'])
   })
 
   it('keeps the summaries and daily summaries written before languages, as French ones', () => {

@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import styles from './RoundButton.module.css'
 
-export type RoundVariant = 'default' | 'on' | 'glass' | 'image' | 'ai' | 'danger' | 'primary'
+export type RoundVariant = 'default' | 'on' | 'glass' | 'image' | 'ai' | 'aiQuiet' | 'danger' | 'primary'
 
 interface RoundButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: LucideIcon

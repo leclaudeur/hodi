@@ -149,3 +149,20 @@
     transform: rotate(360deg);
   }
 }
+
+/* Inside a violet AI card, a button that spends nothing: the card's colour, outlined, never filled like .ai. */
+.aiQuiet {
+  border-color: var(--ai-button-border);
+  background: transparent;
+  color: var(--ai-text);
+}
+
+.aiQuiet:hover {
+  color: var(--ai-text);
+}
+
+@media (hover: hover) {
+  .aiQuiet:not(:disabled):hover {
+    background: var(--ai-button);
+  }
+}

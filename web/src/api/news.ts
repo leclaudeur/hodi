@@ -84,7 +84,7 @@ export interface Article {
 }
 
 export type ArticleResult =
-  | { status: 'ok'; item: FeedItem; article: Article; canSummarize?: boolean }
+  | { status: 'ok'; item: FeedItem; article: Article; canSummarize?: boolean; summary?: string[] | null }
   | { status: 'unreadable' | 'failed'; item: FeedItem }
   | { status: 'not_found' }
 

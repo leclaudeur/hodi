@@ -122,6 +122,7 @@ const SuggestionGroups = ({ suggestions, added, adding, onAdd }: SuggestionGroup
       <SiteList tone="ai">
         {group.suggestions.map(({ link, reason, source }) => (
           <SiteRow
+            tone="ai"
             key={link}
             name={source.name}
             link={link}

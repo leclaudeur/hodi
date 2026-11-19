@@ -17,6 +17,7 @@ import type {
   SummaryResult
 } from './news-types.ts'
 import { PerHousehold } from './per-household.ts'
+import { currentHouseholdId } from '../db/household-scope.ts'
 import { errorMessage } from './article-loader.ts'
 
 // The news' AI buttons: a summary, a question, sources to suggest, the Résumé du jour and a plugin's question. Each
@@ -182,14 +183,22 @@ export class NewsAi {
     )
   }
 
-  // The API is called once per article and language: later requests in that language share the same summary.
+  // A summary the household's AI already wrote in the profile's language, shown closed with the article: reading it
+  // calls nothing.
+  storedSummary(itemId: string, profileId: number): string[] | null {
+    if (!this.canSummarize) return null
+    return this.#options.store?.getSummary(itemId, this.#options.languageOf(profileId)) ?? null
+  }
+
+  // The API is called once per article, language and household: later requests there share the same summary.
   async getSummary(itemId: string, profileId = DEFAULT_PROFILE_ID): Promise<SummaryResult> {
     const summarize = this.tools?.summarize
     if (!summarize) return { status: 'unavailable' }
 
     const now = this.#options.now()
     const language = this.#options.languageOf(profileId)
-    const key = `${itemId} ${language}`
+    // Each household's own: another one's summary is neither shown nor paid for here.
+    const key = `${currentHouseholdId()} ${itemId} ${language}`
 
     for (const [id, entry] of this.#summaries) {
       if (entry.expiresAt <= now) this.#summaries.delete(id)

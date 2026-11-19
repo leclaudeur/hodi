@@ -962,6 +962,23 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE article_images ADD COLUMN width INTEGER;
   ALTER TABLE article_images ADD COLUMN page_checked TEXT;
+  `,
+  // An article's summary is its household's: paid with that household's key, and seen only there, so no household
+  // learns what another one read. Those written before go to the first household.
+  `
+  CREATE TABLE ai_summaries_by_household (
+    household_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    article_id TEXT NOT NULL REFERENCES articles (id) ON DELETE CASCADE,
+    language TEXT NOT NULL,
+    points TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (household_id, article_id, language)
+  );
+  INSERT INTO ai_summaries_by_household (household_id, article_id, language, points, created_at)
+    SELECT (SELECT MIN(id) FROM accounts), article_id, language, points, created_at FROM ai_summaries
+    WHERE EXISTS (SELECT 1 FROM accounts);
+  DROP TABLE ai_summaries;
+  ALTER TABLE ai_summaries_by_household RENAME TO ai_summaries;
   `
 ]
 

@@ -3,8 +3,9 @@ import type { ButtonHTMLAttributes, ComponentType, ReactNode } from 'react'
 import styles from './Button.module.css'
 
 // neutral: most actions. primary: the one action a screen leads to. danger: what deletes or resets.
-// ai: a click that spends credits (violet). glass: floating over a list, blurred ("Charger <jour>").
-export type ButtonLook = 'neutral' | 'primary' | 'danger' | 'ai' | 'glass'
+// ai: a click that spends credits (violet, filled). aiQuiet: any other button inside a violet AI card (outlined,
+// no fill), so the card keeps its colour without looking like a paid click. glass: floating over a list, blurred ("Charger <jour>").
+export type ButtonLook = 'neutral' | 'primary' | 'danger' | 'ai' | 'aiQuiet' | 'glass'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode

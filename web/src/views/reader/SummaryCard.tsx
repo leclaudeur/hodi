@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { UnauthorizedError, summarizeArticle } from '../../api.ts'
@@ -11,7 +12,7 @@ import styles from './AiCards.module.css'
 type State =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'ok'; points: string[] }
+  | { status: 'ok'; points: string[]; open: boolean }
   | { status: 'error'; message: ErrorKey; retry: boolean }
 
 type ErrorKey = `summary.errors.${'limited' | 'refused' | 'unreadable' | 'unknown' | 'unavailable' | 'failed'}`
@@ -28,31 +29,80 @@ const FAILED = { message: 'summary.errors.failed', retry: true } as const
 
 interface SummaryCardProps {
   articleId: string
+  // Written already for this article in the reader's language, by anyone on the server: read for free.
+  stored: string[] | null
   onUnauthorized: () => void
 }
 
-// Before any summary: the offer, and the violet button that spends the call.
-const SummaryOffer = ({ capped, onSummarize }: { capped: boolean; onSummarize: () => void }) => {
+// Before any summary: the offer, and the violet button that spends the call. Once one exists, the same line with a
+// plain button that only opens it.
+const SummaryOffer = ({ capped, ready, onClick }: { capped: boolean; ready: boolean; onClick: () => void }) => {
   const { t } = useTranslation()
   return (
-    <div className={styles.offer} id="summary">
+    // Once written, the whole line opens it, as an accordion's header. Before, only the violet button calls the AI.
+    <div
+      className={`${styles.offer} ${ready ? styles.openable : ''}`}
+      id="summary"
+      onClick={ready ? onClick : undefined}
+    >
       <span className={`${styles.mark} ${styles.offerMark}`}>
         <SparkleIcon size={16} />
       </span>
-      <span className={styles.offerText}>{t(capped ? 'summary.capped' : 'summary.offer')}</span>
-      <Button look="ai" icon={SparkleIcon} onClick={onSummarize} disabled={capped} data-shortcut="summarize">
-        {t('summary.summarize')}
-      </Button>
+      <span className={styles.offerText}>
+        {t(ready ? 'summary.ready' : capped ? 'summary.capped' : 'summary.offer')}
+      </span>
+      {ready ? (
+        <Button
+          look="aiQuiet"
+          icon={ChevronDown}
+          onClick={event => {
+            event.stopPropagation()
+            onClick()
+          }}
+          data-shortcut="summarize"
+        >
+          {t('summary.read')}
+        </Button>
+      ) : (
+        <Button look="ai" icon={SparkleIcon} onClick={onClick} disabled={capped} data-shortcut="summarize">
+          {t('summary.summarize')}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// The open card's header: once written, a click on it folds the card back to its line.
+const SummaryHeader = ({ onClose }: { onClose: (() => void) | null }) => {
+  const { t } = useTranslation()
+  return (
+    <div className={`${styles.cardHeader} ${onClose ? styles.openable : ''}`} onClick={onClose ?? undefined}>
+      <span className={styles.mark}>
+        <SparkleIcon size={14} />
+      </span>
+      <h2 className={styles.cardTitle}>{t('summary.title')}</h2>
+      {onClose && (
+        <span className={styles.cardClose}>
+          <Button look="aiQuiet" compact icon={ChevronUp}>
+            {t('summary.close')}
+          </Button>
+        </span>
+      )}
     </div>
   )
 }
 
 // "Pas le temps ?": the article's key points, written by the AI only when "Résumer" is clicked.
-const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCardProps & { language: Language }) => {
+const LanguageSummaryCard = ({
+  articleId,
+  stored,
+  language,
+  onUnauthorized
+}: SummaryCardProps & { language: Language }) => {
   const { t } = useTranslation()
   const [state, setState] = useState<State>(() => {
-    const points = findSummary(articleId, language)
-    return points ? { status: 'ok', points } : { status: 'idle' }
+    const points = stored ?? findSummary(articleId, language)
+    return points ? { status: 'ok', points, open: false } : { status: 'idle' }
   })
   const capped = useAiCapped('summary')
 
@@ -62,7 +112,7 @@ const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCar
       const result = await summarizeArticle(articleId)
       if (result.status === 'ok') {
         keepSummary(articleId, language, result.points)
-        setState(result)
+        setState({ ...result, open: true })
       } else {
         setState({ status: 'error', ...(errorMessages[result.status] ?? FAILED) })
       }
@@ -73,7 +123,9 @@ const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCar
     void refreshAiUsage()
   }
 
-  if (state.status === 'idle') return <SummaryOffer capped={capped} onSummarize={() => void summarize()} />
+  if (state.status === 'idle') return <SummaryOffer capped={capped} ready={false} onClick={() => void summarize()} />
+  if (state.status === 'ok' && !state.open)
+    return <SummaryOffer capped={capped} ready onClick={() => setState({ ...state, open: true })} />
 
   return (
     <section
@@ -82,12 +134,7 @@ const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCar
       aria-label={t('summary.title')}
       aria-busy={state.status === 'loading'}
     >
-      <div className={styles.cardHeader}>
-        <span className={styles.mark}>
-          <SparkleIcon size={14} />
-        </span>
-        <h2 className={styles.cardTitle}>{t('summary.title')}</h2>
-      </div>
+      <SummaryHeader onClose={state.status === 'ok' ? () => setState({ ...state, open: false }) : null} />
 
       {state.status === 'loading' && (
         <div className={styles.lines} role="status">

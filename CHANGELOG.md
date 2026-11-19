@@ -8,6 +8,15 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **An article's summary belongs to its household.** It is paid with that household's AI key and only shown there:
+  no household reuses or learns of another's. In the reader, a summary already written shows closed, with Read the
+  summary (no credit spent); Summarize only shows while there is none. Summaries written before go to the first
+  household.
+- **Buttons inside the violet AI cards.** A button that spends no credit there (Read the summary, Close, a suggested
+  site's Add and its link) is outlined in violet; only a filled violet button with the sparkle calls the AI.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My
