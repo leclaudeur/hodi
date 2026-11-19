@@ -9,8 +9,9 @@ each part has its own page with the details. Screens and buttons are named as Ho
 One install is one household of up to five profiles, each person with their own account. Newcomers join with a
 one-time code, and a teen's or child's device can be linked to their profile with no account at all.
 
-The first profile is the household's admin: it runs the sources, the AI key and the settings. Adult profiles ask for
-their password each time they open, and two-step verification adds an app's code to it.
+The first profile is the household's admin: it runs the sources, the AI key and the settings. An adult profile can be
+private, opening with its password except on the devices its person trusts, or open with the household's parental
+code. Two-step verification adds an app's code to the password.
 
 ## [Reading](features/reading.md)
 

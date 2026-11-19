@@ -87,6 +87,8 @@ export interface AccountDevice {
   userAgent: string
   lastSeenAt: number
   current: boolean
+  // « Ne plus demander sur cet appareil »: the private profile opens here without its password.
+  trusted?: boolean
 }
 
 export interface AccountView {
@@ -95,6 +97,8 @@ export interface AccountView {
   // No password of its own: a change needs a sign-in on this device in the last 5 minutes (recentSignIn).
   loginOnly: boolean
   recentSignIn: boolean
+  // « Profil privé »: its profile asks for this password in « Qui lit ? », on every device it does not trust.
+  privateProfile?: boolean
   devices: AccountDevice[]
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: { householdGoes: boolean; household: string; others: string[] } | null
@@ -116,6 +120,13 @@ export const changeAccountEmail = (email: string, password: string) =>
 
 export const changeAccountPassword = (current: string, next: string) =>
   sendJson<AccountView>('PUT', '/account/password', { current, next })
+
+// « Profil privé »: turning it on asks for the password (and the app's code), never for turning it off.
+export const setPrivateProfile = (on: boolean, proof?: AdminProof) =>
+  sendJson<AccountView>('PUT', '/account/private', { on, ...proof })
+
+// « Redemander »: every device asks for the password again.
+export const forgetTrustedDevices = () => sendJson<AccountView>('DELETE', '/account/trusted')
 
 export const signOutDevice = (id: number) => sendJson<AccountView>('DELETE', `/account/devices/${id}`)
 
@@ -169,15 +180,18 @@ export const linkWithCode = (code: string) => sendJson<{ profileId: number }>('P
 export const resetWithCode = (code: string, password: string) =>
   sendJson<{ profileId: number; signIn?: false }>('POST', '/codes/reset', { code, password })
 
-// « Mot de passe oublié »: the link by e-mail. The answer is the same whether an account has the address or not.
-export const askResetLink = (email: string) => sendJson<object>('POST', '/password/forgot', { email })
+// « Mot de passe oublié »: a code by e-mail. The answer is the same whether an account has the address or not.
+export const askResetCode = (email: string) => sendJson<object>('POST', '/password/forgot', { email })
 
-// The link's account, while the link works.
-export const checkResetLink = (token: string) => sendJson<{ email: string }>('POST', '/password/check', { token })
+// « Demander un code », on a server that sends no e-mail: its admin is told. The same answer for any address.
+export const askAdminCode = (email: string) => sendJson<object>('POST', '/password/ask', { email })
+
+// The code's account, while the code works.
+export const checkResetCode = (code: string) => sendJson<{ email: string }>('POST', '/password/check', { code })
 
 // The new password: every other device of the account signs in again; this one is signed in.
-export const resetWithLink = (token: string, password: string) =>
-  sendJson<{ signIn: false } | null>('POST', '/password/reset', { token, password })
+export const resetWithMailedCode = (code: string, password: string) =>
+  sendJson<{ signIn: false } | null>('POST', '/password/reset', { code, password })
 
 // A young profile's own devices, in its form (Réglages > Profils).
 export interface ProfileDevice {
@@ -214,6 +228,8 @@ export interface Household {
   photo: string | null
   ai: { provider: string; providerName: string; model: string; keyHint: string } | null
   providers: AiProviderInfo[]
+  // « Code parental »: six digits asked to open an adult profile that is not private.
+  parentalCode?: boolean
 }
 
 export const getHousehold = () => getJson<Household>('/household')
@@ -245,5 +261,13 @@ export const checkAiKey = async (provider: string, key: string) =>
 // Kept only once the provider took it.
 export const setHouseholdAi = (provider: string, key: string) =>
   sendJson<Household>('PUT', '/household/ai', { provider, key })
+
+// « Code parental »: six digits; the server never sends them back.
+// With the admin's own password, and the app's code as appCode: the body's code is the new Code parental.
+export const setParentalCode = (code: string, proof: AdminProof) =>
+  sendJson<Household>('PUT', '/household/parental-code', { code, password: proof.password, appCode: proof.code })
+
+export const removeParentalCode = (proof: AdminProof) =>
+  sendJson<Household>('DELETE', '/household/parental-code', { password: proof.password, appCode: proof.code })
 
 export const removeHouseholdAi = () => sendJson<Household>('DELETE', '/household/ai')

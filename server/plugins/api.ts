@@ -70,12 +70,13 @@ export interface PluginContext {
     send: (message: PluginMailMessage) => Promise<void>
   }
   // With permissions.households: the server's households. create() sets one up with its admin: an existing account
-  // (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
+  // in no household yet (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
   // once, through « J'ai un code »). suspend(), resume() and remove() only take a household this plugin made, else
   // refuse with 'not_allowed'; remove() deletes it and all it holds, its people's accounts stay.
   households: {
     list: () => Promise<PluginHousehold[]>
     get: (id: number) => Promise<PluginHousehold | null>
+    // The household of an account, as a list of at most one: an account belongs to one household only.
     of: (accountId: number) => Promise<PluginHousehold[]>
     create: (household: {
       name: string
@@ -103,10 +104,14 @@ export interface PluginContext {
   // Serveur › Notifications. title (80 characters) and text (240), plain text, one or one per language; path: one of the plugin's sections of
   // /server and maybe a screen under it (#/server/plugin/<id>/<path>), Serveur › Notifications without one.
   // 'unknown_type' for a kind the manifest does not list; fifty a day per plugin at most, 'too_many_notices' past them.
+  // important: the plugin's key of a request someone waits on (« waitlist:12 », letters, digits and . _ : -, 100 at
+  // most): it stays under « À traiter » until serverNoticeHandled(key), and the same key still waiting is not sent again.
   notifyServerAdmin?: (
     type: string,
-    notice: { title: PluginWritten; text: PluginWritten; path?: string }
+    notice: { title: PluginWritten; text: PluginWritten; path?: string; important?: string }
   ) => Promise<void>
+  // The request of that key is handled (the person invited, refused): its notice leaves « À traiter ».
+  serverNoticeHandled?: (key: string) => Promise<void>
   // With permissions.ai, for a signed plugin ("Vérifié"): one question to the household's AI, only inside an aiActions
   // handler, which only a click on the plugin's AiButton (hodi:sdk) runs, and once per click: anywhere else it refuses
   // with 'ai_no_click', a second time with 'ai_already_asked'. Plain text: prompt (8000 characters), system (2000),
@@ -200,9 +205,6 @@ export type PluginResponse =
       status?: number
       body?: unknown
       headers?: { 'Cache-Control'?: string }
-      // routes only, with permissions.households: « Changer de foyer », this device reads in that household from now on,
-      // when the signed-in account has a profile there; « Qui lit ? » comes back. Anything else is refused and logged.
-      moveDevice?: number
     }
   | { zip: { filename: string; entries: PluginZipEntry[] } }
 

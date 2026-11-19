@@ -12,7 +12,7 @@ import AccountSection from './sections/AccountSection.tsx'
 import AiSection from './sections/AiSection.tsx'
 import FollowedSection from './sections/FollowedSection.tsx'
 import HouseholdSection from './sections/HouseholdSection.tsx'
-import MeSection from './sections/MeSection.tsx'
+import GeneralSection from './sections/GeneralSection.tsx'
 import MutedSection from './sections/MutedSection.tsx'
 import NotificationsSection from './sections/NotificationsSection.tsx'
 import ProfilesSection from './sections/ProfilesSection.tsx'
@@ -52,8 +52,8 @@ const sectionContent = ({ section, item, topics, layout, onUnauthorized }: Setti
       return <MutedSection layout={layout} />
     case 'notifications':
       return <NotificationsSection layout={layout} onUnauthorized={onUnauthorized} />
-    case 'me':
-      return <MeSection layout={layout} />
+    case 'general':
+      return <GeneralSection layout={layout} />
     case 'stats':
       return (
         <Suspense fallback={<StatsSkeleton layout={layout} />}>

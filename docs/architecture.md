@@ -67,7 +67,15 @@ in which topics, is that household's row of `household_sources`. `server/test/ho
 ### Accounts and sign-in
 
 Personal accounts live in `users`, and `profiles.user_id` says whose profile is whose. The codes of **I have a code**
-are `sign_in_codes`, and a young profile's own device is a row of `profile_devices` with a cookie of its own.
+are `sign_in_codes`, and a young profile's own device is a row of `profile_devices` with a cookie of its own. The
+session cookie holds one token per account signed in on the device, and `http/account-session.ts` reads them all
+(`sessionsOf`), finds the one whose profile is open (`sessionOf`) and drops one at sign-out (`cookieWithout`). A trusted
+device is a flag on the account's own row in `user_devices` (`http/trusted-devices.ts`).
+
+What opens a profile in _Who's in?_ is decided by `http/profile-guard.ts`: a private profile's password
+(`users.private_profile`), the household's parental code (`accounts.parental_pin_hash`) or nothing.
+`http/profile-current-routes.ts` checks it. `http/trusted-devices.ts` keeps the browsers that skip a private profile's
+password: the `hodi_trusted` cookie, checked against `user_devices.trusted`.
 
 Every sign-in of an existing account first asks `http/sign-in-check.ts`, which runs each plugin's `checkSignIn` hook.
 The server admin's sign-in is never asked, so a broken plugin cannot lock them out.
@@ -77,7 +85,10 @@ The server admin's sign-in is never asked, so a broken plugin cannot lock them o
 The routes of `#/server` are in `http/server-routes.ts`, behind `requireServerAdmin`. Its totals come from
 `db/server-stats-store.ts`, which keeps each finished day's totals for good in `server_days` and `server_day_reads`
 (`db/server-day-counts.ts`). Its durations and backup settings come from `server_settings`, and e-mail from
-`server_mail`.
+`server_mail`. Everything the server tells its admins goes through `notices/server-notifier.ts`, which first records it
+in `server_inbox` (`db/server-inbox-store.ts`, read by _Notifications_), then sends it by e-mail or push as _Alerts_
+says. A notice marked `important` stays on top until handled and is not sent twice, such as a code asked for a
+forgotten password (`notices/code-request.ts`).
 
 A backup copies the database and the plugins' databases of the same moment. **Restore** sets a copy aside, and the
 next start puts it in place, then replays every deletion made since (`db/forget-log.ts`) before anything reads it.

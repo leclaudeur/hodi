@@ -1,6 +1,6 @@
 import { Pencil, SlidersHorizontal } from 'lucide-react'
 import type { TFunction } from 'i18next'
-import { PROFILE_COLORS, type Profile, type ProfileKind, createSignInCode, makeAdmin } from '../../../api.ts'
+import { PROFILE_COLORS, type Profile, type ProfileKind, makeAdmin } from '../../../api.ts'
 import { addProfile, editProfile, isYoung, removeProfile } from '../../../lib/profiles.ts'
 import { askToConfirm } from '../../../lib/confirm.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
@@ -37,11 +37,10 @@ export const hintOf = (profile: Profile, parent: boolean, daily: Map<number, num
 interface Confirms {
   t: TFunction
   onEditing: (editing: number | 'new' | null) => void
-  onGiving: (giving: Giving) => void
 }
 
-// Removing a profile, handing over the admin role and a new password, each asked first.
-export const profileConfirms = ({ t, onEditing, onGiving }: Confirms) => ({
+// Removing a profile and handing over the admin role, each asked first.
+export const profileConfirms = ({ t, onEditing }: Confirms) => ({
   // An adult with an account: their account goes too, with the admin's password.
   remove: ({ id, name, hasAccount, kind }: Profile) =>
     askToConfirm({
@@ -83,19 +82,6 @@ export const profileConfirms = ({ t, onEditing, onGiving }: Confirms) => ({
         onEditing(null)
         window.location.reload()
       }
-    }),
-
-  // « Nouveau mot de passe »: the code hands their account over, so it is made once the admin typed their own.
-  reset: ({ id, name }: Profile) =>
-    askToConfirm({
-      title: t('confirm.resetPassword.title', { name }),
-      message: <RichText i18nKey="confirm.resetPassword.message" values={{ name }} />,
-      label: t('confirm.resetPassword.button'),
-      proof: {},
-      onConfirm: async proof => {
-        const made = await createSignInCode(id, proof)
-        onGiving({ id, name, reset: true, made })
-      }
     })
 })
 
@@ -113,7 +99,7 @@ export const editActionsOf = (
   { admin, current, withAccounts, confirms, onGiving }: EditActionsInput
 ) => {
   if (!edited || !admin) return {}
-  // An adult with an account, other than the admin: a new password, or the admin role.
+  // An adult with an account, other than the admin: the admin role. Their password is theirs alone.
   const otherAccount = edited.id !== current && edited.kind === 'adult' && edited.hasAccount
   return {
     onDelete: edited.role !== 'admin' ? () => confirms.remove(edited) : undefined,
@@ -121,7 +107,6 @@ export const editActionsOf = (
       withAccounts && edited.kind === 'adult' && !edited.hasAccount
         ? () => onGiving({ id: edited.id, name: edited.name })
         : undefined,
-    onResetPassword: otherAccount ? () => confirms.reset(edited) : undefined,
     onMakeAdmin: otherAccount && withAccounts ? () => confirms.handOver(edited) : undefined
   }
 }
@@ -151,15 +136,12 @@ export const ProfileRow = ({ profile, active, managed, editable, hint, onEdit }:
         </Chip>
       )}
       {managed && (
-        <>
-          <Chip size="row">{t(`profileForm.kinds.${profile.kind}`)}</Chip>
-          <RowButton
-            label={t('young.manage')}
-            ariaLabel={t('young.manageLabel', { name: profile.name })}
-            icon={SlidersHorizontal}
-            href={youngProfileHref(profile.id)}
-          />
-        </>
+        <RowButton
+          label={t('young.manage')}
+          ariaLabel={t('young.manageLabel', { name: profile.name })}
+          icon={SlidersHorizontal}
+          href={youngProfileHref(profile.id)}
+        />
       )}
       {!managed && editable && (
         <RowButton
@@ -177,10 +159,12 @@ interface NewProfileProps {
   open: boolean
   defaultColor: (typeof PROFILE_COLORS)[number] | undefined
   kinds: ProfileKind[]
+  // Picking Adulte invites one instead: an adult comes with their own account.
+  onInvite?: () => void
   onClose: () => void
 }
 
-export const NewProfileDialog = ({ open, defaultColor, kinds, onClose }: NewProfileProps) => {
+export const NewProfileDialog = ({ open, defaultColor, kinds, onInvite, onClose }: NewProfileProps) => {
   const { t } = useTranslation()
   return (
     <Dialog open={open} onClose={onClose} title={t('profiles.new')}>
@@ -188,6 +172,7 @@ export const NewProfileDialog = ({ open, defaultColor, kinds, onClose }: NewProf
         <ProfileForm
           defaultColor={defaultColor}
           kinds={kinds}
+          onInvite={onInvite}
           onCancel={onClose}
           onSave={async ({ name, color, photo, kind, avatar }) => {
             await addProfile(name, color, photo ?? null, { kind, avatar })

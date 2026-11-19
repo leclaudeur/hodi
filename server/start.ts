@@ -1,3 +1,4 @@
+import type { ServerNotifier } from './notices/server-notifier.ts'
 import path from 'node:path'
 import { createApp } from './app.ts'
 import type { Config } from './config.ts'
@@ -35,6 +36,7 @@ interface Running {
   applyHousehold: () => void
   icons: SourceIcons
   alerts: FollowedAlerts
+  serverNotices: ServerNotifier
   plugins: PluginRegistry
   pluginAi: PluginAi
   pluginsDir: string
@@ -89,6 +91,7 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
     throttle: running.throttle,
     serverMail: { store: stores.mailSettings, send: smtpSend },
     serverNotices: { store: stores.serverNotices, publicKey: config.vapid.publicKey },
+    serverInbox: { store: stores.serverInbox, notifier: running.serverNotices },
     passwordResets: stores.passwordResets,
     youth: stores.youth,
     plugins,
@@ -183,6 +186,7 @@ export const startHodi = async (config: Config, outside: Outside) => {
     applyHousehold,
     icons,
     alerts,
+    serverNotices,
     plugins,
     pluginAi: pluginAiCalls,
     pluginsDir,

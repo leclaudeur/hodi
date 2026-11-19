@@ -11,6 +11,7 @@ import PageGlows from '../ui/PageGlows.tsx'
 import RoundButton from '../ui/RoundButton.tsx'
 import LanguageRound from '../ui/LanguageRound.tsx'
 import styles from './SetupPage.module.css'
+import { rich } from '../ui/rich.tsx'
 
 // The pieces of the first-run screens, shared with the other full-page steps of the same kind.
 
@@ -66,7 +67,7 @@ export const StepHeader = ({ step = 0, total = 0, title, intro, help }: StepHead
           )}
         </div>
       </header>
-      <p className={styles.intro}>{intro}</p>
+      <p className={styles.intro}>{rich(intro)}</p>
     </>
   )
 }

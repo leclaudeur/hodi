@@ -85,7 +85,9 @@ export const serverNoticeRoutes = (options: NoticeRoutesOptions) => {
   router.put('/kinds/:id', (request, response) => {
     const { email, push } = (request.body ?? {}) as { email?: unknown; push?: unknown }
     const known = kindsOf(options).some(kind => kind.id === request.params.id)
-    if (!known || typeof email !== 'boolean' || typeof push !== 'boolean') {
+    // A code asked for always reaches the admin some way: someone waits on it.
+    const silenced = request.params.id === 'core:code-request' && email === false && push === false
+    if (!known || typeof email !== 'boolean' || typeof push !== 'boolean' || silenced) {
       response.status(400).json({ error: 'bad_request' })
       return
     }
