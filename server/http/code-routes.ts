@@ -13,10 +13,8 @@ import {
   decoyHashOnce,
   existingAccountOf,
   joinRequestOf,
-  resettableByCode,
   withProfileCookie
 } from './code-join.ts'
-import { type CheckProof, askingWithProof } from './proof.ts'
 import { ANYONE_IN, refuseSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
 import { type InvitationMail, invitationRoutes, inviteOf, mailInvitation } from './invitation-routes.ts'
@@ -204,43 +202,14 @@ export const codeJoinRoutes = ({ checkSignIn = ANYONE_IN, signsInHere = () => tr
 interface CodeRoutesOptions {
   codes: SignInCodeStore
   profiles: ProfileStore
-  // To refuse a reset code for the server's admin, or for an account of other households too.
   accounts?: UserAccountStore
   now: () => number
-  // « Nouveau mot de passe » for another adult opens their account: the admin's own password comes first.
-  checkProof?: CheckProof
-  // A code for a new password made: the person's request in Serveur › Notifications is handled.
-  onResetCode?: (accountId: number) => void
   // Personnes invitées: an invitation's code by e-mail, once Serveur › E-mail is set.
   mail?: InvitationMail
 }
 
-// « Nouveau mot de passe » for another adult: whether this admin may give it, or the refusal sent.
-const mayReset = async (
-  { accounts, checkProof }: Pick<CodeRoutesOptions, 'accounts' | 'checkProof'>,
-  profileId: number,
-  request: express.Request,
-  response: express.Response
-) => {
-  const account = accounts ? accounts.ofProfile(profileId) : null
-  if (account && !resettableByCode(accounts!, account)) {
-    response.status(403).json({ error: account.serverAdmin ? 'server_admin' : 'other_households' })
-    return false
-  }
-  if (!accounts || !checkProof) {
-    response.status(403).json({ error: 'account_only' })
-    return false
-  }
-  return askingWithProof(checkProof, accounts, request, response)
-}
-
-// "Connecter un appareil" or "Mot de passe oublié" for one profile: the code, or the refusal sent.
-const profileCode = async (
-  { codes, profiles, accounts, now, checkProof, onResetCode }: CodeRoutesOptions,
-  profileId: unknown,
-  request: express.Request,
-  response: express.Response
-) => {
+// "Connecter un appareil" for one profile: the code, or the refusal sent.
+const profileCode = ({ codes, profiles, now }: CodeRoutesOptions, profileId: unknown, response: express.Response) => {
   const target = typeof profileId === 'number' ? profiles.get(profileId) : null
   // One's own password changes in Réglages › Compte et données, with the current one.
   if (!target || target.id === profileIdOf(response)) {
@@ -251,12 +220,13 @@ const profileCode = async (
     response.status(403).json({ error: 'admin_only' })
     return
   }
-  const reset = !isYoung(target) && target.hasAccount
-  if (reset && !(await mayReset({ accounts, checkProof }, target.id, request, response))) return
-  const made = codes.create({ profileId: target.id, createdBy: profileIdOf(response), reset }, now())
-  const owner = reset ? accounts?.ofProfile(target.id) : null
-  if (owner) onResetCode?.(owner.id)
-  response.status(201).json(made)
+  // An adult's password is theirs: no one in the household gives them a new one. A forgotten one goes through
+  // « Mot de passe oublié », whose code only the server's admin makes (Serveur › Comptes).
+  if (!isYoung(target) && target.hasAccount) {
+    response.status(403).json({ error: 'own_password' })
+    return
+  }
+  response.status(201).json(codes.create({ profileId: target.id, createdBy: profileIdOf(response) }, now()))
 }
 
 // After the session and profile checks: making a code.
@@ -274,7 +244,7 @@ export const codeRoutes = (options: CodeRoutesOptions) => {
     }
     const profileId: unknown = request.body?.profileId
     if (profileId !== undefined && profileId !== null) {
-      await profileCode(options, profileId, request, response)
+      profileCode(options, profileId, response)
       return
     }
     if (profiles.list().length >= MAX_PROFILES) {

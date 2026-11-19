@@ -51,6 +51,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Forgot password without e-mail.** On a server that sends no e-mail, Forgot password asks the server's admin for a
   code: the admin is told (Server > Notifications, and by e-mail or push as chosen), the account shows Code asked, and
   Make a code there hands the person their 8-character code to type on the same page.
+
 - **Plugin requests under To handle.** A plugin can mark what it tells the server's admin as a request someone waits
   on, such as a waitlist sign-up: it stays under To handle in Server > Notifications until the plugin closes it.
 - **Invited people.** Settings > Profiles shows its profiles under Adults, Teens and Children, then the invitations
@@ -58,6 +59,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   Server > E-mail is set, an address to send the code to. Each invitation can be sent again (or its code shown again)
   and cancelled.
 
+- **Settings > Profiles** no longer gives another adult a new password, not even for the household's admin. The code
+  for a forgotten password comes from the server's admin only, in Server > Accounts.
 - **Forgot password with a code.** Forgot password now e-mails an 8-character code (valid an hour, once) instead of a
   link: the person types it on the page, or opens the e-mail's button, then chooses a new password and lands on a
   done screen. I have a code goes straight to the code, for someone coming back with it later. Wrong codes count

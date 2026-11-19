@@ -1,4 +1,4 @@
-import { Camera, Crown, KeyRound, Smartphone, Trash2 } from 'lucide-react'
+import { Camera, Crown, Smartphone, Trash2 } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -215,7 +215,6 @@ export const ColorField = ({ color, onColor }: { color: ProfileColor; onColor: (
 
 interface AccountProps {
   onConnect?: () => void
-  onResetPassword?: () => void
   onMakeAdmin?: () => void
 }
 
@@ -225,26 +224,20 @@ const AccountRow = ({ label, hint, children }: { label: string; hint: string; ch
   </SettingRow>
 )
 
-// An adult's account, for the admin: a code to connect it or to choose a new password, and the admin role.
+// An adult's account, for the admin: a code to connect it, and the admin role. Its password is the person's alone.
 // Nothing on a profile that is not an adult's, or for one who is not the admin.
-export const AccountRows = ({ onConnect, onResetPassword, onMakeAdmin }: AccountProps) => {
+export const AccountRows = ({ onConnect, onMakeAdmin }: AccountProps) => {
   const { t } = useTranslation()
-  if (!onConnect && !onResetPassword) return null
+  if (!onConnect && !onMakeAdmin) return null
   return (
     <div className={styles.field}>
       <span className={styles.label}>{t('profileForm.account')}</span>
       <div className={settingsStyles.card}>
         {/* Under its text, full width: beside it, the button leaves the hint two words a line. */}
-        {onConnect ? (
+        {onConnect && (
           <AccountRow label={t('profileForm.noAccount')} hint={t('profileForm.noAccountHint')}>
             <Button icon={Smartphone} wide onClick={onConnect}>
               {t('profileForm.connect')}
-            </Button>
-          </AccountRow>
-        ) : (
-          <AccountRow label={t('profileForm.forgotPassword')} hint={t('profileForm.forgotPasswordHint')}>
-            <Button icon={KeyRound} wide onClick={onResetPassword}>
-              {t('profileForm.newPassword')}
             </Button>
           </AccountRow>
         )}
