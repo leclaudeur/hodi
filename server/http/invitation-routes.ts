@@ -1,4 +1,6 @@
 import express from 'express'
+import { LoginThrottle } from '../auth/login-throttle.ts'
+import { currentHouseholdId } from '../db/household-scope.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { codeForPeople, type Invite, type SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { cleanEmail } from '../db/user-account-store.ts'
@@ -45,14 +47,35 @@ export const inviteOf = (body: unknown): Invite | null | 'invalid' => {
 // Whether the server can send the code: Serveur › E-mail set, with the app's address for the link.
 const canMail = (mail: InvitationMail | undefined) => mail !== undefined && mail.store.canSendLinks()
 
-// The code by e-mail, after the answer: a failure is logged, the code still shows in the list.
+// Each e-mail goes to any address a person typed: a household sends a few a day at most, and the whole server a few
+// hundred, so the server's address never becomes a way to write to strangers. Past them the code still shows, to give
+// by hand.
+export const INVITATION_MAILS_PER_DAY = 10
+const SERVER_INVITATION_MAILS_PER_DAY = 300
+const DAY_MS = 24 * 60 * 60 * 1000
+const budgets = new WeakMap<InvitationMail, LoginThrottle>()
+
+const spendMail = (mail: InvitationMail, now: number) => {
+  let budget = budgets.get(mail)
+  if (!budget) {
+    budget = new LoginThrottle(INVITATION_MAILS_PER_DAY, DAY_MS, SERVER_INVITATION_MAILS_PER_DAY)
+    budgets.set(mail, budget)
+  }
+  const household = `household:${currentHouseholdId()}`
+  if (!budget.check(now, household).allowed) return false
+  budget.recordFailure(now, household)
+  return true
+}
+
+// The code by e-mail, after the answer: a failure is logged, the code still shows in the list. false when nothing
+// was sent.
 export const mailInvitation = (
   mail: InvitationMail | undefined,
-  { to, code, inviter }: { to: string; code: string; inviter: number }
+  { to, code, inviter, now }: { to: string; code: string; inviter: number; now: number }
 ) => {
   const settings = mail?.store.get()
   const appUrl = mail?.store.appUrl()
-  if (!mail || !settings || !appUrl) return false
+  if (!mail || !settings || !appUrl || !spendMail(mail, now)) return false
   const language = mail.languageOf(inviter)
   const t = textsIn(language)
   const { name, household } = mail.inviterOf(inviter)
@@ -101,7 +124,7 @@ export const invitationRoutes = ({ codes, now, mail }: InvitationOptions) => {
       return
     }
     const email = renewed.invite?.email ?? null
-    const sent = email !== null && mailInvitation(mail, { to: email, code: renewed.code, inviter })
+    const sent = email !== null && mailInvitation(mail, { to: email, code: renewed.code, inviter, now: now() })
     response.status(201).json({ code: renewed.code, expiresAt: renewed.expiresAt, sent })
   })
 

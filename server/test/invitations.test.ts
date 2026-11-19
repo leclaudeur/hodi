@@ -11,6 +11,7 @@ import { HouseholdStore } from '../db/household-store.ts'
 import { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
+import { INVITATION_MAILS_PER_DAY } from '../http/invitation-routes.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
 import type { MailMessage } from '../mail/mailer.ts'
@@ -150,6 +151,20 @@ describe('Personnes invitées', () => {
     assert.equal(await check(first.code), 403)
     assert.equal(await check(second.code), 200)
     assert.equal((await list()).invitations.filter(invitation => invitation.name === 'Paul').length, 1)
+  })
+
+  it('sends a few e-mails a day at most, and still gives the code past them', async () => {
+    const results: boolean[] = []
+    for (let index = 0; index < INVITATION_MAILS_PER_DAY; index++) {
+      const made = await call('/codes', adult, 'POST', { name: `Ami ${index}`, email: `ami${index}@example.com` })
+      assert.equal(made.status, 201)
+      const { code, sent: mailed } = (await made.json()) as { code: string; sent: boolean }
+      assert.match(code, /^[A-Z2-9]{8}$/)
+      results.push(mailed)
+    }
+    // The test before sent two: the last ones of the day go by hand.
+    assert.deepEqual(results.slice(-2), [false, false])
+    assert.ok(results.slice(0, -2).every(Boolean))
   })
 
   it('cancels an invitation: its code works no more', async () => {

@@ -283,7 +283,9 @@ export const codeRoutes = (options: CodeRoutesOptions) => {
     }
     const inviter = profileIdOf(response)
     const made = codes.create({ createdBy: inviter, invite }, now())
-    const sent = invite?.email ? mailInvitation(options.mail, { to: invite.email, code: made.code, inviter }) : false
+    const sent = invite?.email
+      ? mailInvitation(options.mail, { to: invite.email, code: made.code, inviter, now: now() })
+      : false
     response.status(201).json({ ...made, sent })
   })
   router.use('/invitations', invitationRoutes({ codes, now, mail: options.mail }))
