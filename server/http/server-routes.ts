@@ -244,8 +244,8 @@ const mountInviteRoutes = (
     response.status(201).json({ profile: { id: admin.id, name: admin.name }, ...code })
   })
 
-  // "Mot de passe oublié" for an adult's account: a code that lets that person choose a new password. One's own
-  // password changes in Réglages › Compte et données, with the current one.
+  // "Mot de passe oublié" for an adult's account, once they asked: a code that lets them choose a new password. No one
+  // gets into another's account unasked.
   router.post('/accounts/:id/code', async (request, response) => {
     const account = people.accounts().find(entry => entry.id === Number(request.params.id))
     const profile = account?.profile ? profiles.get(account.profile.id) : null
@@ -253,8 +253,9 @@ const mountInviteRoutes = (
       response.status(404).json({ error: 'not_found' })
       return
     }
-    if (profile.id === profileIdOf(response)) {
-      response.status(400).json({ error: 'bad_request' })
+    // One's own password changes in Réglages › Mon compte, with the current one.
+    if (profile.id === profileIdOf(response) || (codeRequests?.askedAt(account.id) ?? null) === null) {
+      response.status(409).json({ error: 'not_asked' })
       return
     }
     if (!(await proven(request, response))) return

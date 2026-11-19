@@ -298,19 +298,15 @@ describe('server overview route', () => {
     const checked = await call('/codes/check', '', 'POST', { code: inviteCode })
     assert.equal(((await checked.json()) as { kind: string }).kind, 'invite')
 
+    // A new password for Sam only once Sam asked for one (server-inbox.test.ts): no one gets in unasked.
     const samCode = `/server/accounts/${byEmail['sam@example.com']!.id}/code`
-    // It opens Sam's account: the server admin's own password first.
-    assert.equal((await call(samCode, adminCookie, 'POST')).status, 403)
-    const reset = await call(samCode, adminCookie, 'POST', { password: 'une phrase de passe assez longue' })
-    assert.equal(reset.status, 201)
-    const { code: resetCode } = (await reset.json()) as { code: string }
-    const resetUse = await call('/codes/check', '', 'POST', { code: resetCode })
-    assert.equal(((await resetUse.json()) as { kind: string }).kind, 'reset')
+    const unasked = await call(samCode, adminCookie, 'POST', { password: 'une phrase de passe assez longue' })
+    assert.deepEqual([unasked.status, await unasked.json()], [409, { error: 'not_asked' }])
 
-    // One's own password changes with the current one, in Réglages › Compte et données.
+    // One's own password changes with the current one, in Réglages › Mon compte.
     assert.equal(
       (await call(`/server/accounts/${byEmail['antho@example.com']!.id}/code`, adminCookie, 'POST')).status,
-      400
+      409
     )
     assert.equal((await call('/server/accounts/999/code', adminCookie, 'POST')).status, 404)
   })

@@ -186,6 +186,16 @@ describe('« Demander un code »', () => {
     })
     assert.equal(silenced.status, 400)
     assert.equal((await call('/server/inbox', '')).status, 401)
+
+    // The code made, with the server admin's own password first: the request is handled, and no second code comes.
+    const samCode = `/server/accounts/${samId}/code`
+    assert.equal((await call(samCode, admin, 'POST')).status, 403)
+    const made = await call(samCode, admin, 'POST', { password: PASSWORD })
+    assert.equal(made.status, 201)
+    const { code } = (await made.json()) as { code: string }
+    const checked = await call('/codes/check', '', 'POST', { code })
+    assert.equal(((await checked.json()) as { kind: string }).kind, 'reset')
+    assert.equal((await call(samCode, admin, 'POST', { password: PASSWORD })).status, 409)
   })
 
   it('is « Mot de passe oublié »’s e-mail instead, once Serveur › E-mail is set', async () => {

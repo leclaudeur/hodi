@@ -121,22 +121,6 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
 
       {account.profile && (
         <>
-          <h2 className={styles.label}>{t('server.people.account.reset')}</h2>
-          <div className={styles.card}>
-            {account.serverAdmin ? (
-              <SettingRow label={t('server.people.account.resetLabel')} hint={t('server.people.account.own')} />
-            ) : (
-              <SettingRow
-                label={t('server.people.account.resetLabel')}
-                hint={t('server.people.account.resetHint')}
-                action={{
-                  label: t('server.people.account.resetLabel'),
-                  icon: KeyRound,
-                  onClick: () => reset(account.profile!.name)
-                }}
-              />
-            )}
-          </div>
           <CodeDialog
             target={made ? { id: account.profile.id, name: account.profile.name, reset: true } : undefined}
             onClose={() => setMade(null)}

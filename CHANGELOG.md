@@ -13,6 +13,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Another adult's profile is theirs.** In Settings > Profiles, the household's admin no longer edits the name, colour
   or photo of an adult who has their own account: their row has Remove (from the household) and a round button to hand
   over the admin role. The server refuses the change too.
+- **A code for a forgotten password only when asked.** Server > Accounts no longer offers Make a code on every account:
+  it shows only in the notice of a person who asked for one, and the server refuses a code nobody asked for.
 
 ## [1.0.0-beta.13] - 2026-11-19
 
