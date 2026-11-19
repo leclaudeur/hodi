@@ -1,8 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LANGUAGES, LANGUAGE_NAMES, setChosenLanguage, useLanguage } from '../lib/i18n.ts'
-import { useIsDesktop, useIsPhone } from '../lib/use-media.ts'
+import { useIsDesktop } from '../lib/use-media.ts'
 import Button from '../ui/Button.tsx'
 import Copyright from '../ui/Copyright.tsx'
 import DialogActions from '../ui/DialogActions.tsx'
@@ -10,39 +9,26 @@ import HelpButton from '../ui/HelpButton.tsx'
 import Logo from '../ui/Logo.tsx'
 import PageGlows from '../ui/PageGlows.tsx'
 import RoundButton from '../ui/RoundButton.tsx'
-import Segmented from '../ui/Segmented.tsx'
+import LanguageRound from '../ui/LanguageRound.tsx'
 import styles from './SetupPage.module.css'
 import { rich } from '../ui/rich.tsx'
 
 // The pieces of the first-run screens, shared with the other full-page steps of the same kind.
 
 // The logo and the language at the top, the step in the middle, the licence at the foot, the glows behind.
-export const SetupFrame = ({ children }: { children: ReactNode }) => {
-  const { t } = useTranslation()
-  const language = useLanguage()
-  return (
-    <div className={styles.page}>
-      <PageGlows />
-      <div className={styles.top}>
-        <Logo size={34} />
-        <Segmented
-          label={t('language.label')}
-          value={language}
-          onChange={setChosenLanguage}
-          options={LANGUAGES.map(option => ({
-            value: option,
-            title: LANGUAGE_NAMES[option],
-            label: option.toUpperCase()
-          }))}
-        />
-      </div>
-      <main className={styles.main}>{children}</main>
-      <footer>
-        <Copyright className={styles.copyright} />
-      </footer>
+export const SetupFrame = ({ children }: { children: ReactNode }) => (
+  <div className={styles.page}>
+    <PageGlows />
+    <div className={styles.top}>
+      <Logo size={34} />
+      <LanguageRound />
     </div>
-  )
-}
+    <main className={styles.main}>{children}</main>
+    <footer>
+      <Copyright className={styles.copyright} />
+    </footer>
+  </div>
+)
 
 interface StepHeaderProps {
   // From 1 with total, the stepper above the title; without, none.
@@ -97,10 +83,10 @@ export const Actions = ({
   children: ReactNode
 }) => {
   const { t } = useTranslation()
-  // Three buttons don't fit a phone's card: « Retour » keeps only its arrow there, as a settings row's action.
-  const round = useIsPhone() && start != null
+  // With a third button, « Retour » keeps only its arrow at every size, so the footer holds one line.
+  const round = start != null
   return (
-    <DialogActions className={styles.actions}>
+    <DialogActions className={`${styles.actions} ${round ? styles.three : ''}`}>
       {onBack &&
         (round ? (
           <RoundButton icon={ArrowLeft} label={t('common.back')} size={44} onClick={onBack} />

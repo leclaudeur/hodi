@@ -72,6 +72,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   done screen. I have a code goes straight to the code, for someone coming back with it later. Wrong codes count
   against the device, as sign-in attempts do.
 
+- **Language on the signed-out screens.** Sign-in, I have a code, Forgot password and the setup show the language as a
+  round button with the other language's code, as on the public site; sign-in has it too now. With three buttons in a
+  step's footer, Back keeps only its arrow at every size.
+
 ### Fixed
 
 - **Info lines and checkboxes.** The icon of an info or error line sits on the middle of its text, and the
