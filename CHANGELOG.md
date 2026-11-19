@@ -16,6 +16,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Forgot password without e-mail.** On a server that sends no e-mail, Forgot password asks the server's admin for a
   code: the admin is told (Server > Notifications, and by e-mail or push as chosen), the account shows Code asked, and
   Make a code there hands the person their 8-character code to type on the same page.
+- **Plugin requests under To handle.** A plugin can mark what it tells the server's admin as a request someone waits
+  on, such as a waitlist sign-up: it stays under To handle in Server > Notifications until the plugin closes it.
 
 ### Changed
 

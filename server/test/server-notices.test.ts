@@ -163,7 +163,8 @@ describe('server notices', () => {
     assert.deepEqual(pluginServerNotice({ title: ' Nouveau foyer ', text: 'Les Dupont.', path: 'households/4' }), {
       title: 'Nouveau foyer',
       text: 'Les Dupont.',
-      path: 'households/4'
+      path: 'households/4',
+      important: null
     })
     const refused = [
       null,

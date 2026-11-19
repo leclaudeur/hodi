@@ -13,6 +13,10 @@ and never touch `version`; a small release pull request raises `version` and mov
 ### Added
 
 - **A green notice.** `Notice` takes `tone="success"`, for what just worked.
+- **A server notice that waits.** `ctx.notifyServerAdmin(type, { …, important: 'waitlist:12' })` marks a request
+  someone waits on: it stays under « À traiter » in Serveur › Notifications, and the same key still waiting is not
+  sent again, until `ctx.serverNoticeHandled('waitlist:12')`. Keys are the plugin's own (letters, digits, `. _ : -`,
+  100 at most). In the testing kit, such a notice in `serverNotices` has `waiting`, true until it is handled.
 
 ## [1.0.0-beta.5] - 2026-11-18
 

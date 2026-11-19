@@ -38,6 +38,8 @@ export interface ServerNotifier {
     notice: ServerNoticeIn,
     options?: { important?: string }
   ) => Promise<{ emails: number; pushes: number }>
+  // The request of that key is handled: it leaves « À traiter ».
+  handled?: (key: string) => void
 }
 
 interface NotifierDeps {
@@ -151,5 +153,6 @@ export const serverNotifier = (deps: NotifierDeps): ServerNotifier => ({
       if (choice.push) pushes += await pushTo(deps.store.devices(account.id), payloadOf(type, notice), deps)
     }
     return { emails, pushes }
-  }
+  },
+  handled: key => deps.inbox?.handle(key, (deps.now ?? Date.now)())
 })

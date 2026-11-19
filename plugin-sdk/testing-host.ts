@@ -118,6 +118,8 @@ export const startSmallHodi = async (
   const { db, householdId, accounts, store, profiles } = openHousehold(options, now)
   const { mails, notifications, serverNotices, questions, log } = recorded
   const answer = options.ai
+  // The important notices still under « À traiter », by key.
+  const waiting = new Map<string, { waiting?: boolean }>()
   // One for the AiButton's route and ctx.ai, as in Hodi: the hourly count is theirs together.
   const ai = pluginAi({
     isOff: () => false,
@@ -162,9 +164,18 @@ export const startSmallHodi = async (
     // What the server's admin would be told, as Hodi builds it, without choosing how.
     serverNotifier: pluginServerNotifier({
       notifier: {
-        tell: async (type, notice) => {
-          serverNotices.push({ type, ...(typeof notice === 'function' ? notice('fr') : notice) })
+        tell: async (type, notice, { important } = {}) => {
+          // As in Hodi: the same request still waiting is not told again.
+          if (important && waiting.has(important)) return { emails: 0, pushes: 0 }
+          const told = { type, ...(typeof notice === 'function' ? notice('fr') : notice) }
+          if (important) waiting.set(important, Object.assign(told, { waiting: true }))
+          serverNotices.push(told)
           return { emails: 0, pushes: 0 }
+        },
+        handled: key => {
+          const told = waiting.get(key)
+          if (told) told.waiting = false
+          waiting.delete(key)
         }
       },
       log: line => log.push(line)
