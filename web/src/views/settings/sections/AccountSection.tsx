@@ -18,6 +18,7 @@ import styles from '../Settings.module.css'
 import { PluginSlots } from '../../../plugins/Slots.tsx'
 import AccountProfile from './AccountProfile.tsx'
 import HouseholdCard from './HouseholdCard.tsx'
+import KeptStatsCard from './KeptStatsCard.tsx'
 import { DeviceRows, TwoFactorRow, confirmDelete, labelOf } from './AccountRows.tsx'
 import PrivateProfileRow from './PrivateProfileRow.tsx'
 
@@ -228,6 +229,8 @@ const AccountSection = ({ layout, onUnauthorized, intro: ownIntro }: AccountSect
       </div>
 
       <HouseholdCard account={account} />
+
+      {account.kept && <KeptStatsCard kept={account.kept} />}
 
       <DataRows account={account} />
 

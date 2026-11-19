@@ -1,6 +1,7 @@
 import { type Database, transaction } from './database.ts'
 import { type RowKey, recordForget, resetHousehold, rowKey } from './forget-log.ts'
 import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
+import { keptRowsOf, keptStatsOf } from './kept-stats.ts'
 import type { Profile, ProfileStore } from './profile-store.ts'
 import type { UserAccount, UserAccountStore } from './user-account-store.ts'
 
@@ -286,7 +287,9 @@ export const accountCopy = (
     exportedAt: new Date(now).toISOString(),
     account: { ...(user as object), serverAdmin: account.serverAdmin, devices },
     household: { ...(household as object), profiles },
-    you: own
+    you: own,
+    // What it read and earned in a household it left, kept until it joins one again.
+    kept: keptRowsOf(db, account.id)
   }
 }
 
@@ -296,6 +299,10 @@ export class AccountDataStore {
 
   constructor(db: Database) {
     this.#db = db
+  }
+
+  kept(accountId: number) {
+    return keptStatsOf(this.#db, accountId)
   }
 
   copy(account: UserAccount, profileId: number | null, now: number) {

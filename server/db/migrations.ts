@@ -962,6 +962,52 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE article_images ADD COLUMN width INTEGER;
   ALTER TABLE article_images ADD COLUMN page_checked TEXT;
+  `,
+  // What an account read and earned stays its own when its profile goes (it left the household, or was removed from
+  // it): kept with the account in no household, back on the profile it is linked to when it joins one again. Deleting
+  // the account deletes them.
+  `
+  CREATE TABLE kept_readings (
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    article_id TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    source_name TEXT NOT NULL,
+    topic_id TEXT,
+    minutes INTEGER NOT NULL,
+    read_at INTEGER NOT NULL,
+    kind TEXT NOT NULL,
+    done INTEGER,
+    progress REAL,
+    position REAL,
+    estimate REAL,
+    set_aside INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, article_id)
+  );
+  CREATE TABLE kept_game_events (
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    ref TEXT NOT NULL,
+    points INTEGER NOT NULL,
+    at INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    hour INTEGER NOT NULL,
+    topic_id TEXT,
+    PRIMARY KEY (user_id, kind, ref)
+  );
+  CREATE TRIGGER profiles_keep_stats BEFORE DELETE ON profiles WHEN OLD.user_id IS NOT NULL BEGIN
+    INSERT OR REPLACE INTO kept_readings (user_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside)
+      SELECT OLD.user_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside FROM readings WHERE profile_id = OLD.id;
+    INSERT OR REPLACE INTO kept_game_events (user_id, kind, ref, points, at, day, hour, topic_id)
+      SELECT OLD.user_id, kind, ref, points, at, day, hour, topic_id FROM game_events WHERE profile_id = OLD.id;
+  END;
+  CREATE TRIGGER profiles_restore_stats AFTER UPDATE OF user_id ON profiles WHEN NEW.user_id IS NOT NULL BEGIN
+    INSERT OR IGNORE INTO readings (profile_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside)
+      SELECT NEW.id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside FROM kept_readings WHERE user_id = NEW.user_id;
+    INSERT OR IGNORE INTO game_events (profile_id, kind, ref, points, at, day, hour, topic_id)
+      SELECT NEW.id, kind, ref, points, at, day, hour, topic_id FROM kept_game_events WHERE user_id = NEW.user_id;
+    DELETE FROM kept_readings WHERE user_id = NEW.user_id;
+    DELETE FROM kept_game_events WHERE user_id = NEW.user_id;
+  END;
   `
 ]
 

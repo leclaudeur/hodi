@@ -1058,6 +1058,15 @@
         "skimmed_other": "survolées"
       }
     },
+    "kept": {
+      "intro": "Celles du foyer que tu as quitté. Elles restent à toi et reviennent sur ton profil quand tu rejoins un foyer.",
+      "articles_one": "article lu",
+      "articles_other": "articles lus",
+      "videos_one": "vidéo vue",
+      "videos_other": "vidéos vues",
+      "points_one": "point",
+      "points_other": "points"
+    },
     "loading": "Chargement des statistiques",
     "intro": "Ce que tu as lu, sur tous les appareils. Un article est lu quand tu l’as parcouru jusqu’à 80 % et que tu y as passé au moins un tiers de son temps de lecture ; une vidéo, vue à 80 %. Au-delà de 15 %, il reste en cours et t’attend dans <i>Reprendre</i> ; en dessous, il est survolé."
   },
@@ -1931,8 +1940,8 @@
     },
     "leaveHousehold": {
       "title": "Quitter {{name}} ?",
-      "message": "Ton profil dans <b>{{name}}</b> s’en va, avec ce que tu y as lu, enregistré et suivi. Ton compte <b>{{email}}</b> reste : un adulte d’un foyer pourra t’y inviter avec un code.",
-      "messageAdmin": "Ton profil dans <b>{{name}}</b> s’en va, avec ce que tu y as lu, enregistré et suivi, et <b>{{heir}}</b> devient l’admin du foyer. Ton compte <b>{{email}}</b> reste : un adulte d’un foyer pourra t’y inviter avec un code.",
+      "message": "Ton profil dans <b>{{name}}</b> s’en va, avec ce que tu y as enregistré et suivi. Ton compte <b>{{email}}</b> reste, avec tes statistiques et tes points : un adulte d’un foyer pourra t’y inviter avec un code.",
+      "messageAdmin": "Ton profil dans <b>{{name}}</b> s’en va, avec ce que tu y as enregistré et suivi, et <b>{{heir}}</b> devient l’admin du foyer. Ton compte <b>{{email}}</b> reste, avec tes statistiques et tes points : un adulte d’un foyer pourra t’y inviter avec un code.",
       "button": "Quitter le foyer"
     },
     "cancelInvitation": {

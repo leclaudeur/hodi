@@ -8,6 +8,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Stats and points stay with the account.** Leaving a household, or being removed from it, no longer loses what a
+  person read and earned: My account shows their stats while they are in no household, and they come back on their
+  profile when they join a household again. Deleting the account deletes them.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My

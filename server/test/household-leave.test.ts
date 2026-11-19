@@ -90,7 +90,19 @@ const start = async () => {
   ).json()) as { id: number }
   const sam = cookiesFrom(await call('/login', '', 'POST', { email: 'sam@example.com', password: SAM_PASSWORD }))
   const anthoAccount = accounts.byEmail('antho@example.com')!
-  return { call, admin, sam, samId, samAccount, leaId, anthoAccount, accounts, profiles, close: () => server.close() }
+  return {
+    db,
+    call,
+    admin,
+    sam,
+    samId,
+    samAccount,
+    leaId,
+    anthoAccount,
+    accounts,
+    profiles,
+    close: () => server.close()
+  }
 }
 
 describe('leaving the household from Mon compte', () => {
@@ -173,6 +185,73 @@ describe('leaving the household from Mon compte', () => {
       const refused = await env.call('/account/leave', child, 'POST', { password: ADMIN_PASSWORD })
       assert.equal(refused.status, 403)
       assert.ok(env.accounts.profileOf(env.anthoAccount.id))
+    } finally {
+      env.close()
+    }
+  })
+
+  it('keeps what the person read and earned with the account, back on the profile of the household they join', async () => {
+    const env = await start()
+    try {
+      const read = env.db.prepare(
+        `INSERT INTO readings (profile_id, article_id, source_id, source_name, minutes, read_at, kind, done)
+         VALUES (?, ?, 'rtbf', 'RTBF', ?, 1, ?, ?)`
+      )
+      read.run(env.samId, 'a1', 4, 'article', null)
+      read.run(env.samId, 'a2', 2, 'article', 0)
+      read.run(env.samId, 'v1', 6, 'video', 1)
+      env.db
+        .prepare(
+          `INSERT INTO game_events (profile_id, kind, ref, points, at, day, hour) VALUES (?, 'article_read', 'a1', 10, 1, '2026-11-19', 9)`
+        )
+        .run(env.samId)
+      const view = async () => ((await (await env.call('/account', env.sam)).json()) as { kept: unknown }).kept
+
+      // In the household, the stats are on its profile: nothing kept apart.
+      assert.equal(await view(), null)
+      assert.equal((await env.call('/account/leave', env.sam, 'POST', { password: SAM_PASSWORD })).status, 204)
+      // The unfinished article does not count as read.
+      assert.deepEqual(await view(), { articles: 1, videos: 1, minutes: 10, points: 10 })
+      const copy = (await (await env.call('/account/copy', env.sam)).json()) as {
+        kept: { readings: unknown[]; gameEvents: unknown[] }
+      }
+      assert.deepEqual([copy.kept.readings.length, copy.kept.gameEvents.length], [3, 1])
+
+      // Back in a household: the new profile has them, the account keeps nothing apart any more.
+      const { id: again } = (await (
+        await env.call('/profiles', env.admin, 'POST', { name: 'Sam', color: 'monde', kind: 'adult' })
+      ).json()) as { id: number }
+      env.accounts.linkProfile(env.samAccount.id, again)
+      const back = env.db.prepare('SELECT article_id FROM readings WHERE profile_id = ? ORDER BY article_id').all(again)
+      assert.deepEqual(
+        back.map(row => row.article_id),
+        ['a1', 'a2', 'v1']
+      )
+      const points = env.db.prepare('SELECT SUM(points) AS points FROM game_events WHERE profile_id = ?').get(again)
+      assert.equal(points?.points, 10)
+      assert.equal(env.db.prepare('SELECT COUNT(*) AS n FROM kept_readings').get()?.n, 0)
+      assert.equal(env.db.prepare('SELECT COUNT(*) AS n FROM kept_game_events').get()?.n, 0)
+    } finally {
+      env.close()
+    }
+  })
+
+  it('keeps them for an adult the admin removes too, and forgets them with the account', async () => {
+    const env = await start()
+    try {
+      env.db
+        .prepare(
+          `INSERT INTO game_events (profile_id, kind, ref, points, at, day, hour) VALUES (?, 'article_read', 'a1', 10, 1, '2026-11-19', 9)`
+        )
+        .run(env.samId)
+      env.profiles.delete(env.samId)
+      const kept = () => env.db.prepare('SELECT COUNT(*) AS n FROM kept_game_events').get()?.n
+      assert.equal(kept(), 1)
+      // A child's profile has no account: nothing to keep.
+      env.profiles.delete(env.leaId)
+      assert.equal(kept(), 1)
+      env.db.prepare('DELETE FROM users WHERE id = ?').run(env.samAccount.id)
+      assert.equal(kept(), 0)
     } finally {
       env.close()
     }

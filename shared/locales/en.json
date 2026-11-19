@@ -1058,6 +1058,15 @@
         "skimmed_other": "skimmed"
       }
     },
+    "kept": {
+      "intro": "From the household you left. They stay yours and come back on your profile when you join a household.",
+      "articles_one": "article read",
+      "articles_other": "articles read",
+      "videos_one": "video watched",
+      "videos_other": "videos watched",
+      "points_one": "point",
+      "points_other": "points"
+    },
     "loading": "Loading the stats",
     "intro": "What you read, on all your devices. An article is read once you scrolled through 80% of it and spent at least a third of its reading time on it; a video, once 80% watched. Past 15%, it stays in progress and waits for you in <i>Pick up</i>; below that, it was skimmed."
   },
@@ -1931,8 +1940,8 @@
     },
     "leaveHousehold": {
       "title": "Leave {{name}}?",
-      "message": "Your profile in <b>{{name}}</b> goes, with what you read, saved and followed there. Your account <b>{{email}}</b> stays: an adult of a household can invite you there with a code.",
-      "messageAdmin": "Your profile in <b>{{name}}</b> goes, with what you read, saved and followed there, and <b>{{heir}}</b> becomes the household’s admin. Your account <b>{{email}}</b> stays: an adult of a household can invite you there with a code.",
+      "message": "Your profile in <b>{{name}}</b> goes, with what you saved and followed there. Your account <b>{{email}}</b> stays, with your stats and points: an adult of a household can invite you there with a code.",
+      "messageAdmin": "Your profile in <b>{{name}}</b> goes, with what you saved and followed there, and <b>{{heir}}</b> becomes the household’s admin. Your account <b>{{email}}</b> stays, with your stats and points: an adult of a household can invite you there with a code.",
       "button": "Leave the household"
     },
     "cancelInvitation": {
@@ -2433,7 +2442,6 @@
       }
     },
     "backups": {
-      "intro": "Every night, a copy of the whole database and of the plugins’ data. It holds everyone’s data: your password protects it, and keeping one off the server is wise. A single account’s copy is in Settings › My account.",
       "intro": "Every night, a copy of the whole database and of the plugins’ data. It holds everyone’s data: your password protects it, and keeping one off the server is wise. A single account’s copy is in <i>Settings › My account</i>.",
       "settings": "Settings",
       "kept": "Copies kept",
