@@ -7,16 +7,18 @@ interface CheckboxProps {
   onChange: (checked: boolean) => void
   children: ReactNode
   disabled?: boolean
+  // Right under a field (« J'ai au moins 13 ans » under the password): the check lines up with the field's icon.
+  underField?: boolean
 }
 
 // A statement the person ticks ("J'ai au moins 13 ans"): the square check of "Partager à", then its text.
-const Checkbox = ({ checked, onChange, children, disabled = false }: CheckboxProps) => (
+const Checkbox = ({ checked, onChange, children, disabled = false, underField = false }: CheckboxProps) => (
   <button
     type="button"
     role="checkbox"
     aria-checked={checked}
     disabled={disabled}
-    className={styles.row}
+    className={`${styles.row} ${underField ? styles.underField : ''}`}
     onClick={() => onChange(!checked)}
   >
     <span className={`${styles.check} ${checked ? styles.on : ''}`} aria-hidden="true">

@@ -2,6 +2,7 @@ import type express from 'express'
 import { LoginThrottle } from '../auth/login-throttle.ts'
 import type { AppOptions } from '../app-options.ts'
 import type { Config } from '../config.ts'
+import { inHousehold } from '../db/household-scope.ts'
 import { accountSession } from '../http/account-session.ts'
 import { Presence } from '../http/presence.ts'
 import { profileDeviceSession } from '../http/profile-device-session.ts'
@@ -9,6 +10,7 @@ import { PIN_GLOBAL_MAX_FAILURES, PIN_MAX_FAILURES } from '../http/profile-route
 import { accountAsking, askingWithProof, proofCheck, type CheckProof } from '../http/proof.ts'
 import type { RouteProof } from '../http/plugin-routes.ts'
 import { readerContext, type ReaderContext } from '../http/reader-context.ts'
+import { type TrustedDevices, trustedDevices } from '../http/trusted-devices.ts'
 import { AI_PROVIDERS } from '../news/ai-providers.ts'
 import { YouthSources } from '../news/youth-sources.ts'
 import { householdOptionsOf } from './household-options.ts'
@@ -26,6 +28,8 @@ export interface Wiring {
   presence: Presence
   session: ReturnType<typeof accountSession>
   linkedDevices: ReturnType<typeof profileDeviceSession>
+  // « Ne plus demander sur cet appareil »; null without accounts.
+  trust: TrustedDevices | null
   // The person's own password before what cannot be undone (proof.ts).
   checkProof: CheckProof
   // In /server, the server admin's « Validation en deux étapes » must be on too.
@@ -88,7 +92,12 @@ const youthSourcesOf = ({ youth, sources, users, profiles, news, now }: Options)
 export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
   const options = withDefaults(appOptions)
   const { accounts, devices, profileDevices, news, users, profiles, now } = options
-  const session = accountSession(accounts, devices, config.sessionSecret, now)
+  // The version a profile's cookie is signed for, in that profile's household: null for no such profile.
+  const profileVersionOf = (id: number) => {
+    const householdId = profiles?.householdOf(id) ?? null
+    return householdId === null ? null : inHousehold(householdId, () => profiles?.lock(id)?.version ?? null)
+  }
+  const session = accountSession(accounts, devices, config.sessionSecret, now, profileVersionOf)
   const youthSources = youthSourcesOf(options)
   const householdOptions = householdOptionsOf(config, options, session)
   return {
@@ -97,6 +106,7 @@ export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
     presence: new Presence(),
     session,
     linkedDevices: profileDeviceSession(profileDevices, config.sessionSecret, now),
+    trust: devices ? trustedDevices({ devices, session }) : null,
     ...proofsOf(options, session),
     householdOptions,
     youthSources,

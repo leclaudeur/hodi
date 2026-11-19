@@ -7,10 +7,11 @@ import type { Profile, ProfileStore } from '../db/profile-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerStatsStore } from '../db/server-stats-store.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
-import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
+import type { UserDeviceStore } from '../db/user-device-store.ts'
 import type { accountSession } from './account-session.ts'
 import type { Presence } from './presence.ts'
 import type { profileDeviceSession } from './profile-device-session.ts'
+import { isHere } from './profile-current-routes.ts'
 import { guardOf } from './profile-guard.ts'
 
 export interface SessionGuardOptions {
@@ -22,6 +23,8 @@ export interface SessionGuardOptions {
   serverStats?: ServerStatsStore
   presence: Presence
   sessionOf: ReturnType<typeof accountSession>['sessionOf']
+  // Every account signed in on this device; absent in tests without accounts.
+  sessionsOf?: ReturnType<typeof accountSession>['sessionsOf']
   cookieFor: ReturnType<typeof accountSession>['cookieFor']
   linkedDevices: ReturnType<typeof profileDeviceSession>
   secret: Buffer
@@ -69,14 +72,9 @@ const householdHelpers = ({
   serverSettings,
   sessionOf
 }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'household' | 'serverSettings' | 'sessionOf'>) => {
-  // The household a signed-in device reads in: the one it was moved to while its account has a profile there, else
-  // its account's first.
-  const householdOfSession = ({ account, device }: { account: UserAccount; device: UserDevice | null }) => {
-    if (!accounts) return null
-    const moved = device?.householdId ?? null
-    if (moved !== null && accounts.profileOf(account.id, moved) !== null) return moved
-    return accounts.householdOf(account.id)
-  }
+  // The household a signed-in device reads in: its account's own, the only one it has.
+  const householdOfSession = ({ account }: { account: UserAccount }) =>
+    accounts ? accounts.householdOf(account.id) : null
 
   // Whether the household this request reads in is set up. isSetUp() reads the household of the scope, the first one
   // here: a server whose first household was left for later still has the households a plugin made, set up from the
@@ -183,7 +181,13 @@ const serverOnlyLocals = (response: express.Response) => {
 
 // The profile a request is for, and whether it is chosen on this device or the device reads as nobody.
 const profileOfRequest = (
-  { accounts, profiles, secret }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'secret'>,
+  {
+    accounts,
+    profiles,
+    household,
+    sessionsOf,
+    secret
+  }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'household' | 'sessionsOf' | 'secret'>,
   request: express.Request,
   linkedId: number | undefined
 ) => {
@@ -193,13 +197,20 @@ const profileOfRequest = (
     id => profiles?.lock(id)?.version ?? 0
   )
   const known = profiles?.list() ?? []
-  const isGuarded = (candidate: Profile) => guardOf(candidate, accounts) !== null
+  const parentalCode = household.parentalCode() !== null
+  const signedIn = sessionsOf ? sessionsOf(request).map(session => session.account.id) : []
+  const here = (candidate: Profile) =>
+    isHere({ accounts, signedInHere: sessionsOf && (() => signedIn) }, candidate, request)
+  // An adult whose account is not signed in here never opens on this device.
+  const isGuarded = (candidate: Profile) => !here(candidate) || guardOf(candidate, accounts, parentalCode) !== null
   // Linked by a parent's code: the device is that profile's.
   const chosen =
     linkedId !== undefined
       ? known.find(candidate => candidate.id === linkedId)
       : token
-        ? known.find(candidate => candidate.id === token.id && (token.signed || !isGuarded(candidate)))
+        ? known.find(
+            candidate => candidate.id === token.id && here(candidate) && (token.signed || !isGuarded(candidate))
+          )
         : undefined
   const profile = chosen ?? known.find(candidate => !isGuarded(candidate)) ?? known[0]
   // Only profiles that ask for a password, and none given here: the device reads as nobody, with no right of any

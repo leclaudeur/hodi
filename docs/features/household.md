@@ -45,11 +45,27 @@ for the admin's own password first.
 ## Opening a profile
 
 Hodi starts on _Who's in?_ each time it opens, as a TV app does, but not on a reload nor while another Hodi tab is open
-in the same browser. Every adult profile asks for its account's password each time, on any device, its person's own
-included. Teen and child profiles never ask for a password: their parents open them for them.
+in the same browser. What a profile asks for there depends on two settings, both off on a new install:
 
-Signing in opens your own profile at once, and whoever opens a profile on a device is the account signed in there. An
-adult profile whose person has no account yet stays closed until they make one, with a code. To change profile, use the
+- **Private profile**, in _Settings › Account and data_: any adult turns it on, with their password. Their profile then
+  asks for that password on every device. Under the password, **Don’t ask again on this device** (unticked) lets it
+  open at once on that device. The **Trusted devices** row lists how many do, and **Ask again** takes them all back.
+  Signing out of a device, signing it out from the list or a new password take it back too.
+- **Parental code**, in _Settings › Household_: the admin sets six digits. Every adult profile that is not private then
+  asks for them, and opens at the last digit. Setting, changing or turning it off asks for the admin's own password
+  (and the authenticator app's code when it is on). A forgotten code is never shown again: the admin types a new one.
+- Without either, an adult profile opens at once. Teen and child profiles never ask for anything: their parents open
+  them for them.
+
+_Who's in?_ shows the accounts signed in on the device, then the household's teen and child profiles, as a TV's
+streaming app does. **Add** signs one more account in with its e-mail and password, and the app's code when two-step
+verification is on; an account of another household is refused, as a device serves one household. Signing in opens
+your own profile at once. An adult profile whose account is not signed in on the device does not show there, and one
+whose person has no account yet stays closed until they make one, with a code. New profiles are made in
+_Settings › Profiles_ only.
+
+**Sign out** takes only the account whose profile is open: the others stay, and _Who's in?_ opens again. When the last
+adult signs out, the young profiles leave with them and the device goes back to the sign-in page. To change profile, use the
 selector at the foot of the sidebar on a computer, or _Who's in?_ from the header's avatar on a tablet or a phone.
 
 Each profile has its own settings, saved articles, history, followed subjects and statistics, on the server: every

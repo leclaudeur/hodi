@@ -175,11 +175,17 @@ export const DeviceRows = ({
         .sort((a, b) => Number(b.current) - Number(a.current))
         .map(device => {
           const label = labelOf(device.userAgent, device.current)
+          // « S'ouvre sans mot de passe »: the private profile trusts it (« Appareils de confiance » takes that back).
+          const trusted = account.privateProfile && device.trusted ? ` · ${t('settings.account.trusted')}` : ''
           return device.current ? (
             <SettingRow
               key={device.id}
               label={label}
-              hint={t(account.loginOnly ? 'settings.account.sessionHintNoPassword' : 'settings.account.sessionHint')}
+              hint={
+                trusted
+                  ? t('settings.account.trusted')
+                  : t(account.loginOnly ? 'settings.account.sessionHintNoPassword' : 'settings.account.sessionHint')
+              }
             >
               {thisDevice}
             </SettingRow>
@@ -187,9 +193,7 @@ export const DeviceRows = ({
             <SettingRow
               key={device.id}
               label={label}
-              hint={t('settings.account.used', {
-                when: timeAgo(new Date(device.lastSeenAt).toISOString())
-              })}
+              hint={`${t('settings.account.used', { when: timeAgo(new Date(device.lastSeenAt).toISOString()) })}${trusted}`}
               action={{
                 label: t('settings.account.signOut'),
                 ariaLabel: t('settings.account.signOutLabel', { device: label }),
