@@ -3,7 +3,7 @@ import {
   Bell,
   ChartColumn,
   CircleUser,
-  Database,
+  Settings2,
   EyeOff,
   History,
   House,
@@ -124,14 +124,14 @@ const yourGroups = ({ t, preferences, young, household }: GroupData): Group[] =>
     label: t('settings.groups.you'),
     entries: [
       {
-        id: 'me',
-        label: t('settings.nav.me'),
-        hint: young ? t('limits.meHint') : t('settings.hints.me'),
-        icon: CircleUser
+        id: 'general',
+        label: t('settings.nav.general'),
+        hint: young ? t('limits.meHint') : t('settings.hints.general'),
+        icon: Settings2
       },
       { id: 'stats', label: t('settings.nav.stats'), hint: t('settings.hints.stats'), icon: ChartColumn },
       // The account and what Hodi keeps: this device's part (its session, offline reading) with the rest.
-      { id: 'account', label: t('settings.nav.account'), hint: t('settings.hints.account'), icon: Database },
+      { id: 'account', label: t('settings.nav.account'), hint: t('settings.hints.account'), icon: CircleUser },
       {
         id: 'sharing',
         label: t('settings.nav.sharing'),

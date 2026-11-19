@@ -1,14 +1,12 @@
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PROFILE_COLORS } from '../api.ts'
-import { addProfile } from '../lib/profiles.ts'
 import Copyright from '../ui/Copyright.tsx'
 import PhoneHeader from '../ui/PhoneHeader.tsx'
 import RoundButton from '../ui/RoundButton.tsx'
-import InviteDialog from '../views/profiles/InviteDialog.tsx'
-import ProfileForm from '../views/profiles/ProfileForm.tsx'
-import { Unlock, Who, useOpening } from './ProfilePickerParts.tsx'
+import AddAccountPage from './AddAccountPage.tsx'
+import { Who, useOpening } from './ProfilePickerParts.tsx'
+import { Unlock } from './ProfileUnlock.tsx'
 import styles from './ProfilePicker.module.css'
 
 interface ProfilePickerProps {
@@ -19,48 +17,21 @@ interface ProfilePickerProps {
   onUnauthorized: () => void
 }
 
-// "Qui lit ?": the household's profiles, Netflix style. Picking one opens Hodi as that reader.
+// "Qui lit ?": the profiles of the accounts signed in on this device and the household's young ones, Netflix style.
+// Picking one opens Hodi as that reader; « Ajouter » signs one more account in here.
 const ProfilePicker = ({ chosen, closed = false, onUnauthorized }: ProfilePickerProps) => {
   const { t } = useTranslation()
   const [adding, setAdding] = useState(false)
-  // "Inviter un adulte", from the new profile's form.
-  const [inviting, setInviting] = useState(false)
   const opening = useOpening(chosen, onUnauthorized)
-  const profiles = opening.value?.profiles ?? []
-  const freeColor = PROFILE_COLORS.find(color => !profiles.some(profile => profile.color === color))
 
-  let content
-  if (opening.unlocking) content = <Unlock opening={opening} profile={opening.unlocking} />
-  else if (adding) {
-    content = (
-      <>
-        <h1 className={styles.title}>{t('profiles.new')}</h1>
-        <div className={styles.formBox}>
-          <ProfileForm
-            defaultColor={freeColor}
-            kinds={['adult', 'teen', 'child']}
-            onInvite={() => {
-              setAdding(false)
-              setInviting(true)
-            }}
-            onCancel={() => setAdding(false)}
-            onSave={async ({ name, color, photo, kind, avatar }) => {
-              await addProfile(name, color, photo ?? null, { kind, avatar })
-              setAdding(false)
-            }}
-          />
-        </div>
-      </>
-    )
-  } else content = <Who opening={opening} chosen={chosen} closed={closed} onAdd={() => setAdding(true)} />
+  if (adding) return <AddAccountPage onBack={() => setAdding(false)} />
 
   return (
     <main className={styles.page}>
       <PhoneHeader
         back={
           chosen &&
-          !closed &&
-          !adding && (
+          !closed && (
             // On a computer it matches the sidebar's avatar and search buttons; 44 is for touch.
             <RoundButton icon={ArrowLeft} label={t('nav.backToFeed')} size={44} href="#/" />
           )
@@ -68,9 +39,14 @@ const ProfilePicker = ({ chosen, closed = false, onUnauthorized }: ProfilePicker
         logo={chosen && !closed ? '#/' : true}
         className={styles.header}
       />
-      <div className={styles.content}>{content}</div>
+      <div className={styles.content}>
+        {opening.unlocking ? (
+          <Unlock opening={opening} profile={opening.unlocking} />
+        ) : (
+          <Who opening={opening} chosen={chosen} onAdd={() => setAdding(true)} />
+        )}
+      </div>
       <Copyright />
-      <InviteDialog open={inviting} onClose={() => setInviting(false)} />
     </main>
   )
 }

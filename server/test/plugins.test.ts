@@ -683,16 +683,21 @@ describe('plugin routes', () => {
     const created = await call('/profiles', adminCookie, 'POST', { name: 'Sam', color: 'monde', kind: 'adult' })
     assert.equal(created.status, 201)
     const { id } = (await created.json()) as { id: number }
-    // Sam's own account: every adult profile opens with its account's password.
+    // Sam's own account.
     const sam = accounts.create(
       'sam@example.com',
       await hashPassword('la phrase de Sam', { N: 2 ** 10, r: 8, p: 1 }),
       0
     )!
     accounts.linkProfile(sam.id, id)
-    const chosen = await call('/profiles/current', adminCookie, 'PUT', { id, password: 'la phrase de Sam' })
-    assert.equal(chosen.status, 200)
-    memberCookie = `${adminCookie.split('; ').find(cookie => !cookie.startsWith('hodi_profile'))}; ${cookiesFrom(chosen)}`
+    // Sam signs in on his own device, which opens his profile.
+    const signedIn = await fetch(`${baseUrl}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'sam@example.com', password: 'la phrase de Sam' })
+    })
+    assert.equal(signedIn.status, 204)
+    memberCookie = cookiesFrom(signedIn)
   })
 
   after(() => close())
@@ -803,14 +808,14 @@ describe('plugin routes', () => {
     assert.deepEqual(params, { id: '12' })
     // A query part given twice is not passed on.
     assert.deepEqual(query, { q: 'pluie' })
-    // The device is signed in with the admin's account (1), and Sam's profile is open on it.
+    // Sam's own account (2) and profile.
     assert.deepEqual(who, {
       profileId: 2,
       householdId: 1,
       kind: 'adult',
       householdAdmin: false,
       serverAdmin: false,
-      accountId: 1
+      accountId: 2
     })
     // No cookie, no header, no session.
     assert.deepEqual(keys, ['body', 'method', 'params', 'path', 'query', 'who'])

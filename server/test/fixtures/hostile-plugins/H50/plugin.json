@@ -2,7 +2,7 @@
   "id": "hostile-h50",
   "name": "Hostile H50",
   "version": "0.0.1",
-  "description": "moveDevice only to a household the account belongs to",
+  "description": "moveDevice is no longer an answer: a device never changes household",
   "api": 2,
   "audience": "admin",
   "permissions": {

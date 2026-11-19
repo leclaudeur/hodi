@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
 import styles from './Accordion.module.css'
+import { rich } from './rich.tsx'
 
 // Folding cards, one under the other.
 export const AccordionGroup = ({ children }: { children: ReactNode }) => <div className={styles.group}>{children}</div>
@@ -53,7 +54,7 @@ const Accordion = ({
         {action && <span className={styles.action}>{action}</span>}
       </h2>
       <div id={bodyId} className={`${styles.body} appear`} hidden={!open}>
-        {intro && <p className={styles.intro}>{intro}</p>}
+        {intro && <p className={styles.intro}>{rich(intro)}</p>}
         {children}
       </div>
     </section>

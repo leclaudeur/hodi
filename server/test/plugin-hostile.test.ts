@@ -629,9 +629,12 @@ describe('hostile plugins', () => {
       const made = db.prepare('SELECT count(*) AS n FROM accounts WHERE made_by_plugin = ?').get(id) as { n: number }
       assert.equal(made.n, 0)
     },
-    // The refused move left the device where it was and is in the plugin's log.
-    H50: async id => {
-      assert.ok(lines.some(line => line.startsWith(`[plugin ${id}] POST /move: moveDevice refused for household 2`)))
+    // Both moves were ignored: no device was set to read in another household than its account's.
+    H50: async () => {
+      const moved = db.prepare('SELECT count(*) AS n FROM user_devices WHERE household_id IS NOT NULL').get() as {
+        n: number
+      }
+      assert.equal(moved.n, 0)
     },
     // Every way to a session for an account the call did not make or check was refused, written in the plugin's log,
     // and made no session.
@@ -751,8 +754,8 @@ describe('hostile plugins', () => {
     })
   }
 
-  it('moves a device to another household of its account, then reads there', async () => {
-    // The admin's account gets a profile in household 2 (made for H35).
+  it('never moves a device to another household, even one where its account has a profile', async () => {
+    // Only a plugin's own data could give an account a second profile: one account reads in one household.
     db.prepare(
       "INSERT INTO profiles (account_id, name, color, position, created_at, role, user_id) VALUES (2, 'Antho', 'world', 1, ?, 'member', 1)"
     ).run(Date.now())
@@ -762,18 +765,11 @@ describe('hostile plugins', () => {
           profiles: { name: string }[]
         }
       ).profiles.map(profile => profile.name)
-    assert.ok(!(await names()).includes('Marie'))
     const moved = await call('/hostile-h50/move', { method: 'POST', body: { householdId: 2 } })
     assert.equal(moved.status, 200)
-    assert.ok(
-      moved.headers.getSetCookie().some(cookie => cookie.startsWith('hodi_profile=;')),
-      'profile cleared'
-    )
-    assert.ok((await names()).includes('Marie'))
-    // Back where the other cases expect it. Once the account has no profile there, the device reads in its first.
-    db.prepare('DELETE FROM profiles WHERE account_id = 2 AND user_id = 1').run()
+    assert.deepEqual(moved.headers.getSetCookie(), [])
     assert.ok(!(await names()).includes('Marie'))
-    db.prepare('UPDATE user_devices SET household_id = NULL').run()
+    db.prepare('DELETE FROM profiles WHERE account_id = 2 AND user_id = 1').run()
   })
 
   it('signs a device in with an account the call made or checked, never the server admin', async () => {
