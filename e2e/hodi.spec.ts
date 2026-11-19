@@ -541,10 +541,12 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
   await expect(household.getByText('Admin du foyer')).toBeVisible()
   await expect(household.getByRole('button', { name: 'Quitter' })).toBeVisible()
 
-  const inviteCode = async () => {
+  const inviteCode = async (name: string) => {
     await page.goto('/#/settings/profiles')
     await page.getByRole('button', { name: 'Inviter un adulte' }).click()
     const invite = page.getByRole('dialog', { name: 'Inviter un adulte' })
+    await invite.getByRole('textbox', { name: 'Nom' }).fill(name)
+    await invite.getByRole('button', { name: 'Créer le code' }).click()
     // The code comes with its QR.
     await expect(invite.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
     const code = await invite.getByRole('textbox', { name: 'Code' }).inputValue()
@@ -560,7 +562,7 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
 
   // Noé joins with a new account, then leaves from Mon compte with the password.
   const noe = await browser.newPage()
-  await enterCode(noe, await inviteCode())
+  await enterCode(noe, await inviteCode('Noé'))
   await noe.getByRole('textbox', { name: 'E-mail' }).fill(NOE.email)
   await noe.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(NOE.password)
   await noe.getByRole('textbox', { name: 'Confirme le mot de passe' }).fill(NOE.password)
@@ -586,14 +588,15 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
   await expect(noe.getByRole('button', { name: 'Quitter' })).toHaveCount(0)
   await noe.getByRole('button', { name: 'Retour' }).click()
   await expect(noe.getByRole('heading', { name: 'Tu n’as plus de foyer' })).toBeVisible()
-  // Noé's profile left the household's list.
+  // Noé's profile left the household's list. The page still shows what it loaded with the invitation waiting: reload it.
   await page.goto('/#/settings/profiles')
+  await page.reload()
   await expect(page.getByRole('main').getByText('Noé')).toHaveCount(0)
 
   // Signed out, Noé joins again with a new code and the same account.
   await noe.getByRole('button', { name: 'Se déconnecter' }).click()
   await expect(noe.getByRole('textbox', { name: 'E-mail' })).toBeVisible()
-  await enterCode(noe, await inviteCode())
+  await enterCode(noe, await inviteCode('Noé'))
   await noe.getByRole('link', { name: 'J’ai déjà un compte' }).click()
   await noe.getByRole('textbox', { name: 'E-mail' }).fill(NOE.email)
   await noe.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(NOE.password)
