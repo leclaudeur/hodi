@@ -22,7 +22,7 @@ const ANTHO = { email: 'antho@example.com', password: 'le mot de passe d’Antho
 const SOPHIE = { email: 'sophie@example.com', password: 'le mot de passe de Sophie' }
 const FAST = { N: 2 ** 10, r: 8, p: 1 }
 
-describe('opening a profile with its account’s password', () => {
+describe('opening a private profile with its account’s password', () => {
   let baseUrl = ''
   let close = () => {}
   let clock = Date.UTC(2026, 10, 6, 12)
@@ -32,9 +32,10 @@ describe('opening a profile with its account’s password', () => {
   let sophieId = 0
   let noAccountId = 0
   let maxId = 0
-  // Each person's device, signed in with their account.
+  // Each person's device, signed in with their account, and a tablet both signed in on.
   let anthoDevice = ''
   let sophieDevice = ''
+  let shared = ''
 
   const call = (method: string, route: string, cookie: string, body?: unknown, headers: Record<string, string> = {}) =>
     fetch(`${baseUrl}/api${route}`, {
@@ -49,11 +50,11 @@ describe('opening a profile with its account’s password', () => {
       .getSetCookie()
       .map(cookie => cookie.split(';')[0])
       .join('; ')
-  const signIn = async (account: { email: string; password: string }) =>
-    cookieOf(await call('POST', '/login', '', account))
+  const signIn = async (account: { email: string; password: string }, device = '') =>
+    cookieOf(await call('POST', '/login', device, account))
   const list = async (cookie: string) =>
     (await (await call('GET', '/profiles', cookie)).json()) as {
-      profiles: { id: number; locked: boolean }[]
+      profiles: { id: number; locked: boolean; here: boolean }[]
       own: number | null
     }
   const lockedIds = async (cookie: string) =>
@@ -78,9 +79,12 @@ describe('opening a profile with its account’s password', () => {
     new HouseholdStore(db).setUp({ name: 'Martin', timeZone: 'UTC', country: null, ai: null }, clock)
     const antho = accounts.createServerAdmin(ANTHO.email, await hashPassword(ANTHO.password, FAST), clock)!
     accounts.linkProfile(antho.id, 1)
+    accounts.setPrivateProfile(antho.id, true)
     const sophie = profiles.create('Sophie', 'tech', clock)!
     sophieId = sophie.id
-    accounts.linkProfile(accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!.id, sophieId)
+    const sophieAccount = accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!
+    accounts.linkProfile(sophieAccount.id, sophieId)
+    accounts.setPrivateProfile(sophieAccount.id, true)
     noAccountId = profiles.create('Mamie', 'world', clock)!.id
     const catalog = parseCatalog('topics:\n  - id: world\n    label: Monde\n    sources: []\n')
     const server = createApp(config, {
@@ -96,10 +100,11 @@ describe('opening a profile with its account’s password', () => {
     close = () => server.close()
     anthoDevice = await signIn(ANTHO)
     sophieDevice = await signIn(SOPHIE)
+    shared = await signIn(SOPHIE, anthoDevice)
   })
   after(() => close())
 
-  it('asks every adult for its own password, on every device, and never the young', async () => {
+  it('asks every private profile for its own password, on every device, and never the young', async () => {
     assert.deepEqual(await lockedIds(anthoDevice), [1, sophieId, noAccountId])
     assert.deepEqual(await lockedIds(sophieDevice), [1, sophieId, noAccountId])
 
@@ -115,21 +120,24 @@ describe('opening a profile with its account’s password', () => {
     assert.deepEqual(await refused.json(), { error: 'wrong_password' })
     assert.equal((await call('PUT', '/profiles/current', anthoDevice, { id: 1, password: ANTHO.password })).status, 200)
 
-    // Another adult's only with that person's password.
+    // Another adult's opens only where their account signed in too, and then only with their password.
+    const notHere = await call('PUT', '/profiles/current', anthoDevice, { id: sophieId, password: SOPHIE.password })
+    assert.deepEqual([notHere.status, await notHere.json()], [403, { error: 'not_signed_in' }])
     assert.equal(
-      (await call('PUT', '/profiles/current', anthoDevice, { id: sophieId, password: ANTHO.password })).status,
+      (await call('PUT', '/profiles/current', shared, { id: sophieId, password: ANTHO.password })).status,
       403
     )
-    const opened = await call('PUT', '/profiles/current', anthoDevice, { id: sophieId, password: SOPHIE.password })
+    const opened = await call('PUT', '/profiles/current', shared, { id: sophieId, password: SOPHIE.password })
     assert.equal(opened.status, 200)
-    assert.equal(await chosen(`${anthoDevice}; ${cookieOf(opened)}`), true)
-    // A plain cookie for her profile does not open it.
-    assert.equal(await chosen(`${anthoDevice}; hodi_profile=${sophieId}`), false)
+    assert.equal(await chosen(`${shared}; ${cookieOf(opened)}`), true)
+    // A plain cookie for her profile does not open it, nor her signed one on a device she is not signed in on.
+    assert.equal(await chosen(`${shared}; hodi_profile=${sophieId}`), false)
+    assert.equal(await chosen(`${anthoDevice}; ${cookieOf(opened)}`), false)
 
-    // An adult without an account stays closed, whatever is typed.
-    const closed = await call('PUT', '/profiles/current', anthoDevice, { id: noAccountId, password: ANTHO.password })
+    // An adult without an account is never signed in anywhere: it stays closed, whatever is typed.
+    const closed = await call('PUT', '/profiles/current', shared, { id: noAccountId, password: ANTHO.password })
     assert.equal(closed.status, 403)
-    assert.deepEqual(await closed.json(), { error: 'no_account' })
+    assert.deepEqual(await closed.json(), { error: 'not_signed_in' })
 
     // A young profile opens without anything.
     const asAntho = cookiesOf(await call('PUT', '/profiles/current', anthoDevice, { id: 1, password: ANTHO.password }))
@@ -141,17 +149,43 @@ describe('opening a profile with its account’s password', () => {
     maxId = ((await max.json()) as { id: number }).id
     assert.deepEqual(await lockedIds(anthoDevice), [1, sophieId, noAccountId])
     assert.equal((await call('PUT', '/profiles/current', anthoDevice, { id: maxId })).status, 200)
+    // « Qui lit ? » shows the accounts signed in on the device, and the young profiles.
+    const shown = async (cookie: string) =>
+      (await list(cookie)).profiles.filter(profile => profile.here).map(profile => profile.id)
+    assert.deepEqual(await shown(anthoDevice), [1, maxId])
+    assert.deepEqual(await shown(shared), [1, sophieId, maxId])
   })
 
-  it('signs the device in with the account whose profile opens there', async () => {
+  it('reads as the account whose profile is open, and signs out that one alone', async () => {
     assert.equal((await list(anthoDevice)).own, 1)
-    const opened = await call('PUT', '/profiles/current', anthoDevice, { id: sophieId, password: SOPHIE.password })
-    const asSophie = cookiesOf(opened)
+    const opened = await call('PUT', '/profiles/current', shared, { id: sophieId, password: SOPHIE.password })
+    const asSophie = `${shared}; ${cookieOf(opened)}`
     assert.equal((await list(asSophie)).own, sophieId)
     // Signing in opens one's own profile at once.
     assert.equal(await chosen(`${sophieDevice}`), false)
     const login = await call('POST', '/login', '', SOPHIE)
     assert.equal(await chosen(cookiesOf(login)), true)
+
+    // Signing in again with the same account keeps one session of it, beside Antho's.
+    const again = await signIn(SOPHIE, shared)
+    assert.equal(again.split('=')[1]!.split('~').length, 2)
+    assert.equal((await list(again)).profiles.filter(profile => profile.here).length, 3)
+
+    // Sophie signs out of the tablet: Antho stays, back on « Qui lit ? ».
+    const out = await call('POST', '/logout', asSophie)
+    assert.equal(out.status, 204)
+    const left = cookieOf(out)
+    assert.equal(await chosen(left), false)
+    assert.deepEqual(
+      (await list(left)).profiles.filter(profile => profile.here).map(profile => profile.id),
+      [1, maxId]
+    )
+    // Antho signs out too: nobody is left, the tablet goes back to Connexion.
+    const last = await call('POST', '/logout', left)
+    assert.match(cookieOf(last), /^hodi_session=$/)
+    // The tablet was Antho's own device here: he signs in on it again.
+    anthoDevice = await signIn(ANTHO)
+    shared = await signIn(SOPHIE, anthoDevice)
   })
 
   it('hashes a password made with weaker settings again, at sign-in or when its profile opens', async () => {
@@ -182,29 +216,30 @@ describe('opening a profile with its account’s password', () => {
   })
 
   it('asks again on every device once the account has a new password', async () => {
-    const opened = await call('PUT', '/profiles/current', anthoDevice, { id: sophieId, password: SOPHIE.password })
-    const asSophie = `${anthoDevice}; ${cookieOf(opened)}`
+    const opened = await call('PUT', '/profiles/current', shared, { id: sophieId, password: SOPHIE.password })
+    const asSophie = `${shared}; ${cookieOf(opened)}`
     accounts.revokeSessions(accounts.ofProfile(sophieId)!.id)
     assert.equal(await chosen(asSophie), false)
     sophieDevice = await signIn(SOPHIE)
+    shared = await signIn(SOPHIE, anthoDevice)
   })
 
   it('stops guessing after a few wrong passwords, on that device only', async () => {
     clock += 16 * 60_000
     const statuses = []
     for (let attempt = 0; attempt < 6; attempt++) {
-      statuses.push((await call('PUT', '/profiles/current', anthoDevice, { id: sophieId, password: 'faux' })).status)
+      statuses.push((await call('PUT', '/profiles/current', shared, { id: sophieId, password: 'faux' })).status)
     }
     assert.deepEqual(statuses, [403, 403, 403, 403, 403, 429])
     assert.equal(
-      (await call('PUT', '/profiles/current', anthoDevice, { id: sophieId, password: SOPHIE.password })).status,
+      (await call('PUT', '/profiles/current', shared, { id: sophieId, password: SOPHIE.password })).status,
       429
     )
     // Another device, behind the same proxy, still opens it.
     const elsewhere = await call(
       'PUT',
       '/profiles/current',
-      anthoDevice,
+      shared,
       { id: sophieId, password: SOPHIE.password },
       { 'X-Forwarded-For': '192.168.1.20' }
     )

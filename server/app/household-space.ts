@@ -27,6 +27,7 @@ const mountAccount = (api: express.Router, { options, config, session, profileHo
       household,
       sessionOf: session.sessionOf,
       cookieForDevice: session.cookieForDevice,
+      cookieWithout: session.cookieWithout,
       profileCookieFor: id => profileCookie(profileToken(id, profiles?.lock(id)?.version ?? 0, config.sessionSecret)),
       throttle,
       now,
@@ -52,7 +53,9 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
       secret: wiring.config.sessionSecret,
       pinThrottle,
       accounts,
-      signIn: accounts ? wiring.session.cookieFor : undefined,
+      household: wiring.options.household,
+      signedInHere: request => wiring.session.sessionsOf(request).map(session => session.account.id),
+      trust: wiring.trust ?? undefined,
       onCreate: wiring.profileHooks.created,
       onChange: profile => wiring.youthSources?.start(profile),
       onDelete: wiring.profileHooks.deleted,
@@ -120,5 +123,6 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
   mountProfiles(api, wiring)
   mountSourceRequests(api, wiring)
   api.use(householdPhotoRoutes({ household, profiles, accounts }))
-  if (wiring.householdOptions) api.use('/household', requireAdmin, householdRoutes(wiring.householdOptions))
+  if (wiring.householdOptions)
+    api.use('/household', requireAdmin, householdRoutes({ ...wiring.householdOptions, checkProof: wiring.checkProof }))
 }

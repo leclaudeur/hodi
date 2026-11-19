@@ -7,7 +7,7 @@ import { AgeConsentText } from './Slots.tsx'
 const AgeCheckbox = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => {
   const { t } = useTranslation()
   return (
-    <Checkbox checked={checked} onChange={onChange}>
+    <Checkbox checked={checked} onChange={onChange} underField>
       {t('join.age')}
       <AgeConsentText />
     </Checkbox>

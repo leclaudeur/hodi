@@ -21,16 +21,35 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
-- **My account.** Settings > Account and data becomes My account, and starts with your profile (name, photo, colour)
-  and your language, which leaves Reading and display. My profile becomes General: the guided tour and the reset.
-  Clearing your reading stats moves under the stats. A teen or a child keeps its name, photo, language and time of the
-  day in General.
+- **Names stand out.** In dialogs and at the top of the Settings, Server and My account pages, the names of households and
+  profiles and the e-mail addresses are in bold, and the names of screens and buttons in italics.
+
 - **One household per account.** An account belongs to one household only. Joining another household with an
   existing account says which household it is in, and asks to leave it first. On a server with Village, Which household? and
   Switch household are gone.
 
+- **Who's in? keeps the accounts of the device.** Who's in? shows the accounts signed in on this device and the
+  household's young profiles, like a TV's streaming app. Add signs one more account in with its e-mail and password; an
+  account of another household is refused, a device serving one household. Sign out takes only the account whose
+  profile is open: the others stay, and the last adult out takes the young profiles with them, back to sign-in. New
+  profiles are made in Settings > Profiles only.
+
+- **Opening a profile.** In _Qui lit ?_, an adult profile opens at once again, unless one of two new settings says
+  otherwise. _Profil privé_, in Réglages › Compte et données, asks for the account's password on every device, except
+  the ones where _Ne plus demander sur cet appareil_ was ticked (_Redemander_ takes them back). _Code parental_, in
+  Réglages › Foyer, asks for six digits for every adult profile that is not private; the admin sets, changes or turns
+  it off with their own password (and the app's code). Accounts from before keep asking
+  for their password: their profile is private until they turn it off.
+
+- **My account.** Settings > Account and data becomes My account, and starts with your profile (name, photo, colour)
+  and your language, which leaves Reading and display. My profile becomes General: the guided tour and the reset.
+  Clearing your reading stats moves under the stats. A teen or a child keeps its name, photo, language and time of the
+  day in General.
+
 ### Fixed
 
+- **Info lines and checkboxes.** The icon of an info or error line sits on the middle of its text, and the
+  _J’ai au moins 13 ans_ box lines up with the icon of the field above it.
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme
   (dark in the light theme), with its icon readable.
 

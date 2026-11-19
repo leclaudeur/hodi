@@ -6,6 +6,7 @@ import Button from '../ui/Button.tsx'
 import Copyright from '../ui/Copyright.tsx'
 import PhoneHeader from '../ui/PhoneHeader.tsx'
 import StatusLine from '../ui/StatusLine.tsx'
+import { rich } from '../ui/rich.tsx'
 
 export interface Tile {
   key: string
@@ -38,7 +39,7 @@ const TilesPage = ({ title, intro, tiles, opening = null, error, onBack, actions
       <PhoneHeader logo className={styles.header} />
       <div className={styles.content}>
         <h1 className={styles.title}>{title}</h1>
-        {intro && <p className={styles.intro}>{intro}</p>}
+        {intro && <p className={styles.intro}>{rich(intro)}</p>}
         <ul className={`${styles.grid} ${styles.wideGrid}`} aria-busy={opening !== null}>
           {tiles.map(({ key, label, icon: Icon, onClick }) => (
             <li key={key}>

@@ -7,11 +7,11 @@
   line-height: 1.5;
 }
 
-/* On the first line's middle. */
+/* On the middle of the first line's letters, which sit a little above the middle of the line's box. */
 .mark {
   display: flex;
   flex-shrink: 0;
-  height: 19.5px;
+  height: 17.5px;
   align-items: center;
 }
 

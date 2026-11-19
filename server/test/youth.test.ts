@@ -215,12 +215,17 @@ describe('youth api', () => {
   it('lets the parents set a young profile’s rules, and closes its lists when its time is up', async () => {
     const sam = profiles.create('Sam', 'tech', clock)!
     const zoe = profiles.create('Zoé', 'music', clock, { kind: 'teen' })!
-    // Sam is a parent with an account: this device opens his profile with his password.
+    // Sam is a parent with an account: he signs in on this device too, which opens his profile.
     const hash = await hashPassword('la phrase de Sam', { N: 2 ** 10, r: 8, p: 1 })
     accounts.linkProfile(accounts.create('sam@example.com', hash, clock)!.id, sam.id)
-    const openSam = await call('PUT', '/profiles/current', 1, { id: sam.id, password: 'la phrase de Sam' })
-    assert.equal(openSam.status, 200)
-    const samCookie = openSam.headers.getSetCookie().find(cookie => cookie.startsWith('hodi_profile='))
+    const signedIn = await fetch(`${baseUrl}/api/login`, {
+      method: 'POST',
+      headers: { cookie: session, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'sam@example.com', password: 'la phrase de Sam' })
+    })
+    assert.equal(signedIn.status, 204)
+    session = signedIn.headers.getSetCookie()[0]!.split(';')[0]!
+    const samCookie = signedIn.headers.getSetCookie().find(cookie => cookie.startsWith('hodi_profile='))
     opened.set(sam.id, samCookie!.split(';')[0]!)
 
     // An adult has no limits; a young profile none until its parents set some.

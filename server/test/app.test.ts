@@ -184,20 +184,22 @@ after(() => close())
 const MEMBER_PASSWORD = 'le mot de passe du membre'
 let adults = 0
 
-// Every adult profile opens with its own account's password: an adult made here gets an account, then this device
-// opens its profile, signed in with that account from then on.
+// Every adult profile opens on a device once its account signs in there (« Ajouter » in « Qui lit ? »): an adult
+// made here gets an account, which then signs in on this device beside the others and opens its own profile.
 const openAdult = async (session: string, id: number) => {
   if (!accountStore.ofProfile(id)) {
     const hash = await hashPassword(MEMBER_PASSWORD, { N: 2 ** 10, r: 8, p: 1 })
-    accountStore.linkProfile(accountStore.create(`adult-${++adults}@example.com`, hash, clock)!.id, id)
+    const account = accountStore.create(`adult-${++adults}@example.com`, hash, clock)!
+    accountStore.linkProfile(account.id, id)
+    accountStore.setPrivateProfile(account.id, true)
   }
-  const opened = await fetch(`${baseUrl}/api/profiles/current`, {
-    method: 'PUT',
+  const signedIn = await fetch(`${baseUrl}/api/login`, {
+    method: 'POST',
     headers: { cookie: session, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, password: MEMBER_PASSWORD })
+    body: JSON.stringify({ email: accountStore.ofProfile(id)!.email, password: MEMBER_PASSWORD })
   })
-  assert.equal(opened.status, 200)
-  return sessionCookieFrom(opened)
+  assert.equal(signedIn.status, 204)
+  return sessionCookieFrom(signedIn)
 }
 
 const login = (password: string) =>
@@ -207,8 +209,8 @@ const login = (password: string) =>
     body: JSON.stringify({ email: ADMIN_EMAIL, password })
   })
 
-// The session and, after a sign-in, the account's own profile it opens: every adult profile asks for its password,
-// so the session alone opens nothing.
+// The session and, after a sign-in, the account's own profile it opens: a private profile asks for its password, so
+// the session alone opens nothing.
 const sessionCookieFrom = (response: Response) =>
   response.headers
     .getSetCookie()

@@ -231,12 +231,15 @@ export class ProfileStore {
   }
 
   // The version a device's choice of the profile is signed with. It changes with the profile's account signing out
-  // its devices (a new password), so the password is asked again on every device. It holds the profile's creation
-  // time too: SQLite gives a deleted profile's id to the next one, which a device's old choice must not open.
+  // its devices (a new password), so the password is asked again on every device, and for an adult that the Code
+  // parental opens, with that code. It holds the profile's creation time too: SQLite gives a deleted profile's id to
+  // the next one, which a device's old choice must not open.
   lock(id: number): { version: string } | null {
     const row = this.#db
       .prepare(
-        `SELECT p.pin_version + a.parental_pin_version + COALESCE(u.session_generation, 0) AS version,
+        `SELECT p.pin_version + COALESCE(u.session_generation, 0) +
+           CASE WHEN p.kind = 'adult' AND COALESCE(u.private_profile, 0) = 0 THEN a.parental_pin_version ELSE 0 END
+           AS version,
            p.created_at AS createdAt
          FROM profiles p JOIN accounts a ON a.id = p.account_id LEFT JOIN users u ON u.id = p.user_id
          WHERE p.id = ? AND p.account_id = ?`
