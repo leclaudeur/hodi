@@ -10,6 +10,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **Sharper pictures.** When a feed gives a small picture (under 960 pixels) and the article's page has a larger one,
+  Hodi makes its copies from the page's. Pictures already made are made again once, in the background.
 - **Read on the site.** In the reader, the round button of the "can’t be read in Hodi" notice is white again in the dark theme
   (dark in the light theme), with its icon readable.
 

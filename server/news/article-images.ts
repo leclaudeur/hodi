@@ -1,7 +1,7 @@
 import { mkdirSync, readdirSync, rmSync } from 'node:fs'
 import { access, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { ImageStore } from '../db/image-store.ts'
+import type { ImageStore, PictureSources } from '../db/image-store.ts'
 import type { FetchBytes } from './fetch-text.ts'
 import type { ImageSize } from './inline-images.ts'
 import { pictureMaker, type PictureMaker } from './picture-maker.ts'
@@ -16,6 +16,8 @@ import { imageType } from './source-icons.ts'
 // card of an upright tablet.
 export const IMAGE_WIDTHS = [240, 480, 960] as const
 export type ImageWidth = (typeof IMAGE_WIDTHS)[number]
+// A picture this wide fills the largest copy: a narrower feed picture is compared with the page's share picture.
+const SHARP_WIDTH = 960
 
 const PREVIEW_WIDTH = 16
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024
@@ -204,20 +206,45 @@ export class ArticleImages {
     return run
   }
 
+  // A picture's bytes and width. Only the picture types a feed uses; the type is read from the bytes, never from the
+  // site's headers.
+  async #measure(source: string) {
+    const { bytes } = await this.#download(source)
+    if (!imageType(bytes)) throw new Error('not a picture')
+    const { width } = await this.#sharp!(bytes, { limitInputPixels: MAX_INPUT_PIXELS }).metadata()
+    return { bytes, width: width ?? 0 }
+  }
+
+  // The sharper of the feed's picture and the page's: a feed often carries a small one (7sur7: 400 px), where the
+  // page's share picture is 1200 px or more. The page's is only downloaded when the feed's is too narrow or fails.
+  async #sharpest({ feed, page }: PictureSources) {
+    const first = (feed ?? page)!
+    const second = feed && page && page !== feed ? page : null
+    const picked = await this.#measure(first).catch((error: unknown) => {
+      if (!second) throw error
+      return null
+    })
+    if (!second || (picked && picked.width >= SHARP_WIDTH)) return { ...picked!, pageChecked: null }
+    const other = await this.#measure(second).catch((error: unknown) => {
+      if (!picked) throw error
+      return null
+    })
+    const best = other && (!picked || other.width > picked.width) ? other : picked!
+    return { ...best, pageChecked: second }
+  }
+
   async #build(articleId: string): Promise<boolean> {
-    const source = this.#store.sourceOf(articleId)
-    if (!source) return false
+    const sources = this.#store.sources(articleId)
+    if (!sources.feed && !sources.page) return false
 
     try {
-      const { bytes } = await this.#download(source)
-      // Only the picture types a feed uses; the type is read from the bytes, never from the site's headers.
-      if (!imageType(bytes)) throw new Error('not a picture')
+      const { bytes, width, pageChecked } = await this.#sharpest(sources)
       const url = await this.#encode(async () => {
-        await this.#resize(width => this.#file(articleId, width), bytes)
+        await this.#resize(size => this.#file(articleId, size), bytes)
         return this.#preview(bytes)
       })
 
-      this.#store.save(articleId, { preview: url, failed: false, createdAt: this.#now() })
+      this.#store.save(articleId, { preview: url, failed: false, createdAt: this.#now(), width, pageChecked })
       this.#previews.set(articleId, url)
       return true
     } catch (error) {
@@ -263,7 +290,7 @@ export class ArticleImages {
       const tried = new Set<string>()
       for (;;) {
         const batch = this.#store
-          .missing(this.#now() - WARM_WINDOW_MS, WARM_BATCH + tried.size)
+          .missing(this.#now() - WARM_WINDOW_MS, WARM_BATCH + tried.size, SHARP_WIDTH)
           .filter(articleId => !tried.has(articleId))
           .slice(0, WARM_BATCH)
         if (batch.length === 0) return
