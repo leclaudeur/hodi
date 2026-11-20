@@ -76,5 +76,6 @@ describe('source names', () => {
     assert.equal(siteDescriptionOf('<meta name="description" content="Seulement celle-ci">'), 'Seulement celle-ci')
     assert.equal(siteDescriptionOf('<meta property="og:description" content="  ">'), null)
     assert.equal(siteDescriptionOf(`<meta name="description" content="${'a'.repeat(300)}">`)?.length, 200)
+    assert.equal(siteDescriptionOf('<meta name="description" content="A\u202Eb\u0007c">'), 'A b c')
   })
 })

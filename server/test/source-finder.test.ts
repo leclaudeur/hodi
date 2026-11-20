@@ -63,6 +63,25 @@ describe('source finder', () => {
     assert.equal(result.status === 'ok' && result.source.description, null)
   })
 
+  it("takes a feed's own description, as clean text cut at 200 characters", async () => {
+    const long = `${'é'.repeat(199)}😀 et la suite`
+    const feed = blogFeed.replace(
+      '<title>Feed</title>',
+      `<title>Feed</title><description><![CDATA[<p>Le <b>blog</b> &amp; ses\u202Erecettes</p>]]></description>`
+    )
+    const { find } = finder({ 'https://blog.example/feed': feed })
+    const longFeed = blogFeed.replace('<title>Feed</title>', `<title>Feed</title><description>${long}</description>`)
+    const other = finder({ 'https://blog.example/feed': longFeed })
+
+    const result = await find('https://blog.example/feed')
+    const cut = await other.find('https://blog.example/feed')
+
+    // No tag, no entity, no bidi override that would turn the card's line around.
+    assert.equal(result.status === 'ok' && result.source.description, 'Le blog & ses recettes')
+    // Cut by code points: the emoji is whole, never half of it.
+    assert.equal(cut.status === 'ok' && cut.source.description, `${'é'.repeat(199)}😀`)
+  })
+
   it('guesses the usual feed address when the page names none', async () => {
     const { find } = finder({ 'https://blog.example/': '<html></html>', 'https://blog.example/rss.xml': blogFeed })
 

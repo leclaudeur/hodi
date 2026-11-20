@@ -3,7 +3,7 @@ import type { Source, SourceKind } from './catalog.ts'
 import { extractArticle, extractFeedContent } from './extract.ts'
 import { type FetchText, YOUTUBE_PAGE, YOUTUBE_PAGE_BYTES, createFetchText } from './fetch-text.ts'
 import { type FeedEntry, parseFeedEntries } from './feed-parser.ts'
-import { siteDescriptionOf, siteNameOf, tidySourceName } from './source-name.ts'
+import { siteDescriptionOf, siteNameOf, tidyDescription, tidySourceName } from './source-name.ts'
 import { decodeEntities } from './text.ts'
 
 // "Ajouter une source": from a link a profile pastes (a site, a feed or a YouTube channel),
@@ -69,13 +69,8 @@ const feedTitle = (xml: string) => {
 const feedDescription = (xml: string) => {
   const head = xml.split(/<(?:item|entry)\b/i)[0] ?? ''
   const match = /<(?:description|subtitle)[^>]*>([\s\S]*?)<\/(?:description|subtitle)>/i.exec(head)
-  const text = match
-    ? decode(match[1] ?? '')
-        .replace(/<[^>]*>/g, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-    : ''
-  return text ? text.slice(0, 200) : null
+  const text = match ? tidyDescription(decode(match[1] ?? '').replace(/<[^>]*>/g, ' ')) : ''
+  return text || null
 }
 
 const attribute = (tag: string, name: string) =>

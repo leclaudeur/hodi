@@ -72,13 +72,23 @@ export const siteNameOf = (html: string) => {
   return null
 }
 
+// A description shown as one line of text: no control or bidi character (a site could turn the card's line around),
+// cut by code points so an emoji is never split.
+export const tidyDescription = (text: string) => {
+  const clean = text
+    .replace(/[\p{Cc}\u202A-\u202E\u2066-\u2069]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return Array.from(clean).slice(0, MAX_DESCRIPTION).join('').trim()
+}
+
 // What the site says it is, for the catalogue: its og:description, or else its meta description.
 export const siteDescriptionOf = (html: string) => {
   let fallback: string | null = null
   for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
     const name = /\s(?:property|name)\s*=\s*["']?(og:description|description)["'\s>]/i.exec(tag)?.[1]?.toLowerCase()
     const content = /\scontent\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag)?.slice(1).find(Boolean)
-    const text = content ? decodeEntities(content).replace(/\s+/g, ' ').trim().slice(0, MAX_DESCRIPTION) : ''
+    const text = content ? tidyDescription(decodeEntities(content)) : ''
     if (!name || !text) continue
     if (name === 'og:description') return text
     fallback ??= text
