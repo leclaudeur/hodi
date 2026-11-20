@@ -24,6 +24,10 @@ export interface SourceStatus {
   error: string | null
   // Added from a link by this profile; missing for the starting list's.
   addedBy?: number
+  // What the site says it is, for the catalogue.
+  description?: string
+  // From sources.yml: the catalogue's Officielles.
+  official?: true
   // How many people read it, once there are enough of them (source-view-routes.ts).
   readers?: number
 }

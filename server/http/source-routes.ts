@@ -213,9 +213,10 @@ const mountProposalRoutes = (
       response.status(409).json({ error: 'followed' })
       return
     }
-    const { url, lang, domains, reader } = result.source
+    const { url, lang, domains, reader, description } = result.source
+    const site = { url, lang, domains, reader, ...(description ? { description } : {}) }
     save(
-      { ...proposal.source, base: undefined, url, lang, domains, reader, addedBy: profileIdOf(response) },
+      { ...proposal.source, base: undefined, ...site, addedBy: profileIdOf(response) },
       'topic',
       topicIdsOf(request) ?? [proposal.topicId],
       response
@@ -272,6 +273,7 @@ const mountAddRoute = (
       domains: found.domains,
       reader: found.reader,
       skip: [],
+      ...(found.description ? { description: found.description } : {}),
       addedBy: profileId
     }
     save(source, section, sectionIds, response)

@@ -28,7 +28,7 @@ const finder = (responses: Record<string, FakeResponse>, youtube: Record<string,
 describe('source finder', () => {
   it('finds the feed a site names, and tries three articles in the reader', async () => {
     const { find } = finder({
-      'https://blog.example/': `<html><head><meta property="og:site_name" content="Le Blog"><link rel="alternate" type="application/rss+xml" href="/flux.xml"></head></html>`,
+      'https://blog.example/': `<html><head><meta property="og:site_name" content="Le Blog"><meta name="description" content="Un blog."><meta property="og:description" content="Le blog d’une   cuisinière belge."><link rel="alternate" type="application/rss+xml" href="/flux.xml"></head></html>`,
       'https://blog.example/flux.xml': blogFeed,
       ...articles
     })
@@ -46,7 +46,9 @@ describe('source finder', () => {
       reader: true,
       origin: 'feed',
       readable: { tried: 3, ok: 3 },
-      samples: ['Premier', 'Deuxième', 'Troisième']
+      samples: ['Premier', 'Deuxième', 'Troisième'],
+      // The page's og:description, for the catalogue.
+      description: 'Le blog d’une cuisinière belge.'
     })
   })
 
@@ -57,6 +59,8 @@ describe('source finder', () => {
 
     assert.equal(result.status === 'ok' && result.source.reader, false)
     assert.deepEqual(result.status === 'ok' && result.source.domains, [])
+    // A feed with no description of its own has none: its items' are not its.
+    assert.equal(result.status === 'ok' && result.source.description, null)
   })
 
   it('guesses the usual feed address when the page names none', async () => {

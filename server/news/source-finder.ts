@@ -3,7 +3,7 @@ import type { Source, SourceKind } from './catalog.ts'
 import { extractArticle, extractFeedContent } from './extract.ts'
 import { type FetchText, YOUTUBE_PAGE, YOUTUBE_PAGE_BYTES, createFetchText } from './fetch-text.ts'
 import { type FeedEntry, parseFeedEntries } from './feed-parser.ts'
-import { siteNameOf, tidySourceName } from './source-name.ts'
+import { siteDescriptionOf, siteNameOf, tidySourceName } from './source-name.ts'
 import { decodeEntities } from './text.ts'
 
 // "Ajouter une source": from a link a profile pastes (a site, a feed or a YouTube channel),
@@ -22,6 +22,8 @@ export interface FoundSource {
   readable: { tried: number; ok: number }
   // The latest titles, to recognise the source.
   samples: string[]
+  // What the site says it is (its page's og:description, or the feed's own), for the catalogue.
+  description: string | null
 }
 
 export type FindResult =
@@ -61,6 +63,19 @@ const decode = (text: string) => decodeEntities(text.replace(/<!\[CDATA\[([\s\S]
 const feedTitle = (xml: string) => {
   const match = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(xml)
   return match ? decode(match[1] ?? '') : ''
+}
+
+// The feed's own description (RSS <description>, Atom <subtitle>), before its first item.
+const feedDescription = (xml: string) => {
+  const head = xml.split(/<(?:item|entry)\b/i)[0] ?? ''
+  const match = /<(?:description|subtitle)[^>]*>([\s\S]*?)<\/(?:description|subtitle)>/i.exec(head)
+  const text = match
+    ? decode(match[1] ?? '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+    : ''
+  return text ? text.slice(0, 200) : null
 }
 
 const attribute = (tag: string, name: string) =>
@@ -169,13 +184,13 @@ const entriesOf = (xml: string, url: string, kind: SourceKind) => {
   }
 }
 
-// siteName: what the site's page calls itself, when the feed was found from it.
+// site: what the site's page calls itself and says it is, when the feed was found from it.
 const feedSource = async (
   readerTest: ReturnType<typeof pageFetchers>['readerTest'],
   url: string,
   xml: string,
   origin: FoundSource['origin'],
-  siteName: string | null
+  site: { name: string | null; description: string | null }
 ): Promise<FindResult> => {
   const kind: SourceKind = origin === 'youtube' ? 'video' : 'article'
   const entries = entriesOf(xml, url, kind)
@@ -193,7 +208,7 @@ const feedSource = async (
       name:
         origin === 'youtube'
           ? feedTitle(xml).slice(0, 60) || new URL(url).hostname
-          : tidySourceName(feedTitle(xml), hosts[0] ? `https://${hosts[0]}` : url, siteName),
+          : tidySourceName(feedTitle(xml), hosts[0] ? `https://${hosts[0]}` : url, site.name),
       url,
       kind,
       lang: languageOf(xml),
@@ -201,7 +216,8 @@ const feedSource = async (
       reader,
       origin,
       readable,
-      samples: entries.slice(0, 3).map(entry => entry.item.title)
+      samples: entries.slice(0, 3).map(entry => entry.item.title),
+      description: site.description ?? feedDescription(xml)
     }
   }
 }
@@ -228,8 +244,12 @@ export const createSourceFinder = ({
   isPublic?: IsPublicUrl
 }) => {
   const { fetchPublic, readerTest, pageOrGuess, namedOrGuessedFeed } = pageFetchers(fetchText, isPublic)
-  const fromFeed = (url: string, xml: string, origin: FoundSource['origin'], siteName: string | null = null) =>
-    feedSource(readerTest, url, xml, origin, siteName)
+  const fromFeed = (
+    url: string,
+    xml: string,
+    origin: FoundSource['origin'],
+    site: { name: string | null; description: string | null } = { name: null, description: null }
+  ) => feedSource(readerTest, url, xml, origin, site)
 
   const find = async (pasted: string): Promise<FindResult> => {
     const url = parseUrl(pasted)
@@ -248,9 +268,9 @@ export const createSourceFinder = ({
       const direct = entriesOf(page.text, page.url, 'article')
       if (direct) return fromFeed(page.url, page.text, 'feed')
 
-      const siteName = siteNameOf(page.text)
+      const site = { name: siteNameOf(page.text), description: siteDescriptionOf(page.text) }
       const feed = await namedOrGuessedFeed(page)
-      return feed ? fromFeed(feed.url, feed.text, 'feed', siteName) : { status: 'none' }
+      return feed ? fromFeed(feed.url, feed.text, 'feed', site) : { status: 'none' }
     } catch (error) {
       if (error instanceof BlockedError) return { status: 'blocked' }
       // In the server's log, to tell a site that is down from one that refuses Hodi.

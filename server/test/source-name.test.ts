@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { nameFromSite, siteNameOf, tidySourceName } from '../news/source-name.ts'
+import { nameFromSite, siteDescriptionOf, siteNameOf, tidySourceName } from '../news/source-name.ts'
 
 describe('source names', () => {
   it('keeps the site name a feed title holds, with a short section after it', () => {
@@ -64,5 +64,17 @@ describe('source names', () => {
     assert.equal(siteNameOf('<meta property="og:site_name" content="Le Soir &amp; Co">'), 'Le Soir & Co')
     assert.equal(siteNameOf("<meta content='Voici' name='application-name'>"), 'Voici')
     assert.equal(siteNameOf('<meta property="og:title" content="Un article">'), null)
+  })
+
+  it('reads what a page says its site is, og:description first', () => {
+    assert.equal(
+      siteDescriptionOf(
+        '<meta name="description" content="Court"><meta content="L&#39;actu &amp; plus" property="og:description">'
+      ),
+      "L'actu & plus"
+    )
+    assert.equal(siteDescriptionOf('<meta name="description" content="Seulement celle-ci">'), 'Seulement celle-ci')
+    assert.equal(siteDescriptionOf('<meta property="og:description" content="  ">'), null)
+    assert.equal(siteDescriptionOf(`<meta name="description" content="${'a'.repeat(300)}">`)?.length, 200)
   })
 })

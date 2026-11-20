@@ -5,6 +5,8 @@ import { decodeEntities } from './text.ts'
 // a short section after it ("Marie Claire Belgique · Beauté"), else the name the site gives itself, else its address.
 
 const MAX_LENGTH = 60
+// A description longer than this is cut: the catalogue shows two lines of it.
+const MAX_DESCRIPTION = 200
 // A section after the name: a word or three ("Beauté", "Sciences et santé"), never a sentence.
 const MAX_SECTION_WORDS = 3
 const MAX_PART_WORDS = 6
@@ -68,6 +70,20 @@ export const siteNameOf = (html: string) => {
     if (name && content && decodeEntities(content).trim()) return decodeEntities(content).trim().slice(0, MAX_LENGTH)
   }
   return null
+}
+
+// What the site says it is, for the catalogue: its og:description, or else its meta description.
+export const siteDescriptionOf = (html: string) => {
+  let fallback: string | null = null
+  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
+    const name = /\s(?:property|name)\s*=\s*["']?(og:description|description)["'\s>]/i.exec(tag)?.[1]?.toLowerCase()
+    const content = /\scontent\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag)?.slice(1).find(Boolean)
+    const text = content ? decodeEntities(content).replace(/\s+/g, ' ').trim().slice(0, MAX_DESCRIPTION) : ''
+    if (!name || !text) continue
+    if (name === 'og:description') return text
+    fallback ??= text
+  }
+  return fallback
 }
 
 export const tidySourceName = (title: string, link: string, siteName: string | null = null) => {
