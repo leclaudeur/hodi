@@ -141,10 +141,8 @@ const leaveHousehold = (
   const heir = plan.heir
   const heirKey = keyOf('profiles', heir.id)
   if (own) {
-    const wasAdmin =
-      (db.prepare('SELECT role FROM profiles WHERE id = ?').get(own.id) as { role: string } | undefined)?.role ===
-      'admin'
-    if (wasAdmin) {
+    const row = db.prepare('SELECT role FROM profiles WHERE id = ?').get(own.id) as { role: string } | undefined
+    if (row?.role === 'admin') {
       if (heirKey) recordForget({ kind: 'admin', ...heirKey })
       db.prepare("UPDATE profiles SET role = 'admin' WHERE id = ?").run(heir.id)
     }
