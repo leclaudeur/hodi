@@ -15,7 +15,7 @@ to the app.
   **Choose dates**. A plugin can add its own cards after Hodi's.
 - **Households** and **Accounts**: each list has its own search. A household's page says who runs it and how many
   profiles it has, invites an adult with a code and lists its accounts. An account's page gives its e-mail, household,
-  role, last sign-in and devices, and makes a code for a new password when its person forgot theirs. A household made
+  role, last sign-in and devices, and makes a code for a new password once its person asked for one. A household made
   for someone else shows _waiting for_ that person until they use their code, and **New code** replaces a lost one.
 - **Delete**, at the end of both pages, asks for the server admin's password and app code. An account goes with its
   profile, and its household's admin role passes to the oldest other adult with an account. A household goes with its
@@ -49,7 +49,8 @@ goes back to the same moment, and what was deleted since the copy, such as an ac
 _Forgot password_ on the sign-in page always answers the same, whether an account has that e-mail or not. Once _E-mail_
 is set and _General_ has Hodi's address, the account gets an 8-character code valid for one hour, once, with a button
 that fills it in. On a server that sends no e-mail, the page asks the server's admin instead: the request lands in
-_Notifications_, the account's page shows _Code asked_, and **Make a code** there gives the code to hand over. Either
+_Notifications_, the account's page shows _Code asked_, and **Make a code** there gives the code to hand over. Without a request, the account's page makes no code: the
+server's admin cannot take an account over on their own. Either
 way, the person types it, chooses a new password, which signs out the account's other devices, and enters Hodi. **I
 have a code** on that page goes straight to the code, for someone coming back with it later. Wrong codes count against
 the device, as wrong passwords do.

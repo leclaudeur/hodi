@@ -38,7 +38,8 @@ Codes are eight letters and digits with a QR, valid once for 24 hours, typed aft
 - **An adult profile with no account yet**: the admin gives it to its person with **Connect a device**, in its form.
 - **A teen's or child's own device**: a parent makes the code in _Settings › Profiles › Manage › Devices_. That device
   opens this profile only, with no _Who's in?_, until it goes unused for 90 days or a parent removes it.
-- **A forgotten password**: only the server's admin makes this code, in _Server › Accounts_, never a household's admin.
+- **A forgotten password**: only the server's admin makes this code, in _Server › Accounts_, and only once its person asked for it from
+  _Forgot password_.
   Its person types it, then a new password.
 
 Until it is used, the invitation waits under _Invited people_, below the profiles' groups (_Adults_, _Teens_,
