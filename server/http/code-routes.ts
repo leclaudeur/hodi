@@ -43,7 +43,7 @@ const completeJoin = (
   request: express.Request,
   response: express.Response
 ) => {
-  const { codes, accounts, profiles, now, cookieFor, onProfileCreated, signsInHere } = options
+  const { codes, accounts, profiles, now, cookieFor, onProfileCreated, onProfileLinked, signsInHere } = options
   if (existing ? accounts.householdOf(known!.id) !== null : accounts.byEmail(email)) {
     response.status(409).json({ error: existing ? 'already_member' : 'email_taken' })
     return
@@ -65,6 +65,7 @@ const completeJoin = (
     onProfileCreated?.(profileId)
   }
   accounts.linkProfile(account.id, profileId)
+  onProfileLinked?.(profileId)
   if (!signsInHere(account)) {
     response.json({ profileId, signIn: false })
     return

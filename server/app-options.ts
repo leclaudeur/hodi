@@ -1,5 +1,6 @@
 import type { LoginThrottle } from './auth/login-throttle.ts'
 import type { AccountDataStore } from './db/account-data.ts'
+import type { CarriedSources } from './db/carried-sources.ts'
 import type { Database } from './db/database.ts'
 import type { GameStore } from './db/game-store.ts'
 import type { HouseholdStore } from './db/household-store.ts'
@@ -52,7 +53,8 @@ export interface AppOptions {
   storage?: { usage: () => StorageUsage; clearTexts: () => void }
   // "Ajouter une source": the catalogue in the database and the feed finder; absent in tests that do not need them.
   // file: sources.yml's catalogue, whose sources not yet added are offered ("Sources proposées").
-  sources?: { store: SourceStore; find: (link: string) => Promise<FindResult>; file: Catalog }
+  // carried: what an account brings from its last household, for the next one it joins.
+  sources?: { store: SourceStore; find: (link: string) => Promise<FindResult>; file: Catalog; carried?: CarriedSources }
   // The household game's points (gamification.yml); absent in tests that do not need it.
   game?: GameStore
   // The young profiles' rules and time; absent in tests that do not need them.

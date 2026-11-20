@@ -32,6 +32,8 @@ export interface CodeJoinOptions {
   resetPassword?: (account: UserAccount, passwordHash: string, request: express.Request) => string | null
   // What a new profile starts with, as one added in Réglages > Profils.
   onProfileCreated?: (profileId: number) => void
+  // Linked to the account that joined: what the account carries from its last household comes back.
+  onProfileLinked?: (profileId: number) => void
   // The plugins' say on an existing account signing in (« J'ai déjà un compte », a new password).
   checkSignIn?: CheckSignIn
   // false for an account with « Validation en deux étapes » on: what the code does is done, but this device signs in

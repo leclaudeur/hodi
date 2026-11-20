@@ -1146,6 +1146,25 @@ const MIGRATIONS: string[] = [
     )
     WHERE id = NEW.id;
   END;
+  `,
+  // The sources an account had on (the ones added to its household it did not turn off) go with it when its profile
+  // goes: the next household it joins gets them, once (carried-sources.ts).
+  `
+  CREATE TRIGGER profiles_carry_sources BEFORE DELETE ON profiles WHEN OLD.user_id IS NOT NULL BEGIN
+    INSERT OR REPLACE INTO profile_settings (owner, key, value, updated_at)
+    SELECT 'a' || OLD.user_id, 'carried_sources', json_group_array(json_object(
+        'id', s.id, 'name', s.name, 'url', s.url, 'kind', s.kind, 'lang', s.lang, 'domains', json(s.domains),
+        'reader', s.reader, 'skip', json(s.skip), 'section', h.section, 'sectionId', h.section_id,
+        'topics', json(h.topics)
+      )), CAST(unixepoch('subsec') * 1000 AS INTEGER)
+    FROM household_sources h JOIN sources s ON s.id = h.source_id
+    WHERE h.household_id = OLD.account_id AND h.added_by IS NOT NULL AND s.id NOT IN (
+      SELECT value FROM json_each(COALESCE((
+        SELECT json_extract(value, '$.hiddenSources') FROM profile_settings
+        WHERE owner = 'a' || OLD.user_id AND key = 'preferences'
+      ), '[]'))
+    );
+  END;
   `
 ]
 

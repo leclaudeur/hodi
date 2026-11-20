@@ -1,18 +1,19 @@
 import { currentHouseholdId } from '../db/household-scope.ts'
+import { carrySourcesOf } from './carry-sources.ts'
 import type { YouthSources } from '../news/youth-sources.ts'
 import type { Options } from './wiring.ts'
 
 export interface ProfileHooks {
   created: (id: number) => void
   deleted: (id: number) => void
+  // A profile now an account's (joining with a code): the sources the account carries come back.
+  linked: (id: number) => void
   // Turns sources off in a profile's preferences, on the server: its devices get the change with the state.
   hideSources: (profileId: number, ids: string[]) => void
 }
 
-export const profileHooksOf = (
-  { users, news, alerts, plugins, profiles, now }: Options,
-  youthSources: YouthSources | null
-): ProfileHooks => {
+export const profileHooksOf = (options: Options, youthSources: YouthSources | null): ProfileHooks => {
+  const { users, news, alerts, plugins, profiles, now } = options
   const hideSources = (profileId: number, ids: string[]) => {
     if (!users || ids.length === 0) return
     const user = users(profileId)
@@ -22,6 +23,7 @@ export const profileHooksOf = (
   }
   return {
     hideSources,
+    linked: carrySourcesOf(options, hideSources),
     // A new profile starts with the base sources: the ones profiles added are off until it turns them on. A young one
     // starts with its kind's base sources only.
     created: id => {

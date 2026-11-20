@@ -13,7 +13,8 @@ after a restart.
 **Base sources** are the only ones a new household and a new profile start with, in the household's language. They
 can be hidden, never deleted. Every other source is a **suggestion**: a profile adds it from _Settings › Sources_, or
 adds any site, feed or YouTube channel with its link. A source a profile added stays in the household when that
-profile goes. Only the admin deletes it, for the whole household, with their password.
+profile goes. Only the admin deletes it, for the whole household, with their password. A person who joins another
+household brings the sources they had on: the ones it does not follow yet are added to it.
 
 A source may belong to several themes, and a theme with no source is hidden. Each profile sees a theme's name in its
 own language. In a feed that mixes French and English, only the articles in the source's language are kept.

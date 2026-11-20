@@ -79,7 +79,8 @@ const mountCodeJoin = (api: express.Router, wiring: Wiring, login: Login) => {
       resetPassword: devices ? login.resetAccountPassword : undefined,
       signsInHere: account => !twoFactor?.isOn(account.id),
       checkSignIn: login.checkSignIn,
-      onProfileCreated: id => wiring.profileHooks.created(id)
+      onProfileCreated: id => wiring.profileHooks.created(id),
+      onProfileLinked: id => wiring.profileHooks.linked(id)
     })
   )
 }

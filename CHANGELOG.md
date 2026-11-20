@@ -24,6 +24,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Your name, colour and photo belong to the account.** They come back with the profile you get on joining a
   household again, and joining with _I already have an account_ no longer asks who you are when the account has been in
   a household before.
+- **Your sources come with you.** Joining another household, the sources you had on in your last one are back: the
+  ones it does not follow yet are added to it (off for its other members, like any source added), and the sources its
+  members added are off for you until you turn them on.
 
 ## [1.0.0-beta.13] - 2026-11-19
 

@@ -2,6 +2,7 @@ import type { ServerNotifier } from './notices/server-notifier.ts'
 import path from 'node:path'
 import { createApp } from './app.ts'
 import type { Config } from './config.ts'
+import { CarriedSources } from './db/carried-sources.ts'
 import type { Database } from './db/database.ts'
 import { type PluginBackup, diskUsage } from './db/maintenance.ts'
 import { codeForPeople, drawCode } from './db/sign-in-code-store.ts'
@@ -110,6 +111,7 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
     onHouseholdChange: running.applyHousehold,
     sources: {
       store: stores.sources,
+      carried: new CarriedSources(running.db),
       find: createSourceFinder({ fetchText: outside.findFetchText, isPublic: outside.isPublicLink }),
       file: stores.file
     }
