@@ -582,11 +582,22 @@ test('reads on a phone', async ({ browser }) => {
 })
 
 test('shares an article with and without a word, and the sender sees the reactions', async ({ browser }) => {
+  // Sam is not signed in here and has no family tie with Alex: found by his username the first time, then offered.
   const send = async (word: string, title: string, note: string) => {
     await openFromSearch(page, word, title)
     await page.getByRole('button', { name: 'Envoyer à quelqu’un' }).click()
     const dialog = page.getByRole('dialog', { name: 'Envoyer à…' })
-    await dialog.getByRole('checkbox', { name: 'Sam' }).check()
+    const person = dialog.getByRole('checkbox', { name: 'Sam' })
+    if (!note) await expect(person).toBeVisible()
+    else {
+      await expect(person).toHaveCount(0)
+      await dialog.getByRole('textbox', { name: 'Son identifiant' }).fill('@personne')
+      await dialog.getByRole('button', { name: 'Ajouter' }).click()
+      await expect(dialog.getByText('Personne à qui l’envoyer avec cet identifiant.')).toBeVisible()
+      await dialog.getByRole('textbox', { name: 'Son identifiant' }).fill('@sam')
+      await dialog.getByRole('button', { name: 'Ajouter' }).click()
+    }
+    await person.check()
     if (note) await dialog.getByRole('textbox', { name: 'Un mot avec l’article' }).fill(note)
     await dialog.getByRole('button', { name: 'Envoyer' }).click()
     await expect(dialog).toHaveCount(0)

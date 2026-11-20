@@ -889,7 +889,12 @@
     "nobody": "Nobody else receives shares yet.",
     "noteLabel": "A note with it",
     "notePlaceholder": "Add a word…",
-    "send": "Send"
+    "send": "Send",
+    "handle": "Their username",
+    "handlePlaceholder": "username",
+    "add": "Add",
+    "unknown": "Nobody to send it to with this username.",
+    "findFailed": "The search failed. Try again."
   },
   "share": {
     "sentBy": "Sent by {{name}}",
@@ -1860,7 +1865,8 @@
     "ask": "Paste the link of a site or a YouTube channel. <b>Your parents</b> get your request: if they accept, it reaches your feed or <i>Videos</i>.",
     "request": "<b>{{name}}</b> would like this source in their feed. Accepted, it shows up <b>for {{name}} only</b>, filed in the theme below.",
     "requestChannel": "<b>{{name}}</b> would like to follow this channel. Accepted, it shows up <b>for {{name}} only</b>, in their <i>Videos</i>.",
-    "passwordOpen": "<b>{{name}}</b> has their own account. Type their password to open their profile on this device."
+    "passwordOpen": "<b>{{name}}</b> has their own account. Type their password to open their profile on this device.",
+    "shareToHandle": "Pick one or more people, or add someone by their <b>@username</b>. The article lands in their <i>Shares</i>, with a word if you write one."
   },
   "plugins": {
     "count_one": "{{count}} plugin",

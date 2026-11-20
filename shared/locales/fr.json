@@ -889,7 +889,12 @@
     "nobody": "Personne d’autre ne reçoit de partages pour l’instant.",
     "noteLabel": "Un mot avec l’article",
     "notePlaceholder": "Ajouter un mot…",
-    "send": "Envoyer"
+    "send": "Envoyer",
+    "handle": "Son identifiant",
+    "handlePlaceholder": "identifiant",
+    "add": "Ajouter",
+    "unknown": "Personne à qui l’envoyer avec cet identifiant.",
+    "findFailed": "La recherche n’a pas abouti. Réessaie."
   },
   "share": {
     "sentBy": "Envoyé par {{name}}",
@@ -1860,7 +1865,8 @@
     "ask": "Colle le lien d’un site ou d’une chaîne YouTube. <b>Les parents</b> reçoivent la demande : s’ils l’acceptent, elle arrive dans le fil ou dans <i>Vidéos</i>.",
     "request": "<b>{{name}}</b> aimerait ajouter cette source à son fil. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, rangée dans le thème ci-dessous.",
     "requestChannel": "<b>{{name}}</b> aimerait suivre cette chaîne. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, dans ses <i>Vidéos</i>.",
-    "passwordOpen": "<b>{{name}}</b> a son propre compte. Tape son mot de passe pour ouvrir son profil sur cet appareil."
+    "passwordOpen": "<b>{{name}}</b> a son propre compte. Tape son mot de passe pour ouvrir son profil sur cet appareil.",
+    "shareToHandle": "Choisis une ou plusieurs personnes, ou ajoute quelqu’un par son <b>@identifiant</b>. L’article arrive dans leurs <i>Partages</i>, avec un mot si tu en écris un."
   },
   "plugins": {
     "count_one": "{{count}} plugin",

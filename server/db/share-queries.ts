@@ -106,3 +106,14 @@ export const markReactionsSeen = (db: Database, profile: number, until: number) 
     'UPDATE shares SET reaction_seen = 1 WHERE from_profile = ? AND reaction IS NOT NULL AND reacted_at <= ?'
   ).run(profile, until)
 }
+
+// The profiles this one sent articles to, or got some from, while the shares are kept: the people it shares with.
+export const sharedWith = (db: Database, profile: number): number[] =>
+  (
+    db
+      .prepare(
+        `SELECT profile_id AS id FROM shares WHERE from_profile = ?
+         UNION SELECT from_profile AS id FROM shares WHERE profile_id = ?`
+      )
+      .all(profile, profile) as { id: number }[]
+  ).map(row => row.id)

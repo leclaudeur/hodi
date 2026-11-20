@@ -11,7 +11,7 @@ import {
 } from './reading-queries.ts'
 import { listPushSubscriptions, removePushSubscription, savePushSubscription } from './push-subscriptions.ts'
 import { type ImportedState, importStateRows } from './state-import.ts'
-import { markReactionsSeen, react, reactions, shareTo, shares } from './share-queries.ts'
+import { markReactionsSeen, react, reactions, sharedWith, shareTo, shares } from './share-queries.ts'
 
 // A profile's own state, shared by every device it is open on. The household has one password and up to
 // five profiles (see profile-store.ts); until the app chooses one, everything is the first profile's.
@@ -294,6 +294,10 @@ export class UserStore {
   // What the other profiles sent here this week, read or not, newest first, without the articles put away.
   shares(since: number) {
     return shares(this.#db, this.#profile, since)
+  }
+
+  sharedWith() {
+    return sharedWith(this.#db, this.#profile)
   }
 
   // An emoji back to whoever sent the article, read or not; null takes it back.
