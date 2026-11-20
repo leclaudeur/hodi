@@ -28,7 +28,7 @@ Open <http://localhost:3000> in a browser on the same machine. Hodi walks you th
 6. **All set**: your time zone and country, guessed from the browser.
 
 Your account exists as soon as you leave the first step: if you stop there, sign in from any device to carry on.
-Everything chosen here can be changed later in _Settings › Household_ and _Settings › AI & credits_.
+Everything chosen here can be changed later in _Settings › Household_ and _My account › AI and credits_.
 
 > [!TIP]
 > Put plugins in `data/plugins/` before the first start: the setup then shows them under _Plugins found_, right after

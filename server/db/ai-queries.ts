@@ -111,3 +111,26 @@ export const clearAiCalls = (
        AND (? IS NULL OR kind = ?) AND (? IS NULL OR profile_id = ?)`
   ).run(CLEARED_LEVELS[level], since, CLEARED_LEVELS[level], kind, kind, profileId, profileId)
 }
+
+// An article's summary in the given language, if the owner's AI wrote one.
+export const getSummary = (db: Database, id: string, language: Language, owner: string): string[] | null => {
+  const row = db
+    .prepare('SELECT points FROM ai_summaries WHERE owner = ? AND article_id = ? AND language = ?')
+    .get(owner, id, language) as { points: string } | undefined
+  return row ? (JSON.parse(row.points) as string[]) : null
+}
+
+interface SummaryToSave {
+  id: string
+  language: Language
+  points: string[]
+  now: number
+  owner: string
+}
+
+export const saveSummary = (db: Database, { id, language, points, now, owner }: SummaryToSave) => {
+  db.prepare(
+    `INSERT OR REPLACE INTO ai_summaries (owner, article_id, language, points, created_at)
+     SELECT ?, id, ?, ?, ? FROM articles WHERE id = ?`
+  ).run(owner, language, JSON.stringify(points), now, id)
+}

@@ -1144,6 +1144,35 @@ const MIGRATIONS: string[] = [
     SELECT accounts.time_zone, accounts.country FROM profiles JOIN accounts ON accounts.id = profiles.account_id
     WHERE profiles.user_id = users.id ORDER BY profiles.id DESC LIMIT 1
   );
+  `,
+  // Each person's AI is their own: their key, their caps and the summaries it paid for, which no one else reads. Every
+  // account starts with its household's key; a young profile, which has no account, has none. The summaries written
+  // before had no household: every account that now has a key gets a copy of each.
+  `
+  ALTER TABLE users ADD COLUMN ai_provider TEXT;
+  ALTER TABLE users ADD COLUMN ai_key TEXT;
+  ALTER TABLE users ADD COLUMN ai_model TEXT;
+  UPDATE users SET (ai_provider, ai_key, ai_model) = (
+    SELECT accounts.ai_provider, accounts.ai_key, accounts.ai_model
+    FROM profiles JOIN accounts ON accounts.id = profiles.account_id
+    WHERE profiles.user_id = users.id ORDER BY profiles.id DESC LIMIT 1
+  );
+  CREATE TABLE ai_summaries_by_owner (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL REFERENCES articles (id) ON DELETE CASCADE,
+    language TEXT NOT NULL,
+    points TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, article_id, language)
+  );
+  INSERT INTO ai_summaries_by_owner (owner, article_id, language, points, created_at)
+    SELECT 'a' || users.id, s.article_id, s.language, s.points, s.created_at
+    FROM ai_summaries s JOIN users ON users.ai_key IS NOT NULL;
+  DROP TABLE ai_summaries;
+  ALTER TABLE ai_summaries_by_owner RENAME TO ai_summaries;
+  CREATE TRIGGER users_forget_summaries AFTER DELETE ON users BEGIN
+    DELETE FROM ai_summaries WHERE owner = 'a' || OLD.id;
+  END;
   `
 ]
 

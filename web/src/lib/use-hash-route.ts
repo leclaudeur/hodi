@@ -39,7 +39,7 @@ export type Route =
     }
 
 // Mon compte's sections, in their order in its sidebar.
-export const ACCOUNT_PARTS = ['profile', 'sign-in', 'region', 'stats', 'data'] as const
+export const ACCOUNT_PARTS = ['profile', 'sign-in', 'region', 'ai', 'stats', 'data'] as const
 export type AccountPart = (typeof ACCOUNT_PARTS)[number]
 const accountPartOf = (value: string): AccountPart | null =>
   ACCOUNT_PARTS.includes(value as AccountPart) ? (value as AccountPart) : null
@@ -174,7 +174,7 @@ const settingsRoute = (second: string, third: string, path: string): Route => {
     return third ? { name: 'settings', section: 'plugin', item: third } : { name: 'settings', section: null }
   // Réglages › Mon compte opens the account's own page.
   if (second === 'account') return { name: 'account', part: accountPartOf(third) }
-  if (second === 'stats') return { name: 'account', part: 'stats' }
+  if (second === 'stats' || second === 'ai') return { name: 'account', part: second }
   // Mon profil became Général: its name and photo moved to Mon compte.
   if (second === 'me') return { name: 'settings', section: 'general' }
   return {

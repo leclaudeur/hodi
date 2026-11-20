@@ -16,13 +16,14 @@ import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
 import { mountLeaveRoute } from './account-leave-route.ts'
 import { mountLockRoutes } from './account-lock-routes.ts'
 import { mountRegionRoutes } from './account-region-routes.ts'
+import { type AccountAiOptions, accountAiView, mountAiRoutes } from './account-ai-routes.ts'
 
 // The person's own account, after the session and profile checks: Réglages > Compte et données.
 
 // « Télécharger une copie »: how many an account may ask in a minute.
 export const COPIES_PER_MINUTE = 5
 
-export interface AccountRoutesOptions {
+export interface AccountRoutesOptions extends AccountAiOptions {
   data: AccountDataStore
   accounts: UserAccountStore
   devices: UserDeviceStore
@@ -66,6 +67,7 @@ export const accountRoutes = (options: AccountRoutesOptions) => {
   mountTwoFactorRoutes(router, options, helpers)
   mountLockRoutes(router, options, helpers)
   mountRegionRoutes(router, options, helpers)
+  mountAiRoutes(router, options, helpers)
   mountCredentialRoutes(router, options, helpers)
   mountCopyRoute(router, options, helpers)
   mountDeleteRoute(router, options, helpers)
@@ -83,7 +85,9 @@ const accountHelpers = ({
   now,
   twoFactor,
   data,
-  defaultTimeZone = 'UTC'
+  defaultTimeZone = 'UTC',
+  accountAi,
+  providers
 }: AccountRoutesOptions) => {
   // All of it is the signed-in account's own, from its own profile: a child's profile open on a parent's
   // device sees none of it.
@@ -120,6 +124,7 @@ const accountHelpers = ({
       // Its own, else the household's, as the account's days run in it.
       timeZone: account.timeZone ?? household.get().timeZone ?? defaultTimeZone,
       country: account.country,
+      ...accountAiView({ accountAi, providers }, account),
       devices: devices.list(account.id).map(({ id, userAgent, lastSeenAt, trusted }) => ({
         id,
         userAgent,

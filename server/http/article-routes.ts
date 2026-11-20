@@ -136,7 +136,7 @@ const mountArticleRoute = (
         status: 'ok',
         item: result.item,
         article: { title, byline, contentHtml: sizes ? numberInlineImages(contentHtml, sizes) : contentHtml },
-        canSummarize: news.canSummarize
+        canSummarize: news.canSummarize(profileIdOf(response))
       })
       return
     }

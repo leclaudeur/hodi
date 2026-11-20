@@ -85,7 +85,7 @@ describe('hash routes', () => {
 
   it('opens each Réglages section from its English name', () => {
     // Mon compte and its Statistiques are a page of their own: Réglages only links to it.
-    const ownPage = new Set(['account', 'stats'])
+    const ownPage = new Set(['account', 'stats', 'ai'])
     for (const section of SETTINGS_SECTIONS.filter(section => !ownPage.has(section))) {
       expect(parseRoute(settingsHref(section))).toEqual({ name: 'settings', section })
     }
@@ -99,6 +99,7 @@ describe('hash routes', () => {
     expect(parseRoute('#/settings/account')).toEqual({ name: 'account', part: null })
     expect(parseRoute('#/settings/account/sign-in')).toEqual({ name: 'account', part: 'sign-in' })
     expect(parseRoute('#/settings/stats')).toEqual({ name: 'account', part: 'stats' })
+    expect(parseRoute('#/settings/ai')).toEqual({ name: 'account', part: 'ai' })
   })
 
   it('links to English addresses only', () => {

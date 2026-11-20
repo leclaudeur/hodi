@@ -8,7 +8,6 @@ import MobilePage from '../MobilePage.tsx'
 import SectionPage from './SectionPage.tsx'
 import RowsSkeleton from './SettingsSkeleton.tsx'
 import AboutSection from './sections/AboutSection.tsx'
-import AiSection from './sections/AiSection.tsx'
 import FollowedSection from './sections/FollowedSection.tsx'
 import HouseholdSection from './sections/HouseholdSection.tsx'
 import GeneralSection from './sections/GeneralSection.tsx'
@@ -49,8 +48,6 @@ const sectionContent = ({ section, item, topics, layout, onUnauthorized }: Setti
       return <NotificationsSection layout={layout} onUnauthorized={onUnauthorized} />
     case 'general':
       return <GeneralSection layout={layout} />
-    case 'ai':
-      return <AiSection layout={layout} onUnauthorized={onUnauthorized} />
     case 'plugin':
       return <PluginPage key={item ?? ''} id={item ?? ''} layout={layout} />
     case 'household':
