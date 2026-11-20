@@ -1,17 +1,17 @@
 import { ChevronsUpDown, Lock, Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MAX_PROFILES, PROFILE_COLORS, type Profile } from '../api.ts'
+import { MAX_PROFILES, type Profile } from '../api.ts'
 import { t as textNow } from '../lib/i18n.ts'
-import { addProfile, switchProfile, useProfiles } from '../lib/profiles.ts'
+import { switchProfile, useProfiles } from '../lib/profiles.ts'
 import { showError, showSaved } from '../lib/toast.ts'
-import Dialog from '../ui/Dialog.tsx'
 import Menu, { MenuItem, MenuSeparator } from '../ui/Menu.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import { Bar } from '../ui/Skeleton.tsx'
-import ProfileForm from '../views/profiles/ProfileForm.tsx'
+import CreateChildDialog from '../views/profiles/CreateChildDialog.tsx'
 import styles from './ProfileSwitcher.module.css'
 import { isLinkedDevice } from '../lib/linked-device.ts'
+import { youngProfileHref } from '../lib/use-hash-route.ts'
 import { useAvatarMenu } from '../plugins/Slots.tsx'
 import UnlockDialog from './UnlockDialog.tsx'
 
@@ -45,7 +45,7 @@ const Still = ({ current }: { current: Profile }) => (
   </div>
 )
 
-// The new profile's form, and "Inviter un adulte" from it.
+// "Nouveau profil": a teen's or a child's own account, made by this parent; its card opens once it is made.
 const AddProfile = ({
   adding,
   setAdding,
@@ -54,28 +54,18 @@ const AddProfile = ({
   adding: boolean
   setAdding: (adding: boolean) => void
   profiles: Profile[]
-}) => {
-  const { t } = useTranslation()
-  const freeColor = PROFILE_COLORS.find(color => !profiles.some(profile => profile.color === color))
-  return (
-    <>
-      <Dialog open={adding} onClose={() => setAdding(false)} title={t('profiles.new')}>
-        {adding && (
-          <ProfileForm
-            defaultColor={freeColor}
-            kinds={['teen', 'child']}
-            onCancel={() => setAdding(false)}
-            onSave={async ({ name, color, photo, kind, avatar }) => {
-              await addProfile(name, color, photo ?? null, { kind, avatar })
-              setAdding(false)
-              showSaved(textNow('profiles.added', { name }))
-            }}
-          />
-        )}
-      </Dialog>
-    </>
-  )
-}
+}) => (
+  <CreateChildDialog
+    open={adding}
+    taken={profiles.map(profile => profile.color)}
+    onClose={() => setAdding(false)}
+    onCreated={child => {
+      setAdding(false)
+      showSaved(textNow('children.create.done', { name: child.name }))
+      window.location.hash = youngProfileHref(child.profileId)
+    }}
+  />
+)
 
 interface ProfileMenuProps {
   open: boolean

@@ -92,7 +92,10 @@ export interface AccountDevice {
 }
 
 export interface AccountView {
-  email: string
+  // A teen's or a child's has none: its e-mails go to its parents.
+  email: string | null
+  // A teen's or a child's own account, run by its parents.
+  young: boolean
   passwordChangedAt: number
   // No password of its own: a change needs a sign-in on this device in the last 5 minutes (recentSignIn).
   loginOnly: boolean

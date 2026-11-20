@@ -10,6 +10,7 @@ const EMAIL = 'alex@example.com'
 const PASSWORD = 'un mot de passe solide 42'
 // Sam's, once the admin's code has given a new one.
 const SAM_PASSWORD = 'une toute nouvelle phrase 7'
+const ZOE_PASSWORD = 'la phrase de Zoé 2026'
 // The household's Code parental, which Alex sets for the adults' profiles that are not private.
 const PARENTAL_CODE = '482913'
 
@@ -300,19 +301,39 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   await before.close()
 })
 
-test('creates a teen profile', async () => {
-  await page.goto('/#/settings/profiles')
-  const dialog = page.getByRole('dialog', { name: 'Nouveau profil' })
-  await page.getByRole('button', { name: 'Ajouter un profil' }).click()
+test('creates a teen’s account, which signs in with its username and the password its parent chose', async ({
+  browser
+}) => {
+  await page.goto('/#/account/children')
+  await page.getByRole('button', { name: 'Créer un compte' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Créer un compte' })
   await dialog.getByRole('textbox', { name: 'Prénom' }).fill('Zoé')
   await dialog.getByRole('radio', { name: 'Ado' }).check()
-  await dialog.getByRole('button', { name: 'Créer le profil' }).click()
-  await expect(dialog).toHaveCount(0)
+  await expect(dialog.getByRole('textbox', { name: 'Identifiant' })).toHaveValue('zoe')
+  await dialog.getByRole('button', { name: 'Continuer' }).click()
+  const password = page.getByRole('dialog', { name: 'Le mot de passe de Zoé' })
+  await password.getByLabel('Mot de passe', { exact: true }).fill(ZOE_PASSWORD)
+  await password.getByLabel('Confirme le mot de passe').fill(ZOE_PASSWORD)
+  await password.getByRole('button', { name: 'Créer' }).click()
+  // Her card opens, with the password she signs in with.
+  await expect(page.getByText('Se connecte avec @zoe')).toBeVisible()
 
   // Each kind under its own title; the adults are accounts, not in this list.
+  await page.goto('/#/settings/profiles')
   const group = (title: string) => page.getByRole('main').locator(`h2:text-is("${title}") + ul`)
   await expect(page.getByRole('main').locator('h2:text-is("Adultes")')).toHaveCount(0)
   await expect(group('Ados').getByRole('listitem').filter({ hasText: 'Zoé' })).toHaveCount(1)
+
+  // Her own phone: her username and her password, no e-mail.
+  const phone = await browser.newPage()
+  await phone.goto('/')
+  await phone.getByRole('textbox', { name: 'E-mail' }).fill('@zoe')
+  await phone.getByRole('textbox', { name: 'Mot de passe' }).fill(ZOE_PASSWORD)
+  await phone.getByRole('button', { name: 'Entrer' }).click()
+  // Her profile's first time in Hodi: its tour, once.
+  await skipTour(phone)
+  await expect(phone.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
+  await phone.close()
 })
 
 test('links Zoé’s own tablet with a parent’s code, which opens her profile only, until it is removed', async ({
@@ -333,8 +354,7 @@ test('links Zoé’s own tablet with a parent’s code, which opens her profile 
   await tablet.getByRole('textbox', { name: 'Code' }).fill(code)
   await expect(tablet.getByRole('heading', { name: 'Relier cet appareil' })).toBeVisible()
   await tablet.getByRole('button', { name: 'Valider' }).click()
-  // Her profile's first time in Hodi: its tour, once.
-  await skipTour(tablet)
+  // Her tour was taken on her phone: straight into her profile.
   await expect(tablet.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
   // No other profile to open from it.
   await tablet.goto('/#/profiles')
@@ -369,8 +389,8 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await question.getByRole('button', { name: 'Rendre privé' }).click()
   await expect(own.getByRole('switch', { name: 'Profil privé' })).toHaveAttribute('aria-checked', 'true')
 
-  // Alex, the server's admin, sets the Code parental in Réglages › Ados et enfants.
-  await page.goto('/#/settings/profiles')
+  // Alex, the server's admin, sets the Code parental in Mon compte › Mes enfants.
+  await page.goto('/#/account/children')
   await page.getByRole('switch', { name: 'Code parental' }).click()
   const choose = page.getByRole('dialog', { name: 'Code parental' })
   await choose.getByLabel('Nouveau code').fill(PARENTAL_CODE)

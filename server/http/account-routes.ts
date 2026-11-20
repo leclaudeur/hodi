@@ -127,6 +127,7 @@ const accountHelpers = ({
     const going = plan(account)
     return {
       email: account.email,
+      young: accounts.young.isYoung(account.id),
       handle: account.handle,
       // Before then, « Modifier » keeps the identifier as it is.
       handleChangeableFrom: handles?.changeableFrom(account.id, now()) ?? null,

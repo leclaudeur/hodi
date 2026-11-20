@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { ChartColumn, Inbox, Layers, Lightbulb, Moon, Pencil, Rss, Sun, Timer } from 'lucide-react'
+import { ChartColumn, Inbox, Layers, Moon, Pencil, Rss, Sun, Timer } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Profile, SourceRequest } from '../../../../api.ts'
@@ -126,23 +126,6 @@ export const TimeRows = ({ loaded, onOpen }: Omit<RowsProps, 'profile'>) => {
         icon={Moon}
         action={t('common.change')}
         onOpen={() => onOpen('quiet')}
-      />
-    </div>
-  )
-}
-
-// Its AI explanations a day.
-export const AiRows = ({ loaded, onOpen }: Omit<RowsProps, 'profile'>) => {
-  const { t } = useTranslation()
-  const { explainPerDay } = loaded.limits.rules
-  return (
-    <div className={styles.card}>
-      <OpenRow
-        label={t('young.explain')}
-        value={explainPerDay === 0 ? t('young.explainNone') : t('young.perDayCount', { count: explainPerDay })}
-        icon={Lightbulb}
-        action={t('common.change')}
-        onOpen={() => onOpen('explain')}
       />
     </div>
   )

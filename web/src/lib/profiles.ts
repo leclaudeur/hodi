@@ -3,11 +3,9 @@ import { isServerOnly } from './server-only.ts'
 import {
   type Profile,
   type ProfileChanges,
-  type ProfileColor,
   type ProfileSecret,
   chooseProfile,
   clearDataCache,
-  createProfile,
   type AdminProof,
   deleteProfile,
   getProfiles,
@@ -139,20 +137,6 @@ export const makePhoto = async (file: File): Promise<Blob> => {
   const photo = webp?.type === 'image/webp' ? webp : await encode('image/jpeg')
   if (!photo) throw new Error('Photo not made')
   return photo
-}
-
-// The server says which profiles ask for a password: the list is asked again.
-export const addProfile = async (
-  name: string,
-  color: ProfileColor,
-  photo: Blob | null,
-  { kind, avatar }: Omit<ProfileChanges, 'name' | 'color'> = {}
-) => {
-  let profile = await createProfile(name, color, { kind, avatar })
-  if (photo && profile.kind !== 'child') profile = await uploadProfilePhoto(profile.id, photo).catch(() => profile)
-  if (state) commit({ ...state, profiles: [...state.profiles, profile] })
-  void refreshProfiles().catch(() => {})
-  return profile
 }
 
 export const editProfile = async (
