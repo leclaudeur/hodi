@@ -19,7 +19,7 @@ export const mountDeleteRoute = (
     if (!(await checkProof(session.account, request, response))) return
     // After the password, which takes a moment: what goes is read as it is now.
     const going = plan(session.account)!
-    for (const profile of going.profiles) onDeleteProfile?.(profile.id)
+    for (const profile of [...going.profiles, ...going.children]) onDeleteProfile?.(profile.id)
     for (const accountId of data.delete(session.account, going, now())) onAccountDeleted?.(accountId)
     if (going.householdGoes) onHouseholdGone?.()
     const left = cookieWithout ? cookieWithout(session.account.id, request).cookie : clearedSessionCookie()

@@ -2,6 +2,7 @@ import { NO_PASSWORD } from '../auth/password.ts'
 import { type Database, transaction } from './database.ts'
 import { recordForget, rowKey } from './forget-log.ts'
 import { HandleStore } from './handle-store.ts'
+import { ParentInvitationStore } from './parent-invitation-store.ts'
 import type { ProfileAvatar, ProfileColor, ProfileKind, ProfileStore } from './profile-store.ts'
 
 export type YoungKind = Exclude<ProfileKind, 'adult'>
@@ -22,6 +23,8 @@ export interface YoungAccount {
   hasPassword: boolean
   // Its parents' names, the one asking included.
   parents: string[]
+  // The @identifier of the adult invited to be its parent too, while it has not answered.
+  invited: string | null
 }
 
 interface YoungRow {
@@ -36,6 +39,7 @@ interface YoungRow {
   has_password: number
   password_hash: string
   parents: string | null
+  invited: string | null
 }
 
 export interface NewYoungAccount {
@@ -53,7 +57,8 @@ const SELECT_YOUNG = `
     CASE WHEN p.photo IS NULL THEN NULL ELSE p.photo_version END AS photo_version, u.handle, u.has_password,
     u.password_hash,
     (SELECT group_concat(pp.name, char(31)) FROM account_parents ap
-      JOIN profiles pp ON pp.user_id = ap.parent_id WHERE ap.child_id = u.id ORDER BY ap.created_at) AS parents
+      JOIN profiles pp ON pp.user_id = ap.parent_id WHERE ap.child_id = u.id ORDER BY ap.created_at) AS parents,
+    (SELECT iu.handle FROM parent_invitations pi JOIN users iu ON iu.id = pi.to_id WHERE pi.child_id = u.id) AS invited
   FROM users u JOIN profiles p ON p.user_id = u.id`
 
 const toYoung = (row: YoungRow): YoungAccount => ({
@@ -66,7 +71,8 @@ const toYoung = (row: YoungRow): YoungAccount => ({
   photoVersion: row.photo_version,
   handle: row.handle,
   hasPassword: row.has_password === 1 && row.password_hash !== NO_PASSWORD,
-  parents: row.parents ? row.parents.split('\u001f') : []
+  parents: row.parents ? row.parents.split('\u001f') : [],
+  invited: row.invited
 })
 
 export class YoungAccountStore {
@@ -74,6 +80,10 @@ export class YoungAccountStore {
 
   constructor(db: Database) {
     this.#db = db
+  }
+
+  get invitations() {
+    return new ParentInvitationStore(this.#db)
   }
 
   // The parent's teens and children, the oldest first.

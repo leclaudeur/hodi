@@ -295,7 +295,9 @@ const mountDeletionRoutes = (
       )
     }))
     for (const { householdId, plan } of plans)
-      inHousehold(householdId, () => plan.profiles.forEach(profile => onProfileDeleted(profile.id)))
+      inHousehold(householdId, () =>
+        [...plan.profiles, ...plan.children].forEach(profile => onProfileDeleted(profile.id))
+      )
     const { accounts: gone, households } = data.deleteFromServer(account, plans, now())
     gone.forEach(onAccountDeleted)
     households.forEach(onHouseholdGone)

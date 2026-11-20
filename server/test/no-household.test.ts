@@ -136,6 +136,6 @@ describe('the deletion plan of an account with no profile in the household', () 
     const profiles = new ProfileStore(db)
     const leftAlone = accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!
     const plan = deletionPlan(leftAlone, accounts, profiles, 'Martin')
-    assert.deepEqual(plan, { householdGoes: false, household: 'Martin', profiles: [], heir: null })
+    assert.deepEqual(plan, { householdGoes: false, household: 'Martin', profiles: [], heir: null, children: [] })
   })
 })

@@ -18,6 +18,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   @username and the password the parent chooses. The young one signs in with that username and password; the parent
   changes the password from their card. Existing teen and child profiles become accounts linked to the household's
   adults, with no password until a parent chooses one.
+- **A second parent.** On a teen's or a child's card, Parents invites another adult by their @username; they answer
+  in My account › My children, and both parents then have the same rights. A parent can stop being one, never the
+  last one, and neither can take the other off. Deleting your account takes the young ones you are the only parent of
+  with it, and its confirmation says so.
 
 ### Changed
 
