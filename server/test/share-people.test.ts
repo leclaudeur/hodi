@@ -45,7 +45,7 @@ const server = () => {
   const signIn = (...ids: number[]) => {
     here = ids
   }
-  return { people, users, offered, signIn, antho, sophie, paul, max, lina }
+  return { people, profiles, users, offered, signIn, antho, sophie, paul, max, lina }
 }
 
 describe('sharing between accounts', () => {
@@ -67,6 +67,17 @@ describe('sharing between accounts', () => {
     assert.equal(people.byHandle(paul.profile, 'max'), null)
     assert.equal(people.byHandle(antho.profile, 'lina'), null)
     assert.ok(people.mayShare(paul.profile, lina.profile))
+  })
+
+  it('keeps a teen or a child away from a profile with no account yet, which still shares with the adults', () => {
+    const { people, profiles, max, paul, lina } = server()
+    // Room for one more profile: five at most.
+    profiles.delete(lina.profile.id)
+    const before = profiles.create('Mamie', 'music', NOW)!
+    assert.equal(people.mayShare(max.profile, before), false)
+    assert.equal(people.mayShare(before, max.profile), false)
+    assert.ok(people.mayShare(paul.profile, before))
+    assert.ok(people.mayShare(before, paul.profile))
   })
 
   it('offers the accounts signed in on this device and whoever shared lately', () => {

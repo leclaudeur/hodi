@@ -36,21 +36,25 @@ export const sharePeople = ({ users, profiles, accounts, signedInHere }: SharePe
     return new Set(family.filter(id => id !== accountId))
   }
 
-  const mayShare = (from: Profile, to: Profile) => {
+  // family: the sender's, when the caller already has it (offered() asks for every profile).
+  const mayShare = (from: Profile, to: Profile, family?: Set<number>) => {
     if (from.id === to.id || !sharingOn(from.id) || !sharingOn(to.id) || mutedBy(to.id).includes(from.id)) return false
+    const young = isYoung(from) || isYoung(to)
     const sender = accountOf(from.id)
     const receiver = accountOf(to.id)
-    if (!sender || !receiver) return true
-    return (!isYoung(from) && !isYoung(to)) || familyOf(sender.id).has(receiver.id)
+    // A profile with no account yet shares as before, except with a teen or a child, who keeps to its family.
+    if (!sender || !receiver) return !young
+    return !young || (family ?? familyOf(sender.id)).has(receiver.id)
   }
 
   // The people "Envoyer à…" offers before any @username is typed.
   const offered = (from: Profile, request: express.Request) => {
     const sender = accountOf(from.id)
-    const near = new Set([...(sender ? familyOf(sender.id) : []), ...(signedInHere?.(request) ?? [])])
+    const family = sender ? familyOf(sender.id) : new Set<number>()
+    const near = new Set([...family, ...(signedInHere?.(request) ?? [])])
     const before = new Set(users(from.id).sharedWith())
     return (profiles?.list() ?? []).filter(to => {
-      if (!mayShare(from, to)) return false
+      if (!mayShare(from, to, family)) return false
       const receiver = accountOf(to.id)
       return !sender || !receiver || near.has(receiver.id) || before.has(to.id)
     })
