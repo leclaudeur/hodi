@@ -91,3 +91,35 @@ describe('a reader’s days', () => {
     assert.deepEqual(asked, [2])
   })
 })
+
+describe('a reader’s Résumé du jour', () => {
+  it('lasts until midnight in its own time zone', async () => {
+    const { DailySummaries } = await import('../news/daily-summaries.ts')
+    const { AiLedger, AI_CAPS } = await import('../news/ai-ledger.ts')
+    let now = Date.UTC(2026, 10, 20, 9, 0)
+    const zones: Record<number, string> = { 1: 'UTC', 2: 'Pacific/Kiritimati' }
+    const ledger = new AiLedger({ profiles: () => [], caps: AI_CAPS, now })
+    const summaries = new DailySummaries({
+      ledger,
+      languageOf: () => 'fr',
+      timeZone: profileId => zones[profileId]!,
+      now: () => now,
+      log: () => {}
+    })
+    const write = async () => [{ topic: 'Monde', text: 'Un point' }]
+    // Both written at 09:00 UTC: 23:00 in Kiritimati.
+    const page = [
+      {
+        id: 'monde',
+        label: 'Monde',
+        checking: 0,
+        items: [{ title: 'Un sommet', sourceName: 'Alpha', summary: '', related: [] }]
+      }
+    ]
+    for (const profileId of [1, 2]) await summaries.write(profileId, write as never, async () => page as never)
+    // 10:30 UTC is already the next day in Kiritimati (UTC+14).
+    now = Date.UTC(2026, 10, 20, 10, 30)
+    assert.equal(summaries.latest(1).status, 'ok')
+    assert.equal(summaries.latest(2).status, 'none')
+  })
+})

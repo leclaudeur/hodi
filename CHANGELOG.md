@@ -22,7 +22,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   household again, and joining with _I already have an account_ no longer asks who you are when the account has been in
   a household before.
 - **Your time zone belongs to the account.** _Settings › My account_ gets a _Region_ card where each person picks
-  their own; it moves out of _Settings › Household_. Their screen time, quiet hours and game points follow its days.
+  their own; it moves out of _Settings › Household_. Their screen time, quiet hours, game points and Daily summary follow its days.
   Every account starts with its household's.
 
 ## [1.0.0-beta.13] - 2026-11-19

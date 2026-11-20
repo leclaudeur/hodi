@@ -3,6 +3,7 @@ import type { HouseholdStore } from '../db/household-store.ts'
 import type { NewsStore } from '../db/news-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import { type SourceStore, createPauseCheck } from '../db/source-store.ts'
+import type { UserAccountStore } from '../db/user-account-store.ts'
 import type { UserStore } from '../db/user-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import { inHousehold } from '../db/household-scope.ts'
@@ -28,6 +29,7 @@ interface NewsWiring {
   household: HouseholdStore
   profiles: ProfileStore
   usersOf: (profileId: number) => UserStore
+  accounts: UserAccountStore
   serverSettings: ServerSettingsStore
   store: NewsStore
   plugins: () => PluginRegistry | null
@@ -83,6 +85,8 @@ export const createNews = (wiring: NewsWiring) => {
     // Each household's own AI key and time zone, read the first time a household is served.
     aiOf: householdAi,
     timeZoneOf: householdTimeZone,
+    // A reader's Résumé du jour follows its account's days.
+    readerTimeZoneOf: profileId => wiring.accounts.timeZoneOfProfile(profileId),
     fetchVideoDuration: outside.fetchVideoDuration,
     isPaused: createPauseCheck({ hiddenByProfile: hiddenByProfileOf(wiring), now: Date.now }),
     profiles: () => profiles.list().map(profile => ({ id: profile.id, admin: profile.role === 'admin' })),

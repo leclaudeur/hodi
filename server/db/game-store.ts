@@ -118,7 +118,8 @@ export class GameStore {
     return this.#rules
   }
 
-  // Whether it was new: what already earned does not earn again.
+  // Whether it was new: what already earned does not earn again. Days are the reader's: changing its time zone
+  // during a day may start a new one early, once.
   #earn(profileId: number, earning: Earning, now: number): boolean {
     const timeZone = this.#timeZone(profileId)
     const day = dayOf(now, timeZone)

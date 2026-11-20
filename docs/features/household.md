@@ -118,8 +118,8 @@ for the password and a code.
 
 ## Time zone
 
-Each account has its own time zone, in _Settings › My account › Region_. A young reader's hours and screen time, and
-the points of the game, follow the days of that time zone. An account starts with the household's, chosen in the
+Each account has its own time zone, in _Settings › My account › Region_. A young reader's hours and screen time, the
+points of the game and the _Daily summary_ follow the days of that time zone. An account starts with the household's, chosen in the
 first-run screens, and the server's own figures in _Server › Overview_ keep that one.
 
 ## About

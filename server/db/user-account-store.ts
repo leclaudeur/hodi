@@ -185,7 +185,6 @@ export class UserAccountStore {
     return row?.user_id ? this.get(row.user_id) : null
   }
 
-  // Turned on, its profiles' choice on every device is signed again: one open elsewhere asks for the password.
   // undefined leaves it as it is.
   setRegion(id: number, { timeZone, country }: { timeZone?: string; country?: string | null }) {
     if (timeZone !== undefined) this.#db.prepare('UPDATE users SET time_zone = ? WHERE id = ?').run(timeZone, id)
@@ -200,6 +199,7 @@ export class UserAccountStore {
     return row?.time_zone ?? null
   }
 
+  // Turned on, its profiles' choice on every device is signed again: one open elsewhere asks for the password.
   setPrivateProfile(id: number, on: boolean) {
     this.#db.prepare('UPDATE users SET private_profile = ? WHERE id = ?').run(on ? 1 : 0, id)
     if (on) this.#db.prepare('UPDATE profiles SET pin_version = pin_version + 1 WHERE user_id = ?').run(id)
