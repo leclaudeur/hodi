@@ -116,6 +116,12 @@ for the password and a code.
 > Two-step verification is required for the server's account. The setup turns it on right after that account, and the
 > Server space asks for it at its next opening when it is off.
 
+## Time zone
+
+Each account has its own time zone, in _Settings › My account › Region_. A young reader's hours and screen time, the
+points of the game and the _Daily summary_ follow the days of that time zone. An account starts with the household's, chosen in the
+first-run screens, and the server's own figures in _Server › Overview_ keep that one.
+
 ## About
 
 _Settings › About_ shows the version, a link to the source code (AGPL-3.0) and the credits of its images, icons and fonts.

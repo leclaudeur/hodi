@@ -112,9 +112,10 @@ const rangeOf = (start: string | null, end: string | null) => (start && end ? { 
 
 export class YouthStore {
   readonly #db: Database
-  readonly #timeZone: () => string
+  readonly #timeZone: (profileId: number) => string
 
-  constructor(db: Database, timeZone: () => string) {
+  // timeZone: the young reader's own days.
+  constructor(db: Database, timeZone: (profileId: number) => string) {
     this.#db = db
     this.#timeZone = timeZone
   }
@@ -159,7 +160,7 @@ export class YouthStore {
 
   // The app is on screen: the time since its last word counts, when it came soon enough.
   beat(profileId: number, now: number) {
-    const day = dayOf(now, this.#timeZone())
+    const day = dayOf(now, this.#timeZone(profileId))
     const row = this.#db
       .prepare('SELECT last_at FROM youth_time WHERE profile_id = ? AND day = ?')
       .get(profileId, day) as { last_at: number } | undefined
@@ -183,7 +184,7 @@ export class YouthStore {
 
   // The last seven days, today last: each one's seconds.
   week(profileId: number, now: number) {
-    const timeZone = this.#timeZone()
+    const timeZone = this.#timeZone(profileId)
     const days: string[] = []
     let day = dayOf(now, timeZone)
     for (let count = 0; count < 7; count++) {
@@ -194,7 +195,7 @@ export class YouthStore {
   }
 
   limits(profileId: number, now: number): Limits {
-    const timeZone = this.#timeZone()
+    const timeZone = this.#timeZone(profileId)
     const rules = this.rules(profileId)
     const today = dayRange(dayOf(now, timeZone), timeZone)!
     const midnight = Date.parse(today.start)
@@ -231,7 +232,9 @@ export class YouthStore {
   // Notifications wait: in its quiet hours, or while it cannot read.
   mayNotify(profileId: number, now: number) {
     const limits = this.limits(profileId, now)
-    return limits.access === 'open' && !(limits.rules.quiet && inRange(limits.rules.quiet, now, this.#timeZone()))
+    return (
+      limits.access === 'open' && !(limits.rules.quiet && inRange(limits.rules.quiet, now, this.#timeZone(profileId)))
+    )
   }
 
   // The sources its parents turned on, out of the household's catalogue and the young readers' one.

@@ -22,6 +22,9 @@ export interface UserAccount {
   // When the account was made: SQLite may give a deleted account's id to a new one, and a session made before this
   // time was not made for it.
   createdAt: number
+  // Where the person lives; null: the household's (Réglages › Mon compte › Région).
+  timeZone: string | null
+  country: string | null
 }
 
 interface UserAccountRow {
@@ -34,6 +37,8 @@ interface UserAccountRow {
   server_admin: number
   private_profile: number
   created_at: number
+  time_zone: string | null
+  country: string | null
 }
 
 const toAccount = (row: UserAccountRow): UserAccount => ({
@@ -45,7 +50,9 @@ const toAccount = (row: UserAccountRow): UserAccount => ({
   sessionGeneration: row.session_generation,
   serverAdmin: row.server_admin === 1,
   privateProfile: row.private_profile === 1,
-  createdAt: row.created_at
+  createdAt: row.created_at,
+  timeZone: row.time_zone,
+  country: row.country
 })
 
 // An address as typed, trimmed and in lower case, or null when it cannot be one. The check stays loose on purpose:
@@ -57,7 +64,7 @@ export const cleanEmail = (value: unknown) => {
 }
 
 const COLUMNS =
-  'id, email, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, created_at'
+  'id, email, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, created_at, time_zone, country'
 
 export class UserAccountStore {
   readonly #db: Database
@@ -176,6 +183,20 @@ export class UserAccountStore {
     const row = this.#db.prepare('SELECT user_id FROM profiles WHERE id = ?').get(profileId) as
       { user_id: number | null } | undefined
     return row?.user_id ? this.get(row.user_id) : null
+  }
+
+  // undefined leaves it as it is.
+  setRegion(id: number, { timeZone, country }: { timeZone?: string; country?: string | null }) {
+    if (timeZone !== undefined) this.#db.prepare('UPDATE users SET time_zone = ? WHERE id = ?').run(timeZone, id)
+    if (country !== undefined) this.#db.prepare('UPDATE users SET country = ? WHERE id = ?').run(country, id)
+  }
+
+  // The time zone of the account a profile belongs to, or null (a profile with no account, or none chosen).
+  timeZoneOfProfile(profileId: number): string | null {
+    const row = this.#db
+      .prepare('SELECT users.time_zone FROM profiles JOIN users ON users.id = profiles.user_id WHERE profiles.id = ?')
+      .get(profileId) as { time_zone: string | null } | undefined
+    return row?.time_zone ?? null
   }
 
   // Turned on, its profiles' choice on every device is signed again: one open elsewhere asks for the password.

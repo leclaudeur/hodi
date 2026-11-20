@@ -99,6 +99,9 @@ export interface AccountView {
   recentSignIn: boolean
   // « Profil privé »: its profile asks for this password in « Qui lit ? », on every device it does not trust.
   privateProfile?: boolean
+  // Where its days start: its own, else the household's. country: its own, or none.
+  timeZone: string
+  country: string | null
   devices: AccountDevice[]
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: {
@@ -140,6 +143,10 @@ export const changeAccountPassword = (current: string, next: string) =>
 // « Profil privé »: turning it on asks for the password (and the app's code), never for turning it off.
 export const setPrivateProfile = (on: boolean, proof?: AdminProof) =>
   sendJson<AccountView>('PUT', '/account/private', { on, ...proof })
+
+// Réglages › Mon compte › Région.
+export const changeAccountRegion = (region: { timeZone?: string; country?: string | null }) =>
+  sendJson<AccountView>('PUT', '/account/region', region)
 
 // « Redemander »: every device asks for the password again.
 export const forgetTrustedDevices = () => sendJson<AccountView>('DELETE', '/account/trusted')

@@ -71,6 +71,7 @@ export class NewsService {
       catalogOf,
       aiOf,
       timeZoneOf,
+      readerTimeZoneOf,
       households = () => [currentHouseholdId()],
       fetchVideoDuration,
       summarize,
@@ -128,7 +129,7 @@ export class NewsService {
       now
     })
     const tools = { summarize, writeDailySummary, answerQuestion, suggestSources }
-    const timeZones = () => this.#timeZones.get()
+    const timeZones = (profileId: number) => readerTimeZoneOf?.(profileId) ?? this.#timeZones.get()
     const wiring = { tools, aiOf, store, profiles, caps: aiCaps, languageOf, householdLanguage, now, log }
     this.#newsAi = createNewsAi({ ...wiring, timeZone: timeZones }, this)
   }
