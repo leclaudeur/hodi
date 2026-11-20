@@ -14,6 +14,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   not their profile's: they stay the same in any household, after leaving one or being removed from it, and My
   account shows them while the person is in no household. A young profile, which has no account, keeps its own.
   Deleting the account deletes them.
+- **Your settings, saved articles and history belong to the account.** An adult's preferences (sources and topics
+  turned off, followed and hidden topics, reading settings), Saved, History, what Hide put away and the stories seen
+  in Top news are their account's: they come back as they were after leaving a household and joining another. A
+  young profile keeps its own; deleting the account deletes them.
 
 ## [1.0.0-beta.13] - 2026-11-19
 

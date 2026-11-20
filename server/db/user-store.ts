@@ -98,20 +98,25 @@ export class UserStore {
     return this.#profile
   }
 
+  // Whose rows these are: the account's for a profile with one, which keeps them in any household (stats-owner.ts).
+  get #owner() {
+    return ownerOf(this.#db, this.#profile)
+  }
+
   get revision(): number {
     const row = this.#db
-      .prepare("SELECT value FROM profile_settings WHERE profile_id = ? AND key = 'revision'")
-      .get(this.#profile) as { value: string } | undefined
+      .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'revision'")
+      .get(this.#owner) as { value: string } | undefined
     return row ? Number(row.value) : 0
   }
 
   #bump(now: number) {
     this.#db
       .prepare(
-        `INSERT INTO profile_settings (profile_id, key, value, updated_at) VALUES (?, 'revision', '1', ?)
-         ON CONFLICT (profile_id, key) DO UPDATE SET value = CAST(value AS INTEGER) + 1, updated_at = excluded.updated_at`
+        `INSERT INTO profile_settings (owner, key, value, updated_at) VALUES (?, 'revision', '1', ?)
+         ON CONFLICT (owner, key) DO UPDATE SET value = CAST(value AS INTEGER) + 1, updated_at = excluded.updated_at`
       )
-      .run(this.#profile, now)
+      .run(this.#owner, now)
   }
 
   // Every write goes through here: one transaction, one new revision.
@@ -126,8 +131,8 @@ export class UserStore {
   // This profile's preferences alone, without the rest of its state.
   preferences(): Record<string, unknown> | null {
     const row = this.#db
-      .prepare("SELECT value FROM profile_settings WHERE profile_id = ? AND key = 'preferences'")
-      .get(this.#profile) as { value: string } | undefined
+      .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'preferences'")
+      .get(this.#owner) as { value: string } | undefined
     return row ? (JSON.parse(row.value) as Record<string, unknown>) : null
   }
 
@@ -139,17 +144,17 @@ export class UserStore {
 
   getState(): UserState {
     const preferences = this.#db
-      .prepare("SELECT value FROM profile_settings WHERE profile_id = ? AND key = 'preferences'")
-      .get(this.#profile) as { value: string } | undefined
+      .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'preferences'")
+      .get(this.#owner) as { value: string } | undefined
     const saved = this.#db
-      .prepare('SELECT item, saved_at FROM saved_articles WHERE profile_id = ? ORDER BY saved_at DESC')
-      .all(this.#profile) as {
+      .prepare('SELECT item, saved_at FROM saved_articles WHERE owner = ? ORDER BY saved_at DESC')
+      .all(this.#owner) as {
       item: string
       saved_at: number
     }[]
     const read = this.#db
-      .prepare('SELECT article_id, hidden FROM read_articles WHERE profile_id = ? ORDER BY read_at DESC LIMIT ?')
-      .all(this.#profile, MAX_READ) as { article_id: string; hidden: number }[]
+      .prepare('SELECT article_id, hidden FROM read_articles WHERE owner = ? ORDER BY read_at DESC LIMIT ?')
+      .all(this.#owner, MAX_READ) as { article_id: string; hidden: number }[]
     return {
       revision: this.revision,
       preferences: preferences ? (JSON.parse(preferences.value) as Record<string, unknown>) : null,
@@ -167,15 +172,15 @@ export class UserStore {
   setPreferences(change: Record<string, unknown>, now: number) {
     return this.#write(now, () => {
       const stored = this.#db
-        .prepare("SELECT value FROM profile_settings WHERE profile_id = ? AND key = 'preferences'")
-        .get(this.#profile) as { value: string } | undefined
+        .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'preferences'")
+        .get(this.#owner) as { value: string } | undefined
       const preferences = { ...(stored ? (JSON.parse(stored.value) as Record<string, unknown>) : {}), ...change }
       this.#db
         .prepare(
-          `INSERT INTO profile_settings (profile_id, key, value, updated_at) VALUES (?, 'preferences', ?, ?)
-           ON CONFLICT (profile_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+          `INSERT INTO profile_settings (owner, key, value, updated_at) VALUES (?, 'preferences', ?, ?)
+           ON CONFLICT (owner, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
         )
-        .run(this.#profile, JSON.stringify(preferences), now)
+        .run(this.#owner, JSON.stringify(preferences), now)
     })
   }
 
@@ -184,32 +189,31 @@ export class UserStore {
     return this.#write(now, () => {
       this.#db
         .prepare(
-          `INSERT INTO saved_articles (profile_id, article_id, item, article, saved_at) VALUES (?, ?, ?, ?, ?)
-           ON CONFLICT (profile_id, article_id) DO UPDATE SET
+          `INSERT INTO saved_articles (owner, article_id, item, article, saved_at) VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT (owner, article_id) DO UPDATE SET
              item = excluded.item, article = COALESCE(excluded.article, article)`
         )
-        .run(this.#profile, item.id, JSON.stringify(item), article ? JSON.stringify(article) : null, savedAt)
+        .run(this.#owner, item.id, JSON.stringify(item), article ? JSON.stringify(article) : null, savedAt)
       // Beyond the cap, the oldest go.
       this.#db
         .prepare(
-          `DELETE FROM saved_articles WHERE profile_id = ? AND article_id NOT IN
-           (SELECT article_id FROM saved_articles WHERE profile_id = ? ORDER BY saved_at DESC LIMIT ?)`
+          `DELETE FROM saved_articles WHERE owner = ? AND article_id NOT IN
+           (SELECT article_id FROM saved_articles WHERE owner = ? ORDER BY saved_at DESC LIMIT ?)`
         )
-        .run(this.#profile, this.#profile, MAX_SAVED)
+        .run(this.#owner, this.#owner, MAX_SAVED)
     })
   }
 
   unsave(id: string, now: number) {
     return this.#write(now, () => {
-      this.#db.prepare('DELETE FROM saved_articles WHERE profile_id = ? AND article_id = ?').run(this.#profile, id)
+      this.#db.prepare('DELETE FROM saved_articles WHERE owner = ? AND article_id = ?').run(this.#owner, id)
     })
   }
 
   isSaved(id: string) {
     return (
-      this.#db
-        .prepare('SELECT 1 FROM saved_articles WHERE profile_id = ? AND article_id = ?')
-        .get(this.#profile, id) !== undefined
+      this.#db.prepare('SELECT 1 FROM saved_articles WHERE owner = ? AND article_id = ?').get(this.#owner, id) !==
+      undefined
     )
   }
 
@@ -224,10 +228,8 @@ export class UserStore {
   // The text kept with a saved article, for one the server no longer knows.
   savedArticle(id: string): { item: SavedItem; article: SavedArticleText } | null {
     const row = this.#db
-      .prepare(
-        'SELECT item, article FROM saved_articles WHERE profile_id = ? AND article_id = ? AND article IS NOT NULL'
-      )
-      .get(this.#profile, id) as { item: string; article: string } | undefined
+      .prepare('SELECT item, article FROM saved_articles WHERE owner = ? AND article_id = ? AND article IS NOT NULL')
+      .get(this.#owner, id) as { item: string; article: string } | undefined
     return row
       ? { item: JSON.parse(row.item) as SavedItem, article: JSON.parse(row.article) as SavedArticleText }
       : null
@@ -239,23 +241,23 @@ export class UserStore {
   markRead(ids: string[], now: number, hidden = false) {
     return this.#write(now, () => {
       const insert = this.#db.prepare(
-        `INSERT INTO read_articles (profile_id, article_id, read_at, hidden) VALUES (?, ?, ?, ?)
-         ON CONFLICT (profile_id, article_id) DO UPDATE SET hidden = MAX(hidden, excluded.hidden)`
+        `INSERT INTO read_articles (owner, article_id, read_at, hidden) VALUES (?, ?, ?, ?)
+         ON CONFLICT (owner, article_id) DO UPDATE SET hidden = MAX(hidden, excluded.hidden)`
       )
-      ids.forEach(id => insert.run(this.#profile, id, now, hidden ? 1 : 0))
+      ids.forEach(id => insert.run(this.#owner, id, now, hidden ? 1 : 0))
     })
   }
 
   markUnread(ids: string[], now: number) {
     return this.#write(now, () => {
-      const remove = this.#db.prepare('DELETE FROM read_articles WHERE profile_id = ? AND article_id = ?')
-      ids.forEach(id => remove.run(this.#profile, id))
+      const remove = this.#db.prepare('DELETE FROM read_articles WHERE owner = ? AND article_id = ?')
+      ids.forEach(id => remove.run(this.#owner, id))
     })
   }
 
   clearRead(now: number) {
     return this.#write(now, () => {
-      this.#db.prepare('DELETE FROM read_articles WHERE profile_id = ?').run(this.#profile)
+      this.#db.prepare('DELETE FROM read_articles WHERE owner = ?').run(this.#owner)
     })
   }
 
@@ -263,10 +265,10 @@ export class UserStore {
   readSince(since: number, limit: number): { id: string; readAt: number; hidden: boolean }[] {
     const rows = this.#db
       .prepare(
-        `SELECT article_id, read_at, hidden FROM read_articles WHERE profile_id = ? AND read_at >= ?
+        `SELECT article_id, read_at, hidden FROM read_articles WHERE owner = ? AND read_at >= ?
          ORDER BY read_at DESC LIMIT ?`
       )
-      .all(this.#profile, since, limit) as { article_id: string; read_at: number; hidden: number }[]
+      .all(this.#owner, since, limit) as { article_id: string; read_at: number; hidden: number }[]
     return rows.map(row => ({ id: row.article_id, readAt: row.read_at, hidden: row.hidden === 1 }))
   }
 
@@ -279,9 +281,7 @@ export class UserStore {
 
   setAside(id: string, now: number) {
     return this.#write(now, () => {
-      this.#db
-        .prepare('UPDATE readings SET set_aside = 1 WHERE owner = ? AND article_id = ?')
-        .run(ownerOf(this.#db, this.#profile), id)
+      this.#db.prepare('UPDATE readings SET set_aside = 1 WHERE owner = ? AND article_id = ?').run(this.#owner, id)
     })
   }
 
@@ -312,20 +312,18 @@ export class UserStore {
 
   // "À la une" stories looked at. Seeing one is not reading it: it only steps aside for the next.
   markStoriesSeen(ids: string[], now: number) {
-    const insert = this.#db.prepare(
-      'INSERT OR IGNORE INTO seen_stories (profile_id, article_id, seen_at) VALUES (?, ?, ?)'
-    )
-    transaction(this.#db, () => ids.forEach(id => insert.run(this.#profile, id, now)))
+    const insert = this.#db.prepare('INSERT OR IGNORE INTO seen_stories (owner, article_id, seen_at) VALUES (?, ?, ?)')
+    transaction(this.#db, () => ids.forEach(id => insert.run(this.#owner, id, now)))
   }
 
   // The stories seen and the articles read or hidden since then: what "À la une" puts after the rest.
   knownSince(since: number): Set<string> {
     const rows = this.#db
       .prepare(
-        `SELECT article_id FROM seen_stories WHERE profile_id = ? AND seen_at >= ?
-         UNION SELECT article_id FROM read_articles WHERE profile_id = ? AND read_at >= ?`
+        `SELECT article_id FROM seen_stories WHERE owner = ? AND seen_at >= ?
+         UNION SELECT article_id FROM read_articles WHERE owner = ? AND read_at >= ?`
       )
-      .all(this.#profile, since, this.#profile, since) as { article_id: string }[]
+      .all(this.#owner, since, this.#owner, since) as { article_id: string }[]
     return new Set(rows.map(row => row.article_id))
   }
 
@@ -351,7 +349,7 @@ export class UserStore {
 
   clearReadings(now: number) {
     return this.#write(now, () => {
-      this.#db.prepare('DELETE FROM readings WHERE owner = ?').run(ownerOf(this.#db, this.#profile))
+      this.#db.prepare('DELETE FROM readings WHERE owner = ?').run(this.#owner)
     })
   }
 
@@ -381,7 +379,7 @@ export class UserStore {
       this.#db
         .prepare(
           `DELETE FROM read_articles WHERE rowid IN (SELECT rowid FROM (SELECT rowid, ROW_NUMBER() OVER
-           (PARTITION BY profile_id ORDER BY read_at DESC) AS n FROM read_articles) WHERE n > ?)`
+           (PARTITION BY owner ORDER BY read_at DESC) AS n FROM read_articles) WHERE n > ?)`
         )
         .run(MAX_READ)
       this.#db.prepare('DELETE FROM readings WHERE read_at < ?').run(now - READINGS_RETENTION_MS)
