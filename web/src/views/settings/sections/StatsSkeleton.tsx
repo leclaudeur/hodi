@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { Bar } from '../../../ui/Skeleton.tsx'
-import SectionPage from '../SectionPage.tsx'
 import statStyles from './StatsSection.module.css'
 import styles from './StatsSkeleton.module.css'
 
@@ -44,23 +43,21 @@ const Chart = () => (
 
 // "Statistiques" while its chart library comes: the page's own shapes (figures, charts, top lists), not a
 // list of articles.
-const StatsSkeleton = ({ layout }: { layout: 'desktop' | 'phone' }) => {
+const StatsSkeleton = () => {
   const { t } = useTranslation()
   return (
-    <SectionPage title={t('settings.nav.stats')} layout={layout}>
-      <div className={styles.skeleton} aria-busy="true" aria-label={t('stats.loading')}>
-        <div className={statStyles.subtitle}>
-          <Bar width={160} height={22} />
-          <Bar width={156} height={36} radius={18} />
-        </div>
-        <Tiles />
-        <Split />
-        <Chart />
-        <Tiles />
-        <Split />
-        <Chart />
+    <div className={styles.skeleton} aria-busy="true" aria-label={t('stats.loading')}>
+      <div className={statStyles.subtitle}>
+        <Bar width={160} height={22} />
+        <Bar width={156} height={36} radius={18} />
       </div>
-    </SectionPage>
+      <Tiles />
+      <Split />
+      <Chart />
+      <Tiles />
+      <Split />
+      <Chart />
+    </div>
   )
 }
 

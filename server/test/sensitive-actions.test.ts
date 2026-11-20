@@ -150,8 +150,8 @@ describe('« Passer le rôle d’admin »', () => {
           ['Léa', 'member']
         ]
       )
-      // Antho is a member now: the household's things are Sam's.
-      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 403)
+      // Antho is a member now, but still the server's admin: the household is no longer shown, so its things stay his.
+      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 204)
     } finally {
       close()
     }

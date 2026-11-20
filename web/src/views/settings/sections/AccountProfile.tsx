@@ -26,7 +26,6 @@ const AccountProfile = ({ account, onAccount }: AccountProfileProps) => {
   if (!own) return null
   return (
     <>
-      <h2 className={styles.label}>{t('settings.account.profile')}</h2>
       <div className={styles.card}>
         <SettingRow
           lead={<ProfileAvatar profile={own} size={44} plain />}

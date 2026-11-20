@@ -1,6 +1,8 @@
+import { ownerOf } from './stats-owner.ts'
 import { type Database, transaction } from './database.ts'
 import { type RowKey, recordForget, resetHousehold, rowKey } from './forget-log.ts'
 import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
+import { accountStatRowsOf, accountStatsOf } from './account-stats.ts'
 import type { Profile, ProfileStore } from './profile-store.ts'
 import type { UserAccount, UserAccountStore } from './user-account-store.ts'
 
@@ -208,15 +210,14 @@ export const deleteHousehold = (db: Database, householdId: number, now: number):
   })
 
 // The tables of a profile's own state, and the columns a copy leaves out: what only the device or the server needs.
+// Those by owner are the account's (or a young profile's) in any household (stats-owner.ts).
 const PROFILE_TABLES: { table: string; where: string; omit?: string[] }[] = [
-  { table: 'profile_settings', where: 'profile_id' },
-  { table: 'saved_articles', where: 'profile_id' },
-  { table: 'read_articles', where: 'profile_id' },
-  { table: 'readings', where: 'profile_id' },
+  { table: 'profile_settings', where: 'owner' },
+  { table: 'saved_articles', where: 'owner' },
+  { table: 'read_articles', where: 'owner' },
   { table: 'shares', where: 'profile_id' },
   { table: 'shares', where: 'from_profile' },
-  { table: 'seen_stories', where: 'profile_id' },
-  { table: 'game_events', where: 'profile_id' },
+  { table: 'seen_stories', where: 'owner' },
   { table: 'daily_summaries', where: 'profile_id' },
   { table: 'ai_calls', where: 'profile_id' }
 ]
@@ -275,10 +276,12 @@ export const accountCopy = (
             .all(profileId),
           ...Object.fromEntries(
             PROFILE_TABLES.map(({ table, where }) => [
-              where === 'profile_id' ? table : `${table}_sent`,
-              (db.prepare(`SELECT * FROM ${table} WHERE ${where} = ?`).all(profileId) as Record<string, unknown>[]).map(
-                parsed
-              )
+              where === 'from_profile' ? `${table}_sent` : table,
+              (
+                db
+                  .prepare(`SELECT * FROM ${table} WHERE ${where} = ?`)
+                  .all(where === 'owner' ? ownerOf(db, profileId) : profileId) as Record<string, unknown>[]
+              ).map(parsed)
             ])
           )
         }
@@ -286,7 +289,9 @@ export const accountCopy = (
     exportedAt: new Date(now).toISOString(),
     account: { ...(user as object), serverAdmin: account.serverAdmin, devices },
     household: { ...(household as object), profiles },
-    you: own
+    you: own,
+    // What it read and earned, its own in any household: its readings and the game's points.
+    stats: accountStatRowsOf(db, account.id)
   }
 }
 
@@ -296,6 +301,10 @@ export class AccountDataStore {
 
   constructor(db: Database) {
     this.#db = db
+  }
+
+  stats(accountId: number) {
+    return accountStatsOf(this.#db, accountId)
   }
 
   copy(account: UserAccount, profileId: number | null, now: number) {

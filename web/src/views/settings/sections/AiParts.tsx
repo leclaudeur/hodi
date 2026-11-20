@@ -2,15 +2,15 @@ import { RotateCcw } from 'lucide-react'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  type AccountView,
   type AiKind,
   type AiPlugin,
-  type Household,
   type KeyCheck,
   UnauthorizedError,
-  checkAiKey,
+  checkAccountAi,
   getAiPlugins,
-  setAiPluginOn,
-  setHouseholdAi
+  setAccountAi,
+  setAiPluginOn
 } from '../../../api.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
 import Button from '../../../ui/Button.tsx'
@@ -33,8 +33,8 @@ interface UsageRow {
   limit: number
 }
 
-// One kind's calls against its cap; the admin's red round puts it back to 0. Flat: the rows straight in an
-// accordion, one line between each, no card in the card.
+// One kind's calls against its cap; the round puts it back to 0. Flat: the rows straight in an accordion, one line
+// between each, no card in the card.
 export const UsageRows = ({
   rows,
   onReset,
@@ -77,8 +77,8 @@ export const UsageRows = ({
   )
 }
 
-// The admin's « Plugins »: each plugin whose violet button may ask the household's AI, its calls of the last 24
-// hours, and a switch that turns its AI off for the household (its button then says so).
+// The admin's « Plugins »: each plugin whose violet button may ask a reader's AI, the admin's calls of it in the last
+// 24 hours, and a switch that turns its AI off for the household (its button then says so).
 export const PluginRows = ({ onUnauthorized }: { onUnauthorized: () => void }) => {
   const { t } = useTranslation()
   const [plugins, setPlugins] = useState<AiPlugin[] | null>(null)
@@ -134,19 +134,18 @@ export const PluginRows = ({ onUnauthorized }: { onUnauthorized: () => void }) =
 
 // A new key, checked on "Vérifier" (no credits spent), kept only once its provider took it.
 export const AiKeyDialog = ({
-  household,
+  account,
   onSaved,
   onClose,
   onUnauthorized
 }: {
-  household: Household
-  onSaved: (next: Household) => void
+  account: AccountView
+  onSaved: (next: AccountView) => void
   onClose: () => void
   onUnauthorized: () => void
 }) => {
   const { t } = useTranslation()
-  const provider =
-    household.providers.find(candidate => candidate.id === household.ai?.provider) ?? household.providers[0]
+  const provider = account.providers.find(candidate => candidate.id === account.ai?.provider) ?? account.providers[0]
   const [key, setKey] = useState('')
   const [result, setResult] = useState<KeyCheck | null>(null)
   const [saving, setSaving] = useState(false)
@@ -158,7 +157,7 @@ export const AiKeyDialog = ({
     setSaving(true)
     setFailed(false)
     try {
-      onSaved(await setHouseholdAi(provider.id, key.trim()))
+      onSaved(await setAccountAi(provider.id, key.trim()))
       onClose()
     } catch (error) {
       if (error instanceof UnauthorizedError) onUnauthorized()
@@ -171,8 +170,8 @@ export const AiKeyDialog = ({
     <Dialog
       open
       onClose={onClose}
-      title={t(household.ai ? 'ai.replaceKey' : 'ai.turnOn')}
-      intro={<RichText i18nKey={household.ai ? 'dialogIntro.aiReplace' : 'dialogIntro.aiTurnOn'} />}
+      title={t(account.ai ? 'ai.replaceKey' : 'ai.turnOn')}
+      intro={<RichText i18nKey={account.ai ? 'dialogIntro.aiReplace' : 'dialogIntro.aiTurnOn'} />}
     >
       <form className={householdStyles.form} onSubmit={submit}>
         {provider && (
@@ -182,7 +181,7 @@ export const AiKeyDialog = ({
             onChange={setKey}
             result={result}
             onResult={setResult}
-            check={checkAiKey}
+            check={checkAccountAi}
             onUnauthorized={onUnauthorized}
           />
         )}

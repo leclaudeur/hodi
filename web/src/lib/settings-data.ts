@@ -66,9 +66,6 @@ export const useStorage = (onUnauthorized?: () => void) =>
 export const sourceState = (source: SourceStatus) =>
   source.fetchedAt === null && source.error === null ? 'idle' : source.ok ? 'ok' : 'error'
 
-// What this profile may still ask: its own cap, unless the household's runs out first.
+// What the reader may still ask today, on its own key.
 export const callsLeft = (usage: AiUsage) =>
-  usage.kinds.reduce(
-    (total, kind) => total + Math.max(0, Math.min(kind.limit - kind.used, kind.householdLimit - kind.householdUsed)),
-    0
-  )
+  usage.kinds.reduce((total, kind) => total + Math.max(0, kind.limit - kind.used), 0)

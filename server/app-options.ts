@@ -15,6 +15,7 @@ import type { SignInCodeStore } from './db/sign-in-code-store.ts'
 import type { SourceStore } from './db/source-store.ts'
 import type { TwoFactorStore } from './db/two-factor-store.ts'
 import type { HandleStore } from './db/handle-store.ts'
+import type { AccountAiStore } from './db/account-ai-store.ts'
 import type { UserAccountStore } from './db/user-account-store.ts'
 import type { UserDeviceStore } from './db/user-device-store.ts'
 import type { UserStore } from './db/user-store.ts'
@@ -73,6 +74,8 @@ export interface AppOptions {
   accounts?: UserAccountStore
   // The accounts' @identifiers; absent in tests without accounts.
   handles?: HandleStore
+  // Each account's own AI key (Mon compte › IA et crédits); with accounts.
+  accountAi?: AccountAiStore
   // Serveur › Vue d'ensemble: the server's totals and who is online.
   serverStats?: ServerStatsStore
   // Serveur › Foyers and Comptes.

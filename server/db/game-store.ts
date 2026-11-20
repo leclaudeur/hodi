@@ -4,6 +4,7 @@ import type { Language } from '../../shared/i18n.ts'
 import { type BadgeId, type GameRules, type LevelProgress, levelOf, nameIn } from '../game/rules.ts'
 import { type Database, transaction } from './database.ts'
 import { badgeCounts } from './game-badges.ts'
+import { ownerOf } from './stats-owner.ts'
 import { DAY_MS } from '../../shared/time.ts'
 
 // The household game's points: one row per thing that earned them, kept for good (the readings themselves are
@@ -104,9 +105,10 @@ const hourOf = (at: number, timeZone: string) =>
 export class GameStore {
   readonly #db: Database
   readonly #rules: GameRules
-  readonly #timeZone: () => string
+  readonly #timeZone: (profileId?: number) => string
 
-  constructor(db: Database, rules: GameRules, timeZone: () => string) {
+  // timeZone: a reader's own days, or the household's with none.
+  constructor(db: Database, rules: GameRules, timeZone: (profileId?: number) => string) {
     this.#db = db
     this.#rules = rules
     this.#timeZone = timeZone
@@ -116,32 +118,25 @@ export class GameStore {
     return this.#rules
   }
 
-  // Whether it was new: what already earned does not earn again.
+  // Whether it was new: what already earned does not earn again. Days are the reader's: changing its time zone
+  // during a day may start a new one early, once.
   #earn(profileId: number, earning: Earning, now: number): boolean {
-    const timeZone = this.#timeZone()
+    const timeZone = this.#timeZone(profileId)
     const day = dayOf(now, timeZone)
     const limit = DAILY_COUNT_LIMITS[earning.kind]
+    const owner = ownerOf(this.#db, profileId)
     if (limit !== undefined) {
       const { counted } = this.#db
-        .prepare('SELECT COUNT(*) AS counted FROM game_events WHERE profile_id = ? AND day = ? AND kind = ?')
-        .get(profileId, day, earning.kind) as { counted: number }
+        .prepare('SELECT COUNT(*) AS counted FROM game_events WHERE owner = ? AND day = ? AND kind = ?')
+        .get(owner, day, earning.kind) as { counted: number }
       if (counted >= limit) return false
     }
     const result = this.#db
       .prepare(
-        `INSERT OR IGNORE INTO game_events (profile_id, kind, ref, points, at, day, hour, topic_id)
+        `INSERT OR IGNORE INTO game_events (owner, kind, ref, points, at, day, hour, topic_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(
-        profileId,
-        earning.kind,
-        earning.ref,
-        earning.points,
-        now,
-        day,
-        hourOf(now, timeZone),
-        earning.topicId ?? null
-      )
+      .run(owner, earning.kind, earning.ref, earning.points, now, day, hourOf(now, timeZone), earning.topicId ?? null)
     return result.changes > 0
   }
 
@@ -157,9 +152,8 @@ export class GameStore {
     readAt: (id: string) => number | undefined = () => undefined,
     facts?: (id: string) => ReadFacts | null
   ) {
-    const reading = this.#db.prepare(
-      'SELECT kind, topic_id, done FROM readings WHERE profile_id = ? AND article_id = ?'
-    )
+    const reading = this.#db.prepare('SELECT kind, topic_id, done FROM readings WHERE owner = ? AND article_id = ?')
+    const owner = ownerOf(this.#db, profileId)
     transaction(this.#db, () => {
       for (const id of ids) {
         const known = facts ? facts(id) : undefined
@@ -168,7 +162,7 @@ export class GameStore {
         const sent = at !== undefined && at <= now && at > now - LATE_SYNC_MS ? at : now
         // Never read before it was published: an early-bird reading cannot be made up from yesterday's article.
         const when = known?.publishedAt != null ? Math.min(now, Math.max(sent, known.publishedAt)) : sent
-        const stored = reading.get(profileId, id) as
+        const stored = reading.get(owner, id) as
           { kind: string; topic_id: string | null; done: number | null } | undefined
         if (!stored || stored.done === 0) continue
         const row = known ? { ...stored, kind: known.kind, topic_id: known.topicId } : stored
@@ -189,7 +183,7 @@ export class GameStore {
     ) {
       return
     }
-    const day = dayOf(when, this.#timeZone())
+    const day = dayOf(when, this.#timeZone(profileId))
     if (row.topic_id) {
       this.#earn(
         profileId,
@@ -203,8 +197,8 @@ export class GameStore {
       )
     }
     const { read } = this.#db
-      .prepare("SELECT COUNT(*) AS read FROM game_events WHERE profile_id = ? AND day = ? AND kind = 'article_read'")
-      .get(profileId, day) as { read: number }
+      .prepare("SELECT COUNT(*) AS read FROM game_events WHERE owner = ? AND day = ? AND kind = 'article_read'")
+      .get(ownerOf(this.#db, profileId), day) as { read: number }
     if (read >= points.readingDayArticles) {
       this.#earn(profileId, { kind: 'reading_day', ref: day, points: points.readingDay }, when)
     }
@@ -279,8 +273,8 @@ export class GameStore {
   // The badge shown on this profile's avatar and its tier, while it still holds it (the rules may have changed).
   wornBadge(profileId: number, topicIds: string[]): { id: BadgeId; tier: BadgeProgress['tier'] } | null {
     const row = this.#db
-      .prepare("SELECT value FROM profile_settings WHERE profile_id = ? AND key = 'game_badge'")
-      .get(profileId) as { value: string } | undefined
+      .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'game_badge'")
+      .get(ownerOf(this.#db, profileId)) as { value: string } | undefined
     if (!row) return null
     const badge = this.badges(profileId, topicIds).find(candidate => candidate.id === row.value && candidate.tier > 0)
     return badge ? { id: badge.id, tier: badge.tier } : null
@@ -289,16 +283,18 @@ export class GameStore {
   // false: not a badge this profile has earned.
   wear(profileId: number, id: string | null, topicIds: string[], now: number): boolean {
     if (id === null) {
-      this.#db.prepare("DELETE FROM profile_settings WHERE profile_id = ? AND key = 'game_badge'").run(profileId)
+      this.#db
+        .prepare("DELETE FROM profile_settings WHERE owner = ? AND key = 'game_badge'")
+        .run(ownerOf(this.#db, profileId))
       return true
     }
     if (!this.badges(profileId, topicIds).some(badge => badge.id === id && badge.tier > 0)) return false
     this.#db
       .prepare(
-        `INSERT INTO profile_settings (profile_id, key, value, updated_at) VALUES (?, 'game_badge', ?, ?)
-         ON CONFLICT (profile_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+        `INSERT INTO profile_settings (owner, key, value, updated_at) VALUES (?, 'game_badge', ?, ?)
+         ON CONFLICT (owner, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
       )
-      .run(profileId, id, now)
+      .run(ownerOf(this.#db, profileId), id, now)
     return true
   }
 
@@ -306,8 +302,8 @@ export class GameStore {
   // earned before this existed is not celebrated.
   news(profileId: number, topicIds: string[], now: number): GameNews {
     const row = this.#db
-      .prepare("SELECT value, updated_at FROM profile_settings WHERE profile_id = ? AND key = 'game_seen'")
-      .get(profileId) as { value: string; updated_at: number } | undefined
+      .prepare("SELECT value, updated_at FROM profile_settings WHERE owner = ? AND key = 'game_seen'")
+      .get(ownerOf(this.#db, profileId)) as { value: string; updated_at: number } | undefined
     const badges = this.badges(profileId, topicIds)
     const { level } = this.summary(profileId, now)
     if (!row) {
@@ -333,10 +329,10 @@ export class GameStore {
     const seen: Seen = { level, badges: Object.fromEntries(badges.map(badge => [badge.id, badge.tier])) }
     this.#db
       .prepare(
-        `INSERT INTO profile_settings (profile_id, key, value, updated_at) VALUES (?, 'game_seen', ?, ?)
-         ON CONFLICT (profile_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+        `INSERT INTO profile_settings (owner, key, value, updated_at) VALUES (?, 'game_seen', ?, ?)
+         ON CONFLICT (owner, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
       )
-      .run(profileId, JSON.stringify(seen), now)
+      .run(ownerOf(this.#db, profileId), JSON.stringify(seen), now)
   }
 
   // false: the admin turned the game off for the household; nothing shows, points still count.
@@ -352,13 +348,13 @@ export class GameStore {
 
   // The grades named in the reader's language.
   summary(profileId: number, now: number, language: Language = 'fr'): GameSummary {
-    const monday = mondayOf(dayOf(now, this.#timeZone()))
+    const monday = mondayOf(dayOf(now, this.#timeZone(profileId)))
     const row = this.#db
       .prepare(
         `SELECT COALESCE(SUM(points), 0) AS total, COALESCE(SUM(CASE WHEN day >= ? THEN points END), 0) AS week
-         FROM game_events WHERE profile_id = ?`
+         FROM game_events WHERE owner = ?`
       )
-      .get(monday, profileId) as { total: number; week: number }
+      .get(monday, ownerOf(this.#db, profileId)) as { total: number; week: number }
     const levels = this.#rules.levels.map(level => ({ name: nameIn(level, language), points: level.points }))
     return { ...levelOf(row.total, levels), week: row.week }
   }

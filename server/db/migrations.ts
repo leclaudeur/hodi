@@ -963,6 +963,217 @@ const MIGRATIONS: string[] = [
   ALTER TABLE article_images ADD COLUMN width INTEGER;
   ALTER TABLE article_images ADD COLUMN page_checked TEXT;
   `,
+  // Reading stats and the game's points are a person's: an adult's belong to their account ('a' and its id), which
+  // keeps them whatever household it is in or leaves; a profile with no account (a young one) holds its own ('p' and
+  // its id). They go with the account, or with that profile; a profile that gets an account hands its own over to it.
+  `
+  CREATE TABLE readings_new (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    source_name TEXT NOT NULL,
+    topic_id TEXT,
+    minutes INTEGER NOT NULL,
+    read_at INTEGER NOT NULL,
+    kind TEXT NOT NULL DEFAULT 'article',
+    done INTEGER,
+    progress REAL,
+    position REAL,
+    estimate REAL,
+    set_aside INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (owner, article_id)
+  );
+  INSERT OR IGNORE INTO readings_new (owner, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate, set_aside)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || r.profile_id ELSE 'a' || p.user_id END, r.article_id, r.source_id, r.source_name, r.topic_id, r.minutes, r.read_at, r.kind, r.done, r.progress, r.position, r.estimate, r.set_aside FROM readings r LEFT JOIN profiles p ON p.id = r.profile_id;
+  DROP TABLE readings;
+  ALTER TABLE readings_new RENAME TO readings;
+  CREATE INDEX readings_read_at ON readings (owner, read_at);
+
+  CREATE TABLE game_events_new (
+    owner TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    ref TEXT NOT NULL,
+    points INTEGER NOT NULL,
+    at INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    hour INTEGER NOT NULL,
+    topic_id TEXT,
+    PRIMARY KEY (owner, kind, ref)
+  );
+  INSERT OR IGNORE INTO game_events_new (owner, kind, ref, points, at, day, hour, topic_id)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || e.profile_id ELSE 'a' || p.user_id END, e.kind, e.ref, e.points, e.at, e.day, e.hour, e.topic_id FROM game_events e LEFT JOIN profiles p ON p.id = e.profile_id;
+  DROP TABLE game_events;
+  ALTER TABLE game_events_new RENAME TO game_events;
+  CREATE INDEX game_events_day ON game_events (owner, day);
+
+  CREATE TRIGGER users_forget_stats AFTER DELETE ON users BEGIN
+    DELETE FROM readings WHERE owner = 'a' || OLD.id;
+    DELETE FROM game_events WHERE owner = 'a' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_forget_stats AFTER DELETE ON profiles WHEN OLD.user_id IS NULL BEGIN
+    DELETE FROM readings WHERE owner = 'p' || OLD.id;
+    DELETE FROM game_events WHERE owner = 'p' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_hand_over_stats AFTER UPDATE OF user_id ON profiles
+  WHEN OLD.user_id IS NULL AND NEW.user_id IS NOT NULL BEGIN
+    UPDATE OR IGNORE readings SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM readings WHERE owner = 'p' || NEW.id;
+    UPDATE OR IGNORE game_events SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM game_events WHERE owner = 'p' || NEW.id;
+  END;
+  `,
+  // A person's state is theirs too: their preferences (sources and topics turned off, followed and hidden topics,
+  // reading settings), Enregistrés, Historique and what Masquer put away, the stories seen in À la une. An adult's
+  // belong to their account, a young profile's to itself, as readings and points above: leaving a household and
+  // joining another keeps them.
+  `
+  CREATE TABLE profile_settings_new (
+    owner TEXT NOT NULL,
+    key TEXT NOT NULL,
+    value TEXT NOT NULL,
+    updated_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, key)
+  );
+  INSERT OR IGNORE INTO profile_settings_new (owner, key, value, updated_at)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || s.profile_id ELSE 'a' || p.user_id END, s.key, s.value, s.updated_at
+    FROM profile_settings s JOIN profiles p ON p.id = s.profile_id;
+  DROP TABLE profile_settings;
+  ALTER TABLE profile_settings_new RENAME TO profile_settings;
+
+  CREATE TABLE saved_articles_new (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    item TEXT NOT NULL,
+    article TEXT,
+    saved_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, article_id)
+  );
+  INSERT OR IGNORE INTO saved_articles_new (owner, article_id, item, article, saved_at)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || s.profile_id ELSE 'a' || p.user_id END, s.article_id, s.item, s.article, s.saved_at
+    FROM saved_articles s JOIN profiles p ON p.id = s.profile_id;
+  DROP TABLE saved_articles;
+  ALTER TABLE saved_articles_new RENAME TO saved_articles;
+  CREATE INDEX saved_articles_article ON saved_articles (article_id);
+
+  CREATE TABLE read_articles_new (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    read_at INTEGER NOT NULL,
+    hidden INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (owner, article_id)
+  );
+  INSERT OR IGNORE INTO read_articles_new (owner, article_id, read_at, hidden)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || r.profile_id ELSE 'a' || p.user_id END, r.article_id, r.read_at, r.hidden
+    FROM read_articles r JOIN profiles p ON p.id = r.profile_id;
+  DROP TABLE read_articles;
+  ALTER TABLE read_articles_new RENAME TO read_articles;
+  CREATE INDEX read_articles_read_at ON read_articles (owner, read_at);
+
+  CREATE TABLE seen_stories_new (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    seen_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, article_id)
+  );
+  INSERT OR IGNORE INTO seen_stories_new (owner, article_id, seen_at)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || s.profile_id ELSE 'a' || p.user_id END, s.article_id, s.seen_at
+    FROM seen_stories s JOIN profiles p ON p.id = s.profile_id;
+  DROP TABLE seen_stories;
+  ALTER TABLE seen_stories_new RENAME TO seen_stories;
+  CREATE INDEX seen_stories_seen_at ON seen_stories (seen_at);
+
+  CREATE TRIGGER users_forget_state AFTER DELETE ON users BEGIN
+    DELETE FROM profile_settings WHERE owner = 'a' || OLD.id;
+    DELETE FROM saved_articles WHERE owner = 'a' || OLD.id;
+    DELETE FROM read_articles WHERE owner = 'a' || OLD.id;
+    DELETE FROM seen_stories WHERE owner = 'a' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_forget_state AFTER DELETE ON profiles WHEN OLD.user_id IS NULL BEGIN
+    DELETE FROM profile_settings WHERE owner = 'p' || OLD.id;
+    DELETE FROM saved_articles WHERE owner = 'p' || OLD.id;
+    DELETE FROM read_articles WHERE owner = 'p' || OLD.id;
+    DELETE FROM seen_stories WHERE owner = 'p' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_hand_over_state AFTER UPDATE OF user_id ON profiles
+  WHEN OLD.user_id IS NULL AND NEW.user_id IS NOT NULL BEGIN
+    UPDATE OR IGNORE profile_settings SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM profile_settings WHERE owner = 'p' || NEW.id;
+    UPDATE OR IGNORE saved_articles SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM saved_articles WHERE owner = 'p' || NEW.id;
+    UPDATE OR IGNORE read_articles SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM read_articles WHERE owner = 'p' || NEW.id;
+    UPDATE OR IGNORE seen_stories SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM seen_stories WHERE owner = 'p' || NEW.id;
+  END;
+  `,
+  // A person's name, colour and photo are their account's: kept when their profile goes, and worn again by the
+  // profile it gets in any household. The profile keeps its own copy, which every screen reads; the triggers keep
+  // the two the same. An account with none yet takes its profile's.
+  `
+  ALTER TABLE users ADD COLUMN name TEXT;
+  ALTER TABLE users ADD COLUMN color TEXT;
+  ALTER TABLE users ADD COLUMN photo BLOB;
+  ALTER TABLE users ADD COLUMN photo_type TEXT;
+  ALTER TABLE users ADD COLUMN photo_version INTEGER;
+  UPDATE users SET (name, color, photo, photo_type, photo_version) = (
+    SELECT name, color, photo, photo_type, photo_version FROM profiles WHERE user_id = users.id ORDER BY id DESC LIMIT 1
+  );
+  CREATE TRIGGER profiles_identity_to_account AFTER UPDATE OF name, color, photo, photo_type, photo_version ON profiles
+  WHEN NEW.user_id IS NOT NULL BEGIN
+    UPDATE users SET name = NEW.name, color = NEW.color, photo = NEW.photo, photo_type = NEW.photo_type,
+      photo_version = NEW.photo_version
+    WHERE id = NEW.user_id;
+  END;
+  CREATE TRIGGER profiles_identity_on_link AFTER UPDATE OF user_id ON profiles
+  WHEN NEW.user_id IS NOT NULL AND OLD.user_id IS NOT NEW.user_id BEGIN
+    UPDATE users SET name = NEW.name, color = NEW.color, photo = NEW.photo, photo_type = NEW.photo_type,
+      photo_version = NEW.photo_version
+    WHERE id = NEW.user_id AND name IS NULL;
+    UPDATE profiles SET (name, color, photo, photo_type, photo_version) = (
+      SELECT name, color, photo, photo_type, photo_version FROM users WHERE id = NEW.user_id
+    )
+    WHERE id = NEW.id;
+  END;
+  `,
+  // The time zone and country belong to the person: their days (a young reader's hours, the game's points) and their
+  // AI's searches follow where they live. Each account starts with its household's.
+  `
+  ALTER TABLE users ADD COLUMN time_zone TEXT;
+  ALTER TABLE users ADD COLUMN country TEXT;
+  UPDATE users SET (time_zone, country) = (
+    SELECT accounts.time_zone, accounts.country FROM profiles JOIN accounts ON accounts.id = profiles.account_id
+    WHERE profiles.user_id = users.id ORDER BY profiles.id DESC LIMIT 1
+  );
+  `,
+  // Each person's AI is their own: their key, their caps and the summaries it paid for, which no one else reads. Every
+  // account starts with its household's key; a young profile, which has no account, has none. The summaries written
+  // before had no household: every account that now has a key gets a copy of each.
+  `
+  ALTER TABLE users ADD COLUMN ai_provider TEXT;
+  ALTER TABLE users ADD COLUMN ai_key TEXT;
+  ALTER TABLE users ADD COLUMN ai_model TEXT;
+  UPDATE users SET (ai_provider, ai_key, ai_model) = (
+    SELECT accounts.ai_provider, accounts.ai_key, accounts.ai_model
+    FROM profiles JOIN accounts ON accounts.id = profiles.account_id
+    WHERE profiles.user_id = users.id ORDER BY profiles.id DESC LIMIT 1
+  );
+  CREATE TABLE ai_summaries_by_owner (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL REFERENCES articles (id) ON DELETE CASCADE,
+    language TEXT NOT NULL,
+    points TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, article_id, language)
+  );
+  INSERT INTO ai_summaries_by_owner (owner, article_id, language, points, created_at)
+    SELECT 'a' || users.id, s.article_id, s.language, s.points, s.created_at
+    FROM ai_summaries s JOIN users ON users.ai_key IS NOT NULL;
+  DROP TABLE ai_summaries;
+  ALTER TABLE ai_summaries_by_owner RENAME TO ai_summaries;
+  CREATE TRIGGER users_forget_summaries AFTER DELETE ON users BEGIN
+    DELETE FROM ai_summaries WHERE owner = 'a' || OLD.id;
+  END;
+  `,
   // Each account's @identifier, unique on the server, for friends and mentions; given at startup to the accounts
   // made before it (handle-store.ts). An identifier left behind stays its account's for 30 days, so that nobody takes
   // it at once.

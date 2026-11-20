@@ -83,7 +83,7 @@ without a password of its own, made by a plugin's sign-in, shows a sign-in on th
 ## Two-step verification
 
 _Two-step verification_ (TOTP, RFC 6238) is required for the server's account and optional for every other adult, in
-_Settings › My account_. Codes have 6 digits and 30-second steps, with one step of drift either way.
+_My account › Sign-in_. Codes have 6 digits and 30-second steps, with one step of drift either way.
 
 With it on, a sign-in asks for the app's code after the right password, and so does every action above. Each code
 works once: the last step used is kept, and an older or equal one is refused. A wrong code counts against the

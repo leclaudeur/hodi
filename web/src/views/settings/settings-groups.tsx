@@ -6,7 +6,6 @@ import {
   Settings2,
   EyeOff,
   History,
-  House,
   Info,
   Keyboard,
   Layers,
@@ -27,7 +26,13 @@ import { useNotificationSettings } from '../../lib/notifications.ts'
 import { usePreferences } from '../../lib/preferences.ts'
 import { isYoung, useProfiles } from '../../lib/profiles.ts'
 import { callsLeft, sourceState, useAiUsage, useSourceStatuses } from '../../lib/settings-data.ts'
-import { HISTORY_HREF, SERVER_HREF, type SettingsSection, pluginPageHref } from '../../lib/use-hash-route.ts'
+import {
+  HISTORY_HREF,
+  SERVER_HREF,
+  accountHref,
+  type SettingsSection,
+  pluginPageHref
+} from '../../lib/use-hash-route.ts'
 import PluginSlot from '../../plugins/PluginSlot.tsx'
 import { menuPlugins, placePlugins } from '../../plugins/menu.ts'
 import { type PluginInfo, type WebPlugin, usePlugins } from '../../plugins/registry.ts'
@@ -38,12 +43,14 @@ export interface Entry {
   // plugin:<its id>.
   id: SettingsSection | 'history' | 'server' | `plugin:${string}`
   href?: string
+  // Opens a page outside Réglages: its line ends with the external-link icon, even though it stays in the tab.
+  leaves?: boolean
   label: string
   hint: ReactNode
   icon: LucideIcon | 'ai' | ComponentType<{ size?: number }>
   // Keyboard shortcuts mean nothing on a phone.
   desktopOnly?: boolean
-  // Sharing means nothing in a household of one; the household's own settings are the admin's.
+  // Sharing means nothing alone on the server; a young profile has no AI of its own.
   hidden?: boolean
 }
 
@@ -86,6 +93,7 @@ const readingGroups = ({ t, sources, failing, asked, preferences }: GroupData): 
       },
       {
         id: 'history',
+        leaves: true,
         href: HISTORY_HREF,
         label: t('settings.reading.history'),
         hint: t('settings.hints.history'),
@@ -118,67 +126,84 @@ const readingGroups = ({ t, sources, failing, asked, preferences }: GroupData): 
 ]
 
 // The profile's own: itself, its stats, its account and its sharing.
-const yourGroups = ({ t, preferences, young, household }: GroupData): Group[] => [
-  {
-    id: 'you',
-    label: t('settings.groups.you'),
-    entries: [
-      {
-        id: 'general',
-        label: t('settings.nav.general'),
-        hint: young ? t('limits.meHint') : t('settings.hints.general'),
-        icon: Settings2
-      },
-      { id: 'stats', label: t('settings.nav.stats'), hint: t('settings.hints.stats'), icon: ChartColumn },
-      // The account and what Hodi keeps: this device's part (its session, offline reading) with the rest.
-      { id: 'account', label: t('settings.nav.account'), hint: t('settings.hints.account'), icon: CircleUser },
-      {
-        id: 'sharing',
-        label: t('settings.nav.sharing'),
-        hint: t(preferences.sharing ? 'settings.hints.on' : 'settings.hints.off'),
-        icon: Send,
-        hidden: (household?.profiles.length ?? 0) < 2
-      }
-    ]
-  }
-]
+const yourGroups = (data: GroupData): Group[] => {
+  const { t, preferences, young, household } = data
+  return [
+    {
+      id: 'you',
+      label: t('settings.groups.you'),
+      entries: [
+        {
+          id: 'general',
+          label: t('settings.nav.general'),
+          hint: young ? t('limits.meHint') : t('settings.hints.general'),
+          icon: Settings2
+        },
+        {
+          id: 'stats',
+          label: t('settings.nav.stats'),
+          hint: t('settings.hints.stats'),
+          icon: ChartColumn,
+          href: accountHref('stats'),
+          leaves: true
+        },
+        // The account and what Hodi keeps: this device's part (its session, offline reading) with the rest.
+        {
+          id: 'account',
+          label: t('settings.nav.account'),
+          hint: t('settings.hints.account'),
+          icon: CircleUser,
+          href: '#/account',
+          leaves: true
+        },
+        {
+          id: 'sharing',
+          label: t('settings.nav.sharing'),
+          hint: t(preferences.sharing ? 'settings.hints.on' : 'settings.hints.off'),
+          icon: Send,
+          hidden: (household?.profiles.length ?? 0) < 2
+        },
+        aiEntry(data)
+      ]
+    }
+  ]
+}
 
-// The household's, for its adults.
-const householdGroups = ({ t, young, profile, household, usage }: GroupData): Group[] => [
-  {
-    id: 'household',
-    label: t('settings.groups.household'),
-    hidden: young,
-    entries: [
-      {
-        id: 'household',
-        label: t('settings.nav.household'),
-        hint: t('settings.hints.household'),
-        icon: House,
-        hidden: profile?.role !== 'admin'
-      },
-      {
-        id: 'profiles',
-        label: t('settings.nav.profiles'),
-        hint:
-          household && profile
-            ? `${profile.name} · ${t('count.profile', { count: household.profiles.length })}`
-            : t('profiles.who'),
-        icon: Users
-      },
-      {
-        id: 'ai',
-        label: t('settings.nav.ai'),
-        hint: usage
-          ? usage.available
-            ? t('settings.hints.callsLeft', { count: callsLeft(usage) })
-            : t('settings.hints.aiOff')
-          : t('settings.hints.ai'),
-        icon: 'ai'
-      }
-    ]
-  }
-]
+// The account's own key and its calls of the day, on Mon compte.
+const aiEntry = ({ t, usage, young }: GroupData): Entry => ({
+  id: 'ai',
+  href: accountHref('ai'),
+  leaves: true,
+  label: t('settings.nav.ai'),
+  hint: usage
+    ? usage.available
+      ? t('settings.hints.callsLeft', { count: callsLeft(usage) })
+      : t('settings.hints.aiOff')
+    : t('settings.hints.ai'),
+  icon: 'ai',
+  // A young profile has no account, so no key.
+  hidden: young
+})
+
+// The young profiles its adults look after.
+const familyGroups = ({ t, young, household }: GroupData): Group[] => {
+  const count = household?.profiles.filter(isYoung).length ?? 0
+  return [
+    {
+      id: 'household',
+      label: t('settings.groups.household'),
+      hidden: young,
+      entries: [
+        {
+          id: 'profiles',
+          label: t('settings.nav.profiles'),
+          hint: count ? t('count.profile', { count }) : t('settings.hints.none'),
+          icon: Users
+        }
+      ]
+    }
+  ]
+}
 
 // This device, then the server and Hodi itself.
 const deviceGroups = ({ t, notifications, household }: GroupData): Group[] => [
@@ -208,6 +233,7 @@ const deviceGroups = ({ t, notifications, household }: GroupData): Group[] => [
       // The server's admin space, for the account that runs it.
       {
         id: 'server',
+        leaves: true,
         href: SERVER_HREF,
         label: t('settings.nav.server'),
         hint: t('settings.hints.server'),
@@ -219,7 +245,7 @@ const deviceGroups = ({ t, notifications, household }: GroupData): Group[] => [
   }
 ]
 
-// The sections of the settings, in five groups (what is read, about what, by whom, for the household, here), with what each one holds right now.
+// The sections of the settings, in five groups (what is read, about what, by whom, for the young ones, here), with what each one holds right now.
 export const useGroups = (onUnauthorized: () => void): Group[] => {
   const preferences = usePreferences()
   const notifications = useNotificationSettings()
@@ -232,13 +258,13 @@ export const useGroups = (onUnauthorized: () => void): Group[] => {
     sources?.filter(source => sourceState(source) === 'error' && !preferences.hiddenSources.includes(source.id))
       .length ?? 0
   const { t } = useTranslation()
-  // A young profile's settings are its own: the household's (Foyer, Profils, IA) are its parents'.
+  // A young profile's settings are its own: the young profiles and the AI are its parents'.
   const young = profile ? isYoung(profile) : false
   const asked = useMyRequests(profile?.kind === 'teen')?.length ?? 0
   const { plugins, web } = usePlugins()
 
   const data = { t, preferences, notifications, sources, usage, household, profile, failing, asked, young }
-  const groups = [...readingGroups(data), ...yourGroups(data), ...householdGroups(data), ...deviceGroups(data)]
+  const groups = [...readingGroups(data), ...yourGroups(data), ...familyGroups(data), ...deviceGroups(data)]
   // Plugins' own pages, where their manifests place them.
   return placePlugins(groups, menuPlugins(plugins, web), ({ id }) =>
     pluginEntry(

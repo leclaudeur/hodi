@@ -99,16 +99,26 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
     void check(initialCode)
   }
 
+  // An account that has been in a household joins as it is; one that never was says who it is first ("who").
   const join = (profile?: ProfileDraft) =>
     send(
       async () => {
-        const { profileId, signIn } = await joinWithCode({
+        const joined = await joinWithCode({
           code,
           email: fields.email.trim(),
           password: fields.password,
           ...(fields.existing ? { existing: true as const } : { ageConfirmed: true as const }),
           ...(profile ? { profile: { name: profile.name, color: profile.color, handle: profile.handle } } : {})
+        }).catch((failure: unknown) => {
+          if (!(failure instanceof RequestError) || failure.code !== 'profile_needed') throw failure
+          return null
         })
+        if (!joined) {
+          setStep('who')
+          setBusy(false)
+          return
+        }
+        const { profileId, signIn } = joined
         // The photo once the profile is open; the account is made whatever happens to it.
         if (profile?.photo && signIn !== false) await uploadProfilePhoto(profileId, profile.photo).catch(() => {})
         onDone(signIn !== false)

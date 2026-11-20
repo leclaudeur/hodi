@@ -3,6 +3,7 @@ import type { HouseholdStore } from '../db/household-store.ts'
 import type { NewsStore } from '../db/news-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import { type SourceStore, createPauseCheck } from '../db/source-store.ts'
+import type { UserAccountStore } from '../db/user-account-store.ts'
 import type { UserStore } from '../db/user-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import { inHousehold } from '../db/household-scope.ts'
@@ -11,10 +12,11 @@ import type { PluginRegistry } from '../plugins/registry.ts'
 import { type Catalog, allSources, type loadCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { createExtractPool } from '../news/extract-pool.ts'
-import { aiProvider } from '../news/ai-providers.ts'
 import { SourceIcons } from '../news/source-icons.ts'
 import { isAddressName, nameFromSite } from '../news/source-name.ts'
 import { isLanguage } from '../../shared/i18n.ts'
+import type { AccountAiStore } from '../db/account-ai-store.ts'
+import { accountAiTools } from './account-ai.ts'
 import type { Outside } from './outside.ts'
 
 // The news service, wired to the households, profiles and settings in the database (start.ts).
@@ -28,6 +30,8 @@ interface NewsWiring {
   household: HouseholdStore
   profiles: ProfileStore
   usersOf: (profileId: number) => UserStore
+  accounts: UserAccountStore
+  accountAi: AccountAiStore
   serverSettings: ServerSettingsStore
   store: NewsStore
   plugins: () => PluginRegistry | null
@@ -58,20 +62,9 @@ const hiddenByProfileOf =
   }
 
 export const createNews = (wiring: NewsWiring) => {
-  const { config, outside, catalog, file, sources, household, profiles, usersOf, serverSettings, store } = wiring
-  // The time zone and AI tools of the household being served (household-scope.ts).
+  const { config, outside, catalog, file, sources, household, usersOf, serverSettings, store } = wiring
+  // The time zone of the household being served (household-scope.ts).
   const householdTimeZone = () => household.get().timeZone ?? config.timeZone
-  const householdAi = () => {
-    const current = household.get()
-    const provider = current.ai ? aiProvider(current.ai.provider) : null
-    return current.ai && provider
-      ? provider.tools({
-          key: current.ai.key,
-          model: current.ai.model,
-          region: { timeZone: householdTimeZone(), country: current.country }
-        })
-      : null
-  }
   const news = new NewsService(catalog, {
     fetchText: outside.fetchText,
     extractPage: createExtractPool().extract,
@@ -80,12 +73,13 @@ export const createNews = (wiring: NewsWiring) => {
     // Each household's own sources; the first one's is the catalogue just loaded.
     catalogOf: () => sources.catalog(file),
     households: () => household.ids(),
-    // Each household's own AI key and time zone, read the first time a household is served.
-    aiOf: householdAi,
+    // Each reader's AI is its account's own key: a profile with no account has none.
+    aiOf: accountAiTools(wiring),
     timeZoneOf: householdTimeZone,
+    // A reader's Résumé du jour follows its account's days.
+    readerTimeZoneOf: profileId => wiring.accounts.timeZoneOfProfile(profileId),
     fetchVideoDuration: outside.fetchVideoDuration,
     isPaused: createPauseCheck({ hiddenByProfile: hiddenByProfileOf(wiring), now: Date.now }),
-    profiles: () => profiles.list().map(profile => ({ id: profile.id, admin: profile.role === 'admin' })),
     // The AI writes in the profile's language, else the household's.
     languageOf: profileId => {
       const own = usersOf(profileId).preferences()?.language
@@ -95,10 +89,9 @@ export const createNews = (wiring: NewsWiring) => {
     windows: () => serverSettings.content(),
     store
   })
-  // The household's time zone and AI (none until a key is given), again whenever the admin changes them.
+  // The household's time zone, again whenever the admin changes it.
   const applyHousehold = () => {
     news.setTimeZone(householdTimeZone())
-    news.setAi(householdAi())
   }
   return { news, applyHousehold }
 }

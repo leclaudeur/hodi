@@ -102,6 +102,12 @@ export interface AccountView {
   // « Identifiant », and when it can change again (null: now).
   handle: string | null
   handleChangeableFrom: number | null
+  // Where its days start: its own, else the household's. country: its own, or none.
+  timeZone: string
+  country: string | null
+  // Mon compte › IA et crédits: its own key, shown by its provider and its end only; null: no AI.
+  ai: AiKey | null
+  providers: AiProviderInfo[]
   devices: AccountDevice[]
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: {
@@ -114,6 +120,15 @@ export interface AccountView {
   } | null
   // « Validation en deux étapes »: on since then, or null. required: the server's admin cannot turn it off.
   twoFactor: { since: number | null; required: boolean; recoveryLeft: number }
+  // In no household: what it read and earned, its own wherever it reads; null when nothing yet.
+  stats?: AccountStats | null
+}
+
+export interface AccountStats {
+  articles: number
+  videos: number
+  minutes: number
+  points: number
 }
 
 // null: no account here (an install still on the household's password, or a young profile open on this device).
@@ -134,6 +149,27 @@ export const changeAccountPassword = (current: string, next: string) =>
 // « Profil privé »: turning it on asks for the password (and the app's code), never for turning it off.
 export const setPrivateProfile = (on: boolean, proof?: AdminProof) =>
   sendJson<AccountView>('PUT', '/account/private', { on, ...proof })
+
+// Réglages › Mon compte › Région.
+export interface AiKey {
+  provider: string
+  providerName: string
+  model: string
+  keyHint: string
+}
+
+// A key checked with a request that costs no credits.
+export const checkAccountAi = async (provider: string, key: string) =>
+  (await sendJson<{ result: KeyCheck }>('POST', '/account/ai/check', { provider, key })).result
+
+// Kept only once the provider took it.
+export const setAccountAi = (provider: string, key: string) =>
+  sendJson<AccountView>('PUT', '/account/ai', { provider, key })
+
+export const removeAccountAi = () => sendJson<AccountView>('DELETE', '/account/ai')
+
+export const changeAccountRegion = (region: { timeZone?: string; country?: string | null }) =>
+  sendJson<AccountView>('PUT', '/account/region', region)
 
 // « Redemander »: every device asks for the password again.
 export const forgetTrustedDevices = () => sendJson<AccountView>('DELETE', '/account/trusted')
@@ -220,7 +256,8 @@ export const removeProfileDevice = (profileId: number, deviceId: number) =>
   sendJson<null>('DELETE', `/profiles/${profileId}/devices/${deviceId}`)
 
 export interface HouseholdSetup {
-  name: string
+  // The server's one space needs none: a plugin with several households names them.
+  name?: string
   profile: { name: string; color: ProfileColor; handle?: string }
   timeZone: string
   country: string | null
@@ -239,7 +276,7 @@ export interface Household {
   hourCycle: 12 | 24
   // Its photo's address; null: its initial shows.
   photo: string | null
-  ai: { provider: string; providerName: string; model: string; keyHint: string } | null
+  ai: AiKey | null
   providers: AiProviderInfo[]
   // « Code parental »: six digits asked to open an adult profile that is not private.
   parentalCode?: boolean

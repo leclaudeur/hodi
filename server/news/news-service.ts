@@ -11,7 +11,6 @@ import { CACHE_TTL_MS, FeedCache } from './feed-cache.ts'
 import { AI_CAPS, type AiUsage } from './ai-ledger.ts'
 import { NO_FILTER, type ReaderFilter, filtered } from './reader-filter.ts'
 import type {
-  AiTools,
   ArticleResult,
   DayFeed,
   FrontPage,
@@ -71,6 +70,7 @@ export class NewsService {
       catalogOf,
       aiOf,
       timeZoneOf,
+      readerTimeZoneOf,
       households = () => [currentHouseholdId()],
       fetchVideoDuration,
       summarize,
@@ -79,7 +79,6 @@ export class NewsService {
       suggestSources,
       store,
       isPaused = () => false,
-      profiles = () => [{ id: DEFAULT_PROFILE_ID, admin: true }],
       aiCaps = AI_CAPS,
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
       languageOf = () => 'fr',
@@ -128,18 +127,14 @@ export class NewsService {
       now
     })
     const tools = { summarize, writeDailySummary, answerQuestion, suggestSources }
-    const timeZones = () => this.#timeZones.get()
-    const wiring = { tools, aiOf, store, profiles, caps: aiCaps, languageOf, householdLanguage, now, log }
+    const timeZones = (profileId: number) => readerTimeZoneOf?.(profileId) ?? this.#timeZones.get()
+    const wiring = { tools, aiOf, store, caps: aiCaps, languageOf, householdLanguage, now, log }
     this.#newsAi = createNewsAi({ ...wiring, timeZone: timeZones }, this)
   }
 
   // Articles each source listed since then ("Peu ouvertes").
   articleCountsBySource(since: number): Map<string, number> {
     return this.#store?.articleCountsBySource(new Date(since).toISOString()) ?? new Map()
-  }
-
-  setAi(tools: AiTools | null) {
-    this.#newsAi.set(tools)
   }
 
   setTimeZone(timeZone: string) {
@@ -164,7 +159,8 @@ export class NewsService {
     return this.#newsAi.usage(profileId)
   }
 
-  resetAiUsage({ kind = null, profileId = null }: { kind?: AiCallKind | null; profileId?: number | null }) {
+  // « Remettre à 0 »: the reader's own calls.
+  resetAiUsage({ kind = null, profileId = DEFAULT_PROFILE_ID }: { kind?: AiCallKind | null; profileId?: number }) {
     this.#newsAi.reset(kind, profileId)
   }
 
@@ -202,8 +198,8 @@ export class NewsService {
     return this.#languageOf(profileId)
   }
 
-  get canSummarize() {
-    return this.#newsAi.canSummarize
+  canSummarize(profileId = DEFAULT_PROFILE_ID) {
+    return this.#newsAi.canSummarize(profileId)
   }
 
   // fresh: fetch the feeds again unless they were fetched less than a minute ago.
@@ -305,8 +301,8 @@ export class NewsService {
     return this.#newsAi.pluginAiLeft(profileId)
   }
 
-  pluginAiCalls() {
-    return this.#newsAi.pluginAiCalls()
+  pluginAiCalls(profileId: number) {
+    return this.#newsAi.pluginAiCalls(profileId)
   }
 
   answerQuestion(itemId: string, question: string, profileId = DEFAULT_PROFILE_ID) {
@@ -372,6 +368,11 @@ export class NewsService {
   }
 
   // The API is called once per article and language (news-ai.ts).
+  // A summary the reader's account already has, shown closed with the article without calling the AI (news-ai.ts).
+  storedSummary(itemId: string, profileId = DEFAULT_PROFILE_ID) {
+    return this.#newsAi.storedSummary(itemId, profileId)
+  }
+
   getSummary(itemId: string, profileId = DEFAULT_PROFILE_ID) {
     return this.#newsAi.getSummary(itemId, profileId)
   }

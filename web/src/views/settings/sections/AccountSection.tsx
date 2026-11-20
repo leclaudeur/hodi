@@ -11,18 +11,16 @@ import TwoFactorDialog, { RecoveryCodesDialog } from '../../account/TwoFactorDia
 import type { TwoFactorSecret } from '../../account/TwoFactorSetup.tsx'
 import { setTwoFactorOn } from '../../../lib/two-factor.ts'
 import { EmailDialog, PasswordDialog } from './AccountDialogs.tsx'
-import SectionPage from '../SectionPage.tsx'
-import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import { PluginSlots } from '../../../plugins/Slots.tsx'
 import AccountProfile from './AccountProfile.tsx'
-import HouseholdCard from './HouseholdCard.tsx'
+import AccountStatsCard from './AccountStatsCard.tsx'
 import { DeviceRows, TwoFactorRow, confirmDelete, labelOf } from './AccountRows.tsx'
 import PrivateProfileRow from './PrivateProfileRow.tsx'
 
 // undefined while it comes; null: no account here.
-const useAccount = (onUnauthorized: () => void) => {
+export const useAccount = (onUnauthorized: () => void) => {
   const [account, setAccount] = useState<AccountView | null | undefined>(undefined)
   useEffect(() => {
     getAccount()
@@ -135,16 +133,7 @@ const TwoFactorDialogs = ({
   )
 }
 
-interface AccountSectionProps {
-  layout: 'desktop' | 'phone'
-  onUnauthorized: () => void
-  // In place of the usual one: the page of an account in no household, which has no profile to show.
-  intro?: string
-}
-
-// Réglages > Mon compte: the account's profile and language, its e-mail and password, the devices signed in with it (this one's offline
-// reading among them), a copy of its data and deleting it. An install still on the household's password, or a young
-// profile open on this device, sees this device's part alone.
+// Mon compte › Connexion: the password's row, with when it last changed.
 const PasswordRow = ({ account, onEdit }: { account: AccountView; onEdit: () => void }) => {
   const { t } = useTranslation()
   return (
@@ -166,48 +155,23 @@ const PasswordRow = ({ account, onEdit }: { account: AccountView; onEdit: () => 
   )
 }
 
-const AccountSection = ({ layout, onUnauthorized, intro: ownIntro }: AccountSectionProps) => {
+interface PartProps {
+  account: AccountView
+  onAccount: (account: AccountView) => void
+  layout: 'desktop' | 'phone'
+}
+
+// Mon compte › Connexion: the e-mail, the password, the profile's lock, the second step, then the devices signed in.
+export const SignInPart = ({ account, onAccount, layout }: PartProps) => {
   const { t } = useTranslation()
-  const [account, setAccount] = useAccount(onUnauthorized)
   const [editing, setEditing] = useState<'email' | 'password' | null>(null)
   // « Activer », once the password was typed: the secret the app scans.
   const [started, setStarted] = useState<TwoFactorSecret | null>(null)
   // « Nouveaux codes de secours », shown once.
   const [newCodes, setNewCodes] = useState<string[] | null>(null)
-
-  const title = t('settings.nav.account')
-  const intro = ownIntro ?? t('settings.account.intro')
-  if (account === undefined) {
-    return (
-      <SectionPage title={title} intro={intro} layout={layout}>
-        <RowsSkeleton rows={2} end="button" />
-      </SectionPage>
-    )
-  }
-
-  const offlineRow = <OfflineRow />
-  const thisDeviceChip = <ThisDevice />
-
-  if (account === null) {
-    return (
-      <SectionPage title={title} intro={t('settings.account.deviceIntro')} layout={layout}>
-        <h2 className={styles.label}>{t('settings.account.devices')}</h2>
-        <div className={styles.card}>
-          <SettingRow label={labelOf(navigator.userAgent, true)} hint={t('settings.account.sessionHint')}>
-            {thisDeviceChip}
-          </SettingRow>
-          {offlineRow}
-        </div>
-      </SectionPage>
-    )
-  }
-
-  const dialogProps = { account, layout, onSaved: setAccount, onClose: () => setEditing(null) }
-
+  const dialogProps = { account, layout, onSaved: onAccount, onClose: () => setEditing(null) }
   return (
-    <SectionPage title={title} intro={intro} layout={layout}>
-      <AccountProfile account={account} onAccount={setAccount} />
-      <h2 className={styles.label}>{t('settings.account.yourAccount')}</h2>
+    <>
       <div className={styles.card}>
         <SettingRow
           label={t('settings.account.email')}
@@ -215,34 +179,44 @@ const AccountSection = ({ layout, onUnauthorized, intro: ownIntro }: AccountSect
           action={{ label: t('settings.account.change'), icon: Pencil, onClick: () => setEditing('email') }}
         />
         <PasswordRow account={account} onEdit={() => setEditing('password')} />
-        <PrivateProfileRow account={account} onAccount={setAccount} />
-        <TwoFactorRow account={account} onAccount={setAccount} onStarted={setStarted} onNewCodes={setNewCodes} />
+        <PrivateProfileRow account={account} onAccount={onAccount} />
+        <TwoFactorRow account={account} onAccount={onAccount} onStarted={setStarted} onNewCodes={setNewCodes} />
         {/* A plugin's rows about the account (« Relier mon compte Google »). */}
         <PluginSlots slot="accountRows" props={{ layout }} />
       </div>
-
       <h2 className={styles.label}>{t('settings.account.devices')}</h2>
       <div className={styles.card}>
-        <DeviceRows account={account} onAccount={setAccount} thisDevice={thisDeviceChip} />
-        {offlineRow}
+        <DeviceRows account={account} onAccount={onAccount} thisDevice={<ThisDevice />} />
+        <OfflineRow />
       </div>
-
-      <HouseholdCard account={account} />
-
-      <DataRows account={account} />
-
       {editing === 'email' && <EmailDialog {...dialogProps} />}
       {editing === 'password' && <PasswordDialog {...dialogProps} />}
       <TwoFactorDialogs
         account={account}
-        onAccount={setAccount}
+        onAccount={onAccount}
         started={started}
         onStarted={setStarted}
         newCodes={newCodes}
         onNewCodes={setNewCodes}
       />
-    </SectionPage>
+    </>
   )
 }
 
-export default AccountSection
+// Mon compte › Données: a copy of everything, deleting it.
+export const DataPart = ({ account }: { account: AccountView }) => <DataRows account={account} />
+
+// A young profile open on this device has no account of its own: this device's part alone.
+export const DevicePart = () => {
+  const { t } = useTranslation()
+  return (
+    <div className={styles.card}>
+      <SettingRow label={labelOf(navigator.userAgent, true)} hint={t('settings.account.sessionHint')}>
+        <ThisDevice />
+      </SettingRow>
+      <OfflineRow />
+    </div>
+  )
+}
+
+export { AccountProfile, AccountStatsCard }

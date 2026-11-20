@@ -15,6 +15,37 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   free, and changes once every 30 days in My account. Existing accounts get one from their profile's name. Sign in
   with the e-mail or the username.
 
+### Changed
+
+- **Stats and points belong to the account.** An adult's readings, stats, points and badges are their account's,
+  not their profile's: they stay the same in any household, after leaving one or being removed from it, and My
+  account shows them while the person is in no household. A young profile, which has no account, keeps its own.
+  Deleting the account deletes them.
+- **Your settings, saved articles and history belong to the account.** An adult's preferences (sources and topics
+  turned off, followed and hidden topics, reading settings), Saved, History, what Hide put away and the stories seen
+  in Top news are their account's: they come back as they were after leaving a household and joining another. A
+  young profile keeps its own; deleting the account deletes them.
+- **Your name, colour and photo belong to the account.** They come back with the profile you get on joining a
+  household again, and joining with _I already have an account_ no longer asks who you are when the account has been in
+  a household before.
+- **Your time zone belongs to the account.** _Settings › My account_ gets a _Region_ card where each person picks
+  their own; it moves out of _Settings › Household_. Their screen time, quiet hours, game points and Daily summary follow its days.
+  Every account starts with its household's.
+- **My account is a page of its own.** Laid out as the legal pages, with its sections in a sidebar (a _Sections_ menu
+  on a tablet or a phone): _Profile_, _Sign-in_, _Region_, _Statistics_ and _Data_. _Settings › My account_ and
+  _Settings › Statistics_ open it, and Settings lines that open another page end with an external-link icon.
+- **Each account has its own AI key.** _My account › AI and credits_ holds the key, the country used by the AI's web
+  searches and the account's own calls of the day, against its own caps: 100 summaries, 100 questions, 8 Daily summaries,
+  10 source suggestions and 20 plugin requests. Each account keeps the summaries it paid for. The key of the first-run
+  screens is the admin's; every account that read in the household starts with the household's key. A young profile
+  has no AI.
+- **No household in the app any more: a server and its accounts.** _Settings › Household_ and _Leave the household_
+  are gone. The default language, the time format and the game move to _Server › General_, with the server's data.
+  _Settings › Profiles_ becomes _Teens and children_, with the parental code, and _AI and credits_ moves under _You_.
+  The server's admin invites someone from _Server › Accounts_ with _Invite someone_, which replaces _Invite an adult_
+  and _Server › Households_, and keeps what the household's admin could do. The first-run screens no longer ask for a
+  household name.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My
