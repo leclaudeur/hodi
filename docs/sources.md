@@ -10,10 +10,12 @@ The file fills an empty database once, when the household is set up. After that,
 sources, so editing the file's feeds changes nothing on an existing install. A renamed theme is the exception: it shows
 after a restart.
 
-**Base sources** are the only ones a new household and a new profile start with, in the household's language. They
-can be hidden, never deleted. Every other source is a **suggestion**: a profile adds it from _Settings › Sources_, or
-adds any site, feed or YouTube channel with its link. A source a profile added can be deleted by that profile or by
-the admin, for the whole household.
+The database holds the server's sources, and each person reads their own list of them, **My sources**, kept with their
+account (`my_sources`). **Base sources** are the only ones a new household and a new adult start with, in the
+household's language. They can be taken out of one's list, never deleted. Every other source is a **suggestion**: a
+person adds it from _Settings › Sources_, or adds any site, feed or YouTube channel with its link, which goes into
+their list only. A source someone added can be deleted by them or by the admin, for everyone. A source in the lists of
+10 people or more shows how many.
 
 A source may belong to several themes, and a theme with no source is hidden. Each profile sees a theme's name in its
 own language. In a feed that mixes French and English, only the articles in the source's language are kept.

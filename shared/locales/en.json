@@ -1628,7 +1628,7 @@
       "podcast": "Podcasts"
     },
     "groups": {
-      "mine": "My sources",
+      "mine": "Added by you",
       "channels": "My channels",
       "household": "Added by the home",
       "base": "Base sources"
@@ -1639,11 +1639,13 @@
     "deletedProfile": "a deleted profile",
     "errorTitle": "Error: {{error}}",
     "by": "By {{name}}",
+    "readers_one": "{{count}} readers",
+    "readers_other": "{{count}} readers",
     "changeTopicsOf": "Change {{name}}’s topics",
     "changeTopics": "Change topics",
     "seeSite": "See the site",
     "deleteFor": "Delete {{name}} for the whole home",
-    "intro": "The sites and channels that fill your feed, checked every 15 minutes. A source you add joins the whole household’s list, hidden for the other profiles: each shows it if they want. Base sources can be hidden but not deleted.",
+    "intro": "The sites and channels that fill your feed, checked every 15 minutes. Turn on the ones you read: they are your sources, kept with your account. A source you add goes into yours only, and others add it if they want it. Base sources can be turned off but not deleted.",
     "search": "Search a source or a topic",
     "searchLabel": "Search a source",
     "filter": "Filter sources",

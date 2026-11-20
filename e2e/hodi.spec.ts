@@ -496,7 +496,7 @@ test('adds a source from the link of its site', async () => {
   // The dialog stays open, empty, for another source.
   await expect(dialog.getByRole('textbox', { name: 'Lien de la source à ajouter' })).toHaveValue('')
   await dialog.getByRole('button', { name: 'Fermer' }).click()
-  await page.getByRole('button', { name: 'Mes sources 1' }).click()
+  await page.getByRole('button', { name: 'Ajoutées par toi 1' }).click()
   await expect(page.getByRole('main').getByRole('listitem').filter({ hasText: 'gamma.example' })).toContainText('Gamma')
 
   await page.goto('/')

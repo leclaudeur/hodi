@@ -1628,7 +1628,7 @@
       "podcast": "Podcasts"
     },
     "groups": {
-      "mine": "Mes sources",
+      "mine": "Ajoutées par toi",
       "channels": "Mes chaînes",
       "household": "Ajoutées par le foyer",
       "base": "Sources de base"
@@ -1639,11 +1639,13 @@
     "deletedProfile": "un profil supprimé",
     "errorTitle": "Erreur : {{error}}",
     "by": "Par {{name}}",
+    "readers_one": "{{count}} lecteurs",
+    "readers_other": "{{count}} lecteurs",
     "changeTopicsOf": "Changer les thèmes de {{name}}",
     "changeTopics": "Changer les thèmes",
     "seeSite": "Voir le site",
     "deleteFor": "Supprimer {{name}} pour tout le foyer",
-    "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Une source que tu ajoutes rejoint la liste de tout le foyer, masquée pour les autres profils : chacun l’affiche s’il le veut. Les sources de base se masquent mais ne se suppriment pas.",
+    "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Allume celles que tu lis : ce sont tes sources, gardées avec ton compte. Une source que tu ajoutes ne va que dans les tiennes, les autres l’ajoutent s’ils la veulent. Les sources de base s’éteignent mais ne se suppriment pas.",
     "search": "Chercher une source ou un thème",
     "searchLabel": "Chercher une source",
     "filter": "Filtrer les sources",
