@@ -1147,7 +1147,7 @@ const MIGRATIONS: string[] = [
   `,
   // Each person's AI is their own: their key, their caps and the summaries it paid for, which no one else reads. Every
   // account starts with its household's key; a young profile, which has no account, has none. The summaries written
-  // before go to each account that had the household's key.
+  // before had no household: every account that now has a key gets a copy of each.
   `
   ALTER TABLE users ADD COLUMN ai_provider TEXT;
   ALTER TABLE users ADD COLUMN ai_key TEXT;

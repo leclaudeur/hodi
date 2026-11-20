@@ -102,6 +102,16 @@ describe('NewsStore', () => {
     assert.equal(third.news.aiUsage(1).kinds.find(kind => kind.kind === 'summary')!.used, 0)
   })
 
+  it("keeps each account's summary to that account alone", async () => {
+    const store = new NewsStore(openDatabase(':memory:'))
+    const first = start(store, { 'https://alpha.example/feed': feed })
+    await listAll(first.news)
+    store.saveSummary(sommet, 'fr', ['Le point de A'], NOW, 'a1')
+    assert.deepEqual(store.getSummary(sommet, 'fr', 'a1'), ['Le point de A'])
+    assert.equal(store.getSummary(sommet, 'fr', 'a2'), null)
+    assert.equal(store.getSummary(sommet, 'en', 'a1'), null)
+  })
+
   it('shows the reading time and author on the card once the article is read, even after a restart', async () => {
     const store = new NewsStore(openDatabase(':memory:'))
     const responses = {

@@ -16,7 +16,9 @@ interface AccountAiWiring {
 // account or an account with no key. Kept per account until its key or region changes.
 export const accountAiTools = ({ config, household, accounts, accountAi }: AccountAiWiring) => {
   const kept = new Map<number, { signature: string; tools: AiTools }>()
-  return (profileId: number): AiTools | null => {
+  const toolsOf = (profileId: number): AiTools | null => {
+    // A key taken away, or an account deleted, does not stay in memory.
+    for (const accountId of kept.keys()) if (!accountAi.get(accountId)) kept.delete(accountId)
     const found = accountAi.ofProfile(profileId)
     const provider = found?.ai ? aiProvider(found.ai.provider) : null
     if (!found?.ai || !provider) return null
@@ -33,4 +35,5 @@ export const accountAiTools = ({ config, household, accounts, accountAi }: Accou
     kept.set(found.accountId, { signature, tools })
     return tools
   }
+  return toolsOf
 }
