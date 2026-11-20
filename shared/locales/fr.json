@@ -1615,10 +1615,10 @@
     "hideLowTitle_other": "Masquer les {{count}} sources peu ouvertes ?",
     "hideOneTitle": "Masquer {{name}} ?",
     "hideLowMessage": "Leurs articles quittent le fil et les thèmes de ce profil. Tu peux les réafficher ici une par une.",
-    "hideAll": "Tout masquer",
-    "hidden_one": "Source masquée",
-    "hidden_other": "{{count}} sources masquées",
-    "replaced": "Source ajoutée, {{name}} masquée",
+    "hideAll": "Tout retirer",
+    "hidden_one": "Source retirée de tes sources",
+    "hidden_other": "{{count}} sources retirées de tes sources",
+    "replaced": "Source ajoutée, {{name}} retirée de tes sources",
     "added": "Source ajoutée",
     "topicsSaved": "Thèmes enregistrés",
     "topicsFailed": "Les thèmes n’ont pas pu être enregistrés. Réessaie dans un instant.",
@@ -1630,7 +1630,7 @@
     "groups": {
       "mine": "Ajoutées par toi",
       "channels": "Mes chaînes",
-      "household": "Ajoutées par le foyer",
+      "household": "Ajoutées par d’autres",
       "base": "Sources de base"
     },
     "status": {
@@ -1639,8 +1639,8 @@
     "deletedProfile": "un profil supprimé",
     "errorTitle": "Erreur : {{error}}",
     "by": "Par {{name}}",
-    "readers_one": "{{count}} lecteurs",
-    "readers_other": "{{count}} lecteurs",
+    "readers_one": "{{formatted}} lecteurs",
+    "readers_other": "{{formatted}} lecteurs",
     "changeTopicsOf": "Changer les thèmes de {{name}}",
     "changeTopics": "Changer les thèmes",
     "seeSite": "Voir le site",
@@ -1652,8 +1652,7 @@
     "filters": {
       "all": "Toutes",
       "low": "Peu ouvertes",
-      "error": "En erreur",
-      "hidden": "Masquées"
+      "error": "En erreur"
     },
     "filterTopic": "Filtrer par thème",
     "allTopics": "Tous les thèmes",
@@ -1663,9 +1662,9 @@
     "groupIntros": {
       "mine": "Les sites que tu as ajoutés. Toi seul, et l’admin, pouvez changer leurs thèmes ou les supprimer.",
       "channels": "Les chaînes YouTube et les podcasts que tu suis. Ils arrivent dans Vidéos, jamais dans le fil.",
-      "household": "Ajoutées par les autres profils. Elles restent masquées pour toi tant que tu ne les affiches pas.",
-      "parents": "Les sources choisies par les parents. Masque celles qui ne t’intéressent pas.",
-      "base": "Choisies avec Hodi pour bien démarrer. Tu peux les masquer, pas les supprimer.",
+      "household": "Ajoutées au serveur par d’autres comptes, et que tu lis aussi.",
+      "parents": "Les sources choisies par les parents. Retire celles qui ne t’intéressent pas.",
+      "base": "Choisies avec Hodi pour bien démarrer. Tu peux les retirer, pas les supprimer.",
       "requests": "Les sources que tu as demandées. Elles arrivent dans le fil quand les parents les acceptent."
     },
     "moreFor": "Actions pour {{name}}",
@@ -1747,14 +1746,14 @@
       "button": "Supprimer la source"
     },
     "hideSource": {
-      "title": "Masquer la source ?",
-      "message": "Les articles de <b>{{name}}</b> quittent le fil et les thèmes, <b>pour ce profil seulement</b>. Tu pourras la réafficher ici.",
-      "button": "Masquer la source"
+      "title": "Retirer la source ?",
+      "message": "Les articles de <b>{{name}}</b> quittent ton fil et tes thèmes. Tu pourras la reprendre dans le <i>Catalogue</i>.",
+      "button": "Retirer la source"
     },
     "hideSources": {
-      "title": "Masquer {{count}} sources ?",
-      "message": "Les articles de ces {{count}} sources quittent le fil et les thèmes, <b>pour ce profil seulement</b>. Tu pourras les réafficher ici, une par une.",
-      "button": "Masquer les {{count}} sources"
+      "title": "Retirer {{count}} sources ?",
+      "message": "Les articles de ces {{count}} sources quittent ton fil et tes thèmes. Tu pourras les reprendre dans le <i>Catalogue</i>.",
+      "button": "Retirer les {{count}} sources"
     },
     "clearTexts": {
       "title": "Libérer de l’espace ?",
@@ -2706,6 +2705,29 @@
       "offText": "Ton profil s’ouvrira de nouveau sans code depuis <i>Qui lit ?</i>, sur les appareils où un ado ou un enfant est connecté.",
       "off": "Désactiver",
       "hintAdvised": "Conseillé, pas encore choisi"
+    }
+  },
+  "catalogue": {
+    "title": "Catalogue",
+    "official": "Officielles",
+    "parts": "Sections",
+    "intro": "Les sources de ce thème sur le serveur, dans ta langue d’abord. Le bouton + en ajoute une à tes sources, le bouton − l’en retire.",
+    "introOfficial": "Les sources choisies avec Hodi, dans ta langue d’abord. Les sources de base sont déjà dans les tiennes ; le bouton + en ajoute d’autres.",
+    "search": "Chercher une source",
+    "searching": "Recherche",
+    "mine": "dans tes sources",
+    "add": "Ajouter {{name}} à tes sources",
+    "addShort": "Ajouter à tes sources",
+    "remove": "Retirer {{name}} de tes sources",
+    "removeShort": "Retirer de tes sources",
+    "openSite": "Ouvrir le site",
+    "added": "{{name}} ajoutée à tes sources",
+    "removed": "{{name}} retirée de tes sources",
+    "addFailed": "La source n’a pas pu être ajoutée. Réessaie dans un instant.",
+    "browse": "Parcourir le catalogue",
+    "empty": {
+      "title": "Aucune source",
+      "text": "Rien ne correspond à ta recherche."
     }
   }
 }

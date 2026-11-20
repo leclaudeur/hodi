@@ -3,6 +3,7 @@ import {
   SERVER_HREF,
   SETTINGS_SECTIONS,
   accountHref,
+  catalogueHref,
   articleHref,
   englishHash,
   parseRoute,
@@ -100,6 +101,12 @@ describe('hash routes', () => {
     expect(parseRoute('#/settings/account/sign-in')).toEqual({ name: 'account', part: 'sign-in' })
     expect(parseRoute('#/settings/stats')).toEqual({ name: 'account', part: 'stats' })
     expect(parseRoute('#/settings/ai')).toEqual({ name: 'account', part: 'ai' })
+  })
+
+  it('opens the catalogue on its Officielles or a topic', () => {
+    expect(parseRoute(catalogueHref())).toEqual({ name: 'catalogue', part: null })
+    expect(parseRoute(catalogueHref('official'))).toEqual({ name: 'catalogue', part: 'official' })
+    expect(parseRoute(catalogueHref('world'))).toEqual({ name: 'catalogue', part: 'world' })
   })
 
   it('links to English addresses only', () => {

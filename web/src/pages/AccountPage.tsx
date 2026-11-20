@@ -22,7 +22,7 @@ interface HeaderProps {
   signOut?: () => void
 }
 
-const Header = ({ back, signOut }: HeaderProps) => {
+export const Header = ({ back, signOut }: HeaderProps) => {
   const { t } = useTranslation()
   const phone = useIsPhone()
   return (

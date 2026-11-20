@@ -65,6 +65,10 @@ export interface SourceStatus {
   error: string | null
   // Added from a link by this profile; missing for the catalogue's own sources.
   addedBy?: number
+  // What the site says it is, read when it was added.
+  description?: string
+  // From sources.yml: the catalogue's Officielles.
+  official?: true
   // How many people have it in « Mes sources », once they are at least 10.
   readers?: number
 }

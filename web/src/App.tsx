@@ -19,6 +19,7 @@ import SignedOut from './app/SignedOut.tsx'
 import Tour from './app/Tour.tsx'
 import HomePage from './pages/HomePage.tsx'
 import AccountPage from './pages/AccountPage.tsx'
+import CataloguePage from './pages/CataloguePage.tsx'
 import NoHouseholdPage from './pages/NoHouseholdPage.tsx'
 import ProfilePicker from './pages/ProfilePicker.tsx'
 import TimeUpPage from './pages/TimeUpPage.tsx'
@@ -178,6 +179,9 @@ const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: S
 
   // Mon compte: a page of its own, as the legal pages.
   if (route.name === 'account') return <AccountPage inHousehold />
+
+  // The catalogue of the server's sources: a page of its own, as Mon compte.
+  if (route.name === 'catalogue') return <CataloguePage />
 
   // The server's admin space: its own layout, none of the app's.
   if (route.name === 'server')

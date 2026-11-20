@@ -60,14 +60,12 @@ export const filterSources = ({
   const matches: Record<SourceFilter, (source: SourceStatus) => boolean> = {
     all: () => true,
     low: source => lowOf(source.id) !== null,
-    error: source => sourceState(source) === 'error' && !hidden(source.id),
-    hidden: source => hidden(source.id)
+    error: source => sourceState(source) === 'error' && !hidden(source.id)
   }
   const counts = sources && {
     all: sources.length,
     low: sources.filter(matches.low).length,
-    error: sources.filter(matches.error).length,
-    hidden: sources.filter(matches.hidden).length
+    error: sources.filter(matches.error).length
   }
   const chosen = filter !== 'all' && counts?.[filter] === 0 ? 'all' : filter
   // The topics with at least one source, in the topics' order.
