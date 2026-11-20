@@ -184,6 +184,13 @@ export class UserAccountStore {
     if (on) this.#db.prepare('UPDATE profiles SET pin_version = pin_version + 1 WHERE user_id = ?').run(id)
   }
 
+  // The name and colour the account wears, for the profile it gets on joining; null before it ever had one.
+  identityOf(id: number): { name: string; color: string } | null {
+    const row = this.#db.prepare('SELECT name, color FROM users WHERE id = ?').get(id) as
+      { name: string | null; color: string | null } | undefined
+    return row?.name && row.color ? { name: row.name, color: row.color } : null
+  }
+
   linkProfile(id: number, profileId: number) {
     this.#db.prepare('UPDATE profiles SET user_id = ? WHERE id = ?').run(id, profileId)
   }
