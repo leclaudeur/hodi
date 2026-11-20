@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Source catalogue** Manga/Anime and Cyber & Cybersecurity themes with 13 French and English feeds.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My

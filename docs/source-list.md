@@ -4,7 +4,7 @@
 
 Every source in [`sources.yml`](../sources.yml), as [sources.md](sources.md) explains it:
 
-- **119** article sources in **22** topics
+- **132** article sources in **24** topics
 - **61** channels and podcasts on the _Videos_ page
 
 > [!NOTE]
@@ -46,6 +46,15 @@ Every source in [`sources.yml`](../sources.yml), as [sources.md](sources.md) exp
 - **The Verge** · [theverge.com](https://theverge.com/) · English
 - **Ars Technica** · [arstechnica.com](https://arstechnica.com/) · English
 
+### Cyber & Cybersecurity
+
+- **IT-Connect Sécurité** · [it-connect.fr](https://it-connect.fr/) · French
+- **ZATAZ** · [zataz.com](https://zataz.com/) · French
+- **CERT-FR** 🔗 · [cert.cyber.gouv.fr](https://cert.cyber.gouv.fr/) · French
+- **The Hacker News** 🔗 · [thehackernews.com](https://thehackernews.com/) · English
+- **BleepingComputer** · [bleepingcomputer.com](https://bleepingcomputer.com/) · English
+- **Krebs on Security** · [krebsonsecurity.com](https://krebsonsecurity.com/) · English
+
 ### 🔬 Science
 
 - **Les Débrouillards** 🧒 · [lesdebrouillards.com](https://lesdebrouillards.com/) · French
@@ -68,6 +77,16 @@ Every source in [`sources.yml`](../sources.yml), as [sources.md](sources.md) exp
 - **Den of Geek** · [denofgeek.com](https://denofgeek.com/) · English
 - **/Film** · [slashfilm.com](https://slashfilm.com/) · English
 - **CinemaBlend** · [cinemablend.com](https://cinemablend.com/) · English
+
+### Manga/Anime
+
+- **AnimOtaku** · [animotaku.fr](https://animotaku.fr/) · French
+- **Adala News** · [adala-news.fr](https://adala-news.fr/) · French
+- **Otaku Manga** · [otaku-manga.fr](https://otaku-manga.fr/) · French
+- **Nautiljon Actualités** 🔗 · [nautiljon.com](https://www.nautiljon.com/) · French
+- **Nautiljon Brèves** 🔗 · [nautiljon.com](https://www.nautiljon.com/) · French
+- **Anime News Network** · [animenewsnetwork.com](https://animenewsnetwork.com/) · English
+- **Anime Corner** · [animecorner.me](https://animecorner.me/) · English
 
 ### 🎮 Gaming
 

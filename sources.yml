@@ -179,6 +179,41 @@ topics:
         lang: en
         domains: [arstechnica.com]
 
+  - id: cybersecurity
+    label: { fr: Cyber & Cybersécurité, en: Cyber & Cybersecurity }
+    sources:
+      - id: it-connect-security
+        name: IT-Connect Sécurité
+        url: https://www.it-connect.fr/actualites/actu-securite/feed/
+        lang: fr
+        domains: [it-connect.fr]
+      - id: zataz
+        name: ZATAZ
+        url: https://www.zataz.com/feed/
+        lang: fr
+        domains: [zataz.com]
+      - id: cert-fr
+        name: CERT-FR
+        url: https://cert.cyber.gouv.fr/feed/
+        lang: fr
+        reader: false
+      - id: the-hacker-news
+        name: The Hacker News
+        url: https://feeds.feedburner.com/TheHackersNews
+        lang: en
+        domains: [thehackernews.com]
+        reader: false
+      - id: bleeping-computer
+        name: BleepingComputer
+        url: https://www.bleepingcomputer.com/feed/
+        lang: en
+        domains: [bleepingcomputer.com]
+      - id: krebs-on-security
+        name: Krebs on Security
+        url: https://krebsonsecurity.com/feed/
+        lang: en
+        domains: [krebsonsecurity.com]
+
   - id: science
     label: Science
     young: [teen, child]
@@ -273,7 +308,45 @@ topics:
         url: https://www.cinemablend.com/feeds/tag/movies
         lang: en
         domains: [cinemablend.com]
-      # Les Toiles Héroïques and CinéSéries refuse requests from the server; The Direct has no feed.
+
+  - id: manga-anime
+    label: Manga/Anime
+    sources:
+      - id: animotaku
+        name: AnimOtaku
+        url: https://animotaku.fr/feed/
+        lang: fr
+        domains: [animotaku.fr]
+      - id: adala-news
+        name: Adala News
+        url: https://adala-news.fr/feed/
+        lang: fr
+        domains: [adala-news.fr]
+      - id: otaku-manga
+        name: Otaku Manga
+        url: https://www.otaku-manga.fr/feed/
+        lang: fr
+        domains: [otaku-manga.fr]
+      - id: nautiljon-news
+        name: Nautiljon Actualités
+        url: https://www.nautiljon.com/actualite/rss.php
+        lang: fr
+        reader: false
+      - id: nautiljon-briefs
+        name: Nautiljon Brèves
+        url: https://www.nautiljon.com/breves/rss.php
+        lang: fr
+        reader: false
+      - id: anime-news-network
+        name: Anime News Network
+        url: https://www.animenewsnetwork.com/news/rss.xml
+        lang: en
+        domains: [animenewsnetwork.com]
+      - id: anime-corner
+        name: Anime Corner
+        url: https://animecorner.me/feed/
+        lang: en
+        domains: [animecorner.me]
 
   - id: gaming
     label: { fr: Jeux vidéo, en: Gaming }
