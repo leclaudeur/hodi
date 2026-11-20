@@ -14,6 +14,7 @@ import { sourceRequestMeRoutes, sourceRequestRoutes } from '../http/source-reque
 import { youngAccountRoutes } from '../http/young-account-routes.ts'
 import { youthGate, youthMeRoutes, youthProfileRoutes } from '../http/youth-routes.ts'
 import { textsIn } from '../i18n.ts'
+import { youngHereOf } from '../http/profile-guard.ts'
 import type { Wiring } from './wiring.ts'
 
 // Réglages › Compte et données.
@@ -78,6 +79,7 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
       pinThrottle,
       accounts,
       signedInHere: request => wiring.session.sessionsOf(request).map(session => session.account.id),
+      youngHere: request => youngHereOf(wiring.session.sessionsOf(request), accounts, wiring.options.devices),
       trust: wiring.trust ?? undefined,
       onCreate: wiring.profileHooks.created,
       onChange: profile => wiring.youthSources?.start(profile),

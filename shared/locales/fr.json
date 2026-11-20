@@ -2682,21 +2682,22 @@
       "failed": "Ça n’a pas marché. Réessaie."
     },
     "parentalCode": {
-      "section": "Sur leurs appareils",
+      "section": "Sur un appareil partagé",
       "title": "Code parental",
-      "hintOff": "Conseillé, pas encore choisi",
+      "hintOff": "Pas encore choisi",
       "hintOn": "Demandé pour ouvrir ton profil",
       "code": "Code",
       "codeValue": "6 chiffres",
       "changeLabel": "Changer ton code parental",
       "dialogTitle": "Ton code parental",
-      "dialogIntro": "Six chiffres, demandés pour ouvrir ton profil depuis <i>Qui lit ?</i> sur un appareil où un de tes enfants est connecté. Sur tes propres appareils, jamais. Oublié, ton mot de passe le remplace.",
+      "dialogIntro": "Six chiffres, demandés pour ouvrir ton profil depuis <i>Qui lit ?</i> sur un appareil où un ado ou un enfant est connecté. Sur tes propres appareils, jamais. Oublié, ton mot de passe le remplace.",
       "newCode": "Nouveau code",
       "onTitle": "Enregistrer ce code parental ?",
-      "onText": "Il sera demandé pour ouvrir ton profil depuis <i>Qui lit ?</i>, sur chaque appareil où un de tes enfants est connecté.",
+      "onText": "Il sera demandé pour ouvrir ton profil depuis <i>Qui lit ?</i>, sur chaque appareil où un ado ou un enfant est connecté.",
       "offTitle": "Désactiver ton code parental ?",
-      "offText": "Ton profil s’ouvrira de nouveau sans code depuis <i>Qui lit ?</i>, sur les appareils de tes enfants.",
-      "off": "Désactiver"
+      "offText": "Ton profil s’ouvrira de nouveau sans code depuis <i>Qui lit ?</i>, sur les appareils où un ado ou un enfant est connecté.",
+      "off": "Désactiver",
+      "hintAdvised": "Conseillé, pas encore choisi"
     }
   }
 }

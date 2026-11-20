@@ -1,5 +1,7 @@
 import { type Profile, isYoung } from '../db/profile-store.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
+import type { UserDeviceStore } from '../db/user-device-store.ts'
+import type { Session } from './account-session.ts'
 
 // The parent whose own Code parental opens their profile on this device.
 export interface CodeGuard {
@@ -35,4 +37,21 @@ export const lockOf = (guard: Guard, trusted: boolean): Lock | null => {
   if (guard === 'no_account') return guard
   if (isCodeGuard(guard)) return 'code'
   return trusted ? null : 'password'
+}
+
+// Whether a young account reads on this device, from the sessions signed in here. Once one has, the adults' sessions
+// here remember it: the teen signing out of the device, or signing it out from their phone, never opens their parents'
+// profiles without a code.
+export const youngHereOf = (
+  sessions: Session[],
+  accounts: UserAccountStore | undefined,
+  devices: UserDeviceStore | undefined
+) => {
+  if (!accounts) return false
+  const young = sessions.filter(session => accounts.young.isYoung(session.account.id))
+  if (young.length > 0)
+    for (const { account, device } of sessions)
+      if (device && !device.youngHere && !young.some(session => session.account.id === account.id))
+        devices?.markYoungHere(account.id, device.id)
+  return young.length > 0 || sessions.some(session => session.device?.youngHere === true)
 }

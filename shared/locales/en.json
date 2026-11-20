@@ -2682,21 +2682,22 @@
       "failed": "That didn’t work. Try again."
     },
     "parentalCode": {
-      "section": "On their devices",
+      "section": "On a shared device",
       "title": "Parental code",
-      "hintOff": "Advised, not chosen yet",
+      "hintOff": "Not chosen yet",
       "hintOn": "Asked to open your profile",
       "code": "Code",
       "codeValue": "6 digits",
       "changeLabel": "Change your parental code",
       "dialogTitle": "Your parental code",
-      "dialogIntro": "Six digits, asked to open your profile from <i>Who’s reading?</i> on a device where one of your children is signed in. Never on your own devices. Forgotten, your password stands in for it.",
+      "dialogIntro": "Six digits, asked to open your profile from <i>Who’s reading?</i> on a device where a teen or a child is signed in. Never on your own devices. Forgotten, your password stands in for it.",
       "newCode": "New code",
       "onTitle": "Save this parental code?",
-      "onText": "It will be asked to open your profile from <i>Who’s reading?</i>, on every device where one of your children is signed in.",
+      "onText": "It will be asked to open your profile from <i>Who’s reading?</i>, on every device where a teen or a child is signed in.",
       "offTitle": "Turn off your parental code?",
-      "offText": "Your profile will open again without a code from <i>Who’s reading?</i>, on your children’s devices.",
-      "off": "Turn off"
+      "offText": "Your profile will open again without a code from <i>Who’s reading?</i>, on the devices where a teen or a child is signed in.",
+      "off": "Turn off",
+      "hintAdvised": "Advised, not chosen yet"
     }
   }
 }

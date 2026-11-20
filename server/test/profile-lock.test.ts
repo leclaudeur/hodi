@@ -186,6 +186,14 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     assert.equal(await chosen(after_(tablet, opened)), true)
   })
 
+  it('keeps asking on the tablet once the teen signs out of it', async () => {
+    const asMax = after_(tablet, await call('PUT', '/profiles/current', tablet, { id: maxId }))
+    const left = after_(asMax, await call('POST', '/logout', asMax))
+    assert.deepEqual(await locks(left), { Admin: 'code', Sophie: 'code', Max: null })
+    const free = await call('PUT', '/profiles/current', left, { id: sophieId })
+    assert.deepEqual([free.status, await free.json()], [403, { error: 'wrong_code' }])
+  })
+
   it('stops guessing the code after a few tries, on that device only', async () => {
     // The wrong code and password above counted: a new window.
     clock += 16 * 60_000
@@ -336,8 +344,8 @@ describe('the accounts from before « Profil privé »', () => {
   })
 })
 
-describe('the household’s Code parental from before each parent had theirs', () => {
-  it('becomes the code of every parent in the household, never of an adult without a child', () => {
+describe('the household’s Code parental from before each adult had theirs', () => {
+  it('becomes the code of every adult in the household, never of a young one', () => {
     const db = new DatabaseSync(':memory:')
     migrate(db, versionBefore('ADD COLUMN parental_code_hash'))
     db.exec(`
@@ -355,7 +363,7 @@ describe('the household’s Code parental from before each parent had theirs', (
       codes.map(row => ({ ...row })),
       [
         { id: 10, code: 'old-code' },
-        { id: 11, code: null },
+        { id: 11, code: 'old-code' },
         { id: 12, code: null }
       ]
     )

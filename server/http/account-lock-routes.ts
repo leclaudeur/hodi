@@ -38,9 +38,10 @@ export const mountLockRoutes = (
   })
 }
 
-// Mon compte › Mes enfants › Code parental: six digits a parent's profile asks for, on a device where one of the young
-// accounts is signed in. A forgotten code is never shown again: the parent types a new one, with their password (and
-// the app's code), as a profile left open on a shared tablet does not prove who changes it.
+// Mon compte › Mes enfants › Code parental: six digits an adult's profile asks for, on a device where a teen or a child
+// is signed in. Any adult may set one, not only a parent: a grandparent's profile on the teen's tablet keeps its
+// Enregistrés and Historique to itself too. A forgotten code is never shown again: the adult types a new one, with
+// their password (and the app's code), as a profile left open on a shared tablet does not prove who changes it.
 export const mountParentalCodeRoutes = (
   router: express.Router,
   { accounts, profileCookieFor }: AccountRoutesOptions,
@@ -71,11 +72,6 @@ export const mountParentalCodeRoutes = (
     }
     const session = await proven(request, response)
     if (!session) return
-    // Only a parent's profile is ever asked for it.
-    if (accounts.young.childrenOf(session.account.id).length === 0) {
-      response.status(403).json({ error: 'no_children' })
-      return
-    }
     accounts.setParentalCode(session.account.id, await hashPassword(code))
     done(response, session)
   })

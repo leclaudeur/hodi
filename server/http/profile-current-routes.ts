@@ -24,6 +24,8 @@ export interface CurrentRoutesOptions {
   signedInHere?: (request: express.Request) => number[]
   // « Ne plus demander sur cet appareil ».
   trust?: TrustedDevices
+  // A teen or a child reads on this device, or did (youngHereOf): the adults' Codes parentaux are asked here.
+  youngHere?: (request: express.Request) => boolean
 }
 
 // « Qui lit ? » on this device: the profiles of the accounts signed in here, and every young profile.
@@ -40,15 +42,11 @@ export const isHere = (
 // The device's account, when one is signed in here.
 export const deviceAccountOf = (response: express.Response) => response.locals.accountId as number | undefined
 
-// A young account signed in on this device: the parents' Codes parentaux are asked here.
-export const youngSignedInHere = (accounts: UserAccountStore | undefined, signedIn: number[]) =>
-  accounts !== undefined && signedIn.some(id => accounts.young.isYoung(id))
-
-// What opens a profile on the device that sent the request, with the parents' codes as they are now.
+// What opens a profile on the device that sent the request, with the adults' codes as they are now.
 export const guardFor =
-  ({ accounts, signedInHere }: Pick<CurrentRoutesOptions, 'accounts' | 'signedInHere'>) =>
+  ({ accounts, youngHere }: Pick<CurrentRoutesOptions, 'accounts' | 'youngHere'>) =>
   (profile: Profile, request: express.Request) =>
-    guardOf(profile, accounts, youngSignedInHere(accounts, signedInHere?.(request) ?? []))
+    guardOf(profile, accounts, youngHere?.(request) ?? false)
 
 // Wrong passwords and codes count per account (or household) and per device: a child guessing on its tablet blocks
 // only that one there, never the parents' own devices. All devices together stop far later, which still caps a guess

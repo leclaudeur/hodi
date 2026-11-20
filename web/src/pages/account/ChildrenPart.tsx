@@ -65,8 +65,8 @@ interface ChildrenPartProps {
   onAccount: (next: AccountView) => void
 }
 
-// Mon compte › Mes enfants: the teens' and children's accounts this parent runs, a new one, and once there is one,
-// the parent's own Code parental.
+// Mon compte › Mes enfants: the teens' and children's accounts this parent runs, a new one, and the adult's own Code
+// parental.
 const ChildrenPart = ({ account, onAccount }: ChildrenPartProps) => {
   const { t } = useTranslation()
   const { children, setChildren, invitations, setInvitations, failed } = useChildren()
@@ -98,7 +98,7 @@ const ChildrenPart = ({ account, onAccount }: ChildrenPartProps) => {
           {t('children.create.title')}
         </Button>
       </div>
-      {children.length > 0 && <ParentalCodeCard account={account} onAccount={onAccount} />}
+      <ParentalCodeCard account={account} onAccount={onAccount} parent={children.length > 0} />
       <CreateChildDialog
         open={creating}
         taken={children.map(child => child.color)}

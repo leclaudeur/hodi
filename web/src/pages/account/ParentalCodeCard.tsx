@@ -64,14 +64,21 @@ const CodeDialog = ({ onClose, onSaved }: { onClose: () => void; onSaved: (next:
   )
 }
 
+const hintKey = (on: boolean, parent: boolean) => {
+  if (on) return 'children.parentalCode.hintOn'
+  return parent ? 'children.parentalCode.hintAdvised' : 'children.parentalCode.hintOff'
+}
+
 interface ParentalCodeCardProps {
   account: AccountView
   onAccount: (next: AccountView) => void
+  // A parent is advised to choose one; any other adult may.
+  parent: boolean
 }
 
-// Mes enfants › Code parental, the parent's own: once on, their profile asks for it in « Qui lit ? » on a device where
-// one of the young accounts is signed in. Off, its row says it is advised, until the parent chooses one.
-const ParentalCodeCard = ({ account, onAccount }: ParentalCodeCardProps) => {
+// Mes enfants › Code parental, the adult's own: once on, their profile asks for it in « Qui lit ? » on a device where a
+// teen or a child is signed in. Off, a parent's row says it is advised, until they choose one.
+const ParentalCodeCard = ({ account, onAccount, parent }: ParentalCodeCardProps) => {
   const { t } = useTranslation()
   const on = account.parentalCode ?? false
   const [choosing, setChoosing] = useState(false)
@@ -79,10 +86,7 @@ const ParentalCodeCard = ({ account, onAccount }: ParentalCodeCardProps) => {
     <>
       <h2 className={styles.label}>{t('children.parentalCode.section')}</h2>
       <div className={styles.card}>
-        <SettingRow
-          label={t('children.parentalCode.title')}
-          hint={t(on ? 'children.parentalCode.hintOn' : 'children.parentalCode.hintOff')}
-        >
+        <SettingRow label={t('children.parentalCode.title')} hint={t(hintKey(on, parent))}>
           <Toggle
             label={t('children.parentalCode.title')}
             checked={on}

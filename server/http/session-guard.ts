@@ -11,8 +11,8 @@ import type { UserDeviceStore } from '../db/user-device-store.ts'
 import type { accountSession } from './account-session.ts'
 import type { Presence } from './presence.ts'
 import type { profileDeviceSession } from './profile-device-session.ts'
-import { isHere, youngSignedInHere } from './profile-current-routes.ts'
-import { guardOf } from './profile-guard.ts'
+import { isHere } from './profile-current-routes.ts'
+import { guardOf, youngHereOf } from './profile-guard.ts'
 
 export interface SessionGuardOptions {
   accounts?: UserAccountStore
@@ -219,10 +219,11 @@ const noHouseholdLocals = (response: express.Response) => {
 const profileOfRequest = (
   {
     accounts,
+    devices,
     profiles,
     sessionsOf,
     secret
-  }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'sessionsOf' | 'secret'>,
+  }: Pick<SessionGuardOptions, 'accounts' | 'devices' | 'profiles' | 'sessionsOf' | 'secret'>,
   request: express.Request,
   linkedId: number | undefined
 ) => {
@@ -232,8 +233,9 @@ const profileOfRequest = (
     id => profiles?.lock(id)?.version ?? 0
   )
   const known = profiles?.list() ?? []
-  const signedIn = sessionsOf ? sessionsOf(request).map(session => session.account.id) : []
-  const youngHere = youngSignedInHere(accounts, signedIn)
+  const sessions = sessionsOf ? sessionsOf(request) : []
+  const signedIn = sessions.map(session => session.account.id)
+  const youngHere = youngHereOf(sessions, accounts, devices)
   const here = (candidate: Profile) =>
     isHere({ accounts, signedInHere: sessionsOf && (() => signedIn) }, candidate, request)
   // An adult whose account is not signed in here never opens on this device.
