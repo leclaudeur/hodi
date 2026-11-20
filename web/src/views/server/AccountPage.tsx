@@ -15,16 +15,12 @@ import SettingRow from '../settings/SettingRow.tsx'
 import styles from '../settings/Settings.module.css'
 import { dateOf, usePeople } from './server-people.ts'
 
-// What the account is: its e-mail, household, role, last visit, devices and age.
+// What the account is: its e-mail, role, last visit, devices and age.
 const AccountFacts = ({ account, role }: { account: ServerAccount; role: string }) => {
   const { t } = useTranslation()
   return (
     <div className={styles.card}>
       <SettingRow label={t('server.people.account.email')} value={account.email} />
-      <SettingRow
-        label={t('server.people.account.household')}
-        value={account.household?.name ?? t('server.people.noHousehold')}
-      />
       <SettingRow
         label={t('server.people.account.role')}
         value={account.serverAdmin ? `${role} · ${t('server.people.account.serverAdmin')}` : role}
@@ -51,14 +47,9 @@ const confirmDelete = (account: ServerAccount, t: TFunction) =>
     title: t('server.people.account.confirmDelete.title'),
     message: (
       <RichText
-        i18nKey={
-          account.profile?.role === 'admin'
-            ? 'server.people.account.confirmDelete.messageAdmin'
-            : 'server.people.account.confirmDelete.message'
-        }
+        i18nKey="server.people.account.confirmDelete.message"
         values={{
           email: account.email,
-          household: account.household?.name ?? '',
           days: t('count.day', { count: contentDays().backupCopies })
         }}
       />
@@ -106,7 +97,7 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
       onConfirm: async proof => setMade(await createAccountCode(account.id, proof))
     })
 
-  const role = t(`server.people.account.roles.${account.profile?.role ?? 'none'}`)
+  const role = t(account.profile ? 'server.people.account.roles.member' : 'server.people.account.roles.none')
   return (
     <SectionPage
       title={account.profile?.name ?? account.email}

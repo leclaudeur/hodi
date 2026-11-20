@@ -109,10 +109,10 @@ const openFromSearch = async (device: Page, word: string, title: string) => {
   await device.getByRole('region', { name: 'Recherche' }).getByRole('link', { name: title }).click()
 }
 
-test('sets up the household in the browser', async () => {
+test('sets up the server in the browser', async () => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Installer Hodi' }).click()
-  // The server admin's own account first, then the household, which has no password of its own.
+  // The server admin's own account first, then its profile.
   await page.getByRole('textbox', { name: 'E-mail' }).fill(EMAIL)
   await page.getByLabel('Mot de passe', { exact: true }).fill(PASSWORD)
   await page.getByLabel('Confirme le mot de passe').fill(PASSWORD)
@@ -129,11 +129,9 @@ test('sets up the household in the browser', async () => {
   await expect(keep).toBeDisabled()
   await page.getByRole('button', { name: 'Télécharger' }).click()
   await keep.click()
-  // The server is set up: its household comes next, or later from the server's space.
+  // The server is set up: the admin's profile comes next, or later from the server's space. No household to name.
   await expect(page.getByRole('heading', { name: 'Le serveur est prêt' })).toBeVisible()
-  await page.getByRole('button', { name: 'Créer mon foyer' }).click()
-  await page.getByRole('textbox', { name: 'Nom du foyer' }).fill('Famille Test')
-  await page.getByRole('button', { name: 'Continuer' }).click()
+  await page.getByRole('button', { name: 'Créer mon profil' }).click()
   await page.getByPlaceholder('Ex. Léa').fill('Alex')
   await page.getByRole('button', { name: 'Continuer' }).click()
   // Never a real AI key in a test.
@@ -183,19 +181,16 @@ test('finds articles by a word, accents aside', async () => {
   await expect(results.getByText('La bourse de Paris recule')).toHaveCount(0)
 })
 
-test('invites an adult, who joins with the code and makes their own account', async ({ browser }) => {
-  await page.goto('/#/settings/profiles')
-  await page.getByRole('button', { name: 'Inviter un adulte' }).click()
-  const invite = page.getByRole('dialog', { name: 'Inviter un adulte' })
-  // A name to know the invitation by; without Serveur › E-mail, the code shows to be handed over.
-  await invite.getByRole('textbox', { name: 'Nom' }).fill('Sam')
-  await invite.getByRole('button', { name: 'Créer le code' }).click()
+test('invites someone from Serveur › Comptes, who joins with the code and makes their own account', async ({
+  browser
+}) => {
+  await page.goto('/#/server/accounts')
+  await page.getByRole('button', { name: 'Inviter quelqu’un' }).click()
+  const invite = page.getByRole('dialog', { name: 'Inviter quelqu’un' })
   await expect(invite.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
   const code = await invite.getByRole('textbox', { name: 'Code' }).inputValue()
   expect(code).toMatch(/^[A-HJKMNP-Z2-9]{8}$/)
   await invite.getByRole('button', { name: 'Terminé' }).click()
-  await expect(page.getByRole('heading', { name: 'Personnes invitées' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Annuler l’invitation de Sam' })).toBeVisible()
 
   // Sam's own device: « J'ai un code » on the Connexion page, then Sam's account and profile.
   const device = await browser.newPage()
@@ -204,7 +199,7 @@ test('invites an adult, who joins with the code and makes their own account', as
   await device.getByRole('textbox', { name: 'Code' }).fill('ZZZZ2222')
   await expect(device.getByText('Ce code ne marche pas')).toBeVisible()
   await device.getByRole('textbox', { name: 'Code' }).fill(code)
-  await expect(device.getByRole('heading', { name: 'Rejoins Famille Test' })).toBeVisible()
+  await expect(device.getByRole('heading', { name: 'Bienvenue sur Hodi' })).toBeVisible()
   await expect(device.getByText('Alex t’invite.')).toBeVisible()
   await device.getByRole('textbox', { name: 'E-mail' }).fill('sam@example.com')
   await device.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(PASSWORD)
@@ -219,10 +214,9 @@ test('invites an adult, who joins with the code and makes their own account', as
   await skipTour(device)
   await expect(device.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
   await device.close()
-  // The code used, Sam is with the adults and no longer invited.
+  // The code used, Sam's account is on the server.
   await page.reload()
-  await expect(page.getByText('Sam', { exact: true })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Personnes invitées' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: /sam@example\.com/ })).toBeVisible()
 })
 
 test('gives Sam, who forgot their password, a new one with a code from the server’s admin only', async ({
@@ -247,14 +241,11 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   const waiting = page.getByRole('main').locator('h2:text-is("À traiter") + ul')
   await expect(waiting.getByText('Sam demande un code')).toBeVisible()
 
-  // Sam's password is Sam's: the household's admin has no way to give a new one in Profils.
+  // Sam's password is Sam's: Réglages › Ados et enfants lists the young profiles only, never another adult.
   await page.goto('/#/settings/profiles')
   await page.reload()
-  await page.getByRole('button', { name: 'Modifier Sam' }).click()
-  const edit = page.getByRole('dialog', { name: 'Modifier le profil' })
-  await expect(edit.getByRole('button', { name: 'Passer le rôle d’admin' })).toBeVisible()
-  await expect(edit.getByRole('button', { name: 'Nouveau mot de passe' })).toHaveCount(0)
-  await page.keyboard.press('Escape')
+  await expect(page.getByRole('heading', { name: 'Ados et enfants' }).first()).toBeVisible()
+  await expect(page.getByRole('main').getByText('Sam', { exact: true })).toHaveCount(0)
 
   // The server's admin opens the request, then makes the code: their own password first, and a wrong one stays in
   // the question.
@@ -311,8 +302,6 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
 
 test('creates a teen profile', async () => {
   await page.goto('/#/settings/profiles')
-  // Sam joined from another device: the list shows it once loaded again.
-  await page.reload()
   const dialog = page.getByRole('dialog', { name: 'Nouveau profil' })
   await page.getByRole('button', { name: 'Ajouter un profil' }).click()
   await dialog.getByRole('textbox', { name: 'Prénom' }).fill('Zoé')
@@ -320,9 +309,9 @@ test('creates a teen profile', async () => {
   await dialog.getByRole('button', { name: 'Créer le profil' }).click()
   await expect(dialog).toHaveCount(0)
 
-  // Each kind under its own title: Adultes, then Ados.
+  // Each kind under its own title; the adults are accounts, not in this list.
   const group = (title: string) => page.getByRole('main').locator(`h2:text-is("${title}") + ul`)
-  await expect(group('Adultes').getByRole('listitem').filter({ hasText: 'Sam' })).toContainText('Son propre compte')
+  await expect(page.getByRole('main').locator('h2:text-is("Adultes")')).toHaveCount(0)
   await expect(group('Ados').getByRole('listitem').filter({ hasText: 'Zoé' })).toHaveCount(1)
 })
 
@@ -380,8 +369,8 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await question.getByRole('button', { name: 'Rendre privé' }).click()
   await expect(own.getByRole('switch', { name: 'Profil privé' })).toHaveAttribute('aria-checked', 'true')
 
-  // Alex sets the household's Code parental.
-  await page.goto('/#/settings/household')
+  // Alex, the server's admin, sets the Code parental in Réglages › Ados et enfants.
+  await page.goto('/#/settings/profiles')
   await page.getByRole('switch', { name: 'Code parental' }).click()
   const choose = page.getByRole('dialog', { name: 'Code parental' })
   await choose.getByLabel('Nouveau code').fill(PARENTAL_CODE)
@@ -531,80 +520,19 @@ test('lists the account’s devices in Mon compte and signs one out', async ({ b
   await other.close()
 })
 
-test('leaves the household from Mon compte, keeps the account alone, and joins again with a code', async ({
-  browser
-}) => {
-  const NOE = { email: 'noe@example.com', password: 'la phrase de passe de Noé' }
-  // Alex, the household's admin, sees the household in Mon compte › Données and could leave it: Sam is another adult.
+test('shows no household: nothing to leave, no Foyer in Réglages, no Foyers in Serveur', async () => {
   await page.goto('/#/account/data')
-  const household = page.getByRole('main')
-  await expect(household.getByText('Admin du foyer')).toBeVisible()
-  await expect(household.getByRole('button', { name: 'Quitter' })).toBeVisible()
-
-  const inviteCode = async (name: string) => {
-    await page.goto('/#/settings/profiles')
-    await page.getByRole('button', { name: 'Inviter un adulte' }).click()
-    const invite = page.getByRole('dialog', { name: 'Inviter un adulte' })
-    await invite.getByRole('textbox', { name: 'Nom' }).fill(name)
-    await invite.getByRole('button', { name: 'Créer le code' }).click()
-    // The code comes with its QR.
-    await expect(invite.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
-    const code = await invite.getByRole('textbox', { name: 'Code' }).inputValue()
-    await invite.getByRole('button', { name: 'Terminé' }).click()
-    return code
-  }
-  const enterCode = async (device: Page, code: string) => {
-    await device.goto('/')
-    await device.getByRole('link', { name: 'J’ai un code' }).click()
-    await device.getByRole('textbox', { name: 'Code' }).fill(code)
-    await expect(device.getByRole('heading', { name: 'Rejoins Famille Test' })).toBeVisible()
-  }
-
-  // Noé joins with a new account, then leaves from Mon compte with the password.
-  const noe = await browser.newPage()
-  await enterCode(noe, await inviteCode('Noé'))
-  await noe.getByRole('textbox', { name: 'E-mail' }).fill(NOE.email)
-  await noe.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(NOE.password)
-  await noe.getByRole('textbox', { name: 'Confirme le mot de passe' }).fill(NOE.password)
-  await noe.getByRole('checkbox', { name: 'J’ai au moins 13 ans' }).click()
-  await noe.getByRole('button', { name: 'Continuer' }).click()
-  await noe.getByRole('textbox', { name: 'Prénom' }).fill('Noé')
-  await noe.getByRole('button', { name: 'Créer mon compte' }).click()
-  await skipTour(noe)
-  await noe.goto('/#/account/data')
-  await expect(noe.getByRole('main').getByText('Membre du foyer')).toBeVisible()
-  await noe.getByRole('main').getByRole('button', { name: 'Quitter' }).click()
-  const leave = noe.getByRole('dialog', { name: 'Quitter Famille Test ?' })
-  await expect(leave.getByText(NOE.email)).toBeVisible()
-  await leave.getByRole('textbox', { name: 'Mon mot de passe' }).fill(NOE.password)
-  await leave.getByRole('button', { name: 'Quitter le foyer' }).click()
-
-  // In no household: the card, then its own account alone, nothing of the household it left.
-  await expect(noe.getByRole('heading', { name: 'Tu n’as plus de foyer' })).toBeVisible()
-  await expect(noe.getByText(NOE.email)).toBeVisible()
-  await noe.getByRole('link', { name: 'Mon compte' }).click()
-  await expect(noe.getByRole('heading', { name: 'Connexion', level: 1 })).toBeVisible()
-  await expect(noe.getByText('Cet appareil')).toBeVisible()
-  await expect(noe.getByRole('button', { name: 'Quitter' })).toHaveCount(0)
-  await noe.getByRole('link', { name: 'Retour' }).click()
-  await expect(noe.getByRole('heading', { name: 'Tu n’as plus de foyer' })).toBeVisible()
-  // Noé's profile left the household's list. The page still shows what it loaded with the invitation waiting: reload it.
-  await page.goto('/#/settings/profiles')
-  await page.reload()
-  await expect(page.getByRole('main').getByText('Noé')).toHaveCount(0)
-
-  // Signed out, Noé joins again with a new code and the same account.
-  await noe.getByRole('button', { name: 'Se déconnecter' }).click()
-  await expect(noe.getByRole('textbox', { name: 'E-mail' })).toBeVisible()
-  await enterCode(noe, await inviteCode('Noé'))
-  await noe.getByRole('link', { name: 'J’ai déjà un compte' }).click()
-  await noe.getByRole('textbox', { name: 'E-mail' }).fill(NOE.email)
-  await noe.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(NOE.password)
-  // The account keeps its name, colour and photo: no "who are you" step this time.
-  await noe.getByRole('button', { name: 'Continuer' }).click()
-  await skipTour(noe)
-  await expect(noe.getByRole('button', { name: 'Noé, mon profil' })).toBeVisible()
-  await noe.close()
+  await expect(page.getByRole('heading', { name: 'Données', level: 1 })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('button', { name: 'Quitter' })).toHaveCount(0)
+  await page.goto('/#/settings')
+  await expect(page.getByRole('link', { name: /Ados et enfants/ }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Foyer/ })).toHaveCount(0)
+  // The old addresses open where their settings went: Serveur › Général, Serveur › Comptes.
+  await page.goto('/#/settings/household')
+  await expect(page.getByRole('heading', { name: 'Pour tous les comptes' })).toBeVisible()
+  await page.goto('/#/server/households')
+  await expect(page.getByRole('button', { name: 'Inviter quelqu’un' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Foyers/ })).toHaveCount(0)
 })
 
 test('reads on a phone', async ({ browser }) => {
@@ -617,7 +545,7 @@ test('reads on a phone', async ({ browser }) => {
 test('shares an article with and without a word, and the sender sees the reactions', async ({ browser }) => {
   const send = async (word: string, title: string, note: string) => {
     await openFromSearch(page, word, title)
-    await page.getByRole('button', { name: 'Envoyer à un profil du foyer' }).click()
+    await page.getByRole('button', { name: 'Envoyer à quelqu’un' }).click()
     const dialog = page.getByRole('dialog', { name: 'Envoyer à…' })
     await dialog.getByRole('checkbox', { name: 'Sam' }).check()
     if (note) await dialog.getByRole('textbox', { name: 'Un mot avec l’article' }).fill(note)

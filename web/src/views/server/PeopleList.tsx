@@ -1,11 +1,12 @@
 import Chip from '../../ui/Chip.tsx'
-import { AlertCircle, ChevronRight, Home, Search, SearchX } from 'lucide-react'
+import { AlertCircle, ChevronRight, Home, Search, SearchX, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import type { ServerAccount, ServerHousehold } from '../../api.ts'
+import { type ServerAccount, type ServerHousehold, createHouseholdCode } from '../../api.ts'
 import { SERVER_HREF, serverHref } from '../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../lib/use-media.ts'
+import Button from '../../ui/Button.tsx'
 import EmptyState from '../../ui/EmptyState.tsx'
 import Notice from '../../ui/Notice.tsx'
 import TextField from '../../ui/TextField.tsx'
@@ -13,6 +14,7 @@ import ListColumn from '../ListColumn.tsx'
 import toolStyles from '../ListTools.module.css'
 import MobilePage from '../MobilePage.tsx'
 import navStyles from '../settings/SettingsNav.module.css'
+import CodeDialog from '../profiles/CodeDialog.tsx'
 import NoHousehold from './NoHousehold.tsx'
 import serverStyles from './Server.module.css'
 import { type People, type PeopleKind, usePeople } from './server-people.ts'
@@ -101,8 +103,8 @@ const accountRow = (account: ServerAccount, t: TFunction): ListRow => ({
       ? null
       : `/api/server/accounts/photos/${account.profile.id}?v=${account.profile.photoVersion}`,
   name: account.email,
-  hint: account.household?.name ?? t('server.people.noHousehold'),
-  search: `${account.email} ${account.profile?.name ?? ''} ${account.household?.name ?? ''}`,
+  hint: account.profile?.name ?? t('server.people.noProfile'),
+  search: `${account.email} ${account.profile?.name ?? ''}`,
   ...(account.codeAskedAt ? { flag: t('server.people.account.codeAsked') } : {})
 })
 
@@ -149,6 +151,29 @@ const OneNotice = () => {
   )
 }
 
+// Under the accounts, full width: a code for someone to make an account on this server.
+const InviteButton = ({ loaded }: { loaded: People }) => {
+  const { t } = useTranslation()
+  const [inviting, setInviting] = useState(false)
+  // Everyone reads in the server's one space; it holds as many profiles as a household may.
+  const space = loaded.households[0]
+  if (!space) return null
+  const full = space.adults + space.young >= loaded.maxProfiles
+  return (
+    <div className={serverStyles.invite}>
+      <Button icon={UserPlus} wide disabled={full} onClick={() => setInviting(true)}>
+        {t('profiles.code.invite')}
+      </Button>
+      {full && <p className={serverStyles.inviteHint}>{t('server.people.household.fullHint')}</p>}
+      <CodeDialog
+        target={inviting ? null : undefined}
+        onClose={() => setInviting(false)}
+        make={() => createHouseholdCode(space.id)}
+      />
+    </div>
+  )
+}
+
 // What the list shows in place of its rows, if anything.
 interface ListState {
   failed: boolean
@@ -176,7 +201,7 @@ const listOf = ({ failed, none, empty, kind, query }: ListState, t: TFunction) =
   return null
 }
 
-// Foyers or Comptes: the app's list column on a computer, its list page on a phone, with its search on top as
+// Comptes (or Foyers, from an older link): the app's list column on a computer, its list page on a phone, with its search on top as
 // Enregistrés and Historique have theirs.
 const PeopleList = ({ kind, active }: { kind: PeopleKind; active?: string }) => {
   const { t } = useTranslation()
@@ -207,6 +232,7 @@ const PeopleList = ({ kind, active }: { kind: PeopleKind; active?: string }) => 
     <>
       {one && <OneNotice />}
       <Rows kind={kind} rows={rows} active={active} />
+      {kind === 'accounts' && loaded && !needle && <InviteButton loaded={loaded} />}
     </>
   )
 

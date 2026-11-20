@@ -8,7 +8,6 @@ import AccountStep from './AccountStep.tsx'
 import AiStep from './AiStep.tsx'
 import CodeStep from './CodeStep.tsx'
 import DoneStep from './DoneStep.tsx'
-import HouseholdStep from './HouseholdStep.tsx'
 import PluginsFoundStep from './PluginsFoundStep.tsx'
 import ProfileStep from './ProfileStep.tsx'
 import ReadyStep from './ReadyStep.tsx'
@@ -129,7 +128,7 @@ const accountContent = (s: Setup): ReactNode | null => {
   return null
 }
 
-// The household's name and its admin profile.
+// The admin's profile, now or after Serveur: the server's one space is made with it.
 const householdContent = (s: Setup): ReactNode => {
   const { flow, answers } = s
   const extra = s.plugins.pluginSteps.length
@@ -145,24 +144,12 @@ const householdContent = (s: Setup): ReactNode => {
       />
     )
   }
-  if (flow.step === 2) {
-    return (
-      <HouseholdStep
-        step={2 + extra}
-        total={total}
-        name={answers.name}
-        onName={answers.setName}
-        onNext={() => flow.go(3)}
-        onBack={() => flow.go(READY_STEP)}
-      />
-    )
-  }
   return (
     <ProfileStep
-      step={3 + extra}
+      step={2 + extra}
       total={total}
       profile={answers.profile}
-      onBack={() => flow.go(2)}
+      onBack={() => flow.go(READY_STEP)}
       onSave={async next => {
         // A photo left unchanged keeps the one already chosen.
         const photo = next.photo === undefined ? (answers.profile?.photo ?? null) : next.photo
@@ -182,7 +169,7 @@ const lastContent = (s: Setup): ReactNode => {
   if (flow.step === 4) {
     return (
       <AiStep
-        step={4 + extra}
+        step={3 + extra}
         total={total}
         providers={s.setup.providers}
         ai={answers.ai}
@@ -202,12 +189,11 @@ const lastContent = (s: Setup): ReactNode => {
   }
   return (
     <DoneStep
-      step={5 + extra}
+      step={4 + extra}
       total={total}
       timeZone={answers.timeZone}
       onTimeZone={answers.setTimeZone}
       email={answers.email}
-      household={answers.name.trim()}
       profile={answers.profile?.name ?? ''}
       provider={provider}
       busy={flow.busy}

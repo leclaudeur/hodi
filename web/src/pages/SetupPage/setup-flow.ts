@@ -8,20 +8,20 @@ import { deviceCountry, deviceTimeZone } from '../../lib/regions.ts'
 import type { ProfileDraft } from '../../views/profiles/ProfileForm.tsx'
 import { NO_AI } from './AiStep.tsx'
 
-// 0: welcome (and the code, away from the server); 1 to 5: the server admin's account, the household, its admin
-// profile, AI, recap. 6: « Le serveur est prêt », between the account and the household, with no number: the
-// household now, or the server's space first. 7: « Plugins trouvés », right after the account when plugins were put
-// in data/plugins before the first start, with no number either. The account is the same start with or without
-// plugins. 8: the steps of the plugins turned on there, numbered after the account: the household's steps come after
-// them in the count.
+// 0: welcome (and the code, away from the server); 1, then 3 to 5: the server admin's account, its profile, AI, recap
+// (2, where the household was named, opens the profile). 6: « Le serveur est prêt », between the account and the
+// profile, with no number: the profile now, or the server's space first. 7: « Plugins trouvés », right after the
+// account when plugins were put in data/plugins before the first start, with no number either. The account is the
+// same start with or without plugins. 8: the steps of the plugins turned on there, numbered after the account: the
+// profile's steps come after them in the count.
 export type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
-export const STEPS = 5
+export const STEPS = 4
 export const HOUSEHOLD_STEP = 2
 // The first step once the account exists.
 export const READY_STEP = 6
 export const PLUGINS_STEP = 7
 export const PLUGIN_STEPS = 8
-// « Créer mon foyer » from Serveur › Foyers: straight to the household's name.
+// « Créer mon profil » from Serveur: straight to the profile.
 export const HOUSEHOLD_LINK = '#/household'
 
 export type NeededSetup = Extract<SetupState, { needed: true }>

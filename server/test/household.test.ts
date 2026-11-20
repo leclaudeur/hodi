@@ -800,3 +800,20 @@ describe('the account and its data', () => {
     assert.equal(install.accounts.any(), false)
   })
 })
+
+describe('the server’s one space', () => {
+  let install: Awaited<ReturnType<typeof startInstall>>
+  before(async () => {
+    install = await startInstall()
+    ;({ baseUrl, household, profiles } = install)
+  })
+  after(() => install.close())
+
+  it('needs no name from the first-run screens', async () => {
+    const admin = cookiesFrom(await post('/setup/account', ACCOUNT))
+    const done = await post('/setup', { ...SETUP, name: undefined }, { cookie: admin })
+    assert.equal(done.status, 200)
+    assert.equal(household.get().name, 'Hodi')
+    assert.equal(profiles.list()[0]?.name, 'Antho')
+  })
+})

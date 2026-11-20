@@ -9,7 +9,6 @@ import Dialog from '../ui/Dialog.tsx'
 import Menu, { MenuItem, MenuSeparator } from '../ui/Menu.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import { Bar } from '../ui/Skeleton.tsx'
-import InviteDialog from '../views/profiles/InviteDialog.tsx'
 import ProfileForm from '../views/profiles/ProfileForm.tsx'
 import styles from './ProfileSwitcher.module.css'
 import { isLinkedDevice } from '../lib/linked-device.ts'
@@ -57,7 +56,6 @@ const AddProfile = ({
   profiles: Profile[]
 }) => {
   const { t } = useTranslation()
-  const [inviting, setInviting] = useState(false)
   const freeColor = PROFILE_COLORS.find(color => !profiles.some(profile => profile.color === color))
   return (
     <>
@@ -65,11 +63,7 @@ const AddProfile = ({
         {adding && (
           <ProfileForm
             defaultColor={freeColor}
-            kinds={['adult', 'teen', 'child']}
-            onInvite={() => {
-              setAdding(false)
-              setInviting(true)
-            }}
+            kinds={['teen', 'child']}
             onCancel={() => setAdding(false)}
             onSave={async ({ name, color, photo, kind, avatar }) => {
               await addProfile(name, color, photo ?? null, { kind, avatar })
@@ -79,7 +73,6 @@ const AddProfile = ({
           />
         )}
       </Dialog>
-      <InviteDialog open={inviting} onClose={() => setInviting(false)} />
     </>
   )
 }

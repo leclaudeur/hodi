@@ -15,6 +15,9 @@ import type { AccountOf, CookieFor } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
 import { aiOf, countryOf, isNearby, isPassword, providersList, timeZoneOf } from './household-input.ts'
 
+// The name of the space everyone reads in, kept where a plugin still shows households.
+export const SPACE_NAME = 'Hodi'
+
 // The first-run screens, in two parts: the server admin's own account, then the household. The same start with or
 // without plugins, which may add their steps between the two. Then Réglages > Foyer and > IA et crédits, the admin's.
 
@@ -254,7 +257,7 @@ const mountSetupHouseholdRoute = (
   { household, profiles, providers, now, secret, accounts, accountAi, onChange, onSetUp, householdLater }: SetupOptions,
   { adminOf, notNeeded }: SetupChecks
 ) => {
-  // "Crée ton foyer" to "Tout est prêt": the household, with the server admin's profile as its admin.
+  // The profile to "Tout est prêt": the server's one space, with the server admin's profile as its admin.
   router.post('/', async (request, response) => {
     if (notNeeded(response)) return
     const admin = adminOf(request)
@@ -264,7 +267,8 @@ const mountSetupHouseholdRoute = (
     }
     const body = (request.body ?? {}) as Record<string, unknown>
     const profile = (body.profile ?? {}) as { name?: unknown; color?: unknown }
-    const name = cleanHouseholdName(body.name)
+    // The server's one space is not shown any more: it no longer needs a name of its own.
+    const name = body.name === undefined ? SPACE_NAME : cleanHouseholdName(body.name)
     const profileName = cleanName(profile.name)
     const color = profileColorOf(profile.color)
     const timeZone = timeZoneOf(body.timeZone)
