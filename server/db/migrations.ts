@@ -1021,6 +1021,90 @@ const MIGRATIONS: string[] = [
     UPDATE OR IGNORE game_events SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
     DELETE FROM game_events WHERE owner = 'p' || NEW.id;
   END;
+  `,
+  // A person's state is theirs too: their preferences (sources and topics turned off, followed and hidden topics,
+  // reading settings), Enregistrés, Historique and what Masquer put away, the stories seen in À la une. An adult's
+  // belong to their account, a young profile's to itself, as readings and points above: leaving a household and
+  // joining another keeps them.
+  `
+  CREATE TABLE profile_settings_new (
+    owner TEXT NOT NULL,
+    key TEXT NOT NULL,
+    value TEXT NOT NULL,
+    updated_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, key)
+  );
+  INSERT OR IGNORE INTO profile_settings_new (owner, key, value, updated_at)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || s.profile_id ELSE 'a' || p.user_id END, s.key, s.value, s.updated_at
+    FROM profile_settings s JOIN profiles p ON p.id = s.profile_id;
+  DROP TABLE profile_settings;
+  ALTER TABLE profile_settings_new RENAME TO profile_settings;
+
+  CREATE TABLE saved_articles_new (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    item TEXT NOT NULL,
+    article TEXT,
+    saved_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, article_id)
+  );
+  INSERT OR IGNORE INTO saved_articles_new (owner, article_id, item, article, saved_at)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || s.profile_id ELSE 'a' || p.user_id END, s.article_id, s.item, s.article, s.saved_at
+    FROM saved_articles s JOIN profiles p ON p.id = s.profile_id;
+  DROP TABLE saved_articles;
+  ALTER TABLE saved_articles_new RENAME TO saved_articles;
+  CREATE INDEX saved_articles_article ON saved_articles (article_id);
+
+  CREATE TABLE read_articles_new (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    read_at INTEGER NOT NULL,
+    hidden INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (owner, article_id)
+  );
+  INSERT OR IGNORE INTO read_articles_new (owner, article_id, read_at, hidden)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || r.profile_id ELSE 'a' || p.user_id END, r.article_id, r.read_at, r.hidden
+    FROM read_articles r JOIN profiles p ON p.id = r.profile_id;
+  DROP TABLE read_articles;
+  ALTER TABLE read_articles_new RENAME TO read_articles;
+  CREATE INDEX read_articles_read_at ON read_articles (owner, read_at);
+
+  CREATE TABLE seen_stories_new (
+    owner TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    seen_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, article_id)
+  );
+  INSERT OR IGNORE INTO seen_stories_new (owner, article_id, seen_at)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || s.profile_id ELSE 'a' || p.user_id END, s.article_id, s.seen_at
+    FROM seen_stories s JOIN profiles p ON p.id = s.profile_id;
+  DROP TABLE seen_stories;
+  ALTER TABLE seen_stories_new RENAME TO seen_stories;
+  CREATE INDEX seen_stories_seen_at ON seen_stories (seen_at);
+
+  CREATE TRIGGER users_forget_state AFTER DELETE ON users BEGIN
+    DELETE FROM profile_settings WHERE owner = 'a' || OLD.id;
+    DELETE FROM saved_articles WHERE owner = 'a' || OLD.id;
+    DELETE FROM read_articles WHERE owner = 'a' || OLD.id;
+    DELETE FROM seen_stories WHERE owner = 'a' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_forget_state AFTER DELETE ON profiles WHEN OLD.user_id IS NULL BEGIN
+    DELETE FROM profile_settings WHERE owner = 'p' || OLD.id;
+    DELETE FROM saved_articles WHERE owner = 'p' || OLD.id;
+    DELETE FROM read_articles WHERE owner = 'p' || OLD.id;
+    DELETE FROM seen_stories WHERE owner = 'p' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_hand_over_state AFTER UPDATE OF user_id ON profiles
+  WHEN OLD.user_id IS NULL AND NEW.user_id IS NOT NULL BEGIN
+    UPDATE OR IGNORE profile_settings SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM profile_settings WHERE owner = 'p' || NEW.id;
+    UPDATE OR IGNORE saved_articles SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM saved_articles WHERE owner = 'p' || NEW.id;
+    UPDATE OR IGNORE read_articles SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM read_articles WHERE owner = 'p' || NEW.id;
+    UPDATE OR IGNORE seen_stories SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM seen_stories WHERE owner = 'p' || NEW.id;
+  END;
   `
 ]
 

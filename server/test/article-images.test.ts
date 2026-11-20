@@ -234,7 +234,7 @@ describe('article images', () => {
     article('iiiiiiiiiiiiiiii', 'https://bx1.be/photo.jpg')
     for (const id of ['gggggggggggggggg', 'hhhhhhhhhhhhhhhh', 'iiiiiiiiiiiiiiii']) await images.file(id, 240)
     db.prepare(
-      "INSERT INTO saved_articles (profile_id, article_id, item, article, saved_at) VALUES (1, 'hhhhhhhhhhhhhhhh', '{}', '{}', 0)"
+      "INSERT INTO saved_articles (owner, article_id, item, article, saved_at) VALUES ('p1', 'hhhhhhhhhhhhhhhh', '{}', '{}', 0)"
     ).run()
     writeFileSync(path.join(dir, 'zzzzzzzzzzzzzzzz-240.webp'), 'left behind')
 
