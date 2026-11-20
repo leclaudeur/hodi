@@ -19,7 +19,8 @@ The feed lists every topic's articles day by day, and the same story from severa
 open in Hodi's own reader, read aloud on demand, and a profile saves them, searches them and picks up where it stopped.
 
 Videos and podcasts have their own page, apart from the articles. A profile follows subjects to get notified of new
-articles about them, and shares an article it liked with another profile of the household, with a note of its own.
+articles about them, and shares an article it liked, with a note of its own: with its family and the accounts signed in on the
+device at once, and with any other adult on the server by their @username. A teen or a child shares within its family only.
 
 ## [AI, if you like](features/ai.md)
 

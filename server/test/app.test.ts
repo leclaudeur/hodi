@@ -922,23 +922,39 @@ describe('profiles', () => {
     assert.equal(((await (await call('GET', '/profiles', { cookie: stale })).json()) as { current: number }).current, 1)
   })
 
-  it('lets a profile send articles only to the profiles that share', async () => {
+  it('lets a profile send articles only to the people that share, offering those signed in on its device', async () => {
     const list = (await (await call('GET', '/profiles')).json()) as { profiles: { id: number; name: string }[] }
     const lea = list.profiles.find(profile => profile.name === 'Léa')!
-    const targets = async () =>
-      ((await (await call('GET', '/me/share-targets')).json()) as { profiles: number[] }).profiles
-    assert.deepEqual(await targets(), [lea.id])
-
+    // Léa on the admin's device: the admin is offered there, and nobody on the admin's own one.
     const asLea = await openAdult(session, lea.id)
-    await call('PUT', '/me/preferences', { body: { preferences: { sharing: false } }, cookie: asLea })
+    const targets = async (cookie: string) =>
+      ((await (await call('GET', '/me/share-targets', { cookie })).json()) as { people: { id: number }[] }).people.map(
+        person => person.id
+      )
+    assert.deepEqual(await targets(asLea), [1])
+    assert.deepEqual(await targets(session), [])
+    // Anyone else is found by their @username, and nobody is no error.
+    const { people } = (await (await call('GET', '/me/share-targets', { cookie: asLea })).json()) as {
+      people: { handle: string }[]
+    }
+    const find = async (handle: string) =>
+      (
+        (await (await call('GET', `/me/share-targets/${handle}`, { cookie: asLea })).json()) as {
+          person: { id: number } | null
+        }
+      ).person
+    assert.equal((await find(`@${people[0]!.handle.toUpperCase()}`))?.id, 1)
+    assert.equal(await find('@personne'), null)
+    assert.equal((await call('GET', '/me/share-targets/personne')).status, 200)
 
-    assert.deepEqual(await targets(), [])
-    const sent = await call('POST', '/me/shares', { body: { articleId: 'abcdefghijklmnop', to: [lea.id] } })
+    await call('PUT', '/me/preferences', { body: { preferences: { sharing: false } } })
+    assert.deepEqual(await targets(asLea), [])
+    const sent = await call('POST', '/me/shares', { body: { articleId: 'abcdefghijklmnop', to: [1] }, cookie: asLea })
     assert.equal(sent.status, 400)
-    assert.deepEqual(await (await call('GET', '/me/shares', { cookie: asLea })).json(), { items: [] })
+    assert.deepEqual(await (await call('GET', '/me/shares')).json(), { items: [] })
 
-    await call('PUT', '/me/preferences', { body: { preferences: { sharing: true } }, cookie: asLea })
-    assert.deepEqual(await targets(), [lea.id])
+    await call('PUT', '/me/preferences', { body: { preferences: { sharing: true } } })
+    assert.deepEqual(await targets(asLea), [1])
   })
 
   it('opens a new profile on its tour once, on whichever device it is first opened', async () => {

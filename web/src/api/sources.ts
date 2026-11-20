@@ -1,5 +1,6 @@
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { FeedItem, SearchItem } from './news.ts'
+import type { Profile } from './profiles.ts'
 
 // Adding a source from a link, and sharing. Mirrors server/news/source-finder.ts and server/http/source-routes.ts.
 
@@ -131,8 +132,18 @@ export const getShareReactions = () => getJson<{ items: ShareReaction[] }>('/me/
 export const markShareReactionsSeen = (until: number) =>
   sendJson<{ ok: true }>('POST', '/me/shares/reactions/seen', { until })
 
-// The profiles an article can be sent to: the others that share, and did not turn this one off.
-export const getShareTargets = async () => (await getJson<{ profiles: number[] }>('/me/share-targets')).profiles
+// Someone an article can be sent to, or whose shares can be turned off.
+export type SharePerson = Pick<Profile, 'id' | 'name' | 'color' | 'avatar' | 'photoVersion'> & { handle: string | null }
+
+// "Envoyer à…": the people offered at once (family, this device, lately), and whether an @username finds others.
+export const getShareTargets = () => getJson<{ people: SharePerson[]; byHandle: boolean }>('/me/share-targets')
+
+// An @username typed in "Envoyer à…"; null when nobody this profile may send to has it.
+export const findShareTarget = async (handle: string) =>
+  (await getJson<{ person: SharePerson | null }>(`/me/share-targets/${encodeURIComponent(handle)}`)).person
+
+// Réglages › Partages: the people whose shares can be turned off.
+export const getShareSenders = async () => (await getJson<{ people: SharePerson[] }>('/me/share-senders')).people
 
 export const shareArticle = (articleId: string, to: number[], note: string) =>
   sendJson<{ ok: true }>('POST', '/me/shares', { articleId, to, note })

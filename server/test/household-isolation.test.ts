@@ -147,9 +147,10 @@ describe('two households on one server', () => {
   })
 
   it('shares within the household only', async () => {
-    const targets = await json<{ profiles: number[] }>('/me/share-targets', martin)
-    assert.deepEqual(targets.profiles, [martinTeen])
-    assert.deepEqual((await json<{ profiles: number[] }>('/me/share-targets', dupont)).profiles, [])
+    const targets = async (cookie: string) =>
+      (await json<{ people: { id: number }[] }>('/me/share-targets', cookie)).people.map(person => person.id)
+    assert.deepEqual(await targets(martin), [martinTeen])
+    assert.deepEqual(await targets(dupont), [])
   })
 
   it("makes a household's codes for that household", async () => {

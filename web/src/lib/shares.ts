@@ -15,6 +15,8 @@ import { useProfiles } from './profiles.ts'
 import { isRead, useReadState } from './read-state.ts'
 import { sendPendingChanges } from './user-state.ts'
 
+type ShareTargets = Awaited<ReturnType<typeof getShareTargets>>
+
 // "Partages": the articles the household's other profiles sent here. The list and the counter beside
 // "Partages" share one result; it is fetched when the app opens and when it comes back to the foreground.
 
@@ -161,9 +163,9 @@ export const useSharesUnread = () => {
   return (shares ?? []).filter(entry => !isRead(entry.item.id)).length
 }
 
-// Who "Pour…" can send to: kept between articles, asked again each time one opens (a profile may have turned
-// sharing on or off meanwhile). Nobody: the button is hidden.
-let targets: number[] | null = null
+// Who "Envoyer à…" offers: kept between articles, asked again each time one opens (someone may have turned sharing
+// on or off meanwhile). Nobody and no @username to type: the button is hidden.
+let targets: ShareTargets | null = null
 let targetsLoading: Promise<void> | null = null
 
 const refreshTargets = () => {
@@ -178,6 +180,8 @@ const refreshTargets = () => {
     })
 }
 
+const NONE: ShareTargets = { people: [], byHandle: false }
+
 export const useShareTargets = () => {
   const shown = useSharingShown()
   const value = useSyncExternalStore(subscribe, () => targets)
@@ -186,5 +190,5 @@ export const useShareTargets = () => {
     if (shown) refreshTargets()
   }, [shown])
 
-  return shown ? (value ?? []) : []
+  return shown ? (value ?? NONE) : NONE
 }

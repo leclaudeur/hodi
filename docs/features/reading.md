@@ -36,7 +36,10 @@ followed subject. That is one per subject every three hours at most, 12 a day at
 
 ## Shared
 
-Once the household has two profiles, **Shared** sends an article or a video to another profile, with a short note. The
-receiver gets a notification and can react at the end of the article. Muting a profile hides what it sends.
+**Send to…** sends an article or a video to another person, with a short note. It offers at once the family (parents,
+children, brothers and sisters), the accounts signed in on the device and whoever the person shared with lately; any
+other adult on the server is added by typing their @username. A teen or a child shares only within its family, and
+nobody outside it can reach them. The receiver finds it in **Shared**, gets a notification and can react at the end of
+the article. Turning sharing off, or muting one person, stops what they send.
 
 [← Back to the features](../features.md)

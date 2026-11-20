@@ -14,11 +14,13 @@ import { withPluginFeeds } from '../plugins/feeds.ts'
 import type { Wiring } from './wiring.ts'
 
 // Each profile's own state: reading, sharing, the game and its preferences.
-const mountProfileState = (api: express.Router, { options, youthSources }: Wiring) => {
+const mountProfileState = (api: express.Router, { options, youthSources, session }: Wiring) => {
   const { users, news, profiles, game, alerts, now } = options
   if (!users) return
   api.use(readingRoutes({ users, news, now }))
-  api.use(shareRoutes({ users, profiles, news, game, alerts, now }))
+  const accounts = options.accounts
+  const signedInHere = (request: express.Request) => session.sessionsOf(request).map(signedIn => signedIn.account.id)
+  api.use(shareRoutes({ users, profiles, accounts, signedInHere, news, game, alerts, now }))
   if (game) api.use(gameRoutes({ game, news, profiles, now }))
   const readFacts = readFactsOf(news)
   api.use(
