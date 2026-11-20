@@ -41,7 +41,7 @@ const ProfilePicker = ({ chosen, closed = false, onUnauthorized }: ProfilePicker
       />
       <div className={styles.content}>
         {opening.unlocking ? (
-          <Unlock opening={opening} profile={opening.unlocking} />
+          <Unlock key={opening.unlocking.id} opening={opening} profile={opening.unlocking} />
         ) : (
           <Who opening={opening} chosen={chosen} onAdd={() => setAdding(true)} />
         )}

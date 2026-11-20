@@ -23,10 +23,13 @@ import { fakeFetch } from './helpers/news.ts'
 const ANTHO = { email: 'antho@example.com', password: 'le mot de passe d’Antho' }
 const SOPHIE = { email: 'sophie@example.com', password: 'le mot de passe de Sophie' }
 const FAST = { N: 2 ** 10, r: 8, p: 1 }
+const MAX = { email: '@max', password: 'le mot de passe de Max' }
 const CODE = '482913'
+const SOPHIE_CODE = '715206'
 
-// « Qui lit ? » with « Profil privé », the household's Code parental and « Ne plus demander sur cet appareil »: the
-// Martin family: Antho the admin (his profile still named Admin), Sophie, and Max (8).
+// « Qui lit ? » with « Profil privé », each parent's Code parental and « Ne plus demander sur cet appareil »: the
+// Martin family: Antho the admin (his profile still named Admin), Sophie, and their son Max (8), who signs in on the
+// family tablet with his own account.
 describe('opening a profile with a private profile, a Code parental or a trusted device', () => {
   let baseUrl = ''
   let close = () => {}
@@ -37,8 +40,10 @@ describe('opening a profile with a private profile, a Code parental or a trusted
   const devices = new UserDeviceStore(db)
   let sophieId = 0
   let maxId = 0
-  // Antho's own device, his profile open; the household's tablet, signed in with his account, nobody's open.
+  // Antho's own phone and Sophie's laptop, their profiles open; the family tablet, signed in with all three accounts,
+  // nobody's open.
   let anthoPhone = ''
+  let sophieLaptop = ''
   let tablet = ''
 
   const call = (method: string, route: string, cookie: string, body?: unknown, headers: Record<string, string> = {}) =>
@@ -89,8 +94,21 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     const antho = accounts.createServerAdmin(ANTHO.email, await hashPassword(ANTHO.password, FAST), clock)!
     accounts.linkProfile(antho.id, 1)
     sophieId = profiles.create('Sophie', 'tech', clock)!.id
-    accounts.linkProfile(accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!.id, sophieId)
-    maxId = profiles.create('Max', 'sport', clock, { kind: 'child' })!.id
+    const sophie = accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!
+    accounts.linkProfile(sophie.id, sophieId)
+    const passwordHash = await hashPassword(MAX.password, FAST)
+    const max = accounts.young.create(
+      profiles,
+      antho.id,
+      { name: 'Max', color: 'sport', kind: 'child', handle: 'max', passwordHash },
+      clock
+    )!
+    maxId = max.profileId
+    db.prepare('INSERT INTO account_parents (child_id, parent_id, created_at) VALUES (?, ?, ?)').run(
+      max.accountId,
+      sophie.id,
+      clock
+    )
     const catalog = parseCatalog('topics:\n  - id: world\n    label: Monde\n    sources: []\n')
     const server = createApp(config, {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
@@ -106,9 +124,10 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
     close = () => server.close()
     anthoPhone = await signIn(ANTHO)
-    // A tablet both Antho and Sophie signed in on, back on « Qui lit ? ».
-    const both = await signIn(SOPHIE, await signIn(ANTHO))
-    tablet = after_(both, await call('DELETE', '/profiles/current', both))
+    sophieLaptop = await signIn(SOPHIE)
+    // The tablet all three signed in on, back on « Qui lit ? ».
+    const all = await signIn(MAX, await signIn(SOPHIE, await signIn(ANTHO)))
+    tablet = after_(all, await call('DELETE', '/profiles/current', all))
   })
   after(() => close())
 
@@ -119,39 +138,52 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     assert.equal(await chosen(after_(tablet, opened)), true)
   })
 
-  it('lets the admin alone set the Code parental, six digits, never shown again', async () => {
-    const asSophie = after_(tablet, await call('PUT', '/profiles/current', tablet, { id: sophieId }))
-    assert.equal((await call('PUT', '/household/parental-code', asSophie, { code: CODE })).status, 403)
-    assert.equal((await call('PUT', '/household/parental-code', anthoPhone, { code: '1234' })).status, 400)
-    assert.equal((await call('PUT', '/household/parental-code', anthoPhone, { code: '12345a' })).status, 400)
+  it('lets each parent set their own Code parental, six digits, never shown again', async () => {
+    // Only a parent's profile is asked for one, and a young account changes nothing of its own.
+    assert.equal((await call('PUT', '/account/parental-code', await signIn(MAX), { code: CODE })).status, 403)
+    assert.equal((await call('PUT', '/account/parental-code', anthoPhone, { code: '1234' })).status, 400)
+    assert.equal((await call('PUT', '/account/parental-code', anthoPhone, { code: '12345a' })).status, 400)
     // His own password first: a profile left open on a shared device does not prove who changes it.
-    assert.equal((await call('PUT', '/household/parental-code', anthoPhone, { code: CODE })).status, 403)
+    assert.equal((await call('PUT', '/account/parental-code', anthoPhone, { code: CODE })).status, 403)
     const wrong = { code: CODE, password: 'faux' }
-    assert.equal((await call('PUT', '/household/parental-code', anthoPhone, wrong)).status, 403)
-    const set = await call('PUT', '/household/parental-code', anthoPhone, { code: CODE, password: ANTHO.password })
+    assert.equal((await call('PUT', '/account/parental-code', anthoPhone, wrong)).status, 403)
+    const set = await call('PUT', '/account/parental-code', anthoPhone, { code: CODE, password: ANTHO.password })
     assert.equal(set.status, 200)
     const view = (await set.json()) as Record<string, unknown>
     assert.equal(view.parentalCode, true)
     assert.ok(!JSON.stringify(view).includes(CODE))
-    // Her profile was open on the tablet, his on his phone: the new code is asked from now on.
-    assert.equal(await chosen(asSophie), false)
-    assert.equal(await chosen(anthoPhone), false)
-    anthoPhone = after_(anthoPhone, await call('PUT', '/profiles/current', anthoPhone, { id: 1, code: CODE }))
+    // No young account on his phone: it never asks there.
+    anthoPhone = after_(anthoPhone, set)
+    assert.equal(await chosen(anthoPhone), true)
+    const hers = { code: SOPHIE_CODE, password: SOPHIE.password }
+    sophieLaptop = after_(sophieLaptop, await call('PUT', '/account/parental-code', sophieLaptop, hers))
+    assert.deepEqual(await locks(tablet), { Admin: 'code', Sophie: 'code', Max: null })
   })
 
-  it('asks the code for the adults, never for the young', async () => {
-    assert.deepEqual(await locks(tablet), { Admin: 'code', Sophie: 'code', Max: null })
-    const wrong = await call('PUT', '/profiles/current', tablet, { id: sophieId, code: '000000' })
-    assert.deepEqual([wrong.status, await wrong.json()], [403, { error: 'wrong_code' }])
-    // Her password is no way around it.
-    assert.equal(
-      (await call('PUT', '/profiles/current', tablet, { id: sophieId, password: SOPHIE.password })).status,
-      403
-    )
-    const opened = await call('PUT', '/profiles/current', tablet, { id: sophieId, code: CODE })
+  it('asks each parent their own code where a young account is signed in, never for the young', async () => {
+    const theirs = await call('PUT', '/profiles/current', tablet, { id: sophieId, code: CODE })
+    assert.deepEqual([theirs.status, await theirs.json()], [403, { error: 'wrong_code' }])
+    const opened = await call('PUT', '/profiles/current', tablet, { id: sophieId, code: SOPHIE_CODE })
     assert.equal(opened.status, 200)
     assert.equal(await chosen(after_(tablet, opened)), true)
     assert.equal((await call('PUT', '/profiles/current', tablet, { id: maxId })).status, 200)
+    // The parents' own laptop, where Max never signed in.
+    const laptop = await signIn(ANTHO, sophieLaptop)
+    const shared = after_(laptop, await call('DELETE', '/profiles/current', laptop))
+    assert.deepEqual(await locks(shared), { Admin: null, Sophie: null, Max: null })
+  })
+
+  it('opens with the parent’s password when the code is forgotten', async () => {
+    const wrong = await call('PUT', '/profiles/current', tablet, { id: sophieId, password: 'faux' })
+    assert.deepEqual([wrong.status, await wrong.json()], [403, { error: 'wrong_password' }])
+    // Never someone else's password.
+    assert.equal(
+      (await call('PUT', '/profiles/current', tablet, { id: sophieId, password: ANTHO.password })).status,
+      403
+    )
+    const opened = await call('PUT', '/profiles/current', tablet, { id: sophieId, password: SOPHIE.password })
+    assert.equal(opened.status, 200)
+    assert.equal(await chosen(after_(tablet, opened)), true)
   })
 
   it('stops guessing the code after a few tries, on that device only', async () => {
@@ -192,7 +224,10 @@ describe('opening a profile with a private profile, a Code parental or a trusted
 
   it('opens it without the password on the devices its person trusts, and only there', async () => {
     // The tablet is now Sophie's for a moment, then Antho trusts it.
-    const sophieTablet = after_(tablet, await call('PUT', '/profiles/current', tablet, { id: sophieId, code: CODE }))
+    const sophieTablet = after_(
+      tablet,
+      await call('PUT', '/profiles/current', tablet, { id: sophieId, code: SOPHIE_CODE })
+    )
     const trusted = await call('PUT', '/profiles/current', sophieTablet, {
       id: 1,
       password: ANTHO.password,
@@ -245,9 +280,11 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     // His profile stays open on the phone, now that the Code parental would open it.
     anthoPhone = after_(anthoPhone, off)
     assert.equal(await chosen(anthoPhone), true)
-    assert.equal((await call('DELETE', '/household/parental-code', anthoPhone)).status, 403)
-    const removed = await call('DELETE', '/household/parental-code', anthoPhone, { password: ANTHO.password })
+    assert.equal((await call('DELETE', '/account/parental-code', anthoPhone)).status, 403)
+    const removed = await call('DELETE', '/account/parental-code', anthoPhone, { password: ANTHO.password })
     assert.equal(((await removed.json()) as { parentalCode: boolean }).parentalCode, false)
+    assert.deepEqual(await locks(tablet), { Admin: null, Sophie: 'code', Max: null })
+    await call('DELETE', '/account/parental-code', sophieLaptop, { password: SOPHIE.password })
     assert.deepEqual(await locks(tablet), { Admin: null, Sophie: null, Max: null })
   })
 
@@ -296,5 +333,31 @@ describe('the accounts from before « Profil privé »', () => {
     ).run()
     migrate(db)
     assert.deepEqual({ ...db.prepare('SELECT private_profile FROM users').get() }, { private_profile: 1 })
+  })
+})
+
+describe('the household’s Code parental from before each parent had theirs', () => {
+  it('becomes the code of every parent in the household, never of an adult without a child', () => {
+    const db = new DatabaseSync(':memory:')
+    migrate(db, versionBefore('ADD COLUMN parental_code_hash'))
+    db.exec(`
+      UPDATE accounts SET parental_pin_hash = 'old-code' WHERE id = 1;
+      INSERT INTO users (id, email, password_hash, password_changed_at, created_at) VALUES
+        (10, 'parent@example.com', 'h', 0, 0), (11, 'other@example.com', 'h', 0, 0), (12, NULL, '', 0, 0);
+      INSERT INTO profiles (account_id, name, color, kind, user_id, position, created_at) VALUES
+        (1, 'Parent', 'tech', 'adult', 10, 1, 0), (1, 'Autre', 'sport', 'adult', 11, 2, 0),
+        (1, 'Enfant', 'world', 'child', 12, 3, 0);
+      INSERT INTO account_parents (child_id, parent_id, created_at) VALUES (12, 10, 0);
+    `)
+    migrate(db)
+    const codes = db.prepare('SELECT id, parental_code_hash AS code FROM users ORDER BY id').all()
+    assert.deepEqual(
+      codes.map(row => ({ ...row })),
+      [
+        { id: 10, code: 'old-code' },
+        { id: 11, code: null },
+        { id: 12, code: null }
+      ]
+    )
   })
 })

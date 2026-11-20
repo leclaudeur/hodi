@@ -1,4 +1,4 @@
-import { ArrowRight, LifeBuoy, Mail, Smartphone } from 'lucide-react'
+import { ArrowRight, AtSign, LifeBuoy, Smartphone } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getSetup } from '../api.ts'
@@ -30,13 +30,16 @@ const Fields = ({ login }: { login: Login }) => {
   return (
     <>
       <label className={householdStyles.field}>
-        <span className={householdStyles.fieldLabel}>{t('setup.account.email')}</span>
+        <span className={householdStyles.fieldLabel}>{t('login.emailOrHandle')}</span>
+        {/* A teen signs in on the family tablet with their username, as on Connexion. */}
         <TextField
-          icon={Mail}
-          type="email"
+          icon={AtSign}
+          type="text"
+          autoCapitalize="none"
+          spellCheck={false}
           autoComplete="username"
-          aria-label={t('setup.account.email')}
-          placeholder={t('setup.account.emailPlaceholder')}
+          aria-label={t('login.emailOrHandle')}
+          placeholder={t('login.emailOrHandle')}
           autoFocus
           required
           value={login.email}

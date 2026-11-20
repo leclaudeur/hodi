@@ -24,6 +24,8 @@ export interface UserAccount {
   serverAdmin: boolean
   // « Profil privé »: its password opens its profile in « Qui lit ? », the Code parental never does.
   privateProfile: boolean
+  // Its « Code parental »'s hash: asked to open its profile on a device where a young one reads; null: none.
+  parentalCode: string | null
   // When the account was made: SQLite may give a deleted account's id to a new one, and a session made before this
   // time was not made for it.
   createdAt: number
@@ -42,6 +44,7 @@ interface UserAccountRow {
   session_generation: number
   server_admin: number
   private_profile: number
+  parental_code_hash: string | null
   created_at: number
   time_zone: string | null
   country: string | null
@@ -57,6 +60,7 @@ const toAccount = (row: UserAccountRow): UserAccount => ({
   sessionGeneration: row.session_generation,
   serverAdmin: row.server_admin === 1,
   privateProfile: row.private_profile === 1,
+  parentalCode: row.parental_code_hash,
   createdAt: row.created_at,
   timeZone: row.time_zone,
   country: row.country
@@ -71,7 +75,7 @@ export const cleanEmail = (value: unknown) => {
 }
 
 const COLUMNS =
-  'id, email, handle, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, created_at, time_zone, country'
+  'id, email, handle, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, parental_code_hash, created_at, time_zone, country'
 
 export class UserAccountStore {
   readonly #db: Database
@@ -239,6 +243,15 @@ export class UserAccountStore {
   }
 
   // Turned on, its profiles' choice on every device is signed again: one open elsewhere asks for the password.
+  // A new code, or none: every device that opened the profile without it asks again.
+  setParentalCode(id: number, hash: string | null) {
+    this.#db
+      .prepare(
+        'UPDATE users SET parental_code_hash = ?, parental_code_version = parental_code_version + 1 WHERE id = ?'
+      )
+      .run(hash, id)
+  }
+
   setPrivateProfile(id: number, on: boolean) {
     this.#db.prepare('UPDATE users SET private_profile = ? WHERE id = ?').run(on ? 1 : 0, id)
     if (on) this.#db.prepare('UPDATE profiles SET pin_version = pin_version + 1 WHERE user_id = ?').run(id)

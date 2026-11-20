@@ -77,7 +77,6 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
       secret: wiring.config.sessionSecret,
       pinThrottle,
       accounts,
-      household: wiring.options.household,
       signedInHere: request => wiring.session.sessionsOf(request).map(session => session.account.id),
       trust: wiring.trust ?? undefined,
       onCreate: wiring.profileHooks.created,

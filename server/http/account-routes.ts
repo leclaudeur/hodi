@@ -15,7 +15,7 @@ import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
 import { mountDeleteRoute } from './account-delete-route.ts'
 import { mountLeaveRoute } from './account-leave-route.ts'
-import { mountLockRoutes } from './account-lock-routes.ts'
+import { mountLockRoutes, mountParentalCodeRoutes } from './account-lock-routes.ts'
 import { mountRegionRoutes } from './account-region-routes.ts'
 import { type AccountAiOptions, accountAiView, mountAiRoutes } from './account-ai-routes.ts'
 
@@ -78,6 +78,7 @@ export const accountRoutes = (options: AccountRoutesOptions) => {
   })
   mountTwoFactorRoutes(router, options, helpers)
   mountLockRoutes(router, options, helpers)
+  mountParentalCodeRoutes(router, options, helpers)
   mountRegionRoutes(router, options, helpers)
   mountAiRoutes(router, options, helpers)
   mountCredentialRoutes(router, options, helpers)
@@ -138,6 +139,8 @@ const accountHelpers = ({
       loginOnly: !account.hasPassword,
       recentSignIn: recentlySignedIn(device),
       privateProfile: account.privateProfile,
+      // Its own Code parental is set; Mes enfants offers it while it is not.
+      parentalCode: account.parentalCode !== null,
       // Its own, else the household's, as the account's days run in it.
       timeZone: account.timeZone ?? household.get().timeZone ?? defaultTimeZone,
       country: account.country,

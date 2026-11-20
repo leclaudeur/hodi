@@ -235,17 +235,19 @@ export class ProfileStore {
   // parental opens, with that code. It holds the profile's creation time too: SQLite gives a deleted profile's id to
   // the next one, which a device's old choice must not open.
   lock(id: number): { version: string } | null {
+    // The parent's code version apart from the rest, -1 once the profile is private: a sum would let turning private
+    // on (pin_version + 1) give back the very version the code had.
     const row = this.#db
       .prepare(
-        `SELECT p.pin_version + COALESCE(u.session_generation, 0) +
-           CASE WHEN p.kind = 'adult' AND COALESCE(u.private_profile, 0) = 0 THEN a.parental_pin_version ELSE 0 END
-           AS version,
+        `SELECT p.pin_version + COALESCE(u.session_generation, 0) AS version,
+           CASE WHEN p.kind = 'adult' AND COALESCE(u.private_profile, 0) = 0 THEN COALESCE(u.parental_code_version, 0)
+             ELSE -1 END AS code,
            p.created_at AS createdAt
-         FROM profiles p JOIN accounts a ON a.id = p.account_id LEFT JOIN users u ON u.id = p.user_id
+         FROM profiles p LEFT JOIN users u ON u.id = p.user_id
          WHERE p.id = ? AND p.account_id = ?`
       )
-      .get(id, this.#account) as { version: number; createdAt: number } | undefined
-    return row ? { version: `${row.version}.${row.createdAt}` } : null
+      .get(id, this.#account) as { version: number; code: number; createdAt: number } | undefined
+    return row ? { version: `${row.version}.${row.code}.${row.createdAt}` } : null
   }
 
   photo(id: number): { data: Buffer; type: PhotoType } | null {
