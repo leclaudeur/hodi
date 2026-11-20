@@ -567,8 +567,9 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
   await noe.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(NOE.password)
   await noe.getByRole('textbox', { name: 'Confirme le mot de passe' }).fill(NOE.password)
   await noe.getByRole('checkbox', { name: 'J’ai au moins 13 ans' }).click()
-  // The account keeps its name, colour and photo: no "who are you" step this time.
   await noe.getByRole('button', { name: 'Continuer' }).click()
+  await noe.getByRole('textbox', { name: 'Prénom' }).fill('Noé')
+  await noe.getByRole('button', { name: 'Créer mon compte' }).click()
   await skipTour(noe)
   await noe.goto('/#/settings/account')
   await expect(noe.getByRole('main').getByText('Membre du foyer')).toBeVisible()
