@@ -1753,8 +1753,6 @@
     "countryFailed": "Le pays n’a pas pu être enregistré. Réessaie dans un instant.",
     "on": "IA activée",
     "removed": "IA retirée",
-    "removeTitle": "Retirer la clé ?",
-    "removeMessage": "Les boutons violets disparaissent pour tout le foyer. Ce que l’IA a déjà écrit reste.",
     "remove": "Retirer",
     "removeFailed": "La clé n’a pas pu être retirée. Réessaie dans un instant.",
     "provider": "Fournisseur",
@@ -1766,32 +1764,7 @@
     "addKey": "Ajouter une clé",
     "resetDone": "Réinitialisé",
     "resetFailed": "La réinitialisation a échoué. Réessaie dans un instant.",
-    "resetHousehold": {
-      "summary": "Réinitialiser les résumés du foyer ?",
-      "question": "Réinitialiser les questions du foyer ?",
-      "dailySummary": "Réinitialiser les Résumés du jour du foyer ?",
-      "sources": "Réinitialiser les suggestions de sources du foyer ?",
-      "plugin": "Réinitialiser les demandes des plugins du foyer ?"
-    },
-    "resetHouseholdAll": "Tout réinitialiser pour le foyer ?",
-    "resetHouseholdMessage": "Les appels des dernières 24 heures ne comptent plus, pour aucun profil.",
-    "resetProfile": {
-      "summary": "Réinitialiser les résumés de {{name}} ?",
-      "question": "Réinitialiser les questions de {{name}} ?",
-      "dailySummary": "Réinitialiser les Résumés du jour de {{name}} ?",
-      "sources": "Réinitialiser les suggestions de sources de {{name}} ?",
-      "plugin": "Réinitialiser les demandes des plugins de {{name}} ?"
-    },
-    "resetProfileAll": "Tout réinitialiser pour {{name}} ?",
-    "resetProfileMessage": "{{name}} retrouve ses crédits. Le total du foyer, lui, ne change pas.",
-    "intro": "Chaque bouton violet est un appel à l’IA, payé sur les crédits du foyer : rien ne part sans un clic. Le plafond du foyer se partage à parts égales entre les profils et se compte sur 24 heures glissantes. Plafond atteint, les boutons IA se désactivent.",
-    "loadFailed": "Impossible de lire les appels du jour. Réessaie dans un instant.",
-    "offMember": "L’admin du foyer peut l’activer ici avec une clé d’API.",
-    "householdDay": "Tout le foyer · 24 heures",
-    "profilesDay": "Par profil · 24 heures",
-    "yoursOf": "Appels · {{name}} · 24 heures",
     "yours": "Appels · 24 heures",
-    "introAdmin": "Réinitialiser un profil lui rend ses crédits sans baisser le total du foyer.",
     "plugins": {
       "title": "Plugins",
       "calls_one": "{{count}} appel sur 24 heures",
@@ -1865,28 +1838,8 @@
     },
     "removeKey": {
       "title": "Retirer la clé de l’IA ?",
-      "message": "Les boutons violets disparaissent <b>pour tout le foyer</b>, jusqu’à ce qu’une nouvelle clé soit ajoutée. Les résumés et les réponses déjà écrits par l’IA restent.",
+      "message": "Les boutons violets disparaissent <b>pour ce compte</b>, jusqu’à ce qu’une nouvelle clé soit ajoutée. Les résumés et les réponses déjà écrits restent.",
       "button": "Retirer la clé"
-    },
-    "resetHousehold": {
-      "title": "Recharger l’IA du foyer ?",
-      "message": "Ce qui a été demandé à l’IA ces dernières 24 heures ne compte plus, <b>pour tous les profils</b> : chacun retrouve ses crédits du jour.",
-      "button": "Recharger"
-    },
-    "resetHouseholdKind": {
-      "title": "Recharger l’IA du foyer ?",
-      "message": "Ce qui a été demandé à l’IA pour <b>{{kind}}</b> ces dernières 24 heures ne compte plus, <b>pour tous les profils</b>.",
-      "button": "Recharger"
-    },
-    "resetProfile": {
-      "title": "Recharger l’IA du profil ?",
-      "message": "<b>{{name}}</b> retrouve tous ses crédits IA du jour. Les crédits du foyer, eux, ne bougent pas.",
-      "button": "Recharger"
-    },
-    "resetProfileKind": {
-      "title": "Recharger l’IA du profil ?",
-      "message": "<b>{{name}}</b> retrouve ses crédits du jour pour <b>{{kind}}</b>. Les crédits du foyer, eux, ne bougent pas.",
-      "button": "Recharger"
     },
     "kinds": {
       "summary": "les résumés",
@@ -1967,6 +1920,12 @@
       "messageLast_one": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quitte aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte du foyer pourra le reconnecter quand il veut.",
       "messageLast_other": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quittent aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte du foyer pourra le reconnecter quand il veut.",
       "button": "Se déconnecter"
+    },
+    "resetMine": {
+      "title": "Recharger l’IA ?",
+      "message": "Les appels à l’IA des dernières 24 heures ne comptent plus : tous les crédits du jour reviennent.",
+      "kindMessage": "Les appels pour <b>{{kind}}</b> des dernières 24 heures ne comptent plus : ces crédits du jour reviennent.",
+      "button": "Recharger"
     }
   },
   "dialogIntro": {
@@ -2733,6 +2692,7 @@
       "profile": "Profil",
       "sign-in": "Connexion",
       "region": "Région",
+      "ai": "IA et crédits",
       "stats": "Statistiques",
       "data": "Données"
     },
@@ -2740,7 +2700,8 @@
       "profile": "Le prénom, la photo et la couleur que le foyer voit, et la langue de Hodi.",
       "sign-in": "Comment tu te connectes, et les appareils où le compte est ouvert.",
       "region": "Le fuseau horaire dit quand commence une journée : celle des statistiques, du <i>Résumé du jour</i> et des badges.",
-      "data": "Le foyer où tu lis, une copie de tout ce que Hodi garde du compte, ou sa suppression."
+      "data": "Le foyer où tu lis, une copie de tout ce que Hodi garde du compte, ou sa suppression.",
+      "ai": "Chaque bouton violet est un appel à l’IA, payé avec la clé d’API de ce compte : rien ne part sans un clic. Les appels se comptent sur 24 heures glissantes ; plafond atteint, les boutons violets se désactivent."
     },
     "noStats": "Rien de lu pour l’instant."
   }

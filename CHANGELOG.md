@@ -27,6 +27,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **My account is a page of its own.** Laid out as the legal pages, with its sections in a sidebar (a _Sections_ menu
   on a tablet or a phone): _Profile_, _Sign-in_, _Region_, _Statistics_ and _Data_. _Settings › My account_ and
   _Settings › Statistics_ open it, and Settings lines that open another page end with an external-link icon.
+- **Each account has its own AI key.** _My account › AI and credits_ holds the key, the country used by the AI's web
+  searches and the account's own calls of the day, against its own caps: 100 summaries, 100 questions, 8 Daily summaries,
+  10 source suggestions and 20 plugin requests. Each account keeps the summaries it paid for. The key of the first-run
+  screens is the admin's; every account that read in the household starts with the household's key. A young profile
+  has no AI.
 
 ## [1.0.0-beta.13] - 2026-11-19
 

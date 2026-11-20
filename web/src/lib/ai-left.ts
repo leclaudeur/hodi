@@ -26,10 +26,10 @@ export const refreshAiUsage = () =>
       pending = null
     }))
 
-// Its own cap, unless the household's runs out first. Null while not known.
+// What its own cap leaves. Null while not known.
 export const aiLeft = (kind: AiKind) => {
   const counts = usage?.kinds.find(entry => entry.kind === kind)
-  return counts ? Math.max(0, Math.min(counts.limit - counts.used, counts.householdLimit - counts.householdUsed)) : null
+  return counts ? Math.max(0, counts.limit - counts.used) : null
 }
 
 // True once the day's cap of this kind is reached.

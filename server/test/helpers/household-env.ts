@@ -1,3 +1,5 @@
+import { AccountAiStore } from '../../db/account-ai-store.ts'
+import type { AiProvider } from '../../news/ai-providers.ts'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -28,6 +30,19 @@ export const cookiesFrom = (response: Response) =>
     .map(cookie => cookie.split(';')[0])
     .join('; ')
 
+// A provider whose only good key is sk-test-good…, and that never calls anything.
+export const FAKE_AI: AiProvider = {
+  id: 'fake',
+  name: 'Fausse IA',
+  defaultModel: 'fake-1',
+  keysUrl: 'https://example.com/keys',
+  keyPattern: /^sk-test-\w{8,}$/,
+  checkKey: async key => (key.startsWith('sk-test-good') ? 'ok' : 'invalid'),
+  tools: () => {
+    throw new Error('not used')
+  }
+}
+
 // « Chez nous »: Antho, its admin and the server's, Sam, an adult with an account, and Léa, a child.
 export const startHousehold = async () => {
   const db = openDatabase(':memory:')
@@ -46,6 +61,7 @@ export const startHousehold = async () => {
   }
   const accounts = new UserAccountStore(db)
   const profiles = new ProfileStore(db)
+  const accountAi = new AccountAiStore(db)
   const server = createApp(config, {
     news: new NewsService(parseCatalog('topics:\n  - id: monde\n    label: Monde\n    sources: []\n'), {
       fetchText: fakeFetch({}).fetchText,
@@ -54,6 +70,8 @@ export const startHousehold = async () => {
     profiles,
     household: new HouseholdStore(db),
     accounts,
+    accountAi,
+    aiProviders: [FAKE_AI],
     devices: new UserDeviceStore(db),
     accountData: new AccountDataStore(db),
     codes: new SignInCodeStore(db, config.sessionSecret),
@@ -99,6 +117,7 @@ export const startHousehold = async () => {
     leaId,
     anthoAccount,
     accounts,
+    accountAi,
     profiles,
     users: (id: number) => new UserStore(db, id),
     close: () => server.close()

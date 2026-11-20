@@ -3,6 +3,7 @@ import type { ExtractedArticle } from '../news/extract.ts'
 import type { FeedEntry, FeedItem } from '../news/feed-parser.ts'
 import { foldText, romanNumeral } from '../../shared/word-match.ts'
 import { type Database, transaction } from './database.ts'
+import { ownerOf } from './stats-owner.ts'
 import {
   type AiCall,
   type AiCallKind,
@@ -10,9 +11,11 @@ import {
   type StoredDailySummary,
   aiCalls,
   clearAiCalls,
+  getSummary,
   latestDailySummaries,
   recordAiCall,
-  saveDailySummary
+  saveDailySummary,
+  saveSummary
 } from './ai-queries.ts'
 
 import { type StoredIcon, getIcon, getVideoDurations, saveIcon, saveVideoDuration } from './media-queries.ts'
@@ -253,22 +256,18 @@ export class NewsStore {
       .run(article.title, article.byline, article.contentHtml, article.textLength, article.image, now, id)
   }
 
-  // An article's summary in the given language, if one was written.
-  getSummary(id: string, language: Language): string[] | null {
-    const row = this.#db
-      .prepare('SELECT points FROM ai_summaries WHERE article_id = ? AND language = ?')
-      .get(id, language) as { points: string } | undefined
-
-    return row ? (JSON.parse(row.points) as string[]) : null
+  // Whose a summary is: the reader's account pays for it, and only that account reads it (stats-owner.ts).
+  ownerOf(profileId: number) {
+    return ownerOf(this.#db, profileId)
   }
 
-  saveSummary(id: string, language: Language, points: string[], now: number) {
-    this.#db
-      .prepare(
-        `INSERT OR REPLACE INTO ai_summaries (article_id, language, points, created_at)
-         SELECT id, ?, ?, ? FROM articles WHERE id = ?`
-      )
-      .run(language, JSON.stringify(points), now, id)
+  // An article's summary in the given language, if the owner's AI wrote one.
+  getSummary(id: string, language: Language, owner: string) {
+    return getSummary(this.#db, id, language, owner)
+  }
+
+  saveSummary(id: string, language: Language, points: string[], now: number, owner: string) {
+    saveSummary(this.#db, { id, language, points, now, owner })
   }
 
   // Each profile's last Résumé du jour.

@@ -10,6 +10,7 @@ import { TwoFactorStore } from '../db/two-factor-store.ts'
 import { ProfileDeviceStore } from '../db/profile-device-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
+import { AccountAiStore } from '../db/account-ai-store.ts'
 import { NewsStore } from '../db/news-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SourceStore } from '../db/source-store.ts'
@@ -81,6 +82,7 @@ export const openStores = (
     images,
     household,
     accounts,
+    accountAi: new AccountAiStore(db),
     codes: new SignInCodeStore(db, config.sessionSecret),
     twoFactor: new TwoFactorStore(db, config.sessionSecret),
     devices: new UserDeviceStore(db),

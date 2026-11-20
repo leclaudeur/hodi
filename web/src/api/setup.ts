@@ -102,6 +102,9 @@ export interface AccountView {
   // Where its days start: its own, else the household's. country: its own, or none.
   timeZone: string
   country: string | null
+  // Mon compte › IA et crédits: its own key, shown by its provider and its end only; null: no AI.
+  ai: AiKey | null
+  providers: AiProviderInfo[]
   devices: AccountDevice[]
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: {
@@ -145,6 +148,23 @@ export const setPrivateProfile = (on: boolean, proof?: AdminProof) =>
   sendJson<AccountView>('PUT', '/account/private', { on, ...proof })
 
 // Réglages › Mon compte › Région.
+export interface AiKey {
+  provider: string
+  providerName: string
+  model: string
+  keyHint: string
+}
+
+// A key checked with a request that costs no credits.
+export const checkAccountAi = async (provider: string, key: string) =>
+  (await sendJson<{ result: KeyCheck }>('POST', '/account/ai/check', { provider, key })).result
+
+// Kept only once the provider took it.
+export const setAccountAi = (provider: string, key: string) =>
+  sendJson<AccountView>('PUT', '/account/ai', { provider, key })
+
+export const removeAccountAi = () => sendJson<AccountView>('DELETE', '/account/ai')
+
 export const changeAccountRegion = (region: { timeZone?: string; country?: string | null }) =>
   sendJson<AccountView>('PUT', '/account/region', region)
 
@@ -252,7 +272,7 @@ export interface Household {
   hourCycle: 12 | 24
   // Its photo's address; null: its initial shows.
   photo: string | null
-  ai: { provider: string; providerName: string; model: string; keyHint: string } | null
+  ai: AiKey | null
   providers: AiProviderInfo[]
   // « Code parental »: six digits asked to open an adult profile that is not private.
   parentalCode?: boolean

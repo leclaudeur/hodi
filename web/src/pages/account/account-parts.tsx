@@ -1,4 +1,4 @@
-import { ChartColumn, Database, Globe, KeyRound, type LucideIcon, UserRound } from 'lucide-react'
+import { ChartColumn, Database, Globe, KeyRound, type LucideIcon, Sparkles, UserRound } from 'lucide-react'
 import { type ReactNode, Suspense, lazy, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AccountView } from '../../api.ts'
@@ -14,6 +14,7 @@ import {
 import RegionCard from '../../views/settings/sections/RegionCard.tsx'
 import StatsSkeleton from '../../views/settings/sections/StatsSkeleton.tsx'
 import { useTopics } from '../use-home.ts'
+import AiPart from './AiPart.tsx'
 
 // The chart library loads with the stats only.
 const StatsSection = lazy(() => import('../../views/settings/sections/StatsSection.tsx'))
@@ -22,6 +23,7 @@ export const PART_ICONS: Record<AccountPart, LucideIcon> = {
   profile: UserRound,
   'sign-in': KeyRound,
   region: Globe,
+  ai: Sparkles,
   stats: ChartColumn,
   data: Database
 }
@@ -30,7 +32,9 @@ export const PART_ICONS: Record<AccountPart, LucideIcon> = {
 // household has no profile to show.
 export const partsOf = (account: AccountView | null, inHousehold: boolean): AccountPart[] => {
   if (account === null) return ['sign-in', 'stats']
-  return inHousehold ? ['profile', 'sign-in', 'region', 'stats', 'data'] : ['sign-in', 'region', 'stats', 'data']
+  return inHousehold
+    ? ['profile', 'sign-in', 'region', 'ai', 'stats', 'data']
+    : ['sign-in', 'region', 'ai', 'stats', 'data']
 }
 
 // A profile's own statistics, read from every device, as the feed reads them.
@@ -80,6 +84,10 @@ export const PartBody = ({
       return <SignInPart account={account} onAccount={onAccount} layout={layout} />
     case 'region':
       return <RegionCard account={account} onAccount={onAccount} />
+    case 'ai':
+      return (
+        <AiPart account={account} onAccount={onAccount} onUnauthorized={onUnauthorized} inHousehold={inHousehold} />
+      )
     default:
       return <DataPart account={account} />
   }

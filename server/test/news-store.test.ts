@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
 import { SCHEMA_VERSION, migrate, versionBefore } from '../db/migrations.ts'
 import { CONTENT_RETENTION_MS, NewsStore } from '../db/news-store.ts'
+import { AccountAiStore } from '../db/account-ai-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { MAX_SUMMARIES_PER_DAY } from '../news/ai-ledger.ts'
@@ -94,12 +95,11 @@ describe('NewsStore', () => {
     assert.deepEqual(store.aiCalls(NOW - 24 * HOUR), [{ kind: 'summary', at: NOW, profileId: 1 }])
     assert.ok(MAX_SUMMARIES_PER_DAY > 1)
 
-    // Put back to 0, for the profile then for everyone: kept across a restart, never lowered.
+    // Put back to 0 by the reader: kept across a restart.
     second.news.resetAiUsage({ kind: 'summary', profileId: 1 })
     assert.deepEqual(store.aiCalls(NOW - 24 * HOUR), [{ kind: 'summary', at: NOW, profileId: 1, cleared: 'profile' }])
-    second.news.resetAiUsage({})
-    second.news.resetAiUsage({ profileId: 1 })
-    assert.deepEqual(store.aiCalls(NOW - 24 * HOUR), [{ kind: 'summary', at: NOW, profileId: 1, cleared: 'all' }])
+    const third = start(store, responses, { summarize })
+    assert.equal(third.news.aiUsage(1).kinds.find(kind => kind.kind === 'summary')!.used, 0)
   })
 
   it('shows the reading time and author on the card once the article is read, even after a restart', async () => {
@@ -326,14 +326,58 @@ describe('backupDatabase', () => {
       "INSERT INTO daily_briefs (points, generated_at, created_at, profile_id) VALUES ('[]', '2026-10-23', ?, 1)"
     ).run(NOW)
 
+    // Up to the summaries' owners, which the next test covers.
+    migrate(db, versionBefore('ALTER TABLE users ADD COLUMN ai_provider'))
+
+    assert.deepEqual(
+      db
+        .prepare('SELECT language, points FROM ai_summaries')
+        .all()
+        .map(row => ({ ...row })),
+      [{ language: 'fr', points: '["Un point"]' }]
+    )
+    migrate(db)
+    assert.equal(new NewsStore(db).latestDailySummaries().get(1)?.language, 'fr')
+  })
+
+  it("gives the household's key and summaries to each of its accounts, and none to a young profile", () => {
+    const db = new DatabaseSync(':memory:')
+    db.exec('PRAGMA foreign_keys = ON')
+    migrate(db, versionBefore('ALTER TABLE users ADD COLUMN ai_provider'))
+    db.exec(`UPDATE accounts SET ai_provider = 'anthropic', ai_key = 'sk-test-household' WHERE id = 1`)
+    for (const [id, email] of [
+      [1, 'alex@example.com'],
+      [2, 'sam@example.com']
+    ] as const) {
+      db.prepare(
+        `INSERT INTO users (id, email, password_hash, password_changed_at, created_at) VALUES (?, ?, 'x', ?, ?)`
+      ).run(id, email, NOW, NOW)
+    }
+    db.exec(`UPDATE profiles SET user_id = 1 WHERE id = 1`)
+    db.prepare(
+      `INSERT INTO articles (id, source_id, source_name, kind, lang, title, summary, link, first_seen_at, last_seen_at)
+       VALUES (?, 'alpha', 'Alpha', 'article', 'fr', 'Sommet', '', 'https://alpha.example/sommet', ?, ?)`
+    ).run(sommet, NOW, NOW)
+    db.prepare("INSERT INTO ai_summaries (article_id, language, points, created_at) VALUES (?, 'fr', ?, ?)").run(
+      sommet,
+      '["Un point"]',
+      NOW
+    )
+
     migrate(db)
     const store = new NewsStore(db)
+    const ai = new AccountAiStore(db)
 
-    assert.deepEqual(store.getSummary(sommet, 'fr'), ['Un point'])
-    assert.equal(store.getSummary(sommet, 'en'), null)
-    store.saveSummary(sommet, 'en', ['A point'], NOW)
-    assert.deepEqual(store.getSummary(sommet, 'en'), ['A point'])
-    assert.deepEqual(store.getSummary(sommet, 'fr'), ['Un point'])
-    assert.equal(store.latestDailySummaries().get(1)?.language, 'fr')
+    // Alex reads in the household: its key and its summary. Sam, in none, has neither.
+    assert.deepEqual(ai.get(1), { provider: 'anthropic', key: 'sk-test-household', model: null })
+    assert.equal(ai.get(2), null)
+    assert.deepEqual(store.getSummary(sommet, 'fr', 'a1'), ['Un point'])
+    assert.equal(store.getSummary(sommet, 'fr', 'a2'), null)
+    store.saveSummary(sommet, 'en', ['A point'], NOW, 'a2')
+    assert.deepEqual(store.getSummary(sommet, 'en', 'a2'), ['A point'])
+    assert.equal(store.getSummary(sommet, 'en', 'a1'), null)
+    // A deleted account takes its summaries with it.
+    db.exec('DELETE FROM users WHERE id = 2')
+    assert.equal(store.getSummary(sommet, 'en', 'a2'), null)
   })
 })

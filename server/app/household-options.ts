@@ -42,7 +42,7 @@ export const householdOptionsOf = (
   options: Options,
   { accountOf, cookieFor }: ReturnType<typeof accountSession>
 ): HouseholdRoutesOptions | null => {
-  const { profiles, household, aiProviders, now, setupCode, throttle, accounts } = options
+  const { profiles, household, aiProviders, now, setupCode, throttle, accounts, accountAi } = options
   const { passwordResets, serverMail, serverSettings, onHouseholdChange } = options
   if (!profiles) return null
   return {
@@ -55,6 +55,7 @@ export const householdOptionsOf = (
     setupCode,
     throttle,
     accounts,
+    accountAi,
     accountOf,
     cookieFor,
     onChange: onHouseholdChange,
