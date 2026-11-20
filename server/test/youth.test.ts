@@ -557,6 +557,23 @@ listen:
     assert.equal(typeof ((await added.json()) as { revision: number }).revision, 'number')
     assert.ok(!users(1).hiddenSources().includes('lemonde'))
 
+    // A source one adds goes into their list only; the others' devices hear it is off for them.
+    const zoe = profiles.list().find(profile => profile.name === 'Zoé')!
+    const zoeRevision = users(zoe.id).revision
+    const blog = await call('POST', '/sources', 1, {
+      url: 'https://moi.example/',
+      section: 'topic',
+      topicIds: ['world']
+    })
+    assert.equal(blog.status, 201)
+    const { id: blogId } = (await blog.json()) as { id: string }
+    assert.ok(users(1).sources.mine().includes(blogId))
+    assert.ok(!users(zoe.id).sources.mine().includes(blogId))
+    assert.ok(users(zoe.id).revision > zoeRevision)
+    assert.equal((await call('DELETE', `/sources/${blogId}`, 1)).status, 204)
+    // Deleted, it is in nobody's list any more.
+    assert.ok(!users(1).sources.mine().includes(blogId))
+
     // A new adult starts with the base sources only.
     const paul = await create('Paul', 'adult')
     assert.deepEqual(users(paul.id).sources.mine().sort(), ['lemonde', 'rtl'])
@@ -657,8 +674,11 @@ listen:
       400
     )
 
+    const adminRevision = users(1).revision
     const accepted = await call('POST', `/source-requests/${request.id}`, 1, { accept: true })
     assert.equal(accepted.status, 200)
+    // The new source is off for the parent: their devices hear of it.
+    assert.ok(users(1).revision > adminRevision)
     assert.deepEqual(((await accepted.json()) as { requests: unknown[] }).requests, [])
     // In the household's catalogue as the parent's, on for the teen only.
     const blog = youth.allowedSources(zoe.id).find(id => id.startsWith('p1-'))

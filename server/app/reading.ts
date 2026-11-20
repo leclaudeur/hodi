@@ -63,7 +63,7 @@ const mountStorage = (api: express.Router, { options }: Wiring) => {
 
 // "Ajouter une source".
 const mountSources = (api: express.Router, { options }: Wiring) => {
-  const { sources, news, plugins, serverSettings, users, now } = options
+  const { sources, news, plugins, serverSettings, users, profiles, now } = options
   if (!sources) return
   api.use(
     '/sources',
@@ -75,7 +75,13 @@ const mountSources = (api: express.Router, { options }: Wiring) => {
       proposals: () => sources.store.proposals(withPluginFeeds(sources.file, plugins)),
       maxSources: () => serverSettings?.maxSources() ?? null,
       // In its adder's « Mes sources » only: the others add it from the catalogue if they want it.
-      onAdded: (sourceId, profileId) => users?.(profileId).sources.add([sourceId], now()),
+      onAdded: (sourceId, profileId) => {
+        users?.(profileId).sources.add([sourceId], now())
+        profiles
+          ?.list()
+          .filter(profile => profile.id !== profileId)
+          .forEach(profile => users?.(profile.id).sources.catalogueChanged(now()))
+      },
       now
     })
   )

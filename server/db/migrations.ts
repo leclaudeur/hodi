@@ -1331,6 +1331,10 @@ const MIGRATIONS: string[] = [
   CREATE TRIGGER profiles_forget_sources AFTER DELETE ON profiles WHEN OLD.user_id IS NULL BEGIN
     DELETE FROM my_sources WHERE owner = 'p' || OLD.id;
   END;
+  CREATE TRIGGER household_sources_forget_readers AFTER DELETE ON household_sources
+  WHEN NOT EXISTS (SELECT 1 FROM household_sources WHERE source_id = OLD.source_id) BEGIN
+    DELETE FROM my_sources WHERE source_id = OLD.source_id;
+  END;
   CREATE TRIGGER profiles_hand_over_sources AFTER UPDATE OF user_id ON profiles
   WHEN OLD.user_id IS NULL AND NEW.user_id IS NOT NULL BEGIN
     UPDATE OR IGNORE my_sources SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;

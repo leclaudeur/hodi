@@ -46,7 +46,9 @@ export const sourcesOf = (
   // Whether they have a list yet: a new person starts with the base sources.
   any: () => db.prepare('SELECT 1 FROM my_sources WHERE owner = ? LIMIT 1').get(owner) !== undefined,
   add: (ids: string[], now: number) => write(now, () => void addMySources(db, owner, ids, now)),
-  remove: (id: string, now: number) => write(now, () => void removeMySource(db, owner, id))
+  remove: (id: string, now: number) => write(now, () => void removeMySource(db, owner, id)),
+  // A source came into the catalogue: it is one more off for them, which their devices hear of.
+  catalogueChanged: (now: number) => write(now, () => {})
 })
 
 // How many people read each source, for its counter.

@@ -190,6 +190,7 @@ export class YouthSources {
       const added = { ...source, id, addedBy: byId }
       if (!news.addSource(added, section, sectionIds)) return false
       store.add(added, section, sectionIds, this.#options.now())
+      this.#tellOthers(profile.id)
     }
     this.setSources(profile, [...this.#options.youth.allowedSources(profile.id), id], byId)
     return true
@@ -205,7 +206,16 @@ export class YouthSources {
     const added = { ...source, addedBy: byId }
     if (!news.addSource(added, 'topic', [topic.id])) return false
     store.add(added, 'topic', [topic.id], now())
+    this.#tellOthers(null)
     return true
+  }
+
+  // A source brought in for a young profile is in nobody else's « Mes sources »: their devices hear it is off.
+  #tellOthers(exceptId: number | null) {
+    const { users, profiles, now } = this.#options
+    for (const profile of profiles()) {
+      if (profile.id !== exceptId) users(profile.id).sources.catalogueChanged(now())
+    }
   }
 
   #adminId() {
