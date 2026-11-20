@@ -946,6 +946,11 @@ describe('profiles', () => {
     assert.equal((await find(`@${people[0]!.handle.toUpperCase()}`))?.id, 1)
     assert.equal(await find('@personne'), null)
     assert.equal((await call('GET', '/me/share-targets/personne')).status, 200)
+    // Too many in a minute, and the profile waits: nobody lists the server's people by trying every name.
+    let looked = 2
+    while ((await call('GET', `/me/share-targets/p${looked}`, { cookie: asLea })).status === 200) looked += 1
+    assert.equal(looked, 60)
+    assert.equal((await call('GET', '/me/share-targets/personne')).status, 200)
 
     await call('PUT', '/me/preferences', { body: { preferences: { sharing: false } } })
     assert.deepEqual(await targets(asLea), [])
