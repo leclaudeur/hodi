@@ -111,7 +111,7 @@ const mountForgotRoute = (router: express.Router, options: ResolvedOptions) => {
       hodiFrame(language, { appUrl: settings.appUrl, home: home?.() ?? null }),
       language
     )
-    send(settings, { to: account.email, subject: t('mail.reset.subject'), text, html }).catch((error: unknown) =>
+    send(settings, { to: email, subject: t('mail.reset.subject'), text, html }).catch((error: unknown) =>
       log(`Password reset e-mail failed: ${String(error)}`)
     )
   })

@@ -1,6 +1,8 @@
 import express from 'express'
 import { type Profile, type ProfileStore, isYoung } from '../db/profile-store.ts'
+import type { UserAccountStore } from '../db/user-account-store.ts'
 import type { UserStore } from '../db/user-store.ts'
+import { isParentOfYoung } from './parent-check.ts'
 import {
   MAX_EXPLAIN_PER_DAY,
   type TimeRange,
@@ -11,7 +13,7 @@ import {
   minutesOf
 } from '../db/youth-store.ts'
 import type { YouthSources } from '../news/youth-sources.ts'
-import { isAdminOf, isParentOf, kindOf, profileIdOf } from './profile-routes.ts'
+import { kindOf, profileIdOf } from './profile-routes.ts'
 import { WEEK_MS } from '../../shared/time.ts'
 
 const MAX_IDS = 300
@@ -125,6 +127,8 @@ interface YouthProfileOptions {
   sources?: YouthSources
   profiles: ProfileStore
   users?: (profileId: number) => UserStore
+  // Who the young profile's parents are; absent in tests without accounts.
+  accounts?: UserAccountStore
   now: () => number
 }
 
@@ -133,7 +137,7 @@ type YoungOf = ReturnType<typeof youngOfProfiles>
 // A young profile's fiche, for its parents: its rules, and its week (time, articles and themes, never titles).
 export const youthProfileRoutes = (options: YouthProfileOptions) => {
   const router = express.Router()
-  const youngOf = youngOfProfiles(options.profiles)
+  const youngOf = youngOfProfiles(options.profiles, options.accounts)
   mountRulesRoutes(router, options, youngOf)
   mountYouthSourceRoutes(router, options, youngOf)
   mountWeekRoute(router, options, youngOf)
@@ -141,19 +145,21 @@ export const youthProfileRoutes = (options: YouthProfileOptions) => {
 }
 
 // The young profile asked about, when the one asking is one of its parents; else the refusal is sent.
-const youngOfProfiles = (profiles: ProfileStore) => (request: express.Request, response: express.Response) => {
-  const id = Number(request.params.id)
-  const profile = Number.isInteger(id) ? profiles.get(id) : null
-  if (!profile || !isYoung(profile)) {
-    response.status(404).json({ error: 'not_found' })
-    return null
+const youngOfProfiles =
+  (profiles: ProfileStore, accounts: UserAccountStore | undefined) =>
+  (request: express.Request, response: express.Response) => {
+    const id = Number(request.params.id)
+    const profile = Number.isInteger(id) ? profiles.get(id) : null
+    if (!profile || !isYoung(profile)) {
+      response.status(404).json({ error: 'not_found' })
+      return null
+    }
+    if (!isParentOfYoung(response, accounts, profile)) {
+      response.status(403).json({ error: 'parents_only' })
+      return null
+    }
+    return profile
   }
-  if (!isParentOf(response) && !isAdminOf(response)) {
-    response.status(403).json({ error: 'parents_only' })
-    return null
-  }
-  return profile
-}
 
 const mountRulesRoutes = (router: express.Router, { youth, now }: YouthProfileOptions, youngOf: YoungOf) => {
   router.get('/:id/rules', (request, response) => {

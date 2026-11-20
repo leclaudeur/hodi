@@ -11,15 +11,32 @@ import { profileDeviceRoutes } from '../http/profile-device-routes.ts'
 import { profileRoutes, requireAdmin } from '../http/profile-routes.ts'
 import { sessionRoutes } from '../http/session-routes.ts'
 import { sourceRequestMeRoutes, sourceRequestRoutes } from '../http/source-request-routes.ts'
+import { youngAccountRoutes } from '../http/young-account-routes.ts'
 import { youthGate, youthMeRoutes, youthProfileRoutes } from '../http/youth-routes.ts'
 import { textsIn } from '../i18n.ts'
 import type { Wiring } from './wiring.ts'
 
 // Réglages › Compte et données.
-const mountAccount = (api: express.Router, { options, config, session, profileHooks }: Wiring) => {
+const mountAccount = (api: express.Router, wiring: Wiring) => {
+  const { options, config, session, profileHooks } = wiring
   const { accounts, devices, accountData, profiles, household, throttle, now, plugins, twoFactor, handles } = options
   if (!accounts || !devices || !accountData) return
   if (handles) api.use('/account/handle', accountHandleRoutes({ handles, sessionOf: session.sessionOf, now }))
+  if (profiles)
+    api.use(
+      '/account/children',
+      youngAccountRoutes({
+        accounts,
+        profiles,
+        young: accounts.young,
+        sessionOf: session.sessionOf,
+        checkProof: wiring.checkProof,
+        now,
+        onCreate: profileHooks.created,
+        onDeleteProfile: id => profileHooks.deleted(id),
+        onAccountDeleted: id => plugins?.accountDeleted(id)
+      })
+    )
   api.use(
     '/account',
     accountRoutes({
@@ -51,7 +68,7 @@ const mountAccount = (api: express.Router, { options, config, session, profileHo
 const mountProfiles = (api: express.Router, wiring: Wiring) => {
   const { profiles, profileDevices, youth, users, accounts, pinThrottle, now } = wiring.options
   if (!profiles) return
-  if (profileDevices) api.use('/profiles', profileDeviceRoutes({ devices: profileDevices, profiles, now }))
+  if (profileDevices) api.use('/profiles', profileDeviceRoutes({ devices: profileDevices, profiles, accounts, now }))
   api.use(
     '/profiles',
     profileRoutes({
@@ -70,7 +87,10 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
     })
   )
   if (youth) {
-    api.use('/profiles', youthProfileRoutes({ youth, sources: wiring.youthSources ?? undefined, profiles, users, now }))
+    api.use(
+      '/profiles',
+      youthProfileRoutes({ youth, sources: wiring.youthSources ?? undefined, profiles, users, accounts, now })
+    )
   }
 }
 

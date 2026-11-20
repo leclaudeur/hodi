@@ -19,6 +19,7 @@ import {
 import { ANYONE_IN, refuseSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
 import { type InvitationMail, invitationRoutes, inviteOf, mailInvitation } from './invitation-routes.ts'
+import { isParentOfYoung } from './parent-check.ts'
 import { isAdminOf, isParentOf, profileIdOf } from './profile-routes.ts'
 
 // "J'ai un code": an adult of the household invites a new adult, or the admin gives an adult profile without an
@@ -251,15 +252,19 @@ interface CodeRoutesOptions {
 }
 
 // "Connecter un appareil" for one profile: the code, or the refusal sent.
-const profileCode = ({ codes, profiles, now }: CodeRoutesOptions, profileId: unknown, response: express.Response) => {
+const profileCode = (
+  { codes, profiles, accounts, now }: CodeRoutesOptions,
+  profileId: unknown,
+  response: express.Response
+) => {
   const target = typeof profileId === 'number' ? profiles.get(profileId) : null
   // One's own password changes in Réglages › Compte et données, with the current one.
   if (!target || target.id === profileIdOf(response)) {
     response.status(400).json({ error: 'bad_request' })
     return
   }
-  if (!isYoung(target) && !isAdminOf(response)) {
-    response.status(403).json({ error: 'admin_only' })
+  if (isYoung(target) ? !isParentOfYoung(response, accounts, target) : !isAdminOf(response)) {
+    response.status(403).json({ error: isYoung(target) ? 'parents_only' : 'admin_only' })
     return
   }
   // An adult's password is theirs: no one in the household gives them a new one. A forgotten one goes through
