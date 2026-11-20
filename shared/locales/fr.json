@@ -1788,7 +1788,8 @@
       "message": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
       "messageHousehold": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Le foyer {{name}} n’a pas d’autre adulte avec un compte : il part aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
       "messageHouseholdWith": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Le foyer {{name}} n’a pas d’autre adulte avec un compte : il part aussi, avec les profils de {{profiles}}.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-      "button": "Supprimer"
+      "button": "Supprimer",
+      "messageChildren": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Tu es le seul parent de {{children}} : leurs comptes partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}."
     },
     "signOutDevice": {
       "title": "Déconnecter {{device}} ?",
@@ -2656,6 +2657,45 @@
       "saved": "Mot de passe de {{name}} enregistré",
       "actionLabel": "Mot de passe de {{name}}"
     },
-    "loadFailed": "Impossible de charger tes enfants."
+    "loadFailed": "Impossible de charger tes enfants.",
+    "parents": {
+      "title": "Parents",
+      "you": "Toi",
+      "same": "Mêmes droits que toi",
+      "leave": "Ne plus être parent",
+      "waiting": "Invitation envoyée, en attente de réponse",
+      "cancel": "Annuler",
+      "cancelLabel": "Annuler l’invitation de @{{handle}}",
+      "second": "Second parent",
+      "secondHint": "Un autre adulte qui a un compte ici",
+      "invite": "Inviter",
+      "inviteTitle": "Inviter un parent",
+      "inviteIntro": "Son identifiant, d’un compte qui existe déjà sur ce serveur. S’il accepte, il aura les mêmes droits que toi sur <b>{{name}}</b>.",
+      "handle": "Identifiant",
+      "handlePlaceholder": "marie",
+      "send": "Inviter",
+      "sent": "Invitation envoyée à @{{handle}}",
+      "unknown": "Aucun compte adulte avec cet identifiant sur ce serveur.",
+      "already": "Ce compte est déjà parent.",
+      "full": "Deux parents au plus.",
+      "tooMany": "Trop d’essais : réessaie dans une minute.",
+      "failed": "Ça n’a pas marché. Réessaie.",
+      "leaveTitle": "Ne plus être parent de {{name}} ?",
+      "leaveText": "Tu ne gères plus <b>{{name}}</b> : son autre parent garde tout. Pour redevenir parent, il faudra qu’il t’invite.",
+      "left": "Tu n’es plus parent de {{name}}"
+    },
+    "invitations": {
+      "title": "Demandes",
+      "hint": "{{name}} te demande d’être aussi son parent",
+      "answer": "Répondre",
+      "answerLabel": "Répondre pour {{name}}",
+      "dialogTitle": "Demande de parent",
+      "dialogText": "<b>{{from}}</b> veut que tu sois aussi parent de <b>{{name}}</b>. Vous aurez les mêmes droits : ses sources, ses horaires, son mot de passe et sa suppression.",
+      "accept": "Accepter",
+      "refuse": "Refuser",
+      "accepted": "Tu es parent de {{name}}",
+      "refused": "Demande refusée",
+      "failed": "Ça n’a pas marché. Réessaie."
+    }
   }
 }

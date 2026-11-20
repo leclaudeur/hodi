@@ -17,6 +17,9 @@ export interface DeletionPlan {
   profiles: Pick<Profile, 'id' | 'name' | 'kind'>[]
   // Who takes over the household's admin and the server's, when the person held them.
   heir: Profile | null
+  // The teens and children the person is the only parent of: their accounts go too. With the household, they are
+  // among its profiles already.
+  children: { accountId: number; id: number; name: string }[]
 }
 
 export const deletionPlan = (
@@ -30,7 +33,7 @@ export const deletionPlan = (
   // No profile here any more (deleted from the household): the account goes alone, never the household it left. The
   // server's admin still hands /server over to an heir.
   if (own === null && !account.serverAdmin)
-    return { householdGoes: false, household: householdName, profiles: [], heir: null }
+    return { householdGoes: false, household: householdName, profiles: [], heir: null, children: [] }
   const all = profiles.list()
   const others = all.filter(profile => profile.kind === 'adult' && profile.hasAccount && profile.id !== own)
   const householdGoes = others.length === 0
@@ -40,9 +43,17 @@ export const deletionPlan = (
     householdGoes,
     household: householdName,
     profiles: going.map(({ id, name, kind }) => ({ id, name, kind })),
-    heir: householdGoes ? null : (others.find(profile => profile.role === 'admin') ?? others[0]!)
+    heir: householdGoes ? null : (others.find(profile => profile.role === 'admin') ?? others[0]!),
+    children: householdGoes ? [] : onlyChildren(account, accounts, profiles, householdId)
   }
 }
+
+const onlyChildren = (account: UserAccount, accounts: UserAccountStore, profiles: ProfileStore, householdId: number) =>
+  accounts.young.invitations.onlyChildrenOf(account.id).flatMap(accountId => {
+    const id = accounts.profileOf(accountId, householdId)
+    const profile = id === null ? null : profiles.get(id)
+    return profile ? [{ accountId, id: profile.id, name: profile.name }] : []
+  })
 
 // The account and what the plan says goes with it, at once. A household that goes is left as a new install's: its
 // first-run screens come back, with one first profile to give the next admin. Answers the ids of the accounts deleted:
@@ -116,9 +127,10 @@ const leaveHousehold = (
   // (forget-log.ts).
   const keyOf = (table: 'profiles' | 'users' | 'accounts', id: number) => rowKey(db, table, id)
   if (plan.householdGoes) return wipeHousehold(db, account, householdId, now)
+  const children = forgetChildren(db, plan, householdId)
   const own = plan.profiles[0]
   // Nothing of the household is the account's: it goes alone.
-  if (!plan.heir) return []
+  if (!plan.heir) return children
   const heir = plan.heir
   const heirKey = keyOf('profiles', heir.id)
   if (own) {
@@ -142,8 +154,18 @@ const leaveHousehold = (
     if (heirUser) recordForget({ kind: 'serverAdmin', ...heirUser })
     db.prepare('UPDATE users SET server_admin = 1 WHERE id = (SELECT user_id FROM profiles WHERE id = ?)').run(heir.id)
   }
-  return []
+  return children
 }
+
+// The young accounts left with no parent: their profiles and accounts, each written down first.
+const forgetChildren = (db: Database, plan: DeletionPlan, householdId: number) =>
+  plan.children.map(child => {
+    const key = rowKey(db, 'profiles', child.id)
+    if (key) recordForget({ kind: 'profile', ...key, householdId })
+    db.prepare('DELETE FROM profiles WHERE id = ?').run(child.id)
+    forgetAccount(db, child.accountId)
+    return child.accountId
+  })
 
 // The households an account reads in, by their ids.
 export const householdsOf = (db: Database, accountId: number) =>

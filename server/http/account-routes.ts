@@ -154,6 +154,8 @@ const accountHelpers = ({
         householdGoes: going.householdGoes,
         household: going.household,
         others: going.profiles.slice(1).map(profile => profile.name),
+        // The teens and children it is the only parent of, which go with it.
+        children: going.children.map(child => child.name),
         // Who becomes the household's admin when the person leaves or goes.
         heir: going.heir?.name ?? null,
         // The person reads in this household: an account with no profile here has nothing to leave.

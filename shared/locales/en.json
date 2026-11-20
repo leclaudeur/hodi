@@ -1788,7 +1788,8 @@
       "message": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. Backup copies forget it within {{days}}.",
       "messageHousehold": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>The household {{name}} has no other adult with an account: it goes too.</b> Backup copies forget it within {{days}}.",
       "messageHouseholdWith": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>The household {{name}} has no other adult with an account: it goes too, with the profiles of {{profiles}}.</b> Backup copies forget it within {{days}}.",
-      "button": "Delete"
+      "button": "Delete",
+      "messageChildren": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>You are the only parent of {{children}}: their accounts go too.</b> Backup copies forget it within {{days}}."
     },
     "signOutDevice": {
       "title": "Sign out {{device}}?",
@@ -2656,6 +2657,45 @@
       "saved": "{{name}}’s password saved",
       "actionLabel": "{{name}}’s password"
     },
-    "loadFailed": "Couldn’t load your children."
+    "loadFailed": "Couldn’t load your children.",
+    "parents": {
+      "title": "Parents",
+      "you": "You",
+      "same": "Same rights as you",
+      "leave": "Stop being a parent",
+      "waiting": "Invitation sent, waiting for an answer",
+      "cancel": "Cancel",
+      "cancelLabel": "Cancel @{{handle}}’s invitation",
+      "second": "Second parent",
+      "secondHint": "Another adult with an account here",
+      "invite": "Invite",
+      "inviteTitle": "Invite a parent",
+      "inviteIntro": "Their username, from an account that already exists on this server. If they accept, they get the same rights as you over <b>{{name}}</b>.",
+      "handle": "Username",
+      "handlePlaceholder": "marie",
+      "send": "Invite",
+      "sent": "Invitation sent to @{{handle}}",
+      "unknown": "No adult account with this username on this server.",
+      "already": "This account is a parent already.",
+      "full": "Two parents at most.",
+      "tooMany": "Too many tries: try again in a minute.",
+      "failed": "That didn’t work. Try again.",
+      "leaveTitle": "Stop being {{name}}’s parent?",
+      "leaveText": "You no longer run <b>{{name}}</b>: their other parent keeps everything. To be a parent again, they will have to invite you.",
+      "left": "You’re no longer {{name}}’s parent"
+    },
+    "invitations": {
+      "title": "Requests",
+      "hint": "{{name}} asks you to be their parent too",
+      "answer": "Answer",
+      "answerLabel": "Answer for {{name}}",
+      "dialogTitle": "Parent request",
+      "dialogText": "<b>{{from}}</b> wants you to be <b>{{name}}</b>’s parent too. You’ll have the same rights: their sources, hours, password and deletion.",
+      "accept": "Accept",
+      "refuse": "Refuse",
+      "accepted": "You’re {{name}}’s parent",
+      "refused": "Request refused",
+      "failed": "That didn’t work. Try again."
+    }
   }
 }

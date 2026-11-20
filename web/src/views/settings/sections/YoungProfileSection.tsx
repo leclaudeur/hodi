@@ -11,6 +11,7 @@ import Button from '../../../ui/Button.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
 import StatusLine from '../../../ui/StatusLine.tsx'
 import CodeDialog from '../../profiles/CodeDialog.tsx'
+import ChildParents from '../../profiles/ChildParents.tsx'
 import ChildPasswordRow from '../../profiles/ChildPasswordRow.tsx'
 import YoungDevices from '../../profiles/YoungDevices.tsx'
 import RichText from '../../../ui/RichText.tsx'
@@ -69,7 +70,7 @@ const confirmRemove = (id: number, name: string, close: () => void, t: TFunction
   })
 
 // Mon compte › Mes enfants › Gérer: a young one's page, for its parents. What it reads (sources, themes), when and how
-// long (time per day, hours, quiet hours), its week, its password and devices. Every change happens in a dialog.
+// long (time per day, hours, quiet hours), its week, its parents, its password and devices. Every change happens in a dialog.
 const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => {
   const { t } = useTranslation()
   const value = useProfiles({ fresh: true })
@@ -107,6 +108,8 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
       <WeekRows {...rows} />
 
       {/* Its own tablet or phone, linked with a code, and those already linked. Codes come with personal accounts. */}
+      {own?.hasAccount && <ChildParents profileId={profile.id} ownName={own.name} />}
+
       {own?.hasAccount && (
         <>
           <h2 className={styles.label}>{t('young.devices')}</h2>

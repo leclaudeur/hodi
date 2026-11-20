@@ -711,6 +711,28 @@ test('switches the interface to English and back', async () => {
   await expect(sam.getByRole('heading', { name: 'Profil', level: 1 })).toBeVisible()
 })
 
+test('makes Sam Zoé’s second parent: Alex invites Sam’s username, Sam accepts', async () => {
+  await page.goto('/#/settings/profiles')
+  await page.getByRole('link', { name: 'Gérer Zoé' }).click()
+  await page.getByRole('button', { name: 'Inviter' }).click()
+  const invite = page.getByRole('dialog', { name: 'Inviter un parent' })
+  await invite.getByRole('textbox', { name: 'Identifiant' }).fill('personne')
+  await invite.getByRole('button', { name: 'Inviter' }).click()
+  await expect(invite.getByText('Aucun compte adulte avec cet identifiant sur ce serveur.')).toBeVisible()
+  await invite.getByRole('textbox', { name: 'Identifiant' }).fill('sam')
+  await invite.getByRole('button', { name: 'Inviter' }).click()
+  await expect(page.getByText('Invitation envoyée, en attente de réponse')).toBeVisible()
+
+  await sam.goto('/#/account/children')
+  await sam.getByRole('button', { name: 'Répondre pour Zoé' }).click()
+  await sam.getByRole('dialog', { name: 'Demande de parent' }).getByRole('button', { name: 'Accepter' }).click()
+  await expect(sam.getByRole('link', { name: 'Gérer Zoé' })).toBeVisible()
+  await page.reload()
+  await expect(page.getByText('Mêmes droits que toi')).toBeVisible()
+  // Out of Réglages: it lists the teen's requests again when it opens next.
+  await page.goto('/')
+})
+
 test('shows a teen only the sources its parents gave it', async ({ browser }) => {
   // Her tour was skipped on her tablet: it does not come back here.
   teen = await signIn(browser, 'Zoé')

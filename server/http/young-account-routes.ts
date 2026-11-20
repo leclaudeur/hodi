@@ -13,6 +13,7 @@ import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
 import type { UserDevice } from '../db/user-device-store.ts'
 import { type NewYoungAccount, type YoungAccountStore, type YoungKind } from '../db/young-account-store.ts'
 import { isPassword } from './household-input.ts'
+import { mountParentRoutes } from './parent-routes.ts'
 import { profileIdOf } from './profile-routes.ts'
 import type { CheckProof } from './proof.ts'
 
@@ -68,32 +69,38 @@ export const youngAccountRoutes = (options: YoungAccountRoutesOptions) => {
     return session.account
   }
 
+  // invitations: the young ones whose other parent asks this adult to be theirs too.
   router.get('/', (request, response) => {
     const parent = parentOf(request, response)
-    if (parent) response.json({ children: young.childrenOf(parent.id) })
+    if (parent) response.json({ children: young.childrenOf(parent.id), invitations: young.invitations.to(parent.id) })
   })
 
   mountCreateRoute(router, options, parentOf)
   mountChildRoutes(router, options, parentOf)
+  // An @identifier tried in a loop would tell which ones exist.
+  mountParentRoutes(router, options, parentOf, perMinute(options, 'parent-invite'))
   return router
 }
 
-type ParentOf = (request: express.Request, response: express.Response) => UserAccount | null
-
-const mountCreateRoute = (router: express.Router, options: YoungAccountRoutesOptions, parentOf: ParentOf) => {
-  const { accounts, profiles, young, now, onCreate } = options
-  const createLimit = rateLimit({
+// At most CREATES_PER_MINUTE of these a minute for each account.
+const perMinute = (options: YoungAccountRoutesOptions, name: string) =>
+  rateLimit({
     windowMs: 60_000,
     limit: CREATES_PER_MINUTE,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
-    keyGenerator: request => `young-create:${options.sessionOf(request)?.account.id ?? 'none'}`,
+    keyGenerator: request => `${name}:${options.sessionOf(request)?.account.id ?? 'none'}`,
     validate: { xForwardedForHeader: false },
     handler: (_request, response) => {
       response.status(429).json({ error: 'too_many_requests' })
     }
   })
-  router.post('/', createLimit, async (request, response) => {
+
+type ParentOf = (request: express.Request, response: express.Response) => UserAccount | null
+
+const mountCreateRoute = (router: express.Router, options: YoungAccountRoutesOptions, parentOf: ParentOf) => {
+  const { accounts, profiles, young, now, onCreate } = options
+  router.post('/', perMinute(options, 'young-create'), async (request, response) => {
     const parent = parentOf(request, response)
     if (!parent) return
     if (young.childrenOf(parent.id).length >= MAX_CHILDREN) {

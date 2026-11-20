@@ -117,6 +117,8 @@ export interface AccountView {
     householdGoes: boolean
     household: string
     others: string[]
+    // The teens and children it is the only parent of: they go too.
+    children: string[]
     heir: string | null
     member: boolean
     admin: boolean
