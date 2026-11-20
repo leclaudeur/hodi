@@ -2226,7 +2226,7 @@
         "created": "Created on",
         "reset": "Forgotten password",
         "resetLabel": "Make a code",
-        "resetHint": "The person types it after “I have a code”, then picks a new password. Their devices are signed out.",
+        "resetOnRequest": "Only once the person asks for one.",
         "own": "Yours changes in Settings › My account",
         "deleteSection": "Delete",
         "delete": "Delete this account",

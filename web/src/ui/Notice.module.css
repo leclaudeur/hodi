@@ -125,7 +125,8 @@
   min-height: 44px;
 }
 
-.roundAction {
+/* Under .side, to win over RoundButton's own display. */
+.side .roundAction {
   display: none;
 }
 
@@ -143,11 +144,11 @@
     padding: 12px;
   }
 
-  .wideAction {
+  .side .wideAction {
     display: none;
   }
 
-  .roundAction {
+  .side .roundAction {
     display: inline-flex;
   }
 }

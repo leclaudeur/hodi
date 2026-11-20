@@ -2,7 +2,7 @@ import express from 'express'
 import { type AccountDataStore, deletionPlan } from '../db/account-data.ts'
 import { inHousehold } from '../db/household-scope.ts'
 import { type HouseholdStore, cleanHouseholdName } from '../db/household-store.ts'
-import { MAX_PROFILES, type ProfileStore, cleanName, isYoung } from '../db/profile-store.ts'
+import { MAX_PROFILES, type ProfileStore, cleanName } from '../db/profile-store.ts'
 import { type Language, isLanguage } from '../../shared/i18n.ts'
 import type { ServerPeopleStore } from '../db/server-people-store.ts'
 import {
@@ -22,6 +22,7 @@ import { sendHouseholdPhoto } from './household-photo.ts'
 import { profileIdOf } from './profile-routes.ts'
 import { type CheckProof, accountAsking, askingWithProof } from './proof.ts'
 import { type Backups, mountBackupRoutes } from './server-backup-routes.ts'
+import { mountAccountCodeRoute } from './server-account-code-route.ts'
 import { mountGeneralRoutes } from './server-general-routes.ts'
 
 // The server's own space (#/server), for its admin only: requireServerAdmin stands in front of these.
@@ -78,6 +79,7 @@ export const serverRoutes = (options: ServerRoutesOptions) => {
   mountOverviewRoute(router, options)
   mountPeopleRoutes(router, options)
   mountInviteRoutes(router, options, helpers)
+  mountAccountCodeRoute(router, options, helpers)
   mountDeletionRoutes(router, options, helpers)
   mountContentRoutes(router, options)
   if (options.settings) mountGeneralRoutes(router, options.settings)
@@ -209,8 +211,8 @@ const mountPeopleRoutes = (
 
 const mountInviteRoutes = (
   router: express.Router,
-  { people, codes, profiles, codeRequests, now }: ServerRoutesOptions,
-  { createdByOf, proven }: ServerHelpers
+  { people, codes, profiles, now }: ServerRoutesOptions,
+  { createdByOf }: ServerHelpers
 ) => {
   if (!people || !codes || !profiles) return
   // "Inviter un adulte" in a household: the same code as Réglages › Profils gives, valid once and for a day.
@@ -242,25 +244,6 @@ const mountInviteRoutes = (
     }
     const code = codes.create({ profileId: admin.id, createdBy: createdByOf(response), householdId: id }, now())
     response.status(201).json({ profile: { id: admin.id, name: admin.name }, ...code })
-  })
-
-  // "Mot de passe oublié" for an adult's account: a code that lets that person choose a new password. One's own
-  // password changes in Réglages › Compte et données, with the current one.
-  router.post('/accounts/:id/code', async (request, response) => {
-    const account = people.accounts().find(entry => entry.id === Number(request.params.id))
-    const profile = account?.profile ? profiles.get(account.profile.id) : null
-    if (!account || !profile || isYoung(profile)) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    if (profile.id === profileIdOf(response)) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    if (!(await proven(request, response))) return
-    const made = codes.create({ profileId: profile.id, createdBy: createdByOf(response), reset: true }, now())
-    codeRequests?.handled(account.id)
-    response.status(201).json(made)
   })
 }
 

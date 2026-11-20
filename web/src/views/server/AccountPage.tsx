@@ -13,7 +13,7 @@ import CodeDialog from '../profiles/CodeDialog.tsx'
 import SectionPage from '../settings/SectionPage.tsx'
 import SettingRow from '../settings/SettingRow.tsx'
 import styles from '../settings/Settings.module.css'
-import { dateOf, usePeople } from './server-people.ts'
+import { dateOf, load, usePeople } from './server-people.ts'
 
 // What the account is: its e-mail, role, last visit, devices and age.
 const AccountFacts = ({ account, role }: { account: ServerAccount; role: string }) => {
@@ -94,7 +94,11 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
       message: <RichText i18nKey="confirm.resetPassword.message" values={{ name }} />,
       label: t('confirm.resetPassword.button'),
       proof: {},
-      onConfirm: async proof => setMade(await createAccountCode(account.id, proof))
+      onConfirm: async proof => {
+        setMade(await createAccountCode(account.id, proof))
+        // The request is handled: its notice goes.
+        void load()
+      }
     })
 
   const role = t(account.profile ? 'server.people.account.roles.member' : 'server.people.account.roles.none')
@@ -114,19 +118,11 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
         <>
           <h2 className={styles.label}>{t('server.people.account.reset')}</h2>
           <div className={styles.card}>
-            {account.serverAdmin ? (
-              <SettingRow label={t('server.people.account.resetLabel')} hint={t('server.people.account.own')} />
-            ) : (
-              <SettingRow
-                label={t('server.people.account.resetLabel')}
-                hint={t('server.people.account.resetHint')}
-                action={{
-                  label: t('server.people.account.resetLabel'),
-                  icon: KeyRound,
-                  onClick: () => reset(account.profile!.name)
-                }}
-              />
-            )}
+            {/* Only once the person asked, from the notice above: nobody takes an account over on their own. */}
+            <SettingRow
+              label={t('server.people.account.resetLabel')}
+              hint={t(account.serverAdmin ? 'server.people.account.own' : 'server.people.account.resetOnRequest')}
+            />
           </div>
           <CodeDialog
             target={made ? { id: account.profile.id, name: account.profile.name, reset: true } : undefined}
