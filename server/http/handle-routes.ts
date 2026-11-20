@@ -2,6 +2,7 @@ import express from 'express'
 import { rateLimit } from 'express-rate-limit'
 import { cleanHandle } from '../../shared/handle.ts'
 import type { HandleStore } from '../db/handle-store.ts'
+import { type SignInCodeStore, signInCodeOf } from '../db/sign-in-code-store.ts'
 import type { UserAccount } from '../db/user-account-store.ts'
 
 // How many identifiers a client may check in a minute, typing included.
@@ -15,9 +16,14 @@ interface HandleRoutesOptions {
   now: () => number
 }
 
-// "Identifiant", as it is typed: free, or taken and a free one like it. Before any sign-in too, for the first-run
-// screens and a code's new account; identifiers are public anyway, for friends.
-export const handleCheckRoutes = ({ handles, sessionOf, now }: HandleRoutesOptions) => {
+interface HandleCheckOptions extends HandleRoutesOptions {
+  // An invitation's code stands for the session of the account it is making.
+  codes?: SignInCodeStore
+}
+
+// "Identifiant", as it is typed: free, or taken and a free one like it. Only for a signed-in account (Mon compte, the
+// first-run screens) or with an invitation's valid code: anyone else could list the identifiers that sign in.
+export const handleCheckRoutes = ({ handles, sessionOf, codes, now }: HandleCheckOptions) => {
   const router = express.Router()
   const limit = rateLimit({
     windowMs: 60_000,
@@ -29,13 +35,23 @@ export const handleCheckRoutes = ({ handles, sessionOf, now }: HandleRoutesOptio
       response.status(429).json({ error: 'too_many_requests' })
     }
   })
-  router.get('/:handle', limit, (request, response) => {
-    const handle = cleanHandle(request.params.handle)
+  const invited = (value: unknown) => {
+    const code = signInCodeOf(value)
+    const found = code && codes ? codes.peek(code, now()) : null
+    return found !== null && found.profileId === null && !found.reset
+  }
+  router.post('/check', limit, (request, response) => {
+    const body = (request.body ?? {}) as Record<string, unknown>
+    const self = sessionOf(request)?.account.id ?? null
+    if (self === null && !invited(body.code)) {
+      response.status(401).json({ error: 'unauthenticated' })
+      return
+    }
+    const handle = cleanHandle(body.handle)
     if (!handle) {
       response.status(400).json({ error: 'bad_handle' })
       return
     }
-    const self = sessionOf(request)?.account.id ?? null
     const free = handles.isFree(handle, now(), self)
     response.json({ free, suggestion: free ? null : handles.suggest(handle, now(), self) })
   })

@@ -94,8 +94,10 @@ describe('identifiers through the API', () => {
       .getSetCookie()
       .map(cookie => cookie.split(';')[0])
       .join('; ')
-  const check = async (handle: string, cookie = '') =>
-    (await (await call(`/handles/${encodeURIComponent(handle)}`, cookie)).json()) as {
+  const checkCall = (handle: string, cookie: string, code?: string) =>
+    call('/handles/check', cookie, 'POST', { handle, code })
+  const check = async (handle: string, cookie = claire, code?: string) =>
+    (await (await checkCall(handle, cookie, code)).json()) as {
       free: boolean
       suggestion: string | null
     }
@@ -130,7 +132,8 @@ describe('identifiers through the API', () => {
     close = () => server.close()
 
     const account = await call('/setup/account', '', 'POST', { email: 'claire@example.com', password: PASSWORD })
-    assert.equal((await check('claire')).free, false)
+    // The setup's own account: its identifier from the e-mail is its own.
+    assert.equal((await check('claire', cookiesFrom(account))).free, true)
     const done = await call('/setup', cookiesFrom(account), 'POST', {
       name: 'Famille Dupont',
       profile: { name: 'Claire', color: 'tech', handle: '@Claire.D' },
@@ -152,10 +155,16 @@ describe('identifiers through the API', () => {
   })
 
   it('says whether one is free, and a free one like it when not', async () => {
-    assert.deepEqual(await check('claire.d'), { free: false, suggestion: 'claire.d2' })
-    assert.deepEqual(await check('claire.d', claire), { free: true, suggestion: null })
-    assert.deepEqual(await check('paul'), { free: true, suggestion: null })
-    assert.equal((await call('/handles/a', '')).status, 400)
+    const code = ((await (await call('/codes', claire, 'POST', {})).json()) as { code: string }).code
+    assert.deepEqual(await check('claire.d', '', code), { free: false, suggestion: 'claire.d2' })
+    assert.deepEqual(await check('claire.d'), { free: true, suggestion: null })
+    assert.deepEqual(await check('paul', '', code), { free: true, suggestion: null })
+    assert.equal((await checkCall('a', claire)).status, 400)
+  })
+
+  it('answers no one signed out without an invitation, so identifiers cannot be listed', async () => {
+    assert.equal((await checkCall('claire.d', '')).status, 401)
+    assert.equal((await checkCall('claire.d', '', 'ABCDEFGH')).status, 401)
   })
 
   it('makes a code’s new account with the one it typed, unless taken', async () => {

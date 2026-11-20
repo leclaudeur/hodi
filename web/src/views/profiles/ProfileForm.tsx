@@ -57,7 +57,7 @@ interface ProfileFormProps {
   // A new profile from « Qui lit ? »: picking Adulte invites one with a code instead, so that it has its account.
   onInvite?: () => void
   // An account's own form: its identifier under the name; lockedUntil: changed less than 30 days ago.
-  withHandle?: { value?: string; lockedUntil?: number | null }
+  withHandle?: { value?: string; lockedUntil?: number | null; code?: string }
 }
 
 interface ActionsProps {
@@ -215,7 +215,12 @@ const ProfileForm = ({
   const [avatar, setAvatar] = useState<ProfileAvatarName>(() => firstAvatar(profile, others))
   const { saving, error, setError, save } = useSaving(onSave)
   const photo = useProfilePhoto(profile, initial?.photo, setError)
-  const handle = useHandle(name, { enabled: Boolean(withHandle), current: withHandle?.value, start: initial?.handle })
+  const handle = useHandle(name, {
+    enabled: Boolean(withHandle),
+    current: withHandle?.value,
+    start: initial?.handle,
+    code: withHandle?.code
+  })
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()

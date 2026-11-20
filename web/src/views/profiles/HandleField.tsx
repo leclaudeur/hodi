@@ -21,14 +21,14 @@ interface Checked {
 
 // Whether the server has the identifier free, once typing stops. A failed check counts as free: the server checks again
 // when the form is sent.
-const useHandleCheck = (handle: string, enabled: boolean) => {
+const useHandleCheck = (handle: string, enabled: boolean, code?: string) => {
   const [checked, setChecked] = useState<Checked | null>(null)
   const valid = enabled && cleanHandle(handle) === handle
   useEffect(() => {
     if (!valid) return
     let current = true
     const timer = setTimeout(() => {
-      checkHandle(handle).then(
+      checkHandle(handle, code).then(
         ({ free, suggestion }) => current && setChecked({ handle, free, suggestion }),
         () => current && setChecked({ handle, free: true, suggestion: null })
       )
@@ -37,7 +37,7 @@ const useHandleCheck = (handle: string, enabled: boolean) => {
       current = false
       clearTimeout(timer)
     }
-  }, [handle, valid])
+  }, [handle, valid, code])
   return checked?.handle === handle ? checked : null
 }
 
@@ -47,14 +47,16 @@ interface HandleOptions {
   current?: string
   // The one typed before, in the first-run screens.
   start?: string
+  // Signed out, the invitation's code the account is made with.
+  code?: string
 }
 
 // An account's identifier in its form: made from the name until it is typed, and then the free one like it when the
 // name's is taken. ready: it can be sent.
-export const useHandle = (name: string, { enabled, current, start }: HandleOptions) => {
+export const useHandle = (name: string, { enabled, current, start, code }: HandleOptions) => {
   const [typed, setTyped] = useState<string | null>(current ?? start ?? null)
   const base = typed ?? (name.trim() ? handleBase(name) : '')
-  const checked = useHandleCheck(base, enabled && base !== current)
+  const checked = useHandleCheck(base, enabled && base !== current, code)
   const suggested = typed === null && checked && !checked.free ? checked.suggestion : null
   const value = suggested ?? base
   const statusOf = (): HandleStatus => {

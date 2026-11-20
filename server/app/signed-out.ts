@@ -118,7 +118,8 @@ export const mountSignedOut = (api: express.Router, wiring: Wiring) => {
   const { accounts, devices, profiles, profileDevices, plugins, pluginInstaller, twoFactor, throttle, now } = options
   if (householdOptions) api.use('/setup', setupRoutes(householdOptions))
   const { handles } = options
-  if (handles) api.use('/handles', handleCheckRoutes({ handles, sessionOf: wiring.session.sessionOf, now }))
+  if (handles)
+    api.use('/handles', handleCheckRoutes({ handles, sessionOf: wiring.session.sessionOf, codes: options.codes, now }))
 
   const login = loginRoutes({
     accounts,
