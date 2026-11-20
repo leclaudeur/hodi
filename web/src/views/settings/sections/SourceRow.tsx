@@ -132,7 +132,8 @@ const SourceRow = ({ phone, off, addedBy, onShow, ...actions }: SourceRowProps) 
   const hint = [
     phone && error ? t('sources.status.error') : null,
     hostOf(source.site),
-    addedBy && t('sources.by', { name: addedBy })
+    addedBy && t('sources.by', { name: addedBy }),
+    source.readers !== undefined && t('sources.readers', { count: source.readers })
   ]
     .filter(Boolean)
     .join(' · ')

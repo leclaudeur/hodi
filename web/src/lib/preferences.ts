@@ -144,6 +144,20 @@ export const updatePreferences = (change: Partial<Preferences>, { quiet = false 
   })
 }
 
+// « Mes sources »: sources in or out of this person's list. The server keeps the list itself and gives back the
+// rest of the catalogue as hiddenSources, which changes here at once.
+export const setMySources = (ids: string[], mine: boolean, { quiet = false } = {}) => {
+  const hidden = current().hiddenSources
+  const hiddenSources = mine ? hidden.filter(id => !ids.includes(id)) : [...new Set([...hidden, ...ids])]
+  ids.forEach((id, index) =>
+    changeUserState(state => ({ ...state, preferences: { ...current(), hiddenSources } }), {
+      method: mine ? 'PUT' : 'DELETE',
+      path: `/sources/${encodeURIComponent(id)}`,
+      setting: !quiet && index === ids.length - 1
+    })
+  )
+}
+
 // Quiet: its button says "Réglages réinitialisés" at once.
 export const resetPreferences = () => updatePreferences(DEFAULTS, { quiet: true })
 

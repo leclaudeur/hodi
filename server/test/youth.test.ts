@@ -396,10 +396,12 @@ topics:
         name: RTL info
         url: https://rtl.example/feed
         domains: [rtl.example]
+        base: [fr]
       - id: lemonde
         name: Le Monde
         url: https://lemonde.example/feed
         domains: [lemonde.example]
+        base: [fr]
   - id: economie
     label: Économie
     sources: []
@@ -408,6 +410,9 @@ listen:
     label: Divers
     sources: []
 `)
+    // The household's sources in the database's catalogue, read by its admin, as on an install.
+    const sourceStore = new SourceStore(db)
+    sourceStore.seed(catalog, 'fr', clock)
     const alerts = new FollowedAlerts({
       listItems: async () => [],
       send: async target => {
@@ -426,7 +431,7 @@ listen:
       household,
       images: { file: async () => picture, inlineFile: async () => picture },
       sources: {
-        store: new SourceStore(db),
+        store: sourceStore,
         file,
         // A blog's feed found from any link but "rien.example"; "rtl.example" finds the feed the household follows;
         // a "youtube.example" link, a channel.
@@ -466,6 +471,7 @@ listen:
       now: () => clock
     }).listen(0)
     await new Promise(resolve => server.once('listening', resolve))
+    users(1).sources.add(['rtl', 'lemonde'], clock)
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
     close = () => server.close()
     const login = await fetch(`${baseUrl}/api/login`, {
@@ -518,11 +524,14 @@ listen:
     assert.equal(set.status, 200)
     assert.deepEqual(youth.allowedSources(zoe.id).sort(), ['jde', 'rtl'])
 
-    // Its own device turns everything on: what its parents left off stays off; what it hides itself, it may.
+    // Its own device turns everything on: what its parents left off stays off, and is not its to add; what it removes
+    // from its sources itself, it may.
     const put = await call('PUT', '/me/preferences', zoe.id, {
-      preferences: { hiddenSources: ['jde'], hiddenTopics: [] }
+      preferences: { hiddenSources: [], hiddenTopics: [] }
     })
     assert.equal(put.status, 200)
+    assert.equal((await call('PUT', '/me/sources/lemonde', zoe.id)).status, 404)
+    assert.equal((await call('DELETE', '/me/sources/jde', zoe.id)).status, 200)
     const prefs = users(zoe.id).preferences() as { hiddenSources: string[]; hiddenTopics: string[] }
     assert.deepEqual(prefs.hiddenSources.sort(), ['jde', 'lemonde'])
     assert.deepEqual(prefs.hiddenTopics, ['economie'])
@@ -537,6 +546,54 @@ listen:
     // Turned on again, the theme is back in its own lists too.
     const shownAgain = users(zoe.id).preferences() as { hiddenTopics: string[] }
     assert.deepEqual(shownAgain.hiddenTopics, ['economie'])
+  })
+
+  it('lets an adult add a catalogue source to « Mes sources » and take it out, and counts its readers from 10', async () => {
+    assert.equal((await call('DELETE', '/me/sources/lemonde', 1)).status, 200)
+    assert.ok(users(1).hiddenSources().includes('lemonde'))
+    assert.equal((await call('PUT', '/me/sources/nowhere', 1)).status, 404)
+    const added = await call('PUT', '/me/sources/lemonde', 1)
+    assert.equal(added.status, 200)
+    assert.equal(typeof ((await added.json()) as { revision: number }).revision, 'number')
+    assert.ok(!users(1).hiddenSources().includes('lemonde'))
+
+    // A source one adds goes into their list only; the others' devices hear it is off for them.
+    const zoe = profiles.list().find(profile => profile.name === 'Zoé')!
+    const zoeRevision = users(zoe.id).revision
+    const blog = await call('POST', '/sources', 1, {
+      url: 'https://moi.example/',
+      section: 'topic',
+      topicIds: ['world']
+    })
+    assert.equal(blog.status, 201)
+    const { id: blogId } = (await blog.json()) as { id: string }
+    assert.ok(users(1).sources.mine().includes(blogId))
+    assert.ok(!users(zoe.id).sources.mine().includes(blogId))
+    assert.ok(users(zoe.id).revision > zoeRevision)
+    assert.equal((await call('DELETE', `/sources/${blogId}`, 1)).status, 204)
+    // Deleted, it is in nobody's list any more.
+    assert.ok(!users(1).sources.mine().includes(blogId))
+
+    // A new adult starts with the base sources only.
+    const paul = await create('Paul', 'adult')
+    assert.deepEqual(users(paul.id).sources.mine().sort(), ['lemonde', 'rtl'])
+    // One person's list never reaches another's: Paul takes Le Monde out, the admin putting it in changes nothing for him.
+    users(paul.id).sources.remove('lemonde', clock)
+    assert.equal((await call('PUT', '/me/sources/lemonde', 1)).status, 200)
+    assert.ok(users(paul.id).hiddenSources().includes('lemonde'))
+    assert.ok(!users(1).hiddenSources().includes('lemonde'))
+    assert.equal((await call('DELETE', `/profiles/${paul.id}`, 1)).status, 204)
+
+    const readersOf = async () =>
+      ((await (await call('GET', '/sources', 1)).json()) as { sources: { id: string; readers?: number }[] }).sources
+    const others = (count: number) => Array.from({ length: count }, (_, index) => `('x${index}', 'rtl', 0)`).join(', ')
+    const already = db.prepare(`SELECT COUNT(*) AS n FROM my_sources WHERE source_id = 'rtl'`).get() as { n: number }
+    db.exec(`INSERT INTO my_sources (owner, source_id, added_at) VALUES ${others(9 - already.n)}`)
+    // Nine readers: still a handful of people, so no count.
+    assert.equal((await readersOf()).find(source => source.id === 'rtl')?.readers, undefined)
+    db.exec(`INSERT INTO my_sources (owner, source_id, added_at) VALUES ('x9', 'rtl', 0)`)
+    assert.equal((await readersOf()).find(source => source.id === 'rtl')?.readers, 10)
+    db.exec(`DELETE FROM my_sources WHERE owner LIKE 'x%'`)
   })
 
   it('shows a young profile only its sources, and lets it add none', async () => {
@@ -622,8 +679,11 @@ listen:
       400
     )
 
+    const adminRevision = users(1).revision
     const accepted = await call('POST', `/source-requests/${request.id}`, 1, { accept: true })
     assert.equal(accepted.status, 200)
+    // The new source is off for the parent: their devices hear of it.
+    assert.ok(users(1).revision > adminRevision)
     assert.deepEqual(((await accepted.json()) as { requests: unknown[] }).requests, [])
     // In the household's catalogue as the parent's, on for the teen only.
     const blog = youth.allowedSources(zoe.id).find(id => id.startsWith('p1-'))

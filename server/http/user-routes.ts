@@ -157,7 +157,7 @@ interface UserRoutesOptions {
   // device says each happened, which is earlier than now for one made offline.
   onRead?: (response: express.Response, ids: string[], readAt: (id: string) => number | undefined) => void
   // What stays hidden whatever the profile sends: a young profile's sources and themes its parents did not turn on.
-  lock?: (response: express.Response) => { hiddenSources: string[]; hiddenTopics: string[] } | null
+  lock?: (response: express.Response) => { hiddenTopics: string[] } | null
 }
 
 type ResolvedOptions = Required<UserRoutesOptions>
@@ -174,15 +174,14 @@ export const userRoutes = ({ onRead = () => {}, lock = () => null, ...options }:
 
 // The whole state, the preferences, and a device's state from before the database.
 const mountStateRoutes = (router: express.Router, { users, now, lock }: ResolvedOptions) => {
-  // The lists sent, with what the parents keep off added back.
+  // The themes sent, with what the parents keep off added back. Sources are « Mes sources », never these preferences.
   const locked = (response: express.Response, preferences: Record<string, unknown>) => {
     const kept = lock(response)
-    if (!kept) return preferences
-    const merged = { ...preferences }
-    for (const key of ['hiddenSources', 'hiddenTopics'] as const) {
-      if (merged[key] !== undefined) merged[key] = [...new Set([...(merged[key] as string[]), ...kept[key]])]
+    if (!kept || preferences.hiddenTopics === undefined) return preferences
+    return {
+      ...preferences,
+      hiddenTopics: [...new Set([...(preferences.hiddenTopics as string[]), ...kept.hiddenTopics])]
     }
-    return merged
   }
 
   // ?since=<revision>: 204 when nothing changed, so an app coming back to the foreground fetches nothing.

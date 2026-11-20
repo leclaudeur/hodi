@@ -1303,6 +1303,43 @@ const MIGRATIONS: string[] = [
     WHERE p.user_id = users.id AND p.kind = 'adult' AND a.parental_pin_hash IS NOT NULL LIMIT 1
   );
   ALTER TABLE user_devices ADD COLUMN young_here INTEGER NOT NULL DEFAULT 0;
+  `,
+  // « Mes sources »: the sources each person reads, their account's (or a young profile's, as its other state). Until
+  // now each one turned off sources of the household's list; the list becomes what they read, the rest stays in the
+  // server's catalogue. The old list of sources turned off goes from the preferences.
+  `
+  CREATE TABLE my_sources (
+    owner TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    added_at INTEGER NOT NULL,
+    PRIMARY KEY (owner, source_id)
+  );
+  CREATE INDEX my_sources_source ON my_sources (source_id);
+  INSERT OR IGNORE INTO my_sources (owner, source_id, added_at)
+    SELECT CASE WHEN p.user_id IS NULL THEN 'p' || p.id ELSE 'a' || p.user_id END, h.source_id, h.created_at
+    FROM profiles p JOIN household_sources h ON h.household_id = p.account_id
+    WHERE h.source_id NOT IN (
+      SELECT j.value FROM profile_settings s, json_each(s.value, '$.hiddenSources') j
+      WHERE s.key = 'preferences' AND json_valid(s.value)
+        AND s.owner = CASE WHEN p.user_id IS NULL THEN 'p' || p.id ELSE 'a' || p.user_id END
+    );
+  UPDATE profile_settings SET value = json_remove(value, '$.hiddenSources')
+    WHERE key = 'preferences' AND json_valid(value);
+  CREATE TRIGGER users_forget_sources AFTER DELETE ON users BEGIN
+    DELETE FROM my_sources WHERE owner = 'a' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_forget_sources AFTER DELETE ON profiles WHEN OLD.user_id IS NULL BEGIN
+    DELETE FROM my_sources WHERE owner = 'p' || OLD.id;
+  END;
+  CREATE TRIGGER household_sources_forget_readers AFTER DELETE ON household_sources
+  WHEN NOT EXISTS (SELECT 1 FROM household_sources WHERE source_id = OLD.source_id) BEGIN
+    DELETE FROM my_sources WHERE source_id = OLD.source_id;
+  END;
+  CREATE TRIGGER profiles_hand_over_sources AFTER UPDATE OF user_id ON profiles
+  WHEN OLD.user_id IS NULL AND NEW.user_id IS NOT NULL BEGIN
+    UPDATE OR IGNORE my_sources SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
+    DELETE FROM my_sources WHERE owner = 'p' || NEW.id;
+  END;
   `
 ]
 

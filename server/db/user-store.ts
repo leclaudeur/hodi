@@ -1,5 +1,6 @@
 import type { AlertSettings } from '../news/followed-alerts.ts'
 import { type Database, transaction } from './database.ts'
+import { sourcesOf, withSourcesOff } from './my-sources.ts'
 import { ownerOf } from './stats-owner.ts'
 import {
   firstReadingAt,
@@ -133,19 +134,20 @@ export class UserStore {
     const row = this.#db
       .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'preferences'")
       .get(this.#owner) as { value: string } | undefined
-    return row ? (JSON.parse(row.value) as Record<string, unknown>) : null
+    return withSourcesOff(row ? (JSON.parse(row.value) as Record<string, unknown>) : null, this.hiddenSources())
   }
 
-  // The sources this profile turned off in Réglages > Sources.
+  // The catalogue's sources this profile does not read.
   hiddenSources(): string[] {
-    const hidden = this.preferences()?.hiddenSources
-    return Array.isArray(hidden) ? hidden.filter((id): id is string => typeof id === 'string') : []
+    return this.sources.off()
+  }
+
+  // « Mes sources », on every device with the next state.
+  get sources() {
+    return sourcesOf(this.#db, this.#owner, this.#profile, (now, fn) => this.#write(now, fn))
   }
 
   getState(): UserState {
-    const preferences = this.#db
-      .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'preferences'")
-      .get(this.#owner) as { value: string } | undefined
     const saved = this.#db
       .prepare('SELECT item, saved_at FROM saved_articles WHERE owner = ? ORDER BY saved_at DESC')
       .all(this.#owner) as {
@@ -157,7 +159,7 @@ export class UserStore {
       .all(this.#owner, MAX_READ) as { article_id: string; hidden: number }[]
     return {
       revision: this.revision,
-      preferences: preferences ? (JSON.parse(preferences.value) as Record<string, unknown>) : null,
+      preferences: this.preferences(),
       saved: saved.map(row => ({
         item: JSON.parse(row.item) as SavedItem,
         savedAt: new Date(row.saved_at).toISOString()
@@ -174,7 +176,9 @@ export class UserStore {
       const stored = this.#db
         .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'preferences'")
         .get(this.#owner) as { value: string } | undefined
-      const preferences = { ...(stored ? (JSON.parse(stored.value) as Record<string, unknown>) : {}), ...change }
+      // What it reads is « Mes sources », never a list kept in the preferences.
+      const kept = Object.fromEntries(Object.entries(change).filter(([key]) => key !== 'hiddenSources'))
+      const preferences = { ...(stored ? (JSON.parse(stored.value) as Record<string, unknown>) : {}), ...kept }
       this.#db
         .prepare(
           `INSERT INTO profile_settings (owner, key, value, updated_at) VALUES (?, 'preferences', ?, ?)

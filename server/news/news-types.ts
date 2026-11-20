@@ -24,6 +24,8 @@ export interface SourceStatus {
   error: string | null
   // Added from a link by this profile; missing for the starting list's.
   addedBy?: number
+  // How many people read it, once there are enough of them (source-view-routes.ts).
+  readers?: number
 }
 
 // reader: opens in the reader. link: summary only, read on the site (source with reader: false).

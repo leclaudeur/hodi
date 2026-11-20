@@ -2,7 +2,7 @@ import { Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { SourceStatus, TopicInfo } from '../../../api.ts'
-import { updatePreferences, usePreferences } from '../../../lib/preferences.ts'
+import { setMySources, usePreferences } from '../../../lib/preferences.ts'
 import { useMyRequests } from '../../../lib/my-requests.ts'
 import { isYoung, useProfiles } from '../../../lib/profiles.ts'
 import { useSourceEngagement, useSourceStatuses } from '../../../lib/settings-data.ts'
@@ -60,7 +60,7 @@ const useSourcesPage = (topics: TopicInfo[], onUnauthorized: () => void) => {
   const requests = useMyRequests(reader.teen)
   const [asking, setAsking] = useState(false)
   const hiddenSources = preferences.hiddenSources
-  const actions = useSourceActions({ replace, hiddenSources, adding, setAdding, onUnauthorized })
+  const actions = useSourceActions({ replace, adding, setAdding, onUnauthorized })
   const [editing, setEditing] = useState<TopicsEdit | null>(null)
   const opening = useOpenedGroups()
 
@@ -80,9 +80,7 @@ const useSourcesPage = (topics: TopicInfo[], onUnauthorized: () => void) => {
   const show = (source: SourceStatus, visible: boolean) => {
     const off = list.hidden(source.id)
     opening.setHeld(states => (source.id in states ? states : { ...states, [source.id]: off }))
-    updatePreferences({
-      hiddenSources: visible ? hiddenSources.filter(other => other !== source.id) : [...hiddenSources, source.id]
-    })
+    setMySources([source.id], visible)
   }
 
   return {

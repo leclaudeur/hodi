@@ -65,6 +65,8 @@ export interface SourceStatus {
   error: string | null
   // Added from a link by this profile; missing for the catalogue's own sources.
   addedBy?: number
+  // How many people have it in « Mes sources », once they are at least 10.
+  readers?: number
 }
 
 export interface TopicSummary {
