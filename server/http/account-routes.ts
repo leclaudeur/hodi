@@ -2,7 +2,6 @@ import express from 'express'
 import { rateLimit } from 'express-rate-limit'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword } from '../auth/password.ts'
-import { clearedProfileCookie, clearedSessionCookie } from '../auth/session.ts'
 import { type AccountDataStore, deletionPlan } from '../db/account-data.ts'
 import { currentHouseholdId } from '../db/household-scope.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
@@ -11,8 +10,10 @@ import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-
 import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
 import { isPassword } from './household-input.ts'
 import { profileIdOf } from './profile-routes.ts'
+import type { HandleStore } from '../db/handle-store.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
+import { mountDeleteRoute } from './account-delete-route.ts'
 import { mountLeaveRoute } from './account-leave-route.ts'
 import { mountLockRoutes } from './account-lock-routes.ts'
 import { mountRegionRoutes } from './account-region-routes.ts'
@@ -50,6 +51,8 @@ export interface AccountRoutesOptions extends AccountAiOptions {
   // What each plugin keeps of the person, by plugin id, for the copy.
   // « Validation en deux étapes »; absent in tests without it.
   twoFactor?: TwoFactorStore
+  // The @identifier's next change, for Mon compte.
+  handles?: HandleStore
   pluginCopies?: (who: {
     accountId: number
     profileId: number | null
@@ -87,7 +90,8 @@ const accountHelpers = ({
   data,
   defaultTimeZone = 'UTC',
   accountAi,
-  providers
+  providers,
+  handles
 }: AccountRoutesOptions) => {
   // All of it is the signed-in account's own, from its own profile: a child's profile open on a parent's
   // device sees none of it.
@@ -116,6 +120,9 @@ const accountHelpers = ({
     const going = plan(account)
     return {
       email: account.email,
+      handle: account.handle,
+      // Before then, « Modifier » keeps the identifier as it is.
+      handleChangeableFrom: handles?.changeableFrom(account.id, now()) ?? null,
       passwordChangedAt: account.passwordChangedAt,
       // No password of its own: its changes need a sign-in on this device in the last 5 minutes instead.
       loginOnly: !account.hasPassword,
@@ -330,30 +337,4 @@ const mountCopyRoute = (
     response.set('Cache-Control', 'no-store')
     response.type('application/json').send(JSON.stringify(copy, null, 2))
   }
-}
-
-const mountDeleteRoute = (
-  router: express.Router,
-  { data, profiles, now, onDeleteProfile, onAccountDeleted, onHouseholdGone, cookieWithout }: AccountRoutesOptions,
-  { sessionOrRefuse, checkProof, plan }: AccountHelpers
-) => {
-  // "Supprimer ton compte", after its red confirmation and the account's password: at once, with what the plan says
-  // goes with it.
-  router.delete('/', async (request, response) => {
-    const session = sessionOrRefuse(request, response)
-    if (!session) return
-    if (!profiles) {
-      response.status(409).json({ error: 'not_available' })
-      return
-    }
-    if (!(await checkProof(session.account, request, response))) return
-    // After the password, which takes a moment: what goes is read as it is now.
-    const going = plan(session.account)!
-    for (const profile of going.profiles) onDeleteProfile?.(profile.id)
-    for (const accountId of data.delete(session.account, going, now())) onAccountDeleted?.(accountId)
-    if (going.householdGoes) onHouseholdGone?.()
-    const left = cookieWithout ? cookieWithout(session.account.id, request).cookie : clearedSessionCookie()
-    response.set('Set-Cookie', [left, clearedProfileCookie()])
-    response.status(204).end()
-  })
 }

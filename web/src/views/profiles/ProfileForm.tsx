@@ -14,6 +14,7 @@ import { useProfiles } from '../../lib/profiles.ts'
 import Button from '../../ui/Button.tsx'
 import ProfileAvatar from '../../ui/ProfileAvatar.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
+import HandleField, { useHandle } from './HandleField.tsx'
 import styles from './ProfileForm.module.css'
 import { AvatarPicker, ColorField, KindField, PhotoPicker, useProfilePhoto } from './ProfileFormParts.tsx'
 
@@ -25,6 +26,8 @@ export interface ProfileDraft {
   avatar?: ProfileAvatarName
   // undefined: unchanged; null: removed.
   photo?: Blob | null
+  // An account's own form: its @identifier.
+  handle?: string
 }
 
 interface ProfileFormProps {
@@ -46,6 +49,8 @@ interface ProfileFormProps {
   onCancel?: () => void
   // Shown on an existing profile that is not the household's last.
   onDelete?: () => void
+  // An account's own form: its identifier under the name; lockedUntil: changed less than 30 days ago.
+  withHandle?: { value?: string; lockedUntil?: number | null; code?: string }
 }
 
 interface ActionsProps {
@@ -148,6 +153,24 @@ const ProfilePicture = ({ profile, name, color, avatar, photo }: PictureProps) =
 const firstAvatar = (profile: Profile | undefined, others: Profile[]): ProfileAvatarName =>
   profile?.avatar ?? PROFILE_AVATARS.find(name => !others.some(other => other.avatar === name)) ?? 'fox'
 
+// Enregistrer: busy until the form closes, or the error under it.
+const useSaving = (onSave: (draft: ProfileDraft) => Promise<void>) => {
+  const { t } = useTranslation()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const save = async (draft: ProfileDraft) => {
+    setSaving(true)
+    setError(null)
+    try {
+      await onSave(draft)
+    } catch {
+      setError(t('profileForm.saveFailed'))
+      setSaving(false)
+    }
+  }
+  return { saving, error, setError, save }
+}
+
 // The type picked, and what it leads to: a new child waiting, or a child with its avatar.
 const useKind = (profile: Profile | undefined, kinds: ProfileKind[]) => {
   const [kind, setKind] = useState<ProfileKind>(profile?.kind ?? kinds[0] ?? 'adult')
@@ -169,7 +192,8 @@ const ProfileForm = ({
   className = '',
   onSave,
   onCancel,
-  onDelete
+  onDelete,
+  withHandle
 }: ProfileFormProps) => {
   const { t } = useTranslation()
   const [name, setName] = useState(profile?.name ?? initial?.name ?? '')
@@ -177,28 +201,27 @@ const ProfileForm = ({
   const { kind, setKind, soon, child } = useKind(profile, kinds)
   const others = useProfiles()?.profiles.filter(other => other.id !== profile?.id) ?? []
   const [avatar, setAvatar] = useState<ProfileAvatarName>(() => firstAvatar(profile, others))
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { saving, error, setError, save } = useSaving(onSave)
   const photo = useProfilePhoto(profile, initial?.photo, setError)
+  const handle = useHandle(name, {
+    enabled: Boolean(withHandle),
+    current: withHandle?.value,
+    start: initial?.handle,
+    code: withHandle?.code
+  })
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     const trimmed = name.replace(/\s+/g, ' ').trim()
     if (!trimmed || soon) return
-    setSaving(true)
-    setError(null)
-    try {
-      await onSave({
-        name: trimmed,
-        color,
-        kind: kinds.length > 1 ? kind : undefined,
-        avatar: child ? avatar : undefined,
-        photo: child ? undefined : photo.photo
-      })
-    } catch {
-      setError(t('profileForm.saveFailed'))
-      setSaving(false)
-    }
+    await save({
+      name: trimmed,
+      color,
+      kind: kinds.length > 1 ? kind : undefined,
+      avatar: child ? avatar : undefined,
+      photo: child ? undefined : photo.photo,
+      handle: withHandle ? handle.value : undefined
+    })
   }
 
   return (
@@ -207,6 +230,7 @@ const ProfileForm = ({
         <ProfilePicture profile={profile} name={name} color={color} avatar={child ? avatar : null} photo={photo} />
         <div className={styles.fields}>
           <NameField name={name} isNew={!profile} fixed={nameFixed} onName={setName} />
+          {withHandle && <HandleField handle={handle} lockedUntil={withHandle.lockedUntil} />}
           {kinds.length > 1 && <KindField kinds={kinds} kind={kind} color={color} soon={soon} onKind={setKind} />}
           {child && <AvatarPicker avatar={avatar} color={color} onAvatar={setAvatar} />}
           <ColorField color={color} onColor={setColor} />
@@ -215,7 +239,7 @@ const ProfileForm = ({
       {error && <StatusLine tone="error">{error}</StatusLine>}
       <FormActions
         saving={saving}
-        disabled={!name.trim() || soon}
+        disabled={!name.trim() || soon || !handle.ready}
         label={submitLabel ?? (profile ? t('common.save') : t('profileForm.create'))}
         cancelLabel={cancelLabel}
         onCancel={onCancel}

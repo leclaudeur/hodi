@@ -79,7 +79,7 @@ export const PartBody = ({
   if (account === null) return <DevicePart />
   switch (part) {
     case 'profile':
-      return <AccountProfile />
+      return <AccountProfile account={account} onAccount={onAccount} />
     case 'sign-in':
       return <SignInPart account={account} onAccount={onAccount} layout={layout} />
     case 'region':
