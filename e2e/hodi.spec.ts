@@ -373,7 +373,7 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await own.getByRole('textbox', { name: 'Mot de passe' }).fill(SAM_PASSWORD)
   await own.getByRole('button', { name: 'Entrer' }).click()
   await expect(own.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
-  await own.goto('/#/settings/account')
+  await own.goto('/#/account/sign-in')
   await own.getByRole('switch', { name: 'Profil privé' }).click()
   const question = own.getByRole('dialog', { name: 'Rendre ton profil privé ?' })
   await question.getByLabel('Mon mot de passe').fill(SAM_PASSWORD)
@@ -513,11 +513,11 @@ test('opens a second tab on the same profile, and « Qui lit ? » again once eve
 
 test('lists the account’s devices in Mon compte and signs one out', async ({ browser }) => {
   const other = await signIn(browser, 'Alex')
-  await page.goto('/#/settings/account')
+  await page.goto('/#/account/sign-in')
   // The list as it is now, with the device just signed in.
   await page.reload()
   const main = page.getByRole('main')
-  await expect(main.getByText(EMAIL)).toBeVisible()
+  await expect(main.getByText(EMAIL, { exact: true })).toBeVisible()
   await expect(main.getByText('Cet appareil')).toBeVisible()
   // The most recently used first, after this one: the device just signed in.
   await main
@@ -535,8 +535,8 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
   browser
 }) => {
   const NOE = { email: 'noe@example.com', password: 'la phrase de passe de Noé' }
-  // Alex, the household's admin, sees the household in Mon compte and could leave it: Sam is another adult.
-  await page.goto('/#/settings/account')
+  // Alex, the household's admin, sees the household in Mon compte › Données and could leave it: Sam is another adult.
+  await page.goto('/#/account/data')
   const household = page.getByRole('main')
   await expect(household.getByText('Admin du foyer')).toBeVisible()
   await expect(household.getByRole('button', { name: 'Quitter' })).toBeVisible()
@@ -571,7 +571,7 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
   await noe.getByRole('textbox', { name: 'Prénom' }).fill('Noé')
   await noe.getByRole('button', { name: 'Créer mon compte' }).click()
   await skipTour(noe)
-  await noe.goto('/#/settings/account')
+  await noe.goto('/#/account/data')
   await expect(noe.getByRole('main').getByText('Membre du foyer')).toBeVisible()
   await noe.getByRole('main').getByRole('button', { name: 'Quitter' }).click()
   const leave = noe.getByRole('dialog', { name: 'Quitter Famille Test ?' })
@@ -583,10 +583,10 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
   await expect(noe.getByRole('heading', { name: 'Tu n’as plus de foyer' })).toBeVisible()
   await expect(noe.getByText(NOE.email)).toBeVisible()
   await noe.getByRole('link', { name: 'Mon compte' }).click()
-  await expect(noe.getByRole('heading', { name: 'Mon compte' })).toBeVisible()
+  await expect(noe.getByRole('heading', { name: 'Connexion', level: 1 })).toBeVisible()
   await expect(noe.getByText('Cet appareil')).toBeVisible()
   await expect(noe.getByRole('button', { name: 'Quitter' })).toHaveCount(0)
-  await noe.getByRole('button', { name: 'Retour' }).click()
+  await noe.getByRole('link', { name: 'Retour' }).click()
   await expect(noe.getByRole('heading', { name: 'Tu n’as plus de foyer' })).toBeVisible()
   // Noé's profile left the household's list. The page still shows what it loaded with the invitation waiting: reload it.
   await page.goto('/#/settings/profiles')
@@ -748,18 +748,19 @@ test('keeps an article left half read in Reprendre', async () => {
 })
 
 test('switches the interface to English and back', async () => {
-  // The language is the account's, in Mon compte beside the name and the photo.
-  await sam.goto('/#/settings/account')
+  // The language is the account's, in Mon compte › Profil beside the name and the photo.
+  await sam.goto('/#/account/profile')
   await sam.getByRole('radio', { name: 'English' }).click()
-  await expect(sam.getByRole('heading', { name: 'My account', level: 1 })).toBeVisible()
-  await expect(sam.getByRole('link', { name: 'Settings' }).first()).toBeVisible()
+  await expect(sam.getByRole('heading', { name: 'Profile', level: 1 })).toBeVisible()
+  await expect(sam.getByRole('link', { name: 'Back' })).toBeVisible()
   // The articles keep their own language.
-  await sam.getByRole('link', { name: 'Feed' }).first().click()
+  await sam.goto('/')
+  await expect(sam.getByRole('link', { name: 'Settings' }).first()).toBeVisible()
   await expect(sam.getByRole('link', { name: 'Pluie record sur Bruxelles' }).first()).toBeAttached()
 
-  await sam.goto('/#/settings/account')
+  await sam.goto('/#/account/profile')
   await sam.getByRole('radio', { name: 'Français' }).click()
-  await expect(sam.getByRole('heading', { name: 'Mon compte', level: 1 })).toBeVisible()
+  await expect(sam.getByRole('heading', { name: 'Profil', level: 1 })).toBeVisible()
 })
 
 test('shows a teen only the sources its parents gave it', async ({ browser }) => {

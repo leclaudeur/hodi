@@ -47,6 +47,7 @@ const NoHouseholdCard = () => {
 }
 
 // #/account opens the account itself; any other address, the card.
-const NoHouseholdPage = ({ account }: { account: boolean }) => (account ? <AccountPage /> : <NoHouseholdCard />)
+const NoHouseholdPage = ({ account }: { account: boolean }) =>
+  account ? <AccountPage inHousehold={false} /> : <NoHouseholdCard />
 
 export default NoHouseholdPage

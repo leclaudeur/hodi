@@ -27,7 +27,13 @@ import { useNotificationSettings } from '../../lib/notifications.ts'
 import { usePreferences } from '../../lib/preferences.ts'
 import { isYoung, useProfiles } from '../../lib/profiles.ts'
 import { callsLeft, sourceState, useAiUsage, useSourceStatuses } from '../../lib/settings-data.ts'
-import { HISTORY_HREF, SERVER_HREF, type SettingsSection, pluginPageHref } from '../../lib/use-hash-route.ts'
+import {
+  HISTORY_HREF,
+  SERVER_HREF,
+  accountHref,
+  type SettingsSection,
+  pluginPageHref
+} from '../../lib/use-hash-route.ts'
 import PluginSlot from '../../plugins/PluginSlot.tsx'
 import { menuPlugins, placePlugins } from '../../plugins/menu.ts'
 import { type PluginInfo, type WebPlugin, usePlugins } from '../../plugins/registry.ts'
@@ -38,6 +44,8 @@ export interface Entry {
   // plugin:<its id>.
   id: SettingsSection | 'history' | 'server' | `plugin:${string}`
   href?: string
+  // Opens a page outside Réglages: its line ends with the external-link icon, even though it stays in the tab.
+  leaves?: boolean
   label: string
   hint: ReactNode
   icon: LucideIcon | 'ai' | ComponentType<{ size?: number }>
@@ -86,6 +94,7 @@ const readingGroups = ({ t, sources, failing, asked, preferences }: GroupData): 
       },
       {
         id: 'history',
+        leaves: true,
         href: HISTORY_HREF,
         label: t('settings.reading.history'),
         hint: t('settings.hints.history'),
@@ -129,9 +138,23 @@ const yourGroups = ({ t, preferences, young, household }: GroupData): Group[] =>
         hint: young ? t('limits.meHint') : t('settings.hints.general'),
         icon: Settings2
       },
-      { id: 'stats', label: t('settings.nav.stats'), hint: t('settings.hints.stats'), icon: ChartColumn },
+      {
+        id: 'stats',
+        label: t('settings.nav.stats'),
+        hint: t('settings.hints.stats'),
+        icon: ChartColumn,
+        href: accountHref('stats'),
+        leaves: true
+      },
       // The account and what Hodi keeps: this device's part (its session, offline reading) with the rest.
-      { id: 'account', label: t('settings.nav.account'), hint: t('settings.hints.account'), icon: CircleUser },
+      {
+        id: 'account',
+        label: t('settings.nav.account'),
+        hint: t('settings.hints.account'),
+        icon: CircleUser,
+        href: '#/account',
+        leaves: true
+      },
       {
         id: 'sharing',
         label: t('settings.nav.sharing'),
@@ -208,6 +231,7 @@ const deviceGroups = ({ t, notifications, household }: GroupData): Group[] => [
       // The server's admin space, for the account that runs it.
       {
         id: 'server',
+        leaves: true,
         href: SERVER_HREF,
         label: t('settings.nav.server'),
         hint: t('settings.hints.server'),

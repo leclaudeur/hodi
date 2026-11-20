@@ -1005,7 +1005,6 @@
   },
   "stats": {
     "yours": "Mes statistiques",
-    "title": "Statistiques",
     "articles": "Articles",
     "favourites": "Favoris",
     "topTopics": "Thèmes les plus lus",
@@ -1230,7 +1229,7 @@
       "ai": "Appels du jour",
       "onPlural": "Activées",
       "offPlural": "Désactivées",
-      "account": "Profil, connexion, appareils, données",
+      "account": "Profil, connexion, région, données",
       "shortcuts": "Touche ?",
       "server": "Plugins, pour tout le serveur",
       "about": "Version, code source, crédits",
@@ -1332,7 +1331,6 @@
     },
     "account": {
       "browser": "Navigateur",
-      "intro": "Ton prénom, ta photo, ta langue et ton fuseau horaire, ta connexion, tes appareils et tout ce que Hodi garde de toi.",
       "sessionHint": "Connecté pour 90 jours, puis le mot de passe est redemandé",
       "thisDevice": "Cet appareil",
       "offline": "Hors ligne",
@@ -1341,8 +1339,6 @@
       "ready_other": "{{count}} prêts ici",
       "offlineHint": "Le texte des articles du fil pas encore lus, gardé quand l’app est ouverte",
       "deviceIntro": "Ce que cet appareil garde de Hodi, et pour combien de temps. La connexion dure 90 jours, puis le mot de passe est redemandé. Le texte des articles pas encore lus est gardé ici, pour les lire sans réseau.",
-      "yourAccount": "Compte",
-      "region": "Région",
       "timeZone": "Fuseau horaire",
       "timeZoneValue": "{{zone}} · {{offset}}",
       "regionFailed": "Le fuseau horaire n’a pas pu être enregistré. Réessaie dans un instant.",
@@ -1384,7 +1380,6 @@
       "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter",
       "moreDevices_one": "Voir l’autre",
       "moreDevices_other": "Voir les {{count}} autres",
-      "profile": "Profil",
       "household": "Foyer",
       "householdAdmin": "Admin du foyer",
       "householdMember": "Membre du foyer",
@@ -2726,10 +2721,27 @@
     "title": "Tu n’as plus de foyer",
     "text": "Ton compte <b>{{email}}</b> n’est plus dans aucun foyer, mais il existe toujours : tu le retrouves dans <i>Mon compte</i>. Pour rejoindre un foyer, déconnecte-toi, puis entre dans <i>J’ai un code</i> celui qu’un de ses adultes te donne.",
     "deleteMessage": "<b>{{email}}</b> est effacé tout de suite. Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-    "account": "Mon compte",
-    "accountIntro": "Ta connexion, tes appareils et tout ce que Hodi garde de toi."
+    "account": "Mon compte"
   },
   "choiceField": {
     "remove": "Retirer {{name}}"
+  },
+  "accountPage": {
+    "title": "Mon compte",
+    "sectionsButton": "Sections",
+    "sections": {
+      "profile": "Profil",
+      "sign-in": "Connexion",
+      "region": "Région",
+      "stats": "Statistiques",
+      "data": "Données"
+    },
+    "intros": {
+      "profile": "Le prénom, la photo et la couleur que le foyer voit, et la langue de Hodi.",
+      "sign-in": "Comment tu te connectes, et les appareils où le compte est ouvert.",
+      "region": "Le fuseau horaire dit quand commence une journée : celle des statistiques, du <i>Résumé du jour</i> et des badges.",
+      "data": "Le foyer où tu lis, une copie de tout ce que Hodi garde du compte, ou sa suppression."
+    },
+    "noStats": "Rien de lu pour l’instant."
   }
 }

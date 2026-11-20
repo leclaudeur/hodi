@@ -1005,7 +1005,6 @@
   },
   "stats": {
     "yours": "My stats",
-    "title": "Statistics",
     "articles": "Articles",
     "favourites": "Faves",
     "topTopics": "Most read topics",
@@ -1230,7 +1229,7 @@
       "ai": "Today’s calls",
       "onPlural": "On",
       "offPlural": "Off",
-      "account": "Profile, sign-in, devices, data",
+      "account": "Profile, sign-in, region, data",
       "shortcuts": "Press ?",
       "server": "Plugins, for the whole server",
       "about": "Version, source code, credits",
@@ -1332,7 +1331,6 @@
     },
     "account": {
       "browser": "Browser",
-      "intro": "Your name, photo, language and time zone, how you sign in, your devices and everything Hodi keeps about you.",
       "sessionHint": "Signed in for 90 days, then the password is asked again",
       "thisDevice": "This device",
       "offline": "Offline",
@@ -1341,8 +1339,6 @@
       "ready_other": "{{count}} here",
       "offlineHint": "The text of the feed’s unread articles, kept while the app is open",
       "deviceIntro": "What this device keeps of Hodi, and for how long. Your sign-in lasts 90 days, then the password is asked again. The text of articles not read yet is kept here, to read them offline.",
-      "yourAccount": "Account",
-      "region": "Region",
       "timeZone": "Time zone",
       "timeZoneValue": "{{zone}} · {{offset}}",
       "regionFailed": "The time zone could not be saved. Try again in a moment.",
@@ -1384,7 +1380,6 @@
       "sessionHintNoPassword": "Signed in for 90 days, then you sign in again",
       "moreDevices_one": "See the other one",
       "moreDevices_other": "See the {{count}} others",
-      "profile": "Profile",
       "household": "Household",
       "householdAdmin": "Household admin",
       "householdMember": "Household member",
@@ -2726,10 +2721,27 @@
     "title": "You no longer have a household",
     "text": "Your account <b>{{email}}</b> is in no household any more, but it still exists: you find it in <i>My account</i>. To join a household, sign out, then type in <i>I have a code</i> the one an adult of it gives you.",
     "deleteMessage": "<b>{{email}}</b> is erased right away. Backup copies forget it within {{days}} at most.",
-    "account": "My account",
-    "accountIntro": "How you sign in, your devices and everything Hodi keeps about you."
+    "account": "My account"
   },
   "choiceField": {
     "remove": "Remove {{name}}"
+  },
+  "accountPage": {
+    "title": "My account",
+    "sectionsButton": "Sections",
+    "sections": {
+      "profile": "Profile",
+      "sign-in": "Sign-in",
+      "region": "Region",
+      "stats": "Statistics",
+      "data": "Data"
+    },
+    "intros": {
+      "profile": "The name, photo and colour the household sees, and Hodi's language.",
+      "sign-in": "How you sign in, and the devices where the account is open.",
+      "region": "The time zone says when a day starts: the statistics', the <i>Daily summary</i>'s and the badges'.",
+      "data": "The household you read in, a copy of everything Hodi keeps about the account, or deleting it."
+    },
+    "noStats": "Nothing read yet."
   }
 }

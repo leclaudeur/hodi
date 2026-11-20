@@ -18,6 +18,7 @@ import { loadedPlugins, loadPlugins, loadPublicPlugins } from './plugins/registr
 import SignedOut from './app/SignedOut.tsx'
 import Tour from './app/Tour.tsx'
 import HomePage from './pages/HomePage.tsx'
+import AccountPage from './pages/AccountPage.tsx'
 import NoHouseholdPage from './pages/NoHouseholdPage.tsx'
 import ProfilePicker from './pages/ProfilePicker.tsx'
 import TimeUpPage from './pages/TimeUpPage.tsx'
@@ -175,6 +176,9 @@ const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: S
     return <TimeUpPage limits={limits.limits} />
   }
 
+  // Mon compte: a page of its own, as the legal pages.
+  if (route.name === 'account') return <AccountPage inHousehold />
+
   // The server's admin space: its own layout, none of the app's.
   if (route.name === 'server')
     return <ServerSpace section={route.section} item={route.item} pluginSection={route.plugin} />
@@ -242,11 +246,11 @@ const App = () => {
   }
   if (status === 'setup') return <SetupPage onDone={signedIn} />
   if (status === 'anonymous') return <SignedOut onLoggedIn={signedIn} />
-  if (status === 'noHousehold')
-    return <NoHouseholdPage account={route.name === 'settings' && route.section === 'account'} />
+  if (status === 'noHousehold') return <NoHouseholdPage account={route.name === 'account'} />
 
   // No household yet: the server's space whatever the address, with its plugins' sections.
   if (status === 'server') {
+    if (route.name === 'account') return <AccountPage inHousehold={false} />
     return route.name === 'server' ? (
       <ServerSpace section={route.section} item={route.item} pluginSection={route.plugin} />
     ) : (

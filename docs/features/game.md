@@ -3,6 +3,7 @@
 ## Statistics
 
 Articles and videos read this week and over 30 days, the reading time, the most read topics and sources, per profile.
+They are in _My account › Statistics_ (`#/account/stats`); _Settings › Statistics_ links there.
 
 ## The household game
 
@@ -15,7 +16,7 @@ an avatar opens that profile's sheet: its grade, its points and its badges. On i
 badge, those still to earn dimmed with their progress, and picks an earned one to wear on its avatar. On a tablet or a
 phone, the sheet also has **Switch profile**.
 
-_Statistics_ opens on the household's week: the weekly challenge, articles to read together by Sunday, and the ranking
+_My account › Statistics_ opens on the household's week: the weekly challenge, articles to read together by Sunday, and the ranking
 by this week's points. The admin turns the game off in _Settings › Household_: nothing of it shows then, but points keep
 counting.
 

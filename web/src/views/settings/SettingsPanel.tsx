@@ -1,4 +1,4 @@
-import { type ReactNode, Suspense, lazy } from 'react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TopicInfo } from '../../api.ts'
 import { useProfiles } from '../../lib/profiles.ts'
@@ -8,7 +8,6 @@ import MobilePage from '../MobilePage.tsx'
 import SectionPage from './SectionPage.tsx'
 import RowsSkeleton from './SettingsSkeleton.tsx'
 import AboutSection from './sections/AboutSection.tsx'
-import AccountSection from './sections/AccountSection.tsx'
 import AiSection from './sections/AiSection.tsx'
 import FollowedSection from './sections/FollowedSection.tsx'
 import HouseholdSection from './sections/HouseholdSection.tsx'
@@ -20,13 +19,9 @@ import ReadingSection from './sections/ReadingSection.tsx'
 import SharingSection from './sections/SharingSection.tsx'
 import ShortcutsSection from './sections/ShortcutsSection.tsx'
 import SourcesSection from './sections/SourcesSection.tsx'
-import StatsSkeleton from './sections/StatsSkeleton.tsx'
 import ThemesSection from './sections/ThemesSection.tsx'
 import YoungProfileSection from './sections/YoungProfileSection.tsx'
 import PluginPage from './sections/plugins/PluginPage.tsx'
-
-// The chart library loads with the stats only.
-const StatsSection = lazy(() => import('./sections/StatsSection.tsx'))
 
 interface SettingsPanelProps {
   section: SettingsSection
@@ -54,12 +49,6 @@ const sectionContent = ({ section, item, topics, layout, onUnauthorized }: Setti
       return <NotificationsSection layout={layout} onUnauthorized={onUnauthorized} />
     case 'general':
       return <GeneralSection layout={layout} />
-    case 'stats':
-      return (
-        <Suspense fallback={<StatsSkeleton layout={layout} />}>
-          <StatsSection topics={topics ?? []} layout={layout} />
-        </Suspense>
-      )
     case 'ai':
       return <AiSection layout={layout} onUnauthorized={onUnauthorized} />
     case 'plugin':
@@ -70,8 +59,6 @@ const sectionContent = ({ section, item, topics, layout, onUnauthorized }: Setti
       return <ProfilesSection layout={layout} />
     case 'sharing':
       return <SharingSection layout={layout} />
-    case 'account':
-      return <AccountSection layout={layout} onUnauthorized={onUnauthorized} />
     case 'about':
       return <AboutSection layout={layout} />
     default:
