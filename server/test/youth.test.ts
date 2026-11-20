@@ -577,6 +577,11 @@ listen:
     // A new adult starts with the base sources only.
     const paul = await create('Paul', 'adult')
     assert.deepEqual(users(paul.id).sources.mine().sort(), ['lemonde', 'rtl'])
+    // One person's list never reaches another's: Paul takes Le Monde out, the admin putting it in changes nothing for him.
+    users(paul.id).sources.remove('lemonde', clock)
+    assert.equal((await call('PUT', '/me/sources/lemonde', 1)).status, 200)
+    assert.ok(users(paul.id).hiddenSources().includes('lemonde'))
+    assert.ok(!users(1).hiddenSources().includes('lemonde'))
     assert.equal((await call('DELETE', `/profiles/${paul.id}`, 1)).status, 204)
 
     const readersOf = async () =>
