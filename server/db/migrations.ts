@@ -1288,7 +1288,7 @@ export const migrate = (db: DatabaseSync, target = MIGRATIONS.length) => {
   const { user_version: version } = db.prepare('PRAGMA user_version').get() as { user_version: number }
 
   MIGRATIONS.slice(version, target).forEach((sql, index) => {
-    const rebuild = sql.includes(REBUILDS)
+    const rebuild = sql.trimStart().startsWith(REBUILDS)
     const foreignKeys = rebuild && foreignKeysOn(db)
     if (foreignKeys) db.exec('PRAGMA foreign_keys = OFF')
     db.exec('BEGIN')

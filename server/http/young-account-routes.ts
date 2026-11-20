@@ -1,4 +1,5 @@
 import express from 'express'
+import { rateLimit } from 'express-rate-limit'
 import { cleanHandle } from '../../shared/handle.ts'
 import { hashPassword } from '../auth/password.ts'
 import {
@@ -33,6 +34,10 @@ export interface YoungAccountRoutesOptions {
 }
 
 const YOUNG_KINDS: readonly YoungKind[] = ['teen', 'child']
+
+// Each account takes a @username for good and a row: an adult cannot fill the server with them.
+export const MAX_CHILDREN = 10
+export const CREATES_PER_MINUTE = 5
 
 const isAvatar = (value: unknown): value is ProfileAvatar => PROFILE_AVATARS.includes(value as ProfileAvatar)
 
@@ -77,9 +82,24 @@ type ParentOf = (request: express.Request, response: express.Response) => UserAc
 
 const mountCreateRoute = (router: express.Router, options: YoungAccountRoutesOptions, parentOf: ParentOf) => {
   const { accounts, profiles, young, now, onCreate } = options
-  router.post('/', async (request, response) => {
+  const createLimit = rateLimit({
+    windowMs: 60_000,
+    limit: CREATES_PER_MINUTE,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    keyGenerator: request => `young-create:${options.sessionOf(request)?.account.id ?? 'none'}`,
+    validate: { xForwardedForHeader: false },
+    handler: (_request, response) => {
+      response.status(429).json({ error: 'too_many_requests' })
+    }
+  })
+  router.post('/', createLimit, async (request, response) => {
     const parent = parentOf(request, response)
     if (!parent) return
+    if (young.childrenOf(parent.id).length >= MAX_CHILDREN) {
+      response.status(409).json({ error: 'limit' })
+      return
+    }
     const asked = newYoungOf((request.body ?? {}) as Record<string, unknown>)
     if (!asked) {
       response.status(400).json({ error: 'bad_request' })

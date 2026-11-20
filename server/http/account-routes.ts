@@ -63,9 +63,11 @@ export interface AccountRoutesOptions extends AccountAiOptions {
 export const accountRoutes = (options: AccountRoutesOptions) => {
   const router = express.Router()
   const helpers = accountHelpers(options)
-  // A teen or a child sees its account; its parents change it (its password, its region, its AI, its deletion).
+  // A teen or a child sees its account; its parents change it (its password, its region, its AI, its deletion). It
+  // may still sign out one of its own devices, a lost phone.
   router.use((request, response, next) => {
-    const session = request.method === 'GET' ? null : options.sessionOf(request)
+    const ownDevice = request.method === 'DELETE' && request.path.startsWith('/devices/')
+    const session = request.method === 'GET' || ownDevice ? null : options.sessionOf(request)
     if (session && options.accounts.young.isYoung(session.account.id))
       response.status(403).json({ error: 'parents_only' })
     else next()

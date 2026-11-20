@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import { after, before, describe, it } from 'node:test'
+import type { AddressInfo } from 'node:net'
 import { DatabaseSync } from 'node:sqlite'
+import express from 'express'
 import { migrate, versionBefore } from '../db/migrations.ts'
+import type { ProfileStore } from '../db/profile-store.ts'
+import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
+import type { YoungAccountStore } from '../db/young-account-store.ts'
+import { CREATES_PER_MINUTE, MAX_CHILDREN, youngAccountRoutes } from '../http/young-account-routes.ts'
 import { ADMIN_PASSWORD, SAM_PASSWORD, cookiesFrom, startHousehold } from './helpers/household-env.ts'
 
 const MIGRATION = 'CREATE TABLE account_parents'
@@ -142,6 +148,14 @@ describe('Mon compte › Mes enfants', () => {
     assert.equal((await household.call('/account', own)).status, 200)
     const region = await household.call('/account/region', own, 'PUT', { timeZone: 'Europe/Paris' })
     assert.equal(region.status, 403)
+    // Its lost phone it may still sign out.
+    const phone = await household.call('/login', '', 'POST', { email: '@zoe', password: 'le mot de passe de Zoé' })
+    const view = (await (await household.call('/account', own)).json()) as {
+      devices: { id: number; current: boolean }[]
+    }
+    const other = view.devices.find(device => !device.current)!
+    assert.equal((await household.call(`/account/devices/${other.id}`, own, 'DELETE')).status, 200)
+    assert.equal((await household.call('/account', cookiesFrom(phone))).status, 401)
     assert.equal((await household.call('/account/children', own)).status, 403)
     // Léa, with no password yet, opens nowhere on her own.
     const lea = (await children(household.admin))[0]!
@@ -182,5 +196,53 @@ describe('Mon compte › Mes enfants', () => {
     assert.equal((await rename(household.admin)).status, 403)
     const deleted = await household.call(`/profiles/${noa.profileId}`, household.admin, 'DELETE')
     assert.equal(deleted.status, 403)
+  })
+})
+
+describe('Créer un compte, against filling the server', () => {
+  // A parent who already has as many children as allowed: only the route's own checks run.
+  const start = async () => {
+    const parent = { id: 1 } as UserAccount
+    const app = express()
+    app.use(express.json())
+    app.use((_request, response, next) => {
+      response.locals.profileId = 7
+      next()
+    })
+    app.use(
+      '/children',
+      youngAccountRoutes({
+        accounts: { profileOf: () => 7, isHandleFree: () => true } as unknown as UserAccountStore,
+        profiles: {} as ProfileStore,
+        young: {
+          isYoung: () => false,
+          childrenOf: () => Array.from({ length: MAX_CHILDREN }, (_, index) => ({ accountId: index }))
+        } as unknown as YoungAccountStore,
+        sessionOf: () => ({ account: parent, device: null }),
+        checkProof: async () => true,
+        now: () => 0
+      })
+    )
+    const server = app.listen(0)
+    await new Promise(resolve => server.once('listening', resolve))
+    const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/children`
+    return {
+      server,
+      create: () => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+    }
+  }
+
+  it('refuses an account over the limit, and a parent making them in a loop', async () => {
+    const { server, create } = await start()
+    try {
+      for (let attempt = 0; attempt < CREATES_PER_MINUTE; attempt++) {
+        const response = await create()
+        assert.equal(response.status, 409)
+        assert.deepEqual(await response.json(), { error: 'limit' })
+      }
+      assert.equal((await create()).status, 429)
+    } finally {
+      server.close()
+    }
   })
 })
