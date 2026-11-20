@@ -155,6 +155,11 @@ describe('« Demander un code »', () => {
   after(() => close())
 
   it('tells the server’s admin once, and shows it on the account until a code is made', async () => {
+    // Before Sam asks, the server's admin cannot make one: nobody takes an account over on their own.
+    const samCode = `/server/accounts/${samId}/code`
+    const before = await call(samCode, admin, 'POST', { password: PASSWORD })
+    assert.equal(before.status, 409)
+    assert.deepEqual(await before.json(), { error: 'not_asked' })
     assert.equal((await call('/password/ask', '', 'POST', { email: 'pas une adresse' })).status, 400)
     assert.equal((await call('/password/ask', '', 'POST', { email: 'Sam@Example.com' })).status, 202)
     // An address without an account gets the same answer, and nobody is told.
@@ -186,6 +191,10 @@ describe('« Demander un code »', () => {
     })
     assert.equal(silenced.status, 400)
     assert.equal((await call('/server/inbox', '')).status, 401)
+
+    // Asked: one code, and the request is handled, so a second one waits for Sam to ask again.
+    assert.equal((await call(samCode, admin, 'POST', { password: PASSWORD })).status, 201)
+    assert.equal((await call(samCode, admin, 'POST', { password: PASSWORD })).status, 409)
   })
 
   it('is « Mot de passe oublié »’s e-mail instead, once Serveur › E-mail is set', async () => {

@@ -65,6 +65,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   The server's admin invites someone from _Server › Accounts_ with _Invite someone_, which replaces _Invite an adult_
   and _Server › Households_, and keeps what the household's admin could do. The first-run screens no longer ask for a
   household name.
+- **A new password only when asked.** _Server › Accounts_ makes a new-password code for an account only while its
+  person waits for one after _Forgot password_: _Make a code_ is in their request, and the account page has no button
+  otherwise. The server's admin can no longer take someone's account over on their own.
 
 ## [1.0.0-beta.13] - 2026-11-19
 

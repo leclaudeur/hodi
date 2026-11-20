@@ -273,7 +273,8 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   await reset.getByRole('button', { name: 'Terminé' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 
-  // The code made, the request is handled.
+  // The code made, the request is handled, and Sam's account offers no other code until Sam asks again.
+  await expect(page.getByRole('main').getByRole('button', { name: 'Faire un code' })).toHaveCount(0)
   await page.goto('/#/server/inbox')
   await expect(page.getByRole('main').getByRole('heading', { name: 'À traiter' })).toHaveCount(0)
 
