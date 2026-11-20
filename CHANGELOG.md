@@ -24,6 +24,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Your time zone belongs to the account.** _Settings › My account_ gets a _Region_ card where each person picks
   their own; it moves out of _Settings › Household_. Their screen time, quiet hours, game points and Daily summary follow its days.
   Every account starts with its household's.
+- **My account is a page of its own.** Laid out as the legal pages, with its sections in a sidebar (a _Sections_ menu
+  on a tablet or a phone): _Profile_, _Sign-in_, _Region_, _Statistics_ and _Data_. _Settings › My account_ and
+  _Settings › Statistics_ open it, and Settings lines that open another page end with an external-link icon.
 
 ## [1.0.0-beta.13] - 2026-11-19
 

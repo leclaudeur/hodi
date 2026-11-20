@@ -24,7 +24,6 @@ const RegionCard = ({ account, onAccount }: { account: AccountView; onAccount: (
     )
   return (
     <>
-      <h2 className={styles.label}>{t('settings.account.region')}</h2>
       <div className={styles.card}>
         <SettingRow
           label={t('settings.account.timeZone')}
