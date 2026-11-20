@@ -238,3 +238,8 @@
 .sections {
   position: relative;
 }
+
+/* A second heading in the sidebar (the catalogue's topics, under its Officielles). */
+.subGroup {
+  padding-top: 20px;
+}

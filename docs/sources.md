@@ -13,9 +13,11 @@ after a restart.
 The database holds the server's sources, and each person reads their own list of them, **My sources**, kept with their
 account (`my_sources`). **Base sources** are the only ones a new household and a new adult start with, in the
 household's language. They can be taken out of one's list, never deleted. Every other source is a **suggestion**: a
-person adds it from _Settings › Sources_, or adds any site, feed or YouTube channel with its link, which goes into
+person adds it from the **Catalogue** (_Settings › Sources › Browse the catalogue_: the official sources, then each
+theme), or adds any site, feed or YouTube channel with its link, which goes into
 their list only. A source someone added can be deleted by them or by the admin, for everyone. A source in the lists of
-10 people or more shows how many.
+10 people or more shows how many. When a source is added, the server keeps what its site says it is (its
+`og:description`, else its meta description, else the feed's), which the Catalogue shows under its name.
 
 A source may belong to several themes, and a theme with no source is hidden. Each profile sees a theme's name in its
 own language. In a feed that mixes French and English, only the articles in the source's language are kept.

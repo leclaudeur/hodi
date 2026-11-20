@@ -1,8 +1,10 @@
-import { Plus, Search } from 'lucide-react'
+import { LibraryBig, Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { SourceStatus, TopicInfo } from '../../../api.ts'
 import { setMySources, usePreferences } from '../../../lib/preferences.ts'
+import { showSaved } from '../../../lib/toast.ts'
+import { catalogueHref } from '../../../lib/use-hash-route.ts'
 import { useMyRequests } from '../../../lib/my-requests.ts'
 import { isYoung, useProfiles } from '../../../lib/profiles.ts'
 import { useSourceEngagement, useSourceStatuses } from '../../../lib/settings-data.ts'
@@ -64,7 +66,9 @@ const useSourcesPage = (topics: TopicInfo[], onUnauthorized: () => void) => {
   const [editing, setEditing] = useState<TopicsEdit | null>(null)
   const opening = useOpenedGroups()
 
-  const list = filterSources({ sources, topics, hiddenSources, engagement, search, filter, topicFilter })
+  // « Mes sources » only: the others are in the catalogue.
+  const mine = sources?.filter(source => !hiddenSources.includes(source.id))
+  const list = filterSources({ sources: mine, topics, hiddenSources, engagement, search, filter, topicFilter })
   const groups = groupsOf(list.shown, reader.current, reader.young, t)
   // Browsing everything, each group opens on demand. A filter or a search opens every group it finds.
   const browsing = list.chosen === 'all' && list.chosenTopics.length === 0 && !list.wanted
@@ -77,15 +81,14 @@ const useSourcesPage = (topics: TopicInfo[], onUnauthorized: () => void) => {
     query
   })
 
-  const show = (source: SourceStatus, visible: boolean) => {
-    const off = list.hidden(source.id)
-    opening.setHeld(states => (source.id in states ? states : { ...states, [source.id]: off }))
-    setMySources([source.id], visible)
+  const takeOut = (source: SourceStatus) => {
+    setMySources([source.id], false, { quiet: true })
+    showSaved(t('catalogue.removed', { name: source.name }))
   }
 
   return {
     ...{ sources, failed, search, setSearch, setFilter, setTopicFilter, phone, moreOf, setMoreOf, adding, setAdding },
-    ...{ reader, requests, asking, setAsking, actions, editing, setEditing, opening, list, groups, browsing, show }
+    ...{ reader, requests, asking, setAsking, actions, editing, setEditing, opening, list, groups, browsing, takeOut }
   }
 }
 
@@ -96,7 +99,6 @@ const rowOf = (page: SourcesPage, topics: TopicInfo[], deletedProfile: string) =
   const { reader, list, actions } = page
   const sourceTopics = list.topicsOf(source.id)
   const mine = reader.admin || (source.addedBy !== undefined && source.addedBy === reader.current)
-  const off = list.hidden(source.id)
   const addedBy =
     source.addedBy === undefined || source.addedBy === reader.current
       ? null
@@ -114,7 +116,6 @@ const rowOf = (page: SourcesPage, topics: TopicInfo[], deletedProfile: string) =
       key={source.id}
       source={source}
       phone={page.phone}
-      off={off}
       addedBy={addedBy}
       replace={replace}
       retopic={retopic}
@@ -123,7 +124,7 @@ const rowOf = (page: SourcesPage, topics: TopicInfo[], deletedProfile: string) =
       onRemove={() => actions.remove(source)}
       open={page.moreOf === source.id}
       onMore={open => page.setMoreOf(open ? source.id : null)}
-      onShow={visible => page.show(source, visible)}
+      onTakeOut={() => page.takeOut(source)}
     />
   )
 }
@@ -177,13 +178,18 @@ const AddButton = ({ page }: { page: SourcesPage }) => {
     )
   }
   return (
-    <Button
-      icon={Plus}
-      data-tour="add-source"
-      onClick={() => page.setAdding({ topicId: page.list.chosenTopics[0] ?? null, replacing: null })}
-    >
-      {t('settings.addSource.title')}
-    </Button>
+    <>
+      <Button icon={LibraryBig} href={catalogueHref()}>
+        {t('catalogue.browse')}
+      </Button>
+      <Button
+        icon={Plus}
+        data-tour="add-source"
+        onClick={() => page.setAdding({ topicId: page.list.chosenTopics[0] ?? null, replacing: null })}
+      >
+        {t('settings.addSource.title')}
+      </Button>
+    </>
   )
 }
 

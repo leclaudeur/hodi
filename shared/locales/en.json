@@ -1615,10 +1615,10 @@
     "hideLowTitle_other": "Hide the {{count}} little-read sources?",
     "hideOneTitle": "Hide {{name}}?",
     "hideLowMessage": "Their articles leave this profile’s feed and topics. You can show them again here one by one.",
-    "hideAll": "Hide all",
-    "hidden_one": "Source hidden",
-    "hidden_other": "{{count}} sources hidden",
-    "replaced": "Source added, {{name}} hidden",
+    "hideAll": "Take all out",
+    "hidden_one": "Source taken out of your sources",
+    "hidden_other": "{{count}} sources taken out of your sources",
+    "replaced": "Source added, {{name}} taken out of your sources",
     "added": "Source added",
     "topicsSaved": "Topics saved",
     "topicsFailed": "The topics could not be saved. Try again in a moment.",
@@ -1630,7 +1630,7 @@
     "groups": {
       "mine": "Added by you",
       "channels": "My channels",
-      "household": "Added by the home",
+      "household": "Added by others",
       "base": "Base sources"
     },
     "status": {
@@ -1639,8 +1639,8 @@
     "deletedProfile": "a deleted profile",
     "errorTitle": "Error: {{error}}",
     "by": "By {{name}}",
-    "readers_one": "{{count}} readers",
-    "readers_other": "{{count}} readers",
+    "readers_one": "{{formatted}} readers",
+    "readers_other": "{{formatted}} readers",
     "changeTopicsOf": "Change {{name}}’s topics",
     "changeTopics": "Change topics",
     "seeSite": "See the site",
@@ -1652,8 +1652,7 @@
     "filters": {
       "all": "All",
       "low": "Little read",
-      "error": "Failing",
-      "hidden": "Hidden"
+      "error": "Failing"
     },
     "filterTopic": "Filter by topic",
     "allTopics": "All topics",
@@ -1663,9 +1662,9 @@
     "groupIntros": {
       "mine": "The sites you added. Only you, and the admin, can change their topics or delete them.",
       "channels": "The YouTube channels and podcasts you follow. They arrive in Videos, never in the feed.",
-      "household": "Added by the other profiles. They stay hidden for you until you show them.",
-      "parents": "The sources your parents chose for you. Hide the ones you don’t care about.",
-      "base": "Chosen with Hodi for a good start. You can hide them, not delete them.",
+      "household": "Added to the server by other accounts, and that you read too.",
+      "parents": "The sources your parents chose for you. Take out the ones you don’t care about.",
+      "base": "Chosen with Hodi for a good start. You can take them out, not delete them.",
       "requests": "The sources you asked for. They come into your feed when your parents accept them."
     },
     "moreFor": "Actions for {{name}}",
@@ -1747,14 +1746,14 @@
       "button": "Delete source"
     },
     "hideSource": {
-      "title": "Hide the source?",
-      "message": "Articles from <b>{{name}}</b> leave your feed and topics, <b>for your profile only</b>. You can show it again here.",
-      "button": "Hide source"
+      "title": "Take the source out?",
+      "message": "Articles from <b>{{name}}</b> leave your feed and topics. You can take it back from the <i>Catalogue</i>.",
+      "button": "Take the source out"
     },
     "hideSources": {
-      "title": "Hide {{count}} sources?",
-      "message": "Articles from these {{count}} sources leave your feed and topics, <b>for your profile only</b>. You can show them again here, one by one.",
-      "button": "Hide {{count}} sources"
+      "title": "Take {{count}} sources out?",
+      "message": "Articles from these {{count}} sources leave your feed and topics. You can take them back from the <i>Catalogue</i>.",
+      "button": "Take the {{count}} sources out"
     },
     "clearTexts": {
       "title": "Free up space?",
@@ -2706,6 +2705,29 @@
       "offText": "Your profile will open again without a code from <i>Who’s reading?</i>, on the devices where a teen or a child is signed in.",
       "off": "Turn off",
       "hintAdvised": "Advised, not chosen yet"
+    }
+  },
+  "catalogue": {
+    "title": "Catalogue",
+    "official": "Official",
+    "parts": "Sections",
+    "intro": "This topic’s sources on the server, in your language first. The + button adds one to your sources, the − button takes it out.",
+    "introOfficial": "The sources chosen with Hodi, in your language first. The base sources are already in yours; the + button adds others.",
+    "search": "Search for a source",
+    "searching": "Search",
+    "mine": "in your sources",
+    "add": "Add {{name}} to your sources",
+    "addShort": "Add to your sources",
+    "remove": "Take {{name}} out of your sources",
+    "removeShort": "Take out of your sources",
+    "openSite": "Open the site",
+    "added": "{{name}} added to your sources",
+    "removed": "{{name}} taken out of your sources",
+    "addFailed": "The source could not be added. Try again in a moment.",
+    "browse": "Browse the catalogue",
+    "empty": {
+      "title": "No source",
+      "text": "Nothing matches your search."
     }
   }
 }

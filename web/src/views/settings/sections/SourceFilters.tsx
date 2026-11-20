@@ -7,9 +7,9 @@ import Menu, { MenuItem } from '../../../ui/Menu.tsx'
 import TopicIcon from '../../../ui/TopicIcon.tsx'
 import styles from './SourceFilters.module.css'
 
-export type SourceFilter = 'all' | 'low' | 'error' | 'hidden'
+export type SourceFilter = 'all' | 'low' | 'error'
 
-export const SOURCE_FILTERS: SourceFilter[] = ['all', 'low', 'error', 'hidden']
+export const SOURCE_FILTERS: SourceFilter[] = ['all', 'low', 'error']
 
 interface StatusSelectProps {
   value: SourceFilter

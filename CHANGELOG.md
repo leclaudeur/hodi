@@ -28,6 +28,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **My sources.** Each person's sources are now their own list, kept with their account: a source someone adds goes
   into their list only, and the others add it from the server's sources when they want it. A new adult starts with the
   base sources. A source read by 10 people or more shows how many. Each person keeps the sources they read before.
+- **Catalogue.** A page of its own, from My sources › Browse the catalogue: the official sources, then each theme in its
+  sidebar, in your language first, with a search. Each card shows the site's logo, name, what it says it is (read
+  when the source is added), its readers and its site; + puts it in My sources, − takes it out. My sources has no
+  switches anymore: a source is in the list or taken out of it.
 - **Only a young one's parents manage them.** Their card, rules, devices and deletion are their parents' only: the
   server's admin no longer has a say over other people's children. The Parental code moves to My account › My
   children, and teens and children no longer have AI settings of their own.
