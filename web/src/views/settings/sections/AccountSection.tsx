@@ -206,7 +206,7 @@ const AccountSection = ({ layout, onUnauthorized, intro: ownIntro }: AccountSect
 
   return (
     <SectionPage title={title} intro={intro} layout={layout}>
-      <AccountProfile />
+      <AccountProfile account={account} onAccount={setAccount} />
       <h2 className={styles.label}>{t('settings.account.yourAccount')}</h2>
       <div className={styles.card}>
         <SettingRow

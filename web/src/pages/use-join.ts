@@ -107,7 +107,7 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
           email: fields.email.trim(),
           password: fields.password,
           ...(fields.existing ? { existing: true as const } : { ageConfirmed: true as const }),
-          ...(profile ? { profile: { name: profile.name, color: profile.color } } : {})
+          ...(profile ? { profile: { name: profile.name, color: profile.color, handle: profile.handle } } : {})
         })
         // The photo once the profile is open; the account is made whatever happens to it.
         if (profile?.photo && signIn !== false) await uploadProfilePhoto(profileId, profile.photo).catch(() => {})

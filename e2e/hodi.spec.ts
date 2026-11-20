@@ -545,6 +545,8 @@ test('leaves the household from Mon compte, keeps the account alone, and joins a
     await page.goto('/#/settings/profiles')
     await page.getByRole('button', { name: 'Inviter un adulte' }).click()
     const invite = page.getByRole('dialog', { name: 'Inviter un adulte' })
+    await invite.getByRole('textbox', { name: 'Nom' }).fill('Ami de la famille')
+    await invite.getByRole('button', { name: 'Créer le code' }).click()
     // The code comes with its QR.
     await expect(invite.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
     const code = await invite.getByRole('textbox', { name: 'Code' }).inputValue()

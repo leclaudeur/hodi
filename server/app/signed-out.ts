@@ -1,3 +1,4 @@
+import { handleCheckRoutes } from '../http/handle-routes.ts'
 import type express from 'express'
 import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
 import { publicServerSettings } from '../db/server-settings-store.ts'
@@ -116,6 +117,8 @@ export const mountSignedOut = (api: express.Router, wiring: Wiring) => {
   const { options, config, householdOptions } = wiring
   const { accounts, devices, profiles, profileDevices, plugins, pluginInstaller, twoFactor, throttle, now } = options
   if (householdOptions) api.use('/setup', setupRoutes(householdOptions))
+  const { handles } = options
+  if (handles) api.use('/handles', handleCheckRoutes({ handles, sessionOf: wiring.session.sessionOf, now }))
 
   const login = loginRoutes({
     accounts,

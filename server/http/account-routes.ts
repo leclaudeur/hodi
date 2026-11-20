@@ -11,6 +11,7 @@ import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-
 import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
 import { isPassword } from './household-input.ts'
 import { profileIdOf } from './profile-routes.ts'
+import type { HandleStore } from '../db/handle-store.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
 import { mountLeaveRoute } from './account-leave-route.ts'
@@ -46,6 +47,8 @@ export interface AccountRoutesOptions {
   // What each plugin keeps of the person, by plugin id, for the copy.
   // « Validation en deux étapes »; absent in tests without it.
   twoFactor?: TwoFactorStore
+  // The @identifier's next change, for Mon compte.
+  handles?: HandleStore
   pluginCopies?: (who: {
     accountId: number
     profileId: number | null
@@ -77,7 +80,8 @@ const accountHelpers = ({
   sessionOf,
   throttle,
   now,
-  twoFactor
+  twoFactor,
+  handles
 }: AccountRoutesOptions) => {
   // All of it is the signed-in account's own, from its own profile: a child's profile open on a parent's
   // device sees none of it.
@@ -106,6 +110,9 @@ const accountHelpers = ({
     const going = plan(account)
     return {
       email: account.email,
+      handle: account.handle,
+      // Before then, « Modifier » keeps the identifier as it is.
+      handleChangeableFrom: handles?.changeableFrom(account.id, now()) ?? null,
       passwordChangedAt: account.passwordChangedAt,
       // No password of its own: its changes need a sign-in on this device in the last 5 minutes instead.
       loginOnly: !account.hasPassword,

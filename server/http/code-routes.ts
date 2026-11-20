@@ -1,3 +1,4 @@
+import { cleanHandle } from '../../shared/handle.ts'
 import express from 'express'
 import { hashPassword } from '../auth/password.ts'
 import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
@@ -33,13 +34,15 @@ interface JoinChecked {
   passwordHash: string
   name: ReturnType<typeof cleanName>
   color: ReturnType<typeof profileColorOf>
+  // The new account's identifier, as typed; null: one made from its e-mail.
+  handle: string | null
 }
 
 // The account, its profile, and this device signed in with both, once every check passed.
 // From here on nothing waits: no other request runs between the checks and the writes.
 const completeJoin = (
   options: ResolvedJoinOptions,
-  { valid, existing, email, known, passwordHash, name, color }: JoinChecked,
+  { valid, existing, email, known, passwordHash, name, color, handle }: JoinChecked,
   request: express.Request,
   response: express.Response
 ) => {
@@ -57,7 +60,7 @@ const completeJoin = (
     response.status(403).json({ error: 'invalid_code' })
     return
   }
-  const account = known ?? accounts.create(email, passwordHash, now())!
+  const account = known ?? accounts.create(email, passwordHash, now(), { handle })!
   let profileId = taken.profileId
   if (profileId === null) {
     const profile = profiles.create(name!, color!, now())!
@@ -71,6 +74,12 @@ const completeJoin = (
   }
   response.set('Set-Cookie', withProfileCookie(options, cookieFor(account, request), profileId))
   response.json({ profileId })
+}
+
+// A new account's e-mail and identifier, both still free.
+const newAccountRefusal = ({ accounts, now }: ResolvedJoinOptions, email: string, handle: string | null) => {
+  if (accounts.byEmail(email)) return 'email_taken'
+  return handle && !accounts.isHandleFree(handle, now()) ? 'handle_taken' : null
 }
 
 // "Rejoins <foyer>" or "Ton profil t'attend": the account, its profile, and this device signed in with both.
@@ -93,7 +102,8 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
     }
     const name = cleanName(asked.draft.name)
     const color = profileColorOf(asked.draft.color)
-    if (valid.found.profileId === null && (!name || !color)) {
+    const handle = cleanHandle(asked.draft.handle)
+    if ((valid.found.profileId === null && (!name || !color)) || (asked.draft.handle !== undefined && !handle)) {
       response.status(400).json({ error: 'bad_request' })
       return
     }
@@ -104,13 +114,14 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
       known = await existingAccountOf(options, decoyHash, asked, request, response)
       if (!known) return
     } else {
-      if (options.accounts.byEmail(asked.email)) {
-        response.status(409).json({ error: 'email_taken' })
+      const refusal = newAccountRefusal(options, asked.email, handle)
+      if (refusal) {
+        response.status(409).json({ error: refusal })
         return
       }
       passwordHash = await hashPassword(asked.password)
     }
-    const checked = { valid, existing: asked.existing, email: asked.email, known, passwordHash, name, color }
+    const checked = { valid, existing: asked.existing, email: asked.email, known, passwordHash, name, color, handle }
     completeJoin(options, checked, request, response)
   })
 }

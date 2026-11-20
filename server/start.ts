@@ -66,6 +66,7 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
     devices: stores.devices,
     profileDevices: stores.profileDevices,
     accountData: stores.accountData,
+    handles: stores.handles,
     codes: stores.codes,
     twoFactor: stores.twoFactor,
     alerts: running.alerts,

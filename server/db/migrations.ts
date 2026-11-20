@@ -962,6 +962,19 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE article_images ADD COLUMN width INTEGER;
   ALTER TABLE article_images ADD COLUMN page_checked TEXT;
+  `,
+  // Each account's @identifier, unique on the server, for friends and mentions; given at startup to the accounts
+  // made before it (handle-store.ts). An identifier left behind stays its account's for 30 days, so that nobody takes
+  // it at once.
+  `
+  ALTER TABLE users ADD COLUMN handle TEXT;
+  ALTER TABLE users ADD COLUMN handle_changed_at INTEGER;
+  CREATE UNIQUE INDEX users_handle ON users (handle) WHERE handle IS NOT NULL;
+  CREATE TABLE released_handles (
+    handle TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    until INTEGER NOT NULL
+  );
   `
 ]
 

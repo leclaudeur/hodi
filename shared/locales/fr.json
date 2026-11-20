@@ -37,6 +37,7 @@
   "login": {
     "tagline": "L’actu, rien que pour toi.",
     "email": "E-mail",
+    "emailOrHandle": "E-mail ou identifiant",
     "password": "Mot de passe",
     "wrongCredentials": "E-mail ou mot de passe incorrect, réessaie.",
     "failed": "Une erreur est survenue. Réessaie dans un instant.",
@@ -197,7 +198,13 @@
     "invite": "Inviter",
     "makeAdmin": "Admin du foyer",
     "makeAdminHint": "Lui passer le rôle : un seul admin par foyer.",
-    "makeAdminButton": "Passer le rôle d’admin"
+    "makeAdminButton": "Passer le rôle d’admin",
+    "handle": "Identifiant",
+    "handleFree": "@{{handle}} est libre.",
+    "handleTaken": "@{{handle}} est déjà pris. Essaie @{{other}}.",
+    "handleRules": "De 3 à 20 caractères : lettres, chiffres, point ou tiret bas.",
+    "handleLocked": "Tu pourras le changer le {{date}}.",
+    "handleEvery": "Tu peux le changer une fois tous les 30 jours."
   },
   "setup": {
     "step": "Étape {{step}} sur {{total}}",

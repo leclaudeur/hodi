@@ -76,7 +76,7 @@ export const useDraftSaving = (flow: Flow, answers: Answers, pluginStep: SetupDr
       code,
       email,
       name,
-      profile: profile && { name: profile.name, color: profile.color, photo: photoUrl },
+      profile: profile && { name: profile.name, color: profile.color, handle: profile.handle, photo: photoUrl },
       ai,
       timeZone,
       country

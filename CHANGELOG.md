@@ -8,6 +8,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Username.** Every account has an @username, unique on the server, for friends and mentions to come. It is suggested
+  from the first name when the account is made (first-run screens, an invitation's code), says at once whether it is
+  free, and changes once every 30 days in My account. Existing accounts get one from their profile's name. Sign in
+  with the e-mail or the username.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My

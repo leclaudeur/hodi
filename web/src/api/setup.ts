@@ -99,6 +99,9 @@ export interface AccountView {
   recentSignIn: boolean
   // « Profil privé »: its profile asks for this password in « Qui lit ? », on every device it does not trust.
   privateProfile?: boolean
+  // « Identifiant », and when it can change again (null: now).
+  handle: string | null
+  handleChangeableFrom: number | null
   devices: AccountDevice[]
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: {
@@ -179,7 +182,7 @@ export const joinWithCode = (join: {
   password: string
   ageConfirmed?: true
   existing?: true
-  profile?: { name: string; color: ProfileColor }
+  profile?: { name: string; color: ProfileColor; handle?: string }
   // signIn false: the account has « Validation en deux étapes », so this device signs in on Connexion with its code.
 }) => sendJson<{ profileId: number; signIn?: false }>('POST', '/codes/join', join)
 
@@ -218,7 +221,7 @@ export const removeProfileDevice = (profileId: number, deviceId: number) =>
 
 export interface HouseholdSetup {
   name: string
-  profile: { name: string; color: ProfileColor }
+  profile: { name: string; color: ProfileColor; handle?: string }
   timeZone: string
   country: string | null
   language: InterfaceLanguage

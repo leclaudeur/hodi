@@ -289,6 +289,7 @@ export const WhoStep = ({ join }: { join: Join }) => {
       <StepHeader step={2} total={2} title={t('setup.profile.title')} intro={t('join.who.intro')} />
       <ProfileForm
         className={styles.profileForm}
+        withHandle={join.fields.existing ? undefined : {}}
         submitLabel={
           <>
             {t('join.create')}

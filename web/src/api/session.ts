@@ -81,7 +81,8 @@ export const login = async (email: string, password: string, code?: string): Pro
     return { ok: true }
   }
 
-  if (response.status === 401) {
+  // 400: what was typed is neither an e-mail nor an identifier, as wrong as a wrong password.
+  if (response.status === 401 || response.status === 400) {
     return { ok: false, reason: 'invalid_password' }
   }
 

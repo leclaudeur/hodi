@@ -1,4 +1,5 @@
 import { type Database, transaction } from './database.ts'
+import { HandleStore } from './handle-store.ts'
 import { currentHouseholdId } from './household-scope.ts'
 
 // Personal accounts: a person's own e-mail and password, which sign them in on any device. Not to be mixed up with
@@ -10,6 +11,8 @@ export const MAX_EMAIL_LENGTH = 254
 export interface UserAccount {
   id: number
   email: string
+  // @identifier, unique on the server; null only between a migration and the startup that gives it.
+  handle: string | null
   passwordHash: string
   passwordChangedAt: number
   // false for an account a plugin made with another way in (« Se connecter avec Google »), until a password is set.
@@ -27,6 +30,7 @@ export interface UserAccount {
 interface UserAccountRow {
   id: number
   email: string
+  handle: string | null
   password_hash: string
   password_changed_at: number
   has_password: number
@@ -39,6 +43,7 @@ interface UserAccountRow {
 const toAccount = (row: UserAccountRow): UserAccount => ({
   id: row.id,
   email: row.email,
+  handle: row.handle,
   passwordHash: row.password_hash,
   passwordChangedAt: row.password_changed_at,
   hasPassword: row.has_password === 1,
@@ -57,7 +62,7 @@ export const cleanEmail = (value: unknown) => {
 }
 
 const COLUMNS =
-  'id, email, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, created_at'
+  'id, email, handle, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, created_at'
 
 export class UserAccountStore {
   readonly #db: Database
@@ -75,6 +80,25 @@ export class UserAccountStore {
     const row = this.#db.prepare(`SELECT ${COLUMNS} FROM users WHERE email = ?`).get(email) as
       UserAccountRow | undefined
     return row ? toAccount(row) : null
+  }
+
+  byHandle(handle: string): UserAccount | null {
+    const row = this.#db.prepare(`SELECT ${COLUMNS} FROM users WHERE handle = ?`).get(handle) as
+      UserAccountRow | undefined
+    return row ? toAccount(row) : null
+  }
+
+  // A new account's own identifier, typed in its first screens, before anyone else takes it.
+  isHandleFree(handle: string, now: number) {
+    return new HandleStore(this.#db).isFree(handle, now)
+  }
+
+  // The identifier the server's admin chose in the first-run screens; false when someone took it meanwhile.
+  chooseHandle(id: number, handle: string, now: number) {
+    const handles = new HandleStore(this.#db)
+    if (!handles.isFree(handle, now, id)) return false
+    handles.assign(id, '', now, handle)
+    return true
   }
 
   // Whether anyone has an account yet: before that, the install signs in with the household's password, if any.
@@ -102,18 +126,26 @@ export class UserAccountStore {
          VALUES (?, ?, ?, 1, ?)`
       )
       .run(email, passwordHash, now, now)
+    new HandleStore(this.#db).assign(Number(lastInsertRowid), email, now)
     return this.get(Number(lastInsertRowid))
   }
 
   // Any other person's account, from a code ("J'ai un code"); null when the address has one already.
   // hasPassword false: passwordHash is of random bytes nobody knows, and the person signs in another way.
-  create(email: string, passwordHash: string, now: number, { hasPassword = true } = {}): UserAccount | null {
+  // handle: the identifier it chose, when still free; else one made from the e-mail.
+  create(
+    email: string,
+    passwordHash: string,
+    now: number,
+    { hasPassword = true, handle = null }: { hasPassword?: boolean; handle?: string | null } = {}
+  ): UserAccount | null {
     if (this.byEmail(email)) return null
     const { lastInsertRowid } = this.#db
       .prepare(
         'INSERT INTO users (email, password_hash, password_changed_at, has_password, created_at) VALUES (?, ?, ?, ?, ?)'
       )
       .run(email, passwordHash, now, hasPassword ? 1 : 0, now)
+    new HandleStore(this.#db).assign(Number(lastInsertRowid), email, now, handle)
     return this.get(Number(lastInsertRowid))
   }
 

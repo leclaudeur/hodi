@@ -3,6 +3,7 @@ import { currentHouseholdId } from '../db/household-scope.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
 import { accountRoutes } from '../http/account-routes.ts'
 import { codeRoutes } from '../http/code-routes.ts'
+import { accountHandleRoutes } from '../http/handle-routes.ts'
 import type { InvitationMail } from '../http/invitation-routes.ts'
 import { householdRoutes } from '../http/household-routes.ts'
 import { householdPhotoRoutes } from '../http/household-photo.ts'
@@ -16,8 +17,9 @@ import type { Wiring } from './wiring.ts'
 
 // Réglages › Compte et données.
 const mountAccount = (api: express.Router, { options, config, session, profileHooks }: Wiring) => {
-  const { accounts, devices, accountData, profiles, household, throttle, now, plugins, twoFactor } = options
+  const { accounts, devices, accountData, profiles, household, throttle, now, plugins, twoFactor, handles } = options
   if (!accounts || !devices || !accountData) return
+  if (handles) api.use('/account/handle', accountHandleRoutes({ handles, sessionOf: session.sessionOf, now }))
   api.use(
     '/account',
     accountRoutes({
@@ -37,7 +39,8 @@ const mountAccount = (api: express.Router, { options, config, session, profileHo
       // Deleting the last adult's account empties the household: the plugins forget it as a removed one.
       onHouseholdGone: () => plugins?.householdRemoved(currentHouseholdId()),
       pluginCopies: plugins ? who => plugins.exportData(who) : undefined,
-      twoFactor
+      twoFactor,
+      handles
     })
   )
 }

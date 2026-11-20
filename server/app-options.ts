@@ -14,6 +14,7 @@ import type { ServerStatsStore } from './db/server-stats-store.ts'
 import type { SignInCodeStore } from './db/sign-in-code-store.ts'
 import type { SourceStore } from './db/source-store.ts'
 import type { TwoFactorStore } from './db/two-factor-store.ts'
+import type { HandleStore } from './db/handle-store.ts'
 import type { UserAccountStore } from './db/user-account-store.ts'
 import type { UserDeviceStore } from './db/user-device-store.ts'
 import type { UserStore } from './db/user-store.ts'
@@ -70,6 +71,8 @@ export interface AppOptions {
   // The people's own accounts; absent in tests of an install from before them, which signs in with the household's
   // password.
   accounts?: UserAccountStore
+  // The accounts' @identifiers; absent in tests without accounts.
+  handles?: HandleStore
   // Serveur › Vue d'ensemble: the server's totals and who is online.
   serverStats?: ServerStatsStore
   // Serveur › Foyers and Comptes.

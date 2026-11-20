@@ -9,6 +9,7 @@ import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { TwoFactorStore } from '../db/two-factor-store.ts'
 import { ProfileDeviceStore } from '../db/profile-device-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
+import { HandleStore } from '../db/handle-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { NewsStore } from '../db/news-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
@@ -77,6 +78,7 @@ export const openStores = (
     images,
     household,
     accounts: new UserAccountStore(db),
+    handles: new HandleStore(db),
     codes: new SignInCodeStore(db, config.sessionSecret),
     twoFactor: new TwoFactorStore(db, config.sessionSecret),
     devices: new UserDeviceStore(db),

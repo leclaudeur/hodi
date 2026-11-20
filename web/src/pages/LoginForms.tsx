@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, KeyRound, LifeBuoy, LockKeyhole, Mail } from 'lucide-react'
+import { ArrowLeft, ArrowRight, AtSign, KeyRound, LifeBuoy, LockKeyhole } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PluginSlots, useScreenLayout } from '../plugins/Slots.tsx'
@@ -149,15 +149,17 @@ export const SignInForm = ({ login, name, notice, onJoin, onForgot, onLoggedIn }
 
       <div className={styles.field}>
         <TextField
-          icon={Mail}
-          type="email"
+          icon={AtSign}
+          type="text"
+          autoCapitalize="none"
+          spellCheck={false}
           autoComplete="username"
           autoFocus
           required
           value={login.email}
           onChange={event => login.setEmail(event.target.value)}
-          aria-label={t('login.email')}
-          placeholder={t('login.email')}
+          aria-label={t('login.emailOrHandle')}
+          placeholder={t('login.emailOrHandle')}
           aria-invalid={error !== null}
         />
       </div>

@@ -14,6 +14,7 @@ import { useProfiles } from '../../lib/profiles.ts'
 import Button from '../../ui/Button.tsx'
 import ProfileAvatar from '../../ui/ProfileAvatar.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
+import HandleField, { useHandle } from './HandleField.tsx'
 import styles from './ProfileForm.module.css'
 import { AccountRows, AvatarPicker, ColorField, KindField, PhotoPicker, useProfilePhoto } from './ProfileFormParts.tsx'
 
@@ -25,6 +26,8 @@ export interface ProfileDraft {
   avatar?: ProfileAvatarName
   // undefined: unchanged; null: removed.
   photo?: Blob | null
+  // An account's own form: its @identifier.
+  handle?: string
 }
 
 interface ProfileFormProps {
@@ -53,6 +56,8 @@ interface ProfileFormProps {
   onMakeAdmin?: () => void
   // A new profile from « Qui lit ? »: picking Adulte invites one with a code instead, so that it has its account.
   onInvite?: () => void
+  // An account's own form: its identifier under the name; lockedUntil: changed less than 30 days ago.
+  withHandle?: { value?: string; lockedUntil?: number | null }
 }
 
 interface ActionsProps {
@@ -156,6 +161,24 @@ const firstAvatar = (profile: Profile | undefined, others: Profile[]): ProfileAv
   profile?.avatar ?? PROFILE_AVATARS.find(name => !others.some(other => other.avatar === name)) ?? 'fox'
 
 // The type picked, and what it leads to: an adult invited, a new child waiting, or a child with its avatar.
+// Enregistrer: busy until the form closes, or the error under it.
+const useSaving = (onSave: (draft: ProfileDraft) => Promise<void>) => {
+  const { t } = useTranslation()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const save = async (draft: ProfileDraft) => {
+    setSaving(true)
+    setError(null)
+    try {
+      await onSave(draft)
+    } catch {
+      setError(t('profileForm.saveFailed'))
+      setSaving(false)
+    }
+  }
+  return { saving, error, setError, save }
+}
+
 const useKind = (profile: Profile | undefined, kinds: ProfileKind[], canInvite: boolean) => {
   const [kind, setKind] = useState<ProfileKind>(profile?.kind ?? (canInvite ? 'teen' : kinds[0]) ?? 'adult')
   // An adult is invited, not made here: only the type and what happens next show.
@@ -181,7 +204,8 @@ const ProfileForm = ({
   onDelete,
   onConnect,
   onMakeAdmin,
-  onInvite
+  onInvite,
+  withHandle
 }: ProfileFormProps) => {
   const { t } = useTranslation()
   const [name, setName] = useState(profile?.name ?? initial?.name ?? '')
@@ -189,9 +213,9 @@ const ProfileForm = ({
   const { kind, setKind, invite, soon, child } = useKind(profile, kinds, Boolean(onInvite))
   const others = useProfiles()?.profiles.filter(other => other.id !== profile?.id) ?? []
   const [avatar, setAvatar] = useState<ProfileAvatarName>(() => firstAvatar(profile, others))
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { saving, error, setError, save } = useSaving(onSave)
   const photo = useProfilePhoto(profile, initial?.photo, setError)
+  const handle = useHandle(name, { enabled: Boolean(withHandle), current: withHandle?.value, start: initial?.handle })
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -201,20 +225,14 @@ const ProfileForm = ({
     }
     const trimmed = name.replace(/\s+/g, ' ').trim()
     if (!trimmed || soon) return
-    setSaving(true)
-    setError(null)
-    try {
-      await onSave({
-        name: trimmed,
-        color,
-        kind: kinds.length > 1 ? kind : undefined,
-        avatar: child ? avatar : undefined,
-        photo: child ? undefined : photo.photo
-      })
-    } catch {
-      setError(t('profileForm.saveFailed'))
-      setSaving(false)
-    }
+    await save({
+      name: trimmed,
+      color,
+      kind: kinds.length > 1 ? kind : undefined,
+      avatar: child ? avatar : undefined,
+      photo: child ? undefined : photo.photo,
+      handle: withHandle ? handle.value : undefined
+    })
   }
 
   return (
@@ -225,6 +243,7 @@ const ProfileForm = ({
         )}
         <div className={styles.fields}>
           {!invite && <NameField name={name} isNew={!profile} fixed={nameFixed} onName={setName} />}
+          {withHandle && <HandleField handle={handle} lockedUntil={withHandle.lockedUntil} />}
           {kinds.length > 1 && (
             <KindField kinds={kinds} kind={kind} color={color} soon={soon} invite={invite} onKind={setKind} />
           )}
@@ -236,7 +255,7 @@ const ProfileForm = ({
       {error && <StatusLine tone="error">{error}</StatusLine>}
       <FormActions
         saving={saving}
-        disabled={!invite && (!name.trim() || soon)}
+        disabled={!invite && (!name.trim() || soon || !handle.ready)}
         label={
           invite ? t('profileForm.invite') : (submitLabel ?? (profile ? t('common.save') : t('profileForm.create')))
         }

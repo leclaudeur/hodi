@@ -4,6 +4,14 @@ One install is one household, set up in the browser on the first visit (see [Dep
 It has up to **5 profiles** and no password of its own: everyone signs in with their own account, an e-mail and a
 password.
 
+## Username
+
+Every account has an @username, unique on the server: lower-case letters, digits, a dot or an underscore, 3 to 20 of
+them. The form that makes an account (the first-run screens, an invitation's code) suggests one from the first name and
+says at once whether it is free, or else offers a free one like it. _Settings › My account › Edit_ changes it once every
+30 days; the one left stays the account's for 30 days, so nobody else takes it at once. The sign-in screen takes the
+e-mail or the username.
+
 ## Setting up
 
 The setup starts with the account of the server's admin. Plugins put in `data/plugins/` before the first start come
