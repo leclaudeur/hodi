@@ -1,6 +1,5 @@
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { FeedItem, SearchItem } from './news.ts'
-import type { AdminProof } from './plugins.ts'
 
 // Adding a source from a link, and sharing. Mirrors server/news/source-finder.ts and server/http/source-routes.ts.
 
@@ -91,13 +90,7 @@ export type SourceSuggestions =
 export const suggestSources = (topicId: string, replacing: string | null) =>
   sendJson<SourceSuggestions>('POST', '/sources/suggest', { topicId, replacing })
 
-// Only the admin deletes a source, for every profile, with their password (and app code).
-export const removeSource = (id: string, proof: AdminProof) =>
-  sendJson<null>('DELETE', `/sources/${encodeURIComponent(id)}`, proof)
-
-// The household's profiles that have it on, named in the admin's confirmation.
-export const getSourceReaders = (id: string) =>
-  getJson<{ readers: string[] }>(`/sources/${encodeURIComponent(id)}/readers`).then(answer => answer.readers)
+export const removeSource = (id: string) => sendJson<null>('DELETE', `/sources/${encodeURIComponent(id)}`)
 
 // The topics and sources changed (a source added or removed): the app asks for them again.
 export const TOPICS_CHANGED = 'hodi:topics-changed'

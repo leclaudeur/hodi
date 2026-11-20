@@ -1106,18 +1106,6 @@ const MIGRATIONS: string[] = [
     DELETE FROM seen_stories WHERE owner = 'p' || NEW.id;
   END;
   `,
-  // A source stays in its household when the profile that added it goes (leaving, removed by the admin): the others
-  // may read it. The household's admin takes it on, as only an admin deletes a source. Without one (the household
-  // itself going), the rows go as before.
-  `
-  CREATE TRIGGER profiles_keep_sources BEFORE DELETE ON profiles BEGIN
-    UPDATE household_sources
-    SET added_by = (SELECT id FROM profiles WHERE account_id = OLD.account_id AND role = 'admin' AND id <> OLD.id)
-    WHERE added_by = OLD.id AND EXISTS (
-      SELECT 1 FROM profiles WHERE account_id = OLD.account_id AND role = 'admin' AND id <> OLD.id
-    );
-  END;
-  `,
   // A person's name, colour and photo are their account's: kept when their profile goes, and worn again by the
   // profile it gets in any household. The profile keeps its own copy, which every screen reads; the triggers keep
   // the two the same. An account with none yet takes its profile's.

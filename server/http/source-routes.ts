@@ -4,7 +4,7 @@ import type { Source } from '../news/catalog.ts'
 import type { NewsService } from '../news/news-service.ts'
 import type { FindResult } from '../news/source-finder.ts'
 import { isPluginFeed } from '../plugins/feeds.ts'
-import { isAdminOf, profileIdOf, requireAdmin } from './profile-routes.ts'
+import { isAdminOf, profileIdOf } from './profile-routes.ts'
 import { newSuggestions } from './source-suggestions.ts'
 
 // "Ajouter une source": a profile pastes a link, sees what it would follow, picks its topics, adds it to the
@@ -44,10 +44,6 @@ interface SourceRoutesOptions {
   maxSources: () => number | null
   // Turned off for the household's other profiles.
   onAdded: (sourceId: string, profileId: number) => void
-  // The names of the household's profiles that have it on, for the admin before deleting it.
-  readersOf: (sourceId: string) => string[]
-  // The admin's own password (and code) before deleting a source for everyone; false: the refusal is sent.
-  adminProof: (request: express.Request, response: express.Response) => Promise<boolean>
   now: () => number
 }
 
@@ -58,7 +54,6 @@ export const sourceRoutes = (options: SourceRoutesOptions) => {
   mountProposalRoutes(router, options, helpers)
   mountAddRoute(router, options, helpers)
   mountEditRoutes(router, options, helpers)
-  mountDeleteRoutes(router, options)
   return router
 }
 
@@ -311,21 +306,8 @@ const mountEditRoutes = (
     sources.setTopics(source.id, topicIds)
     response.status(204).end()
   })
-}
 
-const mountDeleteRoutes = (router: express.Router, { news, sources, readersOf, adminProof }: SourceRoutesOptions) => {
-  // Who reads it: the admin's confirmation names them.
-  router.get('/:id/readers', requireAdmin, (request, response) => {
-    const source = news.getSourceStatuses().find(candidate => candidate.id === request.params.id)
-    if (!source) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    response.json({ readers: readersOf(source.id) })
-  })
-
-  // Only the admin deletes a source, with their password: it goes for every profile, whoever added it.
-  router.delete('/:id', requireAdmin, async (request, response) => {
+  router.delete('/:id', (request, response) => {
     const source = news.getSourceStatuses().find(candidate => candidate.id === request.params.id)
     if (!source) {
       response.status(404).json({ error: 'not_found' })
@@ -336,7 +318,10 @@ const mountDeleteRoutes = (router: express.Router, { news, sources, readersOf, a
       response.status(403).json({ error: 'base_source' })
       return
     }
-    if (!(await adminProof(request, response))) return
+    if (source.addedBy !== profileIdOf(response) && !isAdminOf(response)) {
+      response.status(403).json({ error: 'not_yours' })
+      return
+    }
     sources.remove(source.id)
     news.removeSource(source.id)
     response.status(204).end()

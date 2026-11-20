@@ -33,10 +33,3 @@ export const removeFromCatalog = (catalog: Catalog, sourceId: string) => {
     group.sources = group.sources.filter(source => source.id !== sourceId)
   }
 }
-
-// The sources a profile added, now another's (the database's trigger does the same on its rows).
-export const handOverInCatalog = (catalog: Catalog, from: number, to: number) => {
-  for (const group of [...catalog.topics, ...catalog.listen]) {
-    for (const source of group.sources) if (source.addedBy === from) source.addedBy = to
-  }
-}

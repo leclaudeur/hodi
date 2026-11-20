@@ -18,9 +18,6 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   turned off, followed and hidden topics, reading settings), Saved, History, what Hide put away and the stories seen
   in Top news are their account's: they come back as they were after leaving a household and joining another. A
   young profile keeps its own; deleting the account deletes them.
-- **Only the admin deletes a source.** A source someone added stays in the household when they leave it or their
-  profile is removed: the others may read it. Deleting one, for the whole household, is the admin's, with their
-  password; the confirmation names who reads it.
 - **Your name, colour and photo belong to the account.** They come back with the profile you get on joining a
   household again, and joining with _I already have an account_ no longer asks who you are when the account has been in
   a household before.

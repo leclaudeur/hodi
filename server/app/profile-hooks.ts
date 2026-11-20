@@ -35,17 +35,11 @@ export const profileHooksOf = (
       const profile = profiles?.get(id)
       if (profile) youthSources?.start(profile)
     },
-    // Its devices' alerts go with a deleted profile. The sources it added stay for the others, the admin's now (the
-    // database's trigger hands their rows over too); without an admin, the household itself is going.
+    // Its devices' alerts go with a deleted profile, and the sources it added (the database removes their rows).
     deleted: id => {
       alerts?.unregisterProfile(id)
       // The plugins forget it too, now or as soon as they can.
       plugins?.profileDeleted(id, currentHouseholdId())
-      const admin = profiles?.list().find(profile => profile.role === 'admin' && profile.id !== id)
-      if (admin) {
-        news.handOverSources(id, admin.id)
-        return
-      }
       news
         .getSourceStatuses()
         .filter(source => source.addedBy === id)

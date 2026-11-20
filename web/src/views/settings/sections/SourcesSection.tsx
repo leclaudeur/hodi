@@ -120,9 +120,9 @@ const rowOf = (page: SourcesPage, topics: TopicInfo[], deletedProfile: string) =
       addedBy={addedBy}
       replace={replace}
       retopic={retopic}
-      deletable={reader.admin && source.addedBy !== undefined}
+      deletable={mine && source.addedBy !== undefined}
       removing={actions.removing === source.id}
-      onRemove={() => void actions.remove(source)}
+      onRemove={() => actions.remove(source)}
       open={page.moreOf === source.id}
       onMore={open => page.setMoreOf(open ? source.id : null)}
       onShow={visible => page.show(source, visible)}

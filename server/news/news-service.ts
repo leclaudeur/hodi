@@ -27,7 +27,7 @@ import { type NewsAi, createNewsAi } from './news-ai.ts'
 import { DAY_MS, MAX_TOPIC_LIMIT, TopicLister } from './topic-lister.ts'
 import { PerHousehold } from './per-household.ts'
 import { NewsSearch } from './news-search.ts'
-import { addToCatalog, handOverInCatalog, moveToTopics, removeFromCatalog } from './catalog-edits.ts'
+import { addToCatalog, moveToTopics, removeFromCatalog } from './catalog-edits.ts'
 import { frontSection } from './front-page.ts'
 
 // Feeds and checks are cached in memory for a short time; the store, when given, keeps articles,
@@ -189,11 +189,6 @@ export class NewsService {
     const moved = moveToTopics(this.#catalog, sourceId, topicIds)
     if (moved) this.#search.forgetTrends()
     return moved
-  }
-
-  // The sources a profile that goes added stay, the admin's now.
-  handOverSources(from: number, to: number) {
-    handOverInCatalog(this.#catalog, from, to)
   }
 
   removeSource(sourceId: string) {

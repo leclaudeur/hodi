@@ -1714,7 +1714,7 @@
     "changeTopics": "Change topics",
     "seeSite": "See the site",
     "deleteFor": "Delete {{name}} for the whole home",
-    "intro": "The sites and channels that fill your feed, checked every 15 minutes. A source you add joins the whole household’s list, hidden for the other profiles: each shows it if they want. Only the admin deletes a source, for the whole household; base sources can be hidden but not deleted.",
+    "intro": "The sites and channels that fill your feed, checked every 15 minutes. A source you add joins the whole household’s list, hidden for the other profiles: each shows it if they want. Base sources can be hidden but not deleted.",
     "search": "Search a source or a topic",
     "searchLabel": "Search a source",
     "filter": "Filter sources",
@@ -1730,7 +1730,7 @@
     "noMatch": "No source matches.",
     "topicsOf": "{{name}}’s topics",
     "groupIntros": {
-      "mine": "The sites you added. Only you, and the admin, can change their topics; only the admin deletes them.",
+      "mine": "The sites you added. Only you, and the admin, can change their topics or delete them.",
       "channels": "The YouTube channels and podcasts you follow. They arrive in Videos, never in the feed.",
       "household": "Added by the other profiles. They stay hidden for you until you show them.",
       "parents": "The sources your parents chose for you. Hide the ones you don’t care about.",
@@ -1839,8 +1839,7 @@
     },
     "deleteSource": {
       "title": "Delete the source?",
-      "message": "The source <b>{{name}}</b> is read by <b>{{readers}}</b>. It will be deleted for everyone in this household.",
-      "messageNoReader": "Nobody reads the source <b>{{name}}</b> at the moment. It will be deleted for everyone in this household.",
+      "message": "The source <b>{{name}}</b> is deleted <b>for the whole household</b>: its articles leave every profile’s feed. It only comes back if someone adds it again.",
       "button": "Delete source"
     },
     "hideSource": {
