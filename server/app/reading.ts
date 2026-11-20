@@ -1,9 +1,11 @@
 import type express from 'express'
+import { isYoung } from '../db/profile-store.ts'
 import { aiUsageRoutes } from '../http/ai-usage-routes.ts'
 import { articleRoutes } from '../http/article-routes.ts'
 import { gameRoutes, readFactsOf } from '../http/game-routes.ts'
 import { newsRoutes } from '../http/news-routes.ts'
 import { profileIdOf, requireAdmin } from '../http/profile-routes.ts'
+import { askingWithProof } from '../http/proof.ts'
 import { pushRoutes } from '../http/push-routes.ts'
 import { readingRoutes } from '../http/reading-routes.ts'
 import { shareRoutes } from '../http/share-routes.ts'
@@ -48,8 +50,30 @@ const mountStorage = (api: express.Router, { options }: Wiring) => {
   })
 }
 
+// Who has a source on: a young profile the sources its parents gave it, any other the ones it did not turn off.
+const readersOf =
+  ({ profiles, users, youth }: Wiring['options']) =>
+  (sourceId: string) =>
+    (profiles?.list() ?? [])
+      .filter(profile =>
+        isYoung(profile)
+          ? (youth?.allowedSources(profile.id).includes(sourceId) ?? false)
+          : !(users?.(profile.id).hiddenSources().includes(sourceId) ?? false)
+      )
+      .map(profile => profile.name)
+
+// The admin's own password before a source goes for everyone; without accounts there is none to ask.
+const adminProofOf =
+  ({ options, checkProof }: Wiring) =>
+  async (request: express.Request, response: express.Response) => {
+    const { accounts } = options
+    if (!accounts) return true
+    return (await askingWithProof(checkProof, accounts, request, response)) !== null
+  }
+
 // "Ajouter une source".
-const mountSources = (api: express.Router, { options, profileHooks }: Wiring) => {
+const mountSources = (api: express.Router, wiring: Wiring) => {
+  const { options, profileHooks } = wiring
   const { sources, news, plugins, serverSettings, profiles, now } = options
   if (!sources) return
   api.use(
@@ -67,6 +91,8 @@ const mountSources = (api: express.Router, { options, profileHooks }: Wiring) =>
           ?.list()
           .filter(profile => profile.id !== profileId)
           .forEach(profile => profileHooks.hideSources(profile.id, [sourceId])),
+      readersOf: readersOf(options),
+      adminProof: adminProofOf(wiring),
       now
     })
   )

@@ -1130,7 +1130,7 @@ describe('adding a source', () => {
     session = sessionCookieFrom(await login(PASSWORD))
   })
 
-  it('finds a feed from a link, adds it to a topic, and lets only its profile remove it', async () => {
+  it('finds a feed from a link, adds it to a topic, and lets only the admin remove it', async () => {
     const found = (await (await call('POST', '/sources/find', { body: { url: 'blog.example' } })).json()) as {
       status: string
       added: number
@@ -1216,13 +1216,19 @@ describe('adding a source', () => {
       preferences: { hiddenSources?: string[] } | null
     }
     assert.deepEqual(zoeAgain.preferences?.hiddenSources, [id, 'gazette'])
-    assert.equal((await call('DELETE', '/sources/gazette')).status, 204)
+    // Only the admin deletes a source, with their password, once told who reads it.
+    const readers = (await (await call('GET', '/sources/gazette/readers')).json()) as { readers: string[] }
+    assert.deepEqual(readers.readers, ['Alexandre'])
+    assert.equal((await call('GET', '/sources/gazette/readers', { cookie: asOther })).status, 403)
+    assert.equal((await call('DELETE', '/sources/gazette')).status, 403)
+    assert.equal((await call('DELETE', '/sources/gazette', { body: { password: 'wrong-password' } })).status, 403)
+    assert.equal((await call('DELETE', '/sources/gazette', { body: { password: PASSWORD } })).status, 204)
     assert.equal((await call('DELETE', `/sources/${id}`, { cookie: asOther })).status, 403)
     // A starting-list source: hidden by whoever wants, removed by no one.
     assert.equal((await call('DELETE', '/sources/bx1', { cookie: asOther })).status, 403)
-    assert.equal((await call('DELETE', '/sources/nope')).status, 404)
+    assert.equal((await call('DELETE', '/sources/nope', { body: { password: PASSWORD } })).status, 404)
 
-    assert.equal((await call('DELETE', `/sources/${id}`)).status, 204)
+    assert.equal((await call('DELETE', `/sources/${id}`, { body: { password: PASSWORD } })).status, 204)
 
     // Suggested once it is no longer followed; BX1, followed, never is.
     const suggested = (await (
@@ -1235,7 +1241,7 @@ describe('adding a source', () => {
     )
     assert.equal((await call('POST', '/sources/suggest', { body: { topicId: 'nope' } })).status, 400)
 
-    assert.equal((await call('DELETE', '/sources/bx1')).status, 403)
+    assert.equal((await call('DELETE', '/sources/bx1', { body: { password: PASSWORD } })).status, 403)
     const left = (await (await call('GET', '/sources')).json()) as { sources: { id: string; lang: string }[] }
     assert.equal(
       left.sources.some(source => source.id === 'bx1'),

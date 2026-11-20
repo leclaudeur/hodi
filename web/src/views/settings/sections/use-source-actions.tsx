@@ -1,9 +1,18 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { type SourceStatus, TOPICS_CHANGED, UnauthorizedError, getSources, removeSource } from '../../../api.ts'
+import {
+  type SourceStatus,
+  TOPICS_CHANGED,
+  UnauthorizedError,
+  getSourceReaders,
+  getSources,
+  removeSource
+} from '../../../api.ts'
 import { askToConfirm } from '../../../lib/confirm.ts'
+import { getLanguage } from '../../../lib/i18n.ts'
 import { updatePreferences } from '../../../lib/preferences.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
+import { hasNoPassword } from '../../../lib/two-factor.ts'
 import RichText from '../../../ui/RichText.tsx'
 import type { AddSourceRequest } from './AddSourceDialog.tsx'
 
@@ -14,6 +23,8 @@ interface SourceActionsInput {
   setAdding: (request: AddSourceRequest | null) => void
   onUnauthorized: () => void
 }
+
+const listOf = (names: string[]) => new Intl.ListFormat(getLanguage(), { type: 'conjunction' }).format(names)
 
 // Removing a source, hiding the little-read ones and taking in a new one, each reloading the list after.
 export const useSourceActions = ({ replace, hiddenSources, adding, setAdding, onUnauthorized }: SourceActionsInput) => {
@@ -27,26 +38,37 @@ export const useSourceActions = ({ replace, hiddenSources, adding, setAdding, on
         if (error instanceof UnauthorizedError) onUnauthorized()
       })
 
-  const remove = ({ id, name }: SourceStatus) =>
+  // Only the admin deletes, with their password, once told who reads it: it goes for every profile.
+  const remove = async ({ id, name }: SourceStatus) => {
+    const readers = await getSourceReaders(id).catch(() => null)
+    if (readers === null) {
+      showError(t('sources.deleteFailed'))
+      return
+    }
     askToConfirm({
       title: t('confirm.deleteSource.title'),
-      message: <RichText i18nKey="confirm.deleteSource.message" values={{ name }} />,
+      message: (
+        <RichText
+          i18nKey={readers.length > 0 ? 'confirm.deleteSource.message' : 'confirm.deleteSource.messageNoReader'}
+          values={{ name, readers: listOf(readers) }}
+        />
+      ),
       label: t('confirm.deleteSource.button'),
-      onConfirm: () => {
+      proof: hasNoPassword() ? { noPassword: true } : {},
+      // A wrong password stays in the dialog.
+      onConfirm: async proof => {
         setRemoving(id)
-        void removeSource(id)
-          .then(async () => {
-            window.dispatchEvent(new Event(TOPICS_CHANGED))
-            await reload()
-            showSaved(t('sources.deleted', { name }))
-          })
-          .catch((error: unknown) => {
-            if (error instanceof UnauthorizedError) onUnauthorized()
-            else showError(t('sources.deleteFailed'))
-          })
-          .finally(() => setRemoving(null))
+        try {
+          await removeSource(id, proof)
+        } finally {
+          setRemoving(null)
+        }
+        window.dispatchEvent(new Event(TOPICS_CHANGED))
+        await reload()
+        showSaved(t('sources.deleted', { name }))
       }
     })
+  }
 
   // "Peu ouvertes": hides a group's ones at once, after a question.
   const hideLow = (list: SourceStatus[]) =>

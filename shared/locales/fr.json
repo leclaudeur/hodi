@@ -1714,7 +1714,7 @@
     "changeTopics": "Changer les thèmes",
     "seeSite": "Voir le site",
     "deleteFor": "Supprimer {{name}} pour tout le foyer",
-    "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Une source que tu ajoutes rejoint la liste de tout le foyer, masquée pour les autres profils : chacun l’affiche s’il le veut. Les sources de base se masquent mais ne se suppriment pas.",
+    "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Une source que tu ajoutes rejoint la liste de tout le foyer, masquée pour les autres profils : chacun l’affiche s’il le veut. Seul l’admin supprime une source, pour tout le foyer ; les sources de base se masquent mais ne se suppriment pas.",
     "search": "Chercher une source ou un thème",
     "searchLabel": "Chercher une source",
     "filter": "Filtrer les sources",
@@ -1730,7 +1730,7 @@
     "noMatch": "Aucune source ne correspond.",
     "topicsOf": "Thèmes de {{name}}",
     "groupIntros": {
-      "mine": "Les sites que tu as ajoutés. Toi seul, et l’admin, pouvez changer leurs thèmes ou les supprimer.",
+      "mine": "Les sites que tu as ajoutés. Toi seul, et l’admin, pouvez changer leurs thèmes ; seul l’admin les supprime.",
       "channels": "Les chaînes YouTube et les podcasts que tu suis. Ils arrivent dans Vidéos, jamais dans le fil.",
       "household": "Ajoutées par les autres profils. Elles restent masquées pour toi tant que tu ne les affiches pas.",
       "parents": "Les sources choisies par les parents. Masque celles qui ne t’intéressent pas.",
@@ -1839,7 +1839,8 @@
     },
     "deleteSource": {
       "title": "Supprimer la source ?",
-      "message": "La source <b>{{name}}</b> est supprimée <b>pour tout le foyer</b> : ses articles quittent le fil de chaque profil. Elle ne reviendra que si quelqu’un l’ajoute à nouveau.",
+      "message": "La source <b>{{name}}</b> est lue par <b>{{readers}}</b>. Elle sera supprimée pour tout le monde dans ce foyer.",
+      "messageNoReader": "Personne ne lit la source <b>{{name}}</b> pour le moment. Elle sera supprimée pour tout le monde dans ce foyer.",
       "button": "Supprimer la source"
     },
     "hideSource": {
