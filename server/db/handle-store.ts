@@ -47,9 +47,10 @@ export class HandleStore {
         `SELECT users.id, users.email, (SELECT name FROM profiles WHERE user_id = users.id ORDER BY id DESC LIMIT 1) AS name
          FROM users WHERE handle IS NULL ORDER BY id`
       )
-      .all() as { id: number; email: string; name: string | null }[]
+      .all() as { id: number; email: string | null; name: string | null }[]
     for (const row of rows) {
-      const handle = this.suggest(row.name ?? row.email.split('@')[0]!, now, row.id)
+      // A young account always has its profile's name.
+      const handle = this.suggest(row.name ?? row.email?.split('@')[0] ?? 'hodi', now, row.id)
       this.#db.prepare('UPDATE users SET handle = ? WHERE id = ?').run(handle, row.id)
     }
   }

@@ -37,7 +37,7 @@ export const confirmDelete = (account: AccountView, t: TFunction) => {
       <RichText
         i18nKey={key}
         values={{
-          email: account.email,
+          email: account.email ?? '',
           // As many days as the server keeps copies (Serveur › Sauvegardes).
           days: t('count.day', { count: contentDays().backupCopies }),
           name: deletion?.household ?? '',

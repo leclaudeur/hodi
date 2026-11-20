@@ -1,13 +1,10 @@
 import { SlidersHorizontal } from 'lucide-react'
 import type { TFunction } from 'i18next'
-import { PROFILE_COLORS, type Profile, type ProfileKind } from '../../../api.ts'
-import { addProfile, isYoung } from '../../../lib/profiles.ts'
-import { showSaved } from '../../../lib/toast.ts'
+import type { Profile } from '../../../api.ts'
+import { isYoung } from '../../../lib/profiles.ts'
 import { youngProfileHref } from '../../../lib/use-hash-route.ts'
 import Chip from '../../../ui/Chip.tsx'
-import Dialog from '../../../ui/Dialog.tsx'
 import ProfileAvatarButton from '../../../ui/ProfileAvatarButton.tsx'
-import ProfileForm from '../../profiles/ProfileForm.tsx'
 import styles from '../Settings.module.css'
 import { RowButton } from '../SettingRow.tsx'
 import { formatMinutes } from './young/format.ts'
@@ -54,32 +51,5 @@ export const ProfileRow = ({ profile, active, managed, hint }: ProfileRowProps) 
         />
       )}
     </li>
-  )
-}
-
-interface NewProfileProps {
-  open: boolean
-  defaultColor: (typeof PROFILE_COLORS)[number] | undefined
-  kinds: ProfileKind[]
-  onClose: () => void
-}
-
-export const NewProfileDialog = ({ open, defaultColor, kinds, onClose }: NewProfileProps) => {
-  const { t } = useTranslation()
-  return (
-    <Dialog open={open} onClose={onClose} title={t('profiles.new')}>
-      {open && (
-        <ProfileForm
-          defaultColor={defaultColor}
-          kinds={kinds}
-          onCancel={onClose}
-          onSave={async ({ name, color, photo, kind, avatar }) => {
-            await addProfile(name, color, photo ?? null, { kind, avatar })
-            onClose()
-            showSaved(t('profiles.added', { name }))
-          }}
-        />
-      )}
-    </Dialog>
   )
 }

@@ -63,6 +63,15 @@ export interface AccountRoutesOptions extends AccountAiOptions {
 export const accountRoutes = (options: AccountRoutesOptions) => {
   const router = express.Router()
   const helpers = accountHelpers(options)
+  // A teen or a child sees its account; its parents change it (its password, its region, its AI, its deletion). It
+  // may still sign out one of its own devices, a lost phone.
+  router.use((request, response, next) => {
+    const ownDevice = request.method === 'DELETE' && request.path.startsWith('/devices/')
+    const session = request.method === 'GET' || ownDevice ? null : options.sessionOf(request)
+    if (session && options.accounts.young.isYoung(session.account.id))
+      response.status(403).json({ error: 'parents_only' })
+    else next()
+  })
   router.get('/', (request, response) => {
     const session = helpers.sessionOrRefuse(request, response)
     if (session) response.json(helpers.view(session.account, session.device))
@@ -120,6 +129,7 @@ const accountHelpers = ({
     const going = plan(account)
     return {
       email: account.email,
+      young: accounts.young.isYoung(account.id),
       handle: account.handle,
       // Before then, « Modifier » keeps the identifier as it is.
       handleChangeableFrom: handles?.changeableFrom(account.id, now()) ?? null,
@@ -180,7 +190,7 @@ const mountTwoFactorRoutes = (
       return
     }
     if (!recentlySignedIn(session.device) && !(await checkProof(session.account, request, response))) return
-    response.json(twoFactor.start(session.account.id, session.account.email, now()))
+    response.json(twoFactor.start(session.account.id, session.account.email ?? `@${session.account.handle}`, now()))
   })
 
   // The app's first code: on from now, and the recovery codes, shown this once.

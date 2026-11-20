@@ -1,18 +1,17 @@
-import { Plus, Users } from 'lucide-react'
+import { UserPlus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MAX_PROFILES, PROFILE_COLORS, getYouthRules } from '../../../api.ts'
+import { MAX_PROFILES, getYouthRules } from '../../../api.ts'
 import { isYoung, useProfiles } from '../../../lib/profiles.ts'
-import { useHousehold } from '../../../lib/settings-data.ts'
-import { PROFILES_HREF } from '../../../lib/use-hash-route.ts'
+import { showSaved } from '../../../lib/toast.ts'
+import { PROFILES_HREF, youngProfileHref } from '../../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../../lib/use-media.ts'
 import Button from '../../../ui/Button.tsx'
 import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
 import profileStyles from './ProfilesSection.module.css'
-import ParentalCodeCard from './ParentalCodeCard.tsx'
 import ProfileGroups from './ProfileGroups.tsx'
-import { NewProfileDialog } from './ProfilesParts.tsx'
+import CreateChildDialog from '../../profiles/CreateChildDialog.tsx'
 
 // Each young profile's time a day (null: no limit), once its rules come.
 const useDailyMinutes = (ids: number[]) => {
@@ -48,8 +47,8 @@ const AddButtons = ({ parent, room, adding, onAdd }: AddButtonsProps) => {
   return (
     <div className={profileStyles.actions}>
       {parent && room && !adding && (
-        <Button icon={Plus} onClick={onAdd}>
-          {t('settings.profiles.add')}
+        <Button icon={UserPlus} onClick={onAdd}>
+          {t('children.create.title')}
         </Button>
       )}
       {/* On a computer, the sidebar's selector changes profile. */}
@@ -60,12 +59,6 @@ const AddButtons = ({ parent, room, adding, onAdd }: AddButtonsProps) => {
       )}
     </div>
   )
-}
-
-// The parental code, the server admin's for now: until each parent has their own, it asks for every adult on a device.
-const ParentalCode = () => {
-  const { value: household, replace } = useHousehold()
-  return household ? <ParentalCodeCard household={household} onSaved={replace} /> : null
 }
 
 // The teens and children: each one's name, colour and photo, its time a day for its parents. Every adult adds and
@@ -93,7 +86,6 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
 
   const { profiles, current } = value
   const own = profiles.find(profile => profile.id === current)
-  const admin = value.serverAdmin === true
   // Every adult is a parent: it adds and changes the young profiles.
   const parent = own?.kind === 'adult'
   const young = profiles.filter(isYoung)
@@ -104,14 +96,16 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
 
       <AddButtons parent={parent} room={profiles.length < MAX_PROFILES} adding={adding} onAdd={() => setAdding(true)} />
 
-      {admin && <ParentalCode />}
-
-      {/* Adding a profile happens in a dialog, as every action in Réglages. */}
-      <NewProfileDialog
+      {/* A new teen or child is an account of its own, with its password: its card opens once it is made. */}
+      <CreateChildDialog
         open={adding}
-        defaultColor={PROFILE_COLORS.find(color => !profiles.some(profile => profile.color === color))}
-        kinds={['teen', 'child']}
+        taken={profiles.map(profile => profile.color)}
         onClose={() => setAdding(false)}
+        onCreated={child => {
+          setAdding(false)
+          showSaved(t('children.create.done', { name: child.name }))
+          window.location.hash = youngProfileHref(child.profileId)
+        }}
       />
     </SectionPage>
   )

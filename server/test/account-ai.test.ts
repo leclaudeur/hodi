@@ -50,7 +50,7 @@ describe('an account’s own AI key', () => {
     })
     assert.equal((await view(household.admin)).ai, null)
     assert.equal(household.accountAi.ofProfile(household.samId)?.ai?.key, 'sk-test-good12345')
-    // A young profile has no account, so no key.
+    // A young profile has no AI, account or not.
     assert.equal(household.accountAi.ofProfile(household.leaId), null)
   })
 

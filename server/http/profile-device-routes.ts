@@ -1,17 +1,19 @@
 import express from 'express'
 import { type ProfileStore, isYoung } from '../db/profile-store.ts'
 import type { ProfileDeviceStore } from '../db/profile-device-store.ts'
-import { isParentOf } from './profile-routes.ts'
+import type { UserAccountStore } from '../db/user-account-store.ts'
+import { isParentOfYoung } from './parent-check.ts'
 
 interface ProfileDeviceRoutesOptions {
   devices: ProfileDeviceStore
   profiles: ProfileStore
+  accounts?: UserAccountStore
   now: () => number
 }
 
 // Réglages > Profils > a young profile > Appareils: its own devices, which any adult of the household sees and
 // removes. A removed device asks for a new code.
-export const profileDeviceRoutes = ({ devices, profiles, now }: ProfileDeviceRoutesOptions) => {
+export const profileDeviceRoutes = ({ devices, profiles, accounts, now }: ProfileDeviceRoutesOptions) => {
   const router = express.Router()
 
   // The young profile the request is about, when the profile asking is one of its parents.
@@ -22,7 +24,11 @@ export const profileDeviceRoutes = ({ devices, profiles, now }: ProfileDeviceRou
       response.status(404).json({ error: 'not_found' })
       return null
     }
-    if (response.locals.profileChosen !== true || response.locals.linkedDevice === true || !isParentOf(response)) {
+    if (
+      response.locals.profileChosen !== true ||
+      response.locals.linkedDevice === true ||
+      !isParentOfYoung(response, accounts, target)
+    ) {
       response.status(403).json({ error: 'adults_only' })
       return null
     }

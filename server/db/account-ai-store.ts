@@ -35,12 +35,13 @@ export class AccountAiStore {
       .run(ai?.provider ?? null, ai?.key ?? null, ai?.model ?? null, accountId)
   }
 
-  // The account a profile reads with, and its key; null for a profile with no account.
+  // The account a profile reads with, and its key; null for a profile with no account, and for a teen's or a child's,
+  // which has no AI.
   ofProfile(profileId: number): { accountId: number; ai: AccountAi | null } | null {
     const row = this.#db
       .prepare(
         `SELECT users.id, users.ai_provider, users.ai_key, users.ai_model
-         FROM profiles JOIN users ON users.id = profiles.user_id WHERE profiles.id = ?`
+         FROM profiles JOIN users ON users.id = profiles.user_id WHERE profiles.id = ? AND profiles.kind = 'adult'`
       )
       .get(profileId) as (AiRow & { id: number }) | undefined
     return row ? { accountId: row.id, ai: toAi(row) } : null

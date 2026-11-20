@@ -308,8 +308,6 @@
     "switch": "Switch profile",
     "switchFrom": "{{name}}, switch profile",
     "create": "New profile",
-    "new": "New profile",
-    "added": "{{name}} added",
     "yours": "{{name}} (you)",
     "of": "{{name}}’s profile",
     "loadFailed": "The profiles couldn’t be loaded. Reload the page in a moment.",
@@ -1394,11 +1392,10 @@
       "tourHintTeen": "The feed and asking for a source, step by step"
     },
     "profiles": {
-      "intro": "Teens and children, each with their sources, hours and time a day. Every adult adds and manages them; adults each have their own account.",
+      "intro": "Teens and children, each with their sources, hours and time a day. Each has their own account, run by their parents in <i>My account › My children</i>.",
       "deleteTitle": "Delete {{name}}?",
       "deleteMessage": "Their saved articles, reads and settings are deleted too. This cannot be undone.",
       "active": "Open",
-      "add": "Add a profile",
       "groups": {
         "teens": "Teens",
         "children": "Children"
@@ -2620,15 +2617,45 @@
       "region": "Region",
       "ai": "AI and credits",
       "stats": "Statistics",
-      "data": "Data"
+      "data": "Data",
+      "children": "My children"
     },
     "intros": {
       "profile": "The name, photo and colour others see, and Hodi's language.",
       "sign-in": "How you sign in, and the devices where the account is open.",
       "region": "The time zone says when a day starts: the statistics', the <i>Daily summary</i>'s and the badges'.",
       "data": "A copy of everything Hodi keeps about the account, or deleting it.",
-      "ai": "Each purple button is a call to the AI, paid with this account's API key: nothing goes without a click. Calls count over a rolling 24 hours; once a cap is reached, the purple buttons turn off."
+      "ai": "Each purple button is a call to the AI, paid with this account's API key: nothing goes without a click. Calls count over a rolling 24 hours; once a cap is reached, the purple buttons turn off.",
+      "children": "The teens’ and children’s accounts you run: each signs in with their username and the password you choose."
     },
     "noStats": "Nothing read yet."
+  },
+  "children": {
+    "create": {
+      "title": "Create an account",
+      "passwordTitle": "{{name}}’s password",
+      "button": "Create",
+      "done": "{{name}}’s account created",
+      "handleTaken": "This username is taken: go back to pick another one.",
+      "failed": "The account couldn’t be created. Try again."
+    },
+    "empty": {
+      "title": "No account yet",
+      "text": "Make a teen’s or a child’s account: they sign in with their username."
+    },
+    "password": {
+      "label": "Password",
+      "hint": "Signs in with @{{handle}}",
+      "none": "No password yet for @{{handle}}",
+      "change": "Change",
+      "choose": "Choose",
+      "title": "{{name}}’s password",
+      "intro": "Their devices sign in with <b>@{{handle}}</b> and this password. Those that used the old one sign in again.",
+      "confirmTitle": "Change {{name}}’s password?",
+      "confirmText": "Type your own password to confirm.",
+      "saved": "{{name}}’s password saved",
+      "actionLabel": "{{name}}’s password"
+    },
+    "loadFailed": "Couldn’t load your children."
   }
 }

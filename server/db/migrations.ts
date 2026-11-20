@@ -1186,6 +1186,100 @@ const MIGRATIONS: string[] = [
     user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     until INTEGER NOT NULL
   );
+  `,
+  // Teens and children get accounts of their own, made by a parent: an account with no e-mail (it signs in with its
+  // @identifier), linked to its parents. Every young profile becomes such an account, with the household's adults who
+  // have an account as its parents, and no password until a parent gives one. users is rebuilt for its e-mail to be
+  // optional, with the triggers that name it.
+  `
+  -- rebuilds a table
+  DROP TRIGGER profiles_identity_to_account;
+  DROP TRIGGER profiles_identity_on_link;
+  CREATE TABLE users_new (
+    id INTEGER PRIMARY KEY,
+    email TEXT UNIQUE COLLATE NOCASE,
+    password_hash TEXT NOT NULL,
+    password_changed_at INTEGER NOT NULL,
+    session_generation INTEGER NOT NULL DEFAULT 0,
+    server_admin INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    has_password INTEGER NOT NULL DEFAULT 1,
+    two_factor_secret TEXT,
+    two_factor_since INTEGER,
+    two_factor_step INTEGER,
+    two_factor_pending TEXT,
+    two_factor_pending_at INTEGER,
+    private_profile INTEGER NOT NULL DEFAULT 0,
+    name TEXT,
+    color TEXT,
+    photo BLOB,
+    photo_type TEXT,
+    photo_version INTEGER,
+    time_zone TEXT,
+    country TEXT,
+    ai_provider TEXT,
+    ai_key TEXT,
+    ai_model TEXT,
+    handle TEXT,
+    handle_changed_at INTEGER
+  );
+  INSERT INTO users_new SELECT id, email, password_hash, password_changed_at, session_generation, server_admin,
+    created_at, has_password, two_factor_secret, two_factor_since, two_factor_step, two_factor_pending,
+    two_factor_pending_at, private_profile, name, color, photo, photo_type, photo_version, time_zone, country,
+    ai_provider, ai_key, ai_model, handle, handle_changed_at FROM users;
+  DROP TABLE users;
+  ALTER TABLE users_new RENAME TO users;
+  CREATE UNIQUE INDEX users_handle ON users (handle) WHERE handle IS NOT NULL;
+  CREATE TRIGGER users_forget_stats AFTER DELETE ON users BEGIN
+    DELETE FROM readings WHERE owner = 'a' || OLD.id;
+    DELETE FROM game_events WHERE owner = 'a' || OLD.id;
+  END;
+  CREATE TRIGGER users_forget_state AFTER DELETE ON users BEGIN
+    DELETE FROM profile_settings WHERE owner = 'a' || OLD.id;
+    DELETE FROM saved_articles WHERE owner = 'a' || OLD.id;
+    DELETE FROM read_articles WHERE owner = 'a' || OLD.id;
+    DELETE FROM seen_stories WHERE owner = 'a' || OLD.id;
+  END;
+  CREATE TRIGGER users_forget_summaries AFTER DELETE ON users BEGIN
+    DELETE FROM ai_summaries WHERE owner = 'a' || OLD.id;
+  END;
+  CREATE TRIGGER profiles_identity_to_account AFTER UPDATE OF name, color, photo, photo_type, photo_version ON profiles
+  WHEN NEW.user_id IS NOT NULL BEGIN
+    UPDATE users SET name = NEW.name, color = NEW.color, photo = NEW.photo, photo_type = NEW.photo_type,
+      photo_version = NEW.photo_version
+    WHERE id = NEW.user_id;
+  END;
+  CREATE TRIGGER profiles_identity_on_link AFTER UPDATE OF user_id ON profiles
+  WHEN NEW.user_id IS NOT NULL AND OLD.user_id IS NOT NEW.user_id BEGIN
+    UPDATE users SET name = NEW.name, color = NEW.color, photo = NEW.photo, photo_type = NEW.photo_type,
+      photo_version = NEW.photo_version
+    WHERE id = NEW.user_id AND name IS NULL;
+    UPDATE profiles SET (name, color, photo, photo_type, photo_version) = (
+      SELECT name, color, photo, photo_type, photo_version FROM users WHERE id = NEW.user_id
+    )
+    WHERE id = NEW.id;
+  END;
+
+  CREATE TABLE account_parents (
+    child_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    parent_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (child_id, parent_id)
+  );
+  CREATE INDEX account_parents_parent ON account_parents (parent_id);
+
+  CREATE TEMP TABLE young_accounts AS
+    SELECT p.id AS profile_id, p.account_id AS household_id, p.created_at,
+      (SELECT COALESCE(MAX(id), 0) FROM users) + ROW_NUMBER() OVER (ORDER BY p.id) AS user_id
+    FROM profiles p WHERE p.kind IN ('teen', 'child') AND p.user_id IS NULL;
+  INSERT INTO users (id, email, password_hash, password_changed_at, has_password, created_at)
+    SELECT user_id, NULL, '', created_at, 0, created_at FROM young_accounts;
+  UPDATE profiles SET user_id = (SELECT user_id FROM young_accounts WHERE profile_id = profiles.id)
+    WHERE id IN (SELECT profile_id FROM young_accounts);
+  INSERT INTO account_parents (child_id, parent_id, created_at)
+    SELECT y.user_id, p.user_id, y.created_at FROM young_accounts y
+    JOIN profiles p ON p.account_id = y.household_id AND p.kind = 'adult' AND p.user_id IS NOT NULL;
+  DROP TABLE young_accounts;
   `
 ]
 
@@ -1194,16 +1288,34 @@ export const migrate = (db: DatabaseSync, target = MIGRATIONS.length) => {
   const { user_version: version } = db.prepare('PRAGMA user_version').get() as { user_version: number }
 
   MIGRATIONS.slice(version, target).forEach((sql, index) => {
+    const rebuild = sql.trimStart().startsWith(REBUILDS)
+    const foreignKeys = rebuild && foreignKeysOn(db)
+    if (foreignKeys) db.exec('PRAGMA foreign_keys = OFF')
     db.exec('BEGIN')
     try {
       db.exec(sql)
+      if (rebuild) checkForeignKeys(db)
       db.exec(`PRAGMA user_version = ${version + index + 1}`)
       db.exec('COMMIT')
     } catch (error) {
       db.exec('ROLLBACK')
       throw error
+    } finally {
+      if (foreignKeys) db.exec('PRAGMA foreign_keys = ON')
     }
   })
+}
+
+// A migration that rebuilds a table others point to says so on its first line: it runs with foreign keys off, or
+// dropping the old table would delete every row that points to it. What points nowhere after it stops it.
+const REBUILDS = '-- rebuilds a table'
+
+const foreignKeysOn = (db: DatabaseSync) =>
+  (db.prepare('PRAGMA foreign_keys').get() as { foreign_keys: number }).foreign_keys === 1
+
+const checkForeignKeys = (db: DatabaseSync) => {
+  const broken = db.prepare('PRAGMA foreign_key_check').all()
+  if (broken.length > 0) throw new Error(`A migration left ${broken.length} rows pointing nowhere`)
 }
 
 export const SCHEMA_VERSION = MIGRATIONS.length

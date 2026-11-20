@@ -39,7 +39,7 @@ export type Route =
     }
 
 // Mon compte's sections, in their order in its sidebar.
-export const ACCOUNT_PARTS = ['profile', 'sign-in', 'region', 'ai', 'stats', 'data'] as const
+export const ACCOUNT_PARTS = ['profile', 'children', 'sign-in', 'region', 'ai', 'stats', 'data'] as const
 export type AccountPart = (typeof ACCOUNT_PARTS)[number]
 const accountPartOf = (value: string): AccountPart | null =>
   ACCOUNT_PARTS.includes(value as AccountPart) ? (value as AccountPart) : null

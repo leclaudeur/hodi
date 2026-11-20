@@ -1,6 +1,7 @@
 import { type Database, transaction } from './database.ts'
 import { HandleStore } from './handle-store.ts'
 import { currentHouseholdId } from './household-scope.ts'
+import { YoungAccountStore } from './young-account-store.ts'
 
 // Personal accounts: a person's own e-mail and password, which sign them in on any device. Not to be mixed up with
 // UserStore, which keeps a profile's reading state, nor with the accounts table, which holds the household.
@@ -10,7 +11,8 @@ export const MAX_EMAIL_LENGTH = 254
 
 export interface UserAccount {
   id: number
-  email: string
+  // null for a teen's or a child's account, which signs in with its @identifier.
+  email: string | null
   // @identifier, unique on the server; null only between a migration and the startup that gives it.
   handle: string | null
   passwordHash: string
@@ -32,7 +34,7 @@ export interface UserAccount {
 
 interface UserAccountRow {
   id: number
-  email: string
+  email: string | null
   handle: string | null
   password_hash: string
   password_changed_at: number
@@ -106,6 +108,11 @@ export class UserAccountStore {
     if (!handles.isFree(handle, now, id)) return false
     handles.assign(id, '', now, handle)
     return true
+  }
+
+  // The teens' and children's accounts, and who their parents are.
+  get young() {
+    return new YoungAccountStore(this.#db)
   }
 
   // Whether anyone has an account yet: before that, the install signs in with the household's password, if any.
