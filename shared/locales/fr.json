@@ -452,7 +452,8 @@
     "removeDevice": "Retirer",
     "removeDeviceLabel": "Retirer {{device}}",
     "deviceRemoved": "{{device}} retiré",
-    "deviceRemoveFailed": "Impossible de retirer cet appareil."
+    "deviceRemoveFailed": "Impossible de retirer cet appareil.",
+    "deleteTwoParents": "{{name}} a deux parents : l’un des deux doit d’abord ne plus être parent."
   },
   "requests": {
     "push": "{{name}} demande {{source}}",

@@ -2,6 +2,7 @@ import { Smartphone, Trash2 } from 'lucide-react'
 import type { TFunction } from 'i18next'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RequestError } from '../../../api/http.ts'
 import { askToConfirm } from '../../../lib/confirm.ts'
 import { isYoung, removeProfile, useProfiles } from '../../../lib/profiles.ts'
 import { usePendingRequests } from '../../../lib/requests.ts'
@@ -65,7 +66,10 @@ const confirmRemove = (id: number, name: string, close: () => void, t: TFunction
           showSaved(t('young.deleted', { name }))
           window.location.hash = settingsHref('profiles')
         })
-        .catch(() => showError(t('young.deleteFailed')))
+        .catch((failure: unknown) => {
+          const twoParents = failure instanceof RequestError && failure.code === 'two_parents'
+          showError(t(twoParents ? 'young.deleteTwoParents' : 'young.deleteFailed', { name }))
+        })
     }
   })
 

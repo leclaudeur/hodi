@@ -452,7 +452,8 @@
     "removeDevice": "Remove",
     "removeDeviceLabel": "Remove {{device}}",
     "deviceRemoved": "{{device}} removed",
-    "deviceRemoveFailed": "Couldn’t remove this device."
+    "deviceRemoveFailed": "Couldn’t remove this device.",
+    "deleteTwoParents": "{{name}} has two parents: one of you first has to stop being a parent."
   },
   "requests": {
     "push": "{{name}} asks for {{source}}",

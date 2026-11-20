@@ -33,7 +33,9 @@ export const mountParentRoutes = (
     if (!asking) return
     const handle = cleanHandle(String(request.body?.handle ?? '').replace(/^@/, ''))
     const invited = handle ? accounts.byHandle(handle) : null
-    if (!invited || invited.email === null || young.isYoung(invited.id)) {
+    // An adult who reads in the young one's household: its rules and profile are read there.
+    const here = invited !== null && accounts.profileOf(invited.id) !== null
+    if (!invited || !here || invited.email === null || young.isYoung(invited.id)) {
       response.status(404).json({ error: 'unknown_handle' })
       return
     }

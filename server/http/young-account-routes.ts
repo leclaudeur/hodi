@@ -155,10 +155,15 @@ const mountChildRoutes = (router: express.Router, options: YoungAccountRoutesOpt
     response.json(young.childOf(parentOf(request, response)!.id, child.accountId))
   })
 
-  // « Supprimer », after its red confirmation: the account, its profile and all it read go.
+  // « Supprimer », after its red confirmation: the account, its profile and all it read go. With two parents, one first
+  // stops being a parent: neither deletes the young one behind the other's back.
   router.delete('/:id', async (request, response) => {
     const child = await provenChild(request, response)
     if (!child) return
+    if (child.parents.length > 1) {
+      response.status(409).json({ error: 'two_parents' })
+      return
+    }
     options.onDeleteProfile?.(child.profileId)
     young.delete(profiles, child)
     options.onAccountDeleted?.(child.accountId)

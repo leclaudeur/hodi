@@ -32,8 +32,15 @@ export const deletionPlan = (
   const own = accounts.profileOf(account.id, householdId)
   // No profile here any more (deleted from the household): the account goes alone, never the household it left. The
   // server's admin still hands /server over to an heir.
+  // Its children still go with it: no one would run them any more.
   if (own === null && !account.serverAdmin)
-    return { householdGoes: false, household: householdName, profiles: [], heir: null, children: [] }
+    return {
+      householdGoes: false,
+      household: householdName,
+      profiles: [],
+      heir: null,
+      children: onlyChildren(account, accounts, profiles, householdId)
+    }
   const all = profiles.list()
   const others = all.filter(profile => profile.kind === 'adult' && profile.hasAccount && profile.id !== own)
   const householdGoes = others.length === 0

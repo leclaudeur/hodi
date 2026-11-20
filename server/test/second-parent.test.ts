@@ -70,6 +70,11 @@ describe('Mon compte › Mes enfants › Parents', () => {
     const renamed = await household.call(`/profiles/${zoe.profileId}`, household.sam, 'PATCH', { name: 'Zoé B.' })
     assert.equal(renamed.status, 200)
     assert.equal((await invite('sam')).status, 409)
+    // Neither deletes her behind the other's back.
+    const path2 = `/account/children/${zoe.accountId}`
+    assert.equal((await household.call(path2, household.admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 409)
+    const profile = await household.call(`/profiles/${zoe.profileId}`, household.sam, 'DELETE', {})
+    assert.equal(profile.status, 409)
   })
 
   it('lets a parent stop being one, after their password, but never the last one', async () => {
@@ -99,5 +104,39 @@ describe('Mon compte › Mes enfants › Parents', () => {
     assert.equal(household.accounts.get(noa.accountId), null)
     assert.equal(household.profiles.get(noa.profileId), null)
     assert.ok(household.accounts.get(zoe.accountId))
+  })
+})
+
+describe('a parent who no longer reads in the household', () => {
+  let household: Awaited<ReturnType<typeof startHousehold>>
+  before(async () => {
+    household = await startHousehold()
+    household.accounts.chooseHandle(household.samAccount.id, 'sam', 0)
+  })
+  after(() => household.close())
+
+  it('cannot be invited, and takes the children only they run when their account goes', async () => {
+    const made = await household.call('/account/children', household.sam, 'POST', {
+      kind: 'child',
+      name: 'Mia',
+      color: 'sport',
+      handle: 'mia',
+      password: 'le mot de passe de Mia'
+    })
+    const mia = (await made.json()) as Child
+    const removed = await household.call(`/profiles/${household.samId}`, household.admin, 'DELETE', {
+      password: ADMIN_PASSWORD
+    })
+    assert.equal(removed.status, 204)
+    const lea = household.accounts.ofProfile(household.leaId)!
+    const asked = await household.call(`/account/children/${lea.id}/parents`, household.admin, 'POST', {
+      handle: 'sam'
+    })
+    assert.equal(asked.status, 404)
+
+    const deleted = await household.call('/account', household.sam, 'DELETE', { password: SAM_PASSWORD })
+    assert.equal(deleted.status, 204)
+    assert.equal(household.accounts.get(mia.accountId), null)
+    assert.equal(household.profiles.get(mia.profileId), null)
   })
 })
