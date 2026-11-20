@@ -104,7 +104,7 @@ describe('hash routes', () => {
 
   it('links to English addresses only', () => {
     expect(searchHref('liège')).toBe('#/search/li%C3%A8ge')
-    expect(settingsHref('household')).toBe('#/settings/household')
+    expect(settingsHref('profiles')).toBe('#/settings/profiles')
     expect(settingsHref('themes')).toBe('#/settings/topics')
     expect(requestHref(4)).toBe('#/settings/requests/4')
     expect(storyHref('monde')).toBe('#/stories/monde')
@@ -133,7 +133,9 @@ describe('hash routes', () => {
   })
 
   it('still opens the old addresses', () => {
-    expect(parseRoute('#/reglages/foyer')).toEqual({ name: 'settings', section: 'household' })
+    // Réglages › Foyer went: its settings for everyone are in Serveur › Général.
+    expect(parseRoute('#/reglages/foyer')).toEqual({ name: 'server', section: 'general' })
+    expect(parseRoute('#/settings/household')).toEqual({ name: 'server', section: 'general' })
     expect(parseRoute('#/reglages/demandes/12')).toEqual({ name: 'settings', section: null, request: 12 })
     expect(parseRoute('#/recherche/pluie')).toEqual({ name: 'search', query: 'pluie' })
     expect(parseRoute('#/plus-tard')).toEqual({ name: 'saved' })

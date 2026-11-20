@@ -71,7 +71,6 @@ export const SETTINGS_SECTIONS = [
   'general',
   'stats',
   'sharing',
-  'household',
   'profiles',
   'ai',
   'plugin',
@@ -93,7 +92,6 @@ const SECTION_SLUGS: Record<SettingsSection, string> = {
   stats: 'stats',
   ai: 'ai',
   plugin: 'plugin',
-  household: 'household',
   profiles: 'profiles',
   sharing: 'sharing',
   account: 'account',
@@ -175,6 +173,8 @@ const settingsRoute = (second: string, third: string, path: string): Route => {
   // Réglages › Mon compte opens the account's own page.
   if (second === 'account') return { name: 'account', part: accountPartOf(third) }
   if (second === 'stats' || second === 'ai') return { name: 'account', part: second }
+  // Réglages › Foyer went: what held for everyone is in Serveur › Général, its admin's.
+  if (second === 'household') return { name: 'server', section: 'general' }
   // Mon profil became Général: its name and photo moved to Mon compte.
   if (second === 'me') return { name: 'settings', section: 'general' }
   return {
@@ -187,6 +187,8 @@ const settingsRoute = (second: string, third: string, path: string): Route => {
 
 const serverRoute = (parts: string[]): Route => {
   const [, second = '', third = ''] = parts
+  // Serveur › Foyers went: the server has its accounts, in one space.
+  if (second === 'households') return { name: 'server', section: 'accounts' }
   if (second === 'plugin' && third && parts[3])
     return { name: 'server', section: null, plugin: { id: third, section: parts[3], path: parts.slice(4).join('/') } }
   return { name: 'server', section: serverSectionOf(second), ...(third ? { item: third } : {}) }

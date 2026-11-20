@@ -128,7 +128,6 @@ const Status = ({ error, notice }: { error: ReactNode; notice: string | null }) 
 
 interface SignInFormProps {
   login: Login
-  name: string | null
   notice: string | null
   onJoin: () => void
   onForgot: () => void
@@ -136,7 +135,7 @@ interface SignInFormProps {
 }
 
 // The e-mail and password, and the other ways in under them.
-export const SignInForm = ({ login, name, notice, onJoin, onForgot, onLoggedIn }: SignInFormProps) => {
+export const SignInForm = ({ login, notice, onJoin, onForgot, onLoggedIn }: SignInFormProps) => {
   const { t } = useTranslation()
   const layout = useScreenLayout()
   const { error, submitting } = login
@@ -145,7 +144,7 @@ export const SignInForm = ({ login, name, notice, onJoin, onForgot, onLoggedIn }
       <h1 className={styles.title}>
         <Logo size={72} centred />
       </h1>
-      <p className={styles.subtitle}>{name ?? t('login.tagline')}</p>
+      <p className={styles.subtitle}>{t('login.tagline')}</p>
 
       <div className={styles.field}>
         <TextField

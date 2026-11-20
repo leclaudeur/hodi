@@ -800,3 +800,42 @@ describe('the account and its data', () => {
     assert.equal(install.accounts.any(), false)
   })
 })
+
+describe('the server’s one space', () => {
+  let install: Awaited<ReturnType<typeof startInstall>>
+  before(async () => {
+    install = await startInstall()
+    ;({ baseUrl, household, profiles } = install)
+  })
+  after(() => install.close())
+
+  it('needs no name from the first-run screens', async () => {
+    const admin = cookiesFrom(await post('/setup/account', ACCOUNT))
+    const done = await post('/setup', { ...SETUP, name: undefined }, { cookie: admin })
+    assert.equal(done.status, 200)
+    assert.equal(household.get().name, 'Hodi')
+    assert.equal(profiles.list()[0]?.name, 'Antho')
+  })
+
+  // A page cached from before, whose name field is gone, sends an empty one.
+  it('takes an empty name as none', async () => {
+    const other = await startInstall()
+    try {
+      const url = other.baseUrl
+      const account = await fetch(`${url}/api/setup/account`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ACCOUNT)
+      })
+      const done = await fetch(`${url}/api/setup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', cookie: cookiesFrom(account) },
+        body: JSON.stringify({ ...SETUP, name: '' })
+      })
+      assert.equal(done.status, 200)
+      assert.equal(other.household.get().name, 'Hodi')
+    } finally {
+      other.close()
+    }
+  })
+})

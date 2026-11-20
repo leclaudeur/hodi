@@ -32,6 +32,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   10 source suggestions and 20 plugin requests. Each account keeps the summaries it paid for. The key of the first-run
   screens is the admin's; every account that read in the household starts with the household's key. A young profile
   has no AI.
+- **No household in the app any more: a server and its accounts.** _Settings › Household_ and _Leave the household_
+  are gone. The default language, the time format and the game move to _Server › General_, with the server's data.
+  _Settings › Profiles_ becomes _Teens and children_, with the parental code, and _AI and credits_ moves under _You_.
+  The server's admin invites someone from _Server › Accounts_ with _Invite someone_, which replaces _Invite an adult_
+  and _Server › Households_, and keeps what the household's admin could do. The first-run screens no longer ask for a
+  household name.
 
 ## [1.0.0-beta.13] - 2026-11-19
 
