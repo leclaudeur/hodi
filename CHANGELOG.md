@@ -67,7 +67,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   household name.
 - **A new password only when asked.** _Server › Accounts_ makes a new-password code for an account only while its
   person waits for one after _Forgot password_: _Make a code_ is in their request, and the account page has no button
-  otherwise. The server's admin can no longer take someone's account over on their own.
+  otherwise; a request waits a week. The server's admin can no longer make one for an account that did not ask.
 
 ## [1.0.0-beta.13] - 2026-11-19
 

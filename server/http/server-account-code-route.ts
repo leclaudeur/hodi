@@ -36,7 +36,8 @@ export const mountAccountCodeRoute = (
       response.status(400).json({ error: 'bad_request' })
       return
     }
-    if (codeRequests && codeRequests.askedAt(account.id) === null) {
+    // Without the inbox nobody can have asked: refused, never open by default.
+    if (!codeRequests || codeRequests.askedAt(account.id) === null) {
       response.status(409).json({ error: 'not_asked' })
       return
     }

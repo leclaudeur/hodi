@@ -49,8 +49,8 @@ goes back to the same moment, and what was deleted since the copy, such as an ac
 _Forgot password_ on the sign-in page always answers the same, whether an account has that e-mail or not. Once _E-mail_
 is set and _General_ has Hodi's address, the account gets an 8-character code valid for one hour, once, with a button
 that fills it in. On a server that sends no e-mail, the page asks the server's admin instead: the request lands in
-_Notifications_, the account's page shows _Code asked_, and **Make a code** there gives the code to hand over. Without a request, the account's page makes no code: the
-server's admin cannot take an account over on their own. Either
+_Notifications_, the account's page shows _Code asked_, and **Make a code** there gives the code to hand over. Without a request, or after a week, the account's page makes no
+code: the person asks again. Either
 way, the person types it, chooses a new password, which signs out the account's other devices, and enters Hodi. **I
 have a code** on that page goes straight to the code, for someone coming back with it later. Wrong codes count against
 the device, as wrong passwords do.

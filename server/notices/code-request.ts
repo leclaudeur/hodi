@@ -9,6 +9,13 @@ export const CODE_REQUEST = 'core:code-request'
 
 export const codeRequestKey = (accountId: number) => `code-request:${accountId}`
 
+// A request older than this makes no code: asked again, it starts over. The admin cannot keep an old one to use later.
+export const CODE_REQUEST_TTL_MS = 7 * 24 * 60 * 60 * 1000
+
+// When a request still in time was made, or null.
+export const freshRequest = (askedAt: number | null, now: number) =>
+  askedAt !== null && now - askedAt <= CODE_REQUEST_TTL_MS ? askedAt : null
+
 export const codeRequestNotice = (account: UserAccount, name: string, language: Language): ServerNotice => {
   const t = textsIn(language)
   return {
