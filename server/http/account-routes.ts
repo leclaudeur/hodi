@@ -15,6 +15,7 @@ import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
 import { mountLeaveRoute } from './account-leave-route.ts'
 import { mountLockRoutes } from './account-lock-routes.ts'
+import { mountRegionRoutes } from './account-region-routes.ts'
 
 // The person's own account, after the session and profile checks: Réglages > Compte et données.
 
@@ -27,6 +28,8 @@ export interface AccountRoutesOptions {
   devices: UserDeviceStore
   profiles?: ProfileStore
   household: HouseholdStore
+  // The install's time zone, for an account and a household with none.
+  defaultTimeZone?: string
   // The account and device a request is signed in with.
   sessionOf: (request: express.Request) => { account: UserAccount; device: UserDevice | null } | null
   cookieForDevice: (account: UserAccount, deviceId: number, request: express.Request) => string
@@ -62,6 +65,7 @@ export const accountRoutes = (options: AccountRoutesOptions) => {
   })
   mountTwoFactorRoutes(router, options, helpers)
   mountLockRoutes(router, options, helpers)
+  mountRegionRoutes(router, options, helpers)
   mountCredentialRoutes(router, options, helpers)
   mountCopyRoute(router, options, helpers)
   mountDeleteRoute(router, options, helpers)
@@ -78,7 +82,8 @@ const accountHelpers = ({
   throttle,
   now,
   twoFactor,
-  data
+  data,
+  defaultTimeZone = 'UTC'
 }: AccountRoutesOptions) => {
   // All of it is the signed-in account's own, from its own profile: a child's profile open on a parent's
   // device sees none of it.
@@ -112,6 +117,9 @@ const accountHelpers = ({
       loginOnly: !account.hasPassword,
       recentSignIn: recentlySignedIn(device),
       privateProfile: account.privateProfile,
+      // Its own, else the household's, as the account's days run in it.
+      timeZone: account.timeZone ?? household.get().timeZone ?? defaultTimeZone,
+      country: account.country,
       devices: devices.list(account.id).map(({ id, userAgent, lastSeenAt, trusted }) => ({
         id,
         userAgent,

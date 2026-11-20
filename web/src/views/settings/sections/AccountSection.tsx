@@ -21,6 +21,7 @@ import HouseholdCard from './HouseholdCard.tsx'
 import AccountStatsCard from './AccountStatsCard.tsx'
 import { DeviceRows, TwoFactorRow, confirmDelete, labelOf } from './AccountRows.tsx'
 import PrivateProfileRow from './PrivateProfileRow.tsx'
+import RegionCard from './RegionCard.tsx'
 
 // undefined while it comes; null: no account here.
 const useAccount = (onUnauthorized: () => void) => {
@@ -221,6 +222,8 @@ const AccountSection = ({ layout, onUnauthorized, intro: ownIntro }: AccountSect
         {/* A plugin's rows about the account (« Relier mon compte Google »). */}
         <PluginSlots slot="accountRows" props={{ layout }} />
       </div>
+
+      <RegionCard account={account} onAccount={setAccount} />
 
       <h2 className={styles.label}>{t('settings.account.devices')}</h2>
       <div className={styles.card}>

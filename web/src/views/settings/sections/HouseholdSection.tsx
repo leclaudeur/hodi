@@ -1,21 +1,19 @@
-import { Clock, Home, Pencil } from 'lucide-react'
+import { Home, Pencil } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type Household, MAX_HOUSEHOLD_NAME_LENGTH, UnauthorizedError, updateHousehold } from '../../../api.ts'
 import { type HourCycle, setHourCycle } from '../../../lib/format.ts'
 import { useGameEnabled } from '../../../lib/game.ts'
 import { type Language, setHouseholdLanguage } from '../../../lib/i18n.ts'
-import { timeZoneCity, timeZoneOffset } from '../../../lib/regions.ts'
 import { useHousehold } from '../../../lib/settings-data.ts'
 import { showSaved } from '../../../lib/toast.ts'
-import { typesAtOnce, useIsPhone } from '../../../lib/use-media.ts'
+import { typesAtOnce } from '../../../lib/use-media.ts'
 import Button from '../../../ui/Button.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
 import DialogActions from '../../../ui/DialogActions.tsx'
 import StatusLine from '../../../ui/StatusLine.tsx'
 import TextField from '../../../ui/TextField.tsx'
 import householdStyles from '../../household/Household.module.css'
-import { TimeZonePicker } from '../../household/RegionPickers.tsx'
 import RichText from '../../../ui/RichText.tsx'
 import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
@@ -25,7 +23,7 @@ import { GameCard, PhotoRow, RegionChoices, useHouseholdPhoto } from './Househol
 import ServerData from './ServerData.tsx'
 import ParentalCodeCard from './ParentalCodeCard.tsx'
 
-type Editing = 'name' | 'timeZone' | null
+type Editing = 'name' | null
 
 interface DialogProps {
   household: Household
@@ -83,19 +81,9 @@ const RenameDialog = ({ household, onSaved, onClose, onUnauthorized }: DialogPro
   )
 }
 
-// The language, the time format and the time zone, saved at once.
+// The language and the time format, saved at once.
 const useRegionSaving = (saved: (next: Household) => void, onUnauthorized: () => void) => {
   const [regionFailed, setRegionFailed] = useState(false)
-  const saveRegion = (changes: { timeZone?: string }) => {
-    setRegionFailed(false)
-    updateHousehold(changes)
-      .then(saved)
-      .catch((error: unknown) => {
-        if (error instanceof UnauthorizedError) onUnauthorized()
-        else setRegionFailed(true)
-      })
-  }
-
   // For every profile and device: the rows, the fields and the push texts that write a time of day.
   const saveHourCycle = (hourCycle: HourCycle) => {
     setRegionFailed(false)
@@ -120,7 +108,7 @@ const useRegionSaving = (saved: (next: Household) => void, onUnauthorized: () =>
         else setRegionFailed(true)
       })
   }
-  return { regionFailed, saveRegion, saveHourCycle, saveLanguage }
+  return { regionFailed, saveHourCycle, saveLanguage }
 }
 
 interface HouseholdSectionProps {
@@ -135,14 +123,13 @@ const HouseholdSection = ({ layout, onUnauthorized }: HouseholdSectionProps) => 
   const [editing, setEditing] = useState<Editing>(null)
   const gameEnabled = useGameEnabled()
   const [switching, setSwitching] = useState(false)
-  const phone = useIsPhone()
 
   const saved = (next: Household) => {
     replace(next)
     showSaved()
   }
 
-  const { regionFailed, saveRegion, saveHourCycle, saveLanguage } = useRegionSaving(saved, onUnauthorized)
+  const { regionFailed, saveHourCycle, saveLanguage } = useRegionSaving(saved, onUnauthorized)
 
   const { photoInput, photoBusy, pickPhoto, removePhoto } = useHouseholdPhoto(
     household?.name ?? '',
@@ -178,17 +165,6 @@ const HouseholdSection = ({ layout, onUnauthorized }: HouseholdSectionProps) => 
             <RegionChoices household={household} onLanguage={saveLanguage} onHourCycle={saveHourCycle} />
           </div>
 
-          <h2 className={styles.label}>{t('settings.household.region')}</h2>
-          <div className={styles.card}>
-            <SettingRow
-              label={t('settings.household.timeZone')}
-              value={t('settings.household.timeZoneValue', {
-                zone: phone ? timeZoneCity(household.timeZone) : household.timeZone,
-                offset: timeZoneOffset(household.timeZone)
-              })}
-              action={{ label: t('common.change'), icon: Clock, onClick: () => setEditing('timeZone') }}
-            />
-          </div>
           {regionFailed && <StatusLine tone="error">{t('settings.household.regionFailed')}</StatusLine>}
 
           <ParentalCodeCard household={household} onSaved={saved} />
@@ -198,12 +174,6 @@ const HouseholdSection = ({ layout, onUnauthorized }: HouseholdSectionProps) => 
           <ServerData />
 
           {dialogProps && editing === 'name' && <RenameDialog {...dialogProps} />}
-          <TimeZonePicker
-            open={editing === 'timeZone'}
-            value={household.timeZone}
-            onPick={timeZone => saveRegion({ timeZone })}
-            onClose={close}
-          />
         </>
       )}
     </SectionPage>
