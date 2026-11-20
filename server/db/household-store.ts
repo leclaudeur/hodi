@@ -173,22 +173,6 @@ export class HouseholdStore {
       )
   }
 
-  // The Code parental's hash, asked to open an adult's profile that is not private; null: none, they open freely.
-  parentalCode(): string | null {
-    const row = this.#db.prepare('SELECT parental_pin_hash AS hash FROM accounts WHERE id = ?').get(this.#account) as
-      { hash: string | null } | undefined
-    return row?.hash ?? null
-  }
-
-  // Every device's choice of an adult profile is signed again: a new code, or none, is asked from the next opening.
-  setParentalCode(hash: string | null) {
-    this.#db
-      .prepare(
-        'UPDATE accounts SET parental_pin_hash = ?, parental_pin_version = parental_pin_version + 1 WHERE id = ?'
-      )
-      .run(hash, this.#account)
-  }
-
   // null: no AI, its buttons are hidden.
   setAi(ai: HouseholdAi | null) {
     this.#db

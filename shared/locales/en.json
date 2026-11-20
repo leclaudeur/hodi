@@ -344,7 +344,6 @@
     "parentalCode": "Parental code",
     "wrongCode": "That code is not the right one.",
     "trustDevice": "Don’t ask again on this device",
-    "codeHint": "Ask the server’s admin.",
     "addAccount": {
       "title": "Add my account",
       "intro": "Sign in to find your profile on this device. The accounts already added to <i>Who’s in?</i> stay as they are.",
@@ -352,7 +351,8 @@
       "otherHousehold": "<b>{{email}}</b> is in the <b>{{household}}</b> household, and this device serves the <b>{{here}}</b> household.",
       "recovery": "Recovery code",
       "app": "App code"
-    }
+    },
+    "forgotCode": "Forgot the code? Your password"
   },
   "limits": {
     "fiveMinutes": "Only 5 minutes of reading left today",
@@ -1478,15 +1478,7 @@
       "gameHint": "Points for every read, a challenge and a ranking each week",
       "gameOn": "Game on",
       "gameOff": "Game off",
-      "gameFailed": "The game could not be changed. Try again in a moment.",
-      "adults": "Adult profiles",
-      "parentalCode": "Parental code",
-      "parentalCodeHint": "Asked to open an adult profile",
-      "code": "Code",
-      "codeValue": "6 digits",
-      "codeTitle": "Parental code",
-      "codeIntro": "Six digits, asked to open an adult profile from <i>Who’s reading?</i>. A private profile asks for its password instead.",
-      "newCode": "New code"
+      "gameFailed": "The game could not be changed. Try again in a moment."
     },
     "proposals": {
       "errors": {
@@ -1823,15 +1815,6 @@
       "title": "Cancel the invitation?",
       "message": "<b>{{name}}</b>’s code will stop working. You can invite them again.",
       "button": "Cancel the invitation"
-    },
-    "parentalOn": {
-      "title": "Save this parental code?",
-      "message": "It will be asked to open every adult profile that is not private, from <i>Who’s reading?</i>, on every device."
-    },
-    "parentalOff": {
-      "title": "Turn the parental code off?",
-      "message": "Adult profiles that are not private will open again without a code from <i>Who’s reading?</i>, on every device.",
-      "button": "Turn off"
     },
     "privateOn": {
       "title": "Make your profile private?",
@@ -2697,6 +2680,24 @@
       "accepted": "You’re {{name}}’s parent",
       "refused": "Request refused",
       "failed": "That didn’t work. Try again."
+    },
+    "parentalCode": {
+      "section": "On a shared device",
+      "title": "Parental code",
+      "hintOff": "Not chosen yet",
+      "hintOn": "Asked to open your profile",
+      "code": "Code",
+      "codeValue": "6 digits",
+      "changeLabel": "Change your parental code",
+      "dialogTitle": "Your parental code",
+      "dialogIntro": "Six digits, asked to open your profile from <i>Who’s reading?</i> on a device where a teen or a child is signed in. Never on your own devices. Forgotten, your password stands in for it.",
+      "newCode": "New code",
+      "onTitle": "Save this parental code?",
+      "onText": "It will be asked to open your profile from <i>Who’s reading?</i>, on every device where a teen or a child is signed in.",
+      "offTitle": "Turn off your parental code?",
+      "offText": "Your profile will open again without a code from <i>Who’s reading?</i>, on the devices where a teen or a child is signed in.",
+      "off": "Turn off",
+      "hintAdvised": "Advised, not chosen yet"
     }
   }
 }

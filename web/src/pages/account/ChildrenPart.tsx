@@ -1,9 +1,7 @@
 import { SlidersHorizontal, UserPlus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { type ChildAccount, type ParentInvitation, getChildren } from '../../api.ts'
-import { useProfiles } from '../../lib/profiles.ts'
-import { useHousehold } from '../../lib/settings-data.ts'
+import { type AccountView, type ChildAccount, type ParentInvitation, getChildren } from '../../api.ts'
 import { showSaved } from '../../lib/toast.ts'
 import { youngProfileHref } from '../../lib/use-hash-route.ts'
 import Button from '../../ui/Button.tsx'
@@ -15,8 +13,8 @@ import ParentInvitations from '../../views/profiles/ParentInvitations.tsx'
 import { RowButton } from '../../views/settings/SettingRow.tsx'
 import RowsSkeleton from '../../views/settings/SettingsSkeleton.tsx'
 import styles from '../../views/settings/Settings.module.css'
-import ParentalCodeCard from '../../views/settings/sections/ParentalCodeCard.tsx'
 import profileStyles from '../../views/settings/sections/ProfilesSection.module.css'
+import ParentalCodeCard from './ParentalCodeCard.tsx'
 
 const useChildren = () => {
   const [children, setChildren] = useState<ChildAccount[] | null>(null)
@@ -62,18 +60,17 @@ const ChildRow = ({ child }: { child: ChildAccount }) => {
   )
 }
 
-// The parental code, the server admin's for now: until each parent has their own, it asks for every adult on a device.
-const ParentalCode = () => {
-  const { value: household, replace } = useHousehold()
-  return household ? <ParentalCodeCard household={household} onSaved={replace} /> : null
+interface ChildrenPartProps {
+  account: AccountView
+  onAccount: (next: AccountView) => void
 }
 
-// Mon compte › Mes enfants: the teens' and children's accounts this parent runs, a new one, and the parental code.
-const ChildrenPart = () => {
+// Mon compte › Mes enfants: the teens' and children's accounts this parent runs, a new one, and the adult's own Code
+// parental.
+const ChildrenPart = ({ account, onAccount }: ChildrenPartProps) => {
   const { t } = useTranslation()
   const { children, setChildren, invitations, setInvitations, failed } = useChildren()
   const [creating, setCreating] = useState(false)
-  const serverAdmin = useProfiles()?.serverAdmin === true
   if (failed) return <StatusLine tone="error">{t('children.loadFailed')}</StatusLine>
   if (!children) return <RowsSkeleton rows={2} lead="round" end="button" />
   return (
@@ -101,7 +98,7 @@ const ChildrenPart = () => {
           {t('children.create.title')}
         </Button>
       </div>
-      {serverAdmin && <ParentalCode />}
+      <ParentalCodeCard account={account} onAccount={onAccount} parent={children.length > 0} />
       <CreateChildDialog
         open={creating}
         taken={children.map(child => child.color)}

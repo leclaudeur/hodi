@@ -114,7 +114,7 @@ const mountListRoutes = (router: express.Router, options: ProfileRoutesOptions) 
     const device = deviceAccountOf(response)
     response.json({
       profiles: profiles.list().map(profile => {
-        const guard = guardOfProfile(profile)
+        const guard = guardOfProfile(profile, request)
         const lock = lockOf(guard, isAccountGuard(guard) && trust?.trustedFor(request, guard) != null)
         // An account with no password of its own (« Se connecter avec Google »): its person opens it through the
         // plugin, which signs the device in with it.

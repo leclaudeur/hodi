@@ -102,6 +102,8 @@ export interface AccountView {
   recentSignIn: boolean
   // « Profil privé »: its profile asks for this password in « Qui lit ? », on every device it does not trust.
   privateProfile?: boolean
+  // Its own « Code parental » is set: asked to open its profile where one of its children is signed in.
+  parentalCode?: boolean
   // « Identifiant », and when it can change again (null: now).
   handle: string | null
   handleChangeableFrom: number | null
@@ -154,6 +156,14 @@ export const changeAccountPassword = (current: string, next: string) =>
 // « Profil privé »: turning it on asks for the password (and the app's code), never for turning it off.
 export const setPrivateProfile = (on: boolean, proof?: AdminProof) =>
   sendJson<AccountView>('PUT', '/account/private', { on, ...proof })
+
+// « Code parental »: six digits the server never sends back. With the parent's password, and the app's code as
+// appCode: the body's code is the new Code parental.
+export const setParentalCode = (code: string, proof: AdminProof) =>
+  sendJson<AccountView>('PUT', '/account/parental-code', { code, password: proof.password, appCode: proof.code })
+
+export const removeParentalCode = (proof: AdminProof) =>
+  sendJson<AccountView>('DELETE', '/account/parental-code', { password: proof.password, appCode: proof.code })
 
 // Réglages › Mon compte › Région.
 export interface AiKey {
@@ -283,8 +293,6 @@ export interface Household {
   photo: string | null
   ai: AiKey | null
   providers: AiProviderInfo[]
-  // « Code parental »: six digits asked to open an adult profile that is not private.
-  parentalCode?: boolean
 }
 
 export const getHousehold = () => getJson<Household>('/household')
@@ -316,13 +324,5 @@ export const checkAiKey = async (provider: string, key: string) =>
 // Kept only once the provider took it.
 export const setHouseholdAi = (provider: string, key: string) =>
   sendJson<Household>('PUT', '/household/ai', { provider, key })
-
-// « Code parental »: six digits; the server never sends them back.
-// With the admin's own password, and the app's code as appCode: the body's code is the new Code parental.
-export const setParentalCode = (code: string, proof: AdminProof) =>
-  sendJson<Household>('PUT', '/household/parental-code', { code, password: proof.password, appCode: proof.code })
-
-export const removeParentalCode = (proof: AdminProof) =>
-  sendJson<Household>('DELETE', '/household/parental-code', { password: proof.password, appCode: proof.code })
 
 export const removeHouseholdAi = () => sendJson<Household>('DELETE', '/household/ai')

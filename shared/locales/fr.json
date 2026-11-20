@@ -344,7 +344,6 @@
     "parentalCode": "Code parental",
     "wrongCode": "Ce code n’est pas le bon.",
     "trustDevice": "Ne plus demander sur cet appareil",
-    "codeHint": "Demande-le à l’admin du serveur.",
     "addAccount": {
       "title": "Ajouter mon compte",
       "intro": "Connecte-toi pour retrouver ton profil sur cet appareil. Les comptes déjà ajoutés à <i>Qui lit ?</i> restent comme ils sont.",
@@ -352,7 +351,8 @@
       "otherHousehold": "<b>{{email}}</b> est dans le foyer <b>{{household}}</b>, et cet appareil sert le foyer <b>{{here}}</b>.",
       "recovery": "Code de secours",
       "app": "Code de l’app"
-    }
+    },
+    "forgotCode": "Code oublié ? Ton mot de passe"
   },
   "limits": {
     "fiveMinutes": "Plus que 5 minutes de lecture aujourd’hui",
@@ -1478,15 +1478,7 @@
       "gameHint": "Des points pour chaque lecture, un défi et un classement chaque semaine",
       "gameOn": "Jeu activé",
       "gameOff": "Jeu désactivé",
-      "gameFailed": "Le jeu n’a pas pu être changé. Réessaie dans un instant.",
-      "adults": "Profils adultes",
-      "parentalCode": "Code parental",
-      "parentalCodeHint": "Demandé pour ouvrir un profil adulte",
-      "code": "Code",
-      "codeValue": "6 chiffres",
-      "codeTitle": "Code parental",
-      "codeIntro": "Six chiffres, demandés pour ouvrir un profil adulte depuis <i>Qui lit ?</i>. Un profil privé demande son mot de passe à la place.",
-      "newCode": "Nouveau code"
+      "gameFailed": "Le jeu n’a pas pu être changé. Réessaie dans un instant."
     },
     "proposals": {
       "errors": {
@@ -1823,15 +1815,6 @@
       "title": "Annuler l’invitation ?",
       "message": "Le code de <b>{{name}}</b> ne marchera plus. Tu pourras l’inviter à nouveau.",
       "button": "Annuler l’invitation"
-    },
-    "parentalOn": {
-      "title": "Enregistrer ce code parental ?",
-      "message": "Il sera demandé pour ouvrir chaque profil adulte qui n’est pas privé, depuis <i>Qui lit ?</i>, sur tous les appareils."
-    },
-    "parentalOff": {
-      "title": "Désactiver le code parental ?",
-      "message": "Les profils adultes qui ne sont pas privés s’ouvriront de nouveau sans code depuis <i>Qui lit ?</i>, sur tous les appareils.",
-      "button": "Désactiver"
     },
     "privateOn": {
       "title": "Rendre ton profil privé ?",
@@ -2697,6 +2680,24 @@
       "accepted": "Tu es parent de {{name}}",
       "refused": "Demande refusée",
       "failed": "Ça n’a pas marché. Réessaie."
+    },
+    "parentalCode": {
+      "section": "Sur un appareil partagé",
+      "title": "Code parental",
+      "hintOff": "Pas encore choisi",
+      "hintOn": "Demandé pour ouvrir ton profil",
+      "code": "Code",
+      "codeValue": "6 chiffres",
+      "changeLabel": "Changer ton code parental",
+      "dialogTitle": "Ton code parental",
+      "dialogIntro": "Six chiffres, demandés pour ouvrir ton profil depuis <i>Qui lit ?</i> sur un appareil où un ado ou un enfant est connecté. Sur tes propres appareils, jamais. Oublié, ton mot de passe le remplace.",
+      "newCode": "Nouveau code",
+      "onTitle": "Enregistrer ce code parental ?",
+      "onText": "Il sera demandé pour ouvrir ton profil depuis <i>Qui lit ?</i>, sur chaque appareil où un ado ou un enfant est connecté.",
+      "offTitle": "Désactiver ton code parental ?",
+      "offText": "Ton profil s’ouvrira de nouveau sans code depuis <i>Qui lit ?</i>, sur les appareils où un ado ou un enfant est connecté.",
+      "off": "Désactiver",
+      "hintAdvised": "Conseillé, pas encore choisi"
     }
   }
 }

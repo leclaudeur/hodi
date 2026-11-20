@@ -14,6 +14,8 @@ export interface UserDevice {
   lastSeenAt: number
   // « Ne plus demander sur cet appareil »: its account's private profile opens here without the password.
   trusted: boolean
+  // A teen or a child signed in on this device once: the account's Code parental is asked here from then on.
+  youngHere: boolean
 }
 
 interface UserDeviceRow {
@@ -22,16 +24,18 @@ interface UserDeviceRow {
   created_at: number
   last_seen_at: number
   trusted: number
+  young_here: number
 }
 
-const COLUMNS = 'id, user_agent, created_at, last_seen_at, trusted'
+const COLUMNS = 'id, user_agent, created_at, last_seen_at, trusted, young_here'
 
 const toDevice = (row: UserDeviceRow): UserDevice => ({
   id: row.id,
   userAgent: row.user_agent,
   createdAt: row.created_at,
   lastSeenAt: row.last_seen_at,
-  trusted: row.trusted === 1
+  trusted: row.trusted === 1,
+  youngHere: row.young_here === 1
 })
 
 export class UserDeviceStore {
@@ -72,6 +76,10 @@ export class UserDeviceStore {
     this.#db
       .prepare('UPDATE user_devices SET trusted = ? WHERE id = ? AND user_id = ?')
       .run(trusted ? 1 : 0, id, userId)
+  }
+
+  markYoungHere(userId: number, id: number) {
+    this.#db.prepare('UPDATE user_devices SET young_here = 1 WHERE id = ? AND user_id = ?').run(id, userId)
   }
 
   // « Redemander »: the password again on every device of the account.

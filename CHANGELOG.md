@@ -28,6 +28,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Only a young one's parents manage them.** Their card, rules, devices and deletion are their parents' only: the
   server's admin no longer has a say over other people's children. The Parental code moves to My account › My
   children, and teens and children no longer have AI settings of their own.
+- **A Parental code for each adult.** Each adult chooses their own in My account › My children, advised to parents.
+  It is asked to open that adult's profile only on a device where a teen or a child is signed in, or once was, never
+  on the adult's own devices; a forgotten code is replaced by the adult's password. The household's single code goes,
+  and becomes the code of each of its adults. A teen can now add their account to Who's reading? on a shared device
+  with their username.
 
 - **Stats and points belong to the account.** An adult's readings, stats, points and badges are their account's,
   not their profile's: they stay the same in any household, after leaving one or being removed from it, and My
