@@ -267,8 +267,9 @@ const mountSetupHouseholdRoute = (
     }
     const body = (request.body ?? {}) as Record<string, unknown>
     const profile = (body.profile ?? {}) as { name?: unknown; color?: unknown }
-    // The server's one space is not shown any more: it no longer needs a name of its own.
-    const name = body.name === undefined ? SPACE_NAME : cleanHouseholdName(body.name)
+    // The server's one space is not shown any more: it needs no name of its own, and an empty one from an old page
+    // gets the same.
+    const name = body.name === undefined || body.name === '' ? SPACE_NAME : cleanHouseholdName(body.name)
     const profileName = cleanName(profile.name)
     const color = profileColorOf(profile.color)
     const timeZone = timeZoneOf(body.timeZone)
