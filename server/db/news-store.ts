@@ -6,11 +6,8 @@ import { type Database, transaction } from './database.ts'
 import { ownerOf } from './stats-owner.ts'
 import {
   type AiCall,
-  type AiCallKind,
-  type AiCleared,
   type StoredDailySummary,
   aiCalls,
-  clearAiCalls,
   getSummary,
   latestDailySummaries,
   recordAiCall,
@@ -286,12 +283,6 @@ export class NewsStore {
   // The calls made since the given time, oldest first.
   aiCalls(since: number) {
     return aiCalls(this.#db, since)
-  }
-
-  // "Remettre à 0": the calls since then, of one kind or all, of one profile or all, cleared to that level (never
-  // lowered).
-  clearAiCalls(since: number, level: AiCleared, kind: AiCallKind | null, profileId: number | null) {
-    clearAiCalls(this.#db, since, level, kind, profileId)
   }
 
   getIcon(sourceId: string) {

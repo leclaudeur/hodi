@@ -1520,9 +1520,6 @@
       }
     }
   },
-  "pin": {
-    "change": "Change"
-  },
   "addSource": {
     "videos": "Its videos go to Videos.",
     "readable_one": "{{count}} of {{tried}} articles opens in Hodi.",
@@ -2579,10 +2576,6 @@
       "message": "This account is protected by two-step verification. Type the 6-digit code the app shows for Hodi.",
       "button": "Continue"
     }
-  },
-  "seo": {
-    "title": "Hodi - News for the whole family, free and everywhere",
-    "description": "Your favourite news sites, sorted by topic, all in one place. An account for everyone, sharing what’s worth reading."
   },
   "noHousehold": {
     "title": "You no longer have a household",

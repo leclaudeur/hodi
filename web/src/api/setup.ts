@@ -196,9 +196,6 @@ export const ACCOUNT_COPY_URL = '/api/account/copy'
 
 export const deleteAccount = (proof?: AdminProof) => sendJson<null>('DELETE', '/account', proof)
 
-// Mon compte › Foyer › « Quitter »: the profile goes, the account stays in no household.
-export const leaveHousehold = (proof?: AdminProof) => sendJson<null>('POST', '/account/leave', proof)
-
 // "J'ai un code": eight letters and digits an adult gives, valid once and for a day. None of 0, O, 1, I or L, which
 // read alike (the server's sign-in-code-store.ts draws them).
 export const SIGN_IN_CODE_LENGTH = 8
@@ -287,47 +284,3 @@ export interface HouseholdSetup {
 
 // Opens the admin's profile on this device, signed in with its account.
 export const setUpHousehold = (setup: HouseholdSetup) => sendJson<{ profileId: number | null }>('POST', '/setup', setup)
-
-export interface Household {
-  name: string
-  timeZone: string
-  country: string | null
-  language: InterfaceLanguage
-  hourCycle: 12 | 24
-  // Its photo's address; null: its initial shows.
-  photo: string | null
-  ai: AiKey | null
-  providers: AiProviderInfo[]
-}
-
-export const getHousehold = () => getJson<Household>('/household')
-
-export const updateHousehold = (changes: {
-  name?: string
-  timeZone?: string
-  country?: string | null
-  language?: InterfaceLanguage
-  hourCycle?: 12 | 24
-}) => sendJson<Household>('PATCH', '/household', changes)
-
-export const uploadHouseholdPhoto = async (photo: Blob) => {
-  const response = await fetch('/api/household/photo', {
-    method: 'PUT',
-    headers: { 'Content-Type': photo.type },
-    body: photo
-  })
-  if (response.status === 401) throw new UnauthorizedError('Session expired')
-  if (!response.ok) throw new Error(`PUT household photo failed with status ${response.status}`)
-  return (await response.json()) as Household
-}
-
-export const removeHouseholdPhoto = () => sendJson<Household>('DELETE', '/household/photo')
-
-export const checkAiKey = async (provider: string, key: string) =>
-  (await sendJson<{ result: KeyCheck }>('POST', '/household/ai/check', { provider, key })).result
-
-// Kept only once the provider took it.
-export const setHouseholdAi = (provider: string, key: string) =>
-  sendJson<Household>('PUT', '/household/ai', { provider, key })
-
-export const removeHouseholdAi = () => sendJson<Household>('DELETE', '/household/ai')
