@@ -18,6 +18,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   @username and the password the parent chooses. The young one signs in with that username and password; the parent
   changes the password from their card. Existing teen and child profiles become accounts linked to the household's
   adults, with no password until a parent chooses one.
+- **AI without caps.** Each account pays with its own key, so nothing stops its purple buttons any more: My
+  account › AI shows its calls of the last 24 hours, with nothing to reset. A plugin keeps its own hourly limit.
 - **Your own time format, game and language.** The time format, Levels and badges and the language are each
   person's, in My account › Profile (a teen's in Settings › General); the language follows the browser until
   someone picks one. Server › General no longer sets them for everyone. A young one's card lives in My account ›

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { UnauthorizedError, summarizeArticle } from '../../api.ts'
-import { refreshAiUsage, useAiCapped } from '../../lib/ai-left.ts'
+import { refreshAiUsage } from '../../lib/ai-left.ts'
 import { type Language, useLanguage } from '../../lib/i18n.ts'
 import { findSummary, keepSummary } from '../../lib/summaries.ts'
 import Button from '../../ui/Button.tsx'
@@ -14,10 +14,9 @@ type State =
   | { status: 'ok'; points: string[] }
   | { status: 'error'; message: ErrorKey; retry: boolean }
 
-type ErrorKey = `summary.errors.${'limited' | 'refused' | 'unreadable' | 'unknown' | 'unavailable' | 'failed'}`
+type ErrorKey = `summary.errors.${'refused' | 'unreadable' | 'unknown' | 'unavailable' | 'failed'}`
 
 const errorMessages: Record<string, { message: ErrorKey; retry: boolean }> = {
-  limited: { message: 'summary.errors.limited', retry: false },
   refused: { message: 'summary.errors.refused', retry: false },
   unreadable: { message: 'summary.errors.unreadable', retry: false },
   unknown: { message: 'summary.errors.unknown', retry: false },
@@ -32,15 +31,15 @@ interface SummaryCardProps {
 }
 
 // Before any summary: the offer, and the violet button that spends the call.
-const SummaryOffer = ({ capped, onSummarize }: { capped: boolean; onSummarize: () => void }) => {
+const SummaryOffer = ({ onSummarize }: { onSummarize: () => void }) => {
   const { t } = useTranslation()
   return (
     <div className={styles.offer} id="summary">
       <span className={`${styles.mark} ${styles.offerMark}`}>
         <SparkleIcon size={16} />
       </span>
-      <span className={styles.offerText}>{t(capped ? 'summary.capped' : 'summary.offer')}</span>
-      <Button look="ai" icon={SparkleIcon} onClick={onSummarize} disabled={capped} data-shortcut="summarize">
+      <span className={styles.offerText}>{t('summary.offer')}</span>
+      <Button look="ai" icon={SparkleIcon} onClick={onSummarize} data-shortcut="summarize">
         {t('summary.summarize')}
       </Button>
     </div>
@@ -54,7 +53,6 @@ const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCar
     const points = findSummary(articleId, language)
     return points ? { status: 'ok', points } : { status: 'idle' }
   })
-  const capped = useAiCapped('summary')
 
   const summarize = async () => {
     setState({ status: 'loading' })
@@ -73,7 +71,7 @@ const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCar
     void refreshAiUsage()
   }
 
-  if (state.status === 'idle') return <SummaryOffer capped={capped} onSummarize={() => void summarize()} />
+  if (state.status === 'idle') return <SummaryOffer onSummarize={() => void summarize()} />
 
   return (
     <section
@@ -109,7 +107,7 @@ const LanguageSummaryCard = ({ articleId, language, onUnauthorized }: SummaryCar
       {state.status === 'error' && (
         <p className={styles.error}>
           {t(state.message)}
-          {state.retry && !capped && (
+          {state.retry && (
             <Button look="ai" onClick={() => void summarize()}>
               {t('common.retry')}
             </Button>

@@ -66,6 +66,5 @@ export const useStorage = (onUnauthorized?: () => void) =>
 export const sourceState = (source: SourceStatus) =>
   source.fetchedAt === null && source.error === null ? 'idle' : source.ok ? 'ok' : 'error'
 
-// What the reader may still ask today, on its own key.
-export const callsLeft = (usage: AiUsage) =>
-  usage.kinds.reduce((total, kind) => total + Math.max(0, kind.limit - kind.used), 0)
+// The reader's calls of the last 24 hours, every kind together, on its own key.
+export const callsUsed = (usage: AiUsage) => usage.kinds.reduce((total, kind) => total + kind.used, 0)

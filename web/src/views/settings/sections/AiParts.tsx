@@ -1,4 +1,3 @@
-import { RotateCcw } from 'lucide-react'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -16,7 +15,6 @@ import { showError, showSaved } from '../../../lib/toast.ts'
 import Button from '../../../ui/Button.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
 import DialogActions from '../../../ui/DialogActions.tsx'
-import RoundButton from '../../../ui/RoundButton.tsx'
 import StatusLine from '../../../ui/StatusLine.tsx'
 import Toggle from '../../../ui/Toggle.tsx'
 import AiKeyField from '../../household/AiKeyField.tsx'
@@ -30,47 +28,22 @@ import { pluginName } from '../../../plugins/plugin-texts.ts'
 interface UsageRow {
   kind: AiKind
   used: number
-  limit: number
 }
 
-// One kind's calls against its cap; the round puts it back to 0. Flat: the rows straight in an accordion, one line
-// between each, no card in the card.
-export const UsageRows = ({
-  rows,
-  onReset,
-  flat = false
-}: {
-  rows: UsageRow[]
-  onReset?: (kind: AiKind) => void
-  flat?: boolean
-}) => {
+// Each kind's calls of the last 24 hours, on the account's own key: what it used, with no cap to reach.
+export const UsageRows = ({ rows }: { rows: UsageRow[] }) => {
   const { t } = useTranslation()
   return (
-    <ul className={flat ? aiStyles.flat : styles.card}>
-      {rows.map(({ kind, used, limit }) => (
+    <ul className={styles.card}>
+      {rows.map(({ kind, used }) => (
         <li key={kind} className={styles.row}>
           <span className={styles.rowText}>
             {/* Each title names the button that spends the call, so no line under it is needed. */}
             <span className={styles.rowLabel}>{t(`ai.kinds.${kind}`)}</span>
-            <span className={aiStyles.track} aria-hidden="true">
-              <span
-                className={aiStyles.fill}
-                style={{ width: `${limit > 0 ? Math.min(100, (used / limit) * 100) : 0}%` }}
-              />
-            </span>
           </span>
           <span className={aiStyles.count}>
-            <strong>{used}</strong> / {limit}
+            <strong>{used}</strong> {t('ai.calls', { count: used })}
           </span>
-          {onReset && (
-            <RoundButton
-              icon={RotateCcw}
-              label={t('ai.resetKindLabel', { kind: t(`ai.kinds.${kind}`) })}
-              size={38}
-              disabled={used === 0}
-              onClick={() => onReset(kind)}
-            />
-          )}
         </li>
       ))}
     </ul>

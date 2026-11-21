@@ -832,14 +832,12 @@
   },
   "summary": {
     "summarizeArticle": "Article summary",
-    "capped": "No more summaries today: the daily limit is reached.",
     "offer": "The article’s gist.",
     "summarize": "Sum up",
     "title": "The gist",
     "writing": "Summarizing…",
     "note": "Written by AI · may contain mistakes",
     "errors": {
-      "limited": "The daily summary limit is reached. Try again tomorrow.",
       "refused": "The AI couldn’t sum up this article.",
       "unreadable": "This article can’t be summarized.",
       "unknown": "This article has left the feeds.",
@@ -851,12 +849,10 @@
     "ask": "Ask a question",
     "sources": "Sources",
     "answering": "Answering…",
-    "capped": "No more questions today: limit reached",
     "placeholder": "A question about this article?",
     "yours": "Question",
     "send": "Send the question",
     "errors": {
-      "limited": "The daily question limit is reached. Try again tomorrow.",
       "refused": "The AI couldn’t answer this question.",
       "unreadable": "This article can’t be analysed.",
       "unknown": "This article has left the feeds.",
@@ -919,14 +915,12 @@
     "bubble": "Summary",
     "errors": {
       "failed": "The Daily summary couldn’t be written.",
-      "refused": "The AI refused to write the Daily summary.",
-      "limited": "Enough Daily summaries for today: try again tomorrow."
+      "refused": "The AI refused to write the Daily summary."
     },
     "yesterdayAt": "YESTERDAY {{time}}",
     "writingShort": "Writing…",
     "regenerate": "Redo",
     "writeNew": "Write a new summary (1 call)",
-    "capped": "No more Daily summary today: the daily limit is reached",
     "upToDate": "Already up to date: a new summary is possible at {{time}}",
     "listen": "Listen to the summary",
     "writing": "The AI is writing…",
@@ -1205,8 +1199,8 @@
       "stats": "Reading and videos",
       "on": "On",
       "off": "Off",
-      "callsLeft_one": "{{count}} call left today",
-      "callsLeft_other": "{{count}} calls left today",
+      "callsUsed_one": "{{count}} call in 24 hours",
+      "callsUsed_other": "{{count}} calls in 24 hours",
       "aiOff": "Off",
       "ai": "Today’s calls",
       "onPlural": "On",
@@ -1584,7 +1578,6 @@
       "followed": "Followed.",
       "failed": "The source could not be added. Try again in a moment."
     },
-    "capped": "No more suggestions today: the daily limit is reached.",
     "offer": "Sources for {{topic}}, found by the AI.",
     "pickTopic": "Pick a topic, the AI suggests sources.",
     "button": "Suggest",
@@ -1592,7 +1585,6 @@
     "errors": {
       "unavailable": "AI isn’t turned on on this server.",
       "not_found": "This topic is gone.",
-      "limited": "No more suggestions today: the daily limit is reached. Come back tomorrow.",
       "refused": "The AI couldn’t suggest sources for this topic.",
       "failed": "The suggestions could not be made. Try again in a moment."
     },
@@ -1672,7 +1664,6 @@
       "sources": "Source suggestions",
       "plugin": "Plugins"
     },
-    "resetKindLabel": "Reset: {{kind}}",
     "replaceKey": "Replace the key",
     "turnOn": "Turn on AI",
     "keyFailed": "The key could not be saved. Try again in a moment.",
@@ -1688,8 +1679,6 @@
     "off": "AI not on",
     "offAdmin": "Add an API key for summaries, questions and the Daily summary.",
     "addKey": "Add a key",
-    "resetDone": "Reset",
-    "resetFailed": "The reset failed. Try again in a moment.",
     "yours": "Calls · 24 hours",
     "plugins": {
       "title": "Plugins",
@@ -1697,7 +1686,9 @@
       "calls_other": "{{count}} calls in 24 hours",
       "toggle": "AI for {{name}}",
       "failed": "The change wasn’t saved. Try again in a moment."
-    }
+    },
+    "calls_one": "call",
+    "calls_other": "calls"
   },
   "push": {
     "someone": "Someone",
@@ -1767,13 +1758,6 @@
       "message": "The purple buttons disappear <b>for this account</b> until a new key is added. Summaries and answers already written stay.",
       "button": "Remove key"
     },
-    "kinds": {
-      "summary": "summaries",
-      "question": "questions",
-      "dailySummary": "Daily summaries",
-      "sources": "source suggestions",
-      "plugin": "plugin requests"
-    },
     "deleteAccount": {
       "title": "Delete your account?",
       "message": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. Backup copies forget it within {{days}}.",
@@ -1827,12 +1811,6 @@
       "messageLast_one": "No adult will be signed in on this device any more: <b>{{young}}</b> leaves <i>Who’s in?</i> too, having no account. The device goes back to sign-in, and the reading stays intact. An adult can sign it in again whenever they like.",
       "messageLast_other": "No adult will be signed in on this device any more: <b>{{young}}</b> leave <i>Who’s in?</i> too, having no account. The device goes back to sign-in, and the reading stays intact. An adult can sign it in again whenever they like.",
       "button": "Sign out"
-    },
-    "resetMine": {
-      "title": "Recharge the AI?",
-      "message": "The AI calls of the last 24 hours no longer count: all of the day’s credits come back.",
-      "kindMessage": "The calls for <b>{{kind}}</b> of the last 24 hours no longer count: those credits of the day come back.",
-      "button": "Recharge"
     }
   },
   "dialogIntro": {
@@ -2010,7 +1988,7 @@
     "aiButton": {
       "unavailable": "AI isn’t turned on for this household.",
       "off": "The household’s admin turned this plugin’s AI off.",
-      "limited": "Today’s cap for plugins is reached.",
+      "limited": "This plugin asked the AI enough for this hour. Try again later.",
       "refused": "The AI declined to answer this request.",
       "failed": "The request didn’t go through. Try again in a moment."
     },
@@ -2607,7 +2585,7 @@
       "sign-in": "How you sign in, and the devices where the account is open.",
       "region": "The time zone says when a day starts: the statistics', the <i>Daily summary</i>'s and the badges'.",
       "data": "A copy of everything Hodi keeps about the account, or deleting it.",
-      "ai": "Each purple button is a call to the AI, paid with this account's API key: nothing goes without a click. Calls count over a rolling 24 hours; once a cap is reached, the purple buttons turn off.",
+      "ai": "Each purple button is a call to the AI, paid with this account's API key: nothing goes without a click. Calls count over a rolling 24 hours, with no cap: the key is yours.",
       "children": "The teens’ and children’s accounts you run: each signs in with their username and the password you choose."
     },
     "noStats": "Nothing read yet."

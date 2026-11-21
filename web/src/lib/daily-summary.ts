@@ -8,7 +8,7 @@ import {
   getDailySummary,
   writeDailySummary
 } from '../api.ts'
-import { aiLeft, refreshAiUsage } from './ai-left.ts'
+import { refreshAiUsage } from './ai-left.ts'
 import { type Preferences, orderTopics } from './preferences.ts'
 import { showError } from './toast.ts'
 
@@ -50,11 +50,10 @@ const setWriting = (next: boolean) => {
 export const useDailySummaryWriting = () => useSyncExternalStore(subscribe, () => writing)
 
 export const DAILY_SUMMARY_ERRORS: Partial<
-  Record<DailySummaryResult['status'], `dailySummary.errors.${'failed' | 'refused' | 'limited'}`>
+  Record<DailySummaryResult['status'], `dailySummary.errors.${'failed' | 'refused'}`>
 > = {
   failed: 'dailySummary.errors.failed',
-  refused: 'dailySummary.errors.refused',
-  limited: 'dailySummary.errors.limited'
+  refused: 'dailySummary.errors.refused'
 }
 
 // Said in a toast too: writing takes a while, the page may be left meanwhile, and a daily summary already
@@ -76,11 +75,6 @@ const pollDailySummary = async (): Promise<DailySummaryResult> => {
 // Writes a new daily summary: the bubble or the story's violet buttons, once at a time. Throws UnauthorizedError only.
 export const requestDailySummary = async () => {
   if (writing) return
-  // The day's cap reached: said at once, no call is made.
-  if (aiLeft('dailySummary') === 0) {
-    reportFailure('limited')
-    return
-  }
   setWriting(true)
   try {
     const result = await pollDailySummary()

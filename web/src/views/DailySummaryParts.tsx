@@ -17,20 +17,18 @@ import styles from './DailySummaryStory.module.css'
 
 interface RegenerateProps {
   writing: boolean
-  // A new one can be asked: the last one is old enough and today's AI is not used up.
+  // A new one can be asked: the last one is old enough.
   canRegenerate: boolean
-  capped: boolean
   // When a new one can be asked.
   nextAt: number | null
   onWrite: () => void
 }
 
 // The violet button that writes a new daily summary (1 AI call); its title says why it waits.
-export const RegenerateButton = ({ writing, canRegenerate, capped, nextAt, onWrite }: RegenerateProps) => {
+export const RegenerateButton = ({ writing, canRegenerate, nextAt, onWrite }: RegenerateProps) => {
   const { t } = useTranslation()
   let title = t('dailySummary.upToDate', { time: nextAt === null ? '' : clockTime(nextAt) })
   if (canRegenerate) title = t('dailySummary.writeNew')
-  else if (capped) title = t('dailySummary.capped')
   const label = t(writing ? 'dailySummary.writingShort' : 'dailySummary.regenerate')
   return (
     <Button
@@ -83,14 +81,13 @@ interface WaitingInput {
   writing: boolean
   // A daily summary is there to show.
   shown: boolean
-  capped: boolean
   onWrite: () => void
   t: TFunction
 }
 
 // What the story shows besides a daily summary: loading, writing, nothing yet, or what went wrong. Null once there
 // is one to read.
-export const summaryWaiting = ({ dailySummary, writing, shown, capped, onWrite, t }: WaitingInput) => {
+export const summaryWaiting = ({ dailySummary, writing, shown, onWrite, t }: WaitingInput) => {
   if (!dailySummary || (writing && !shown))
     return (
       <div className={styles.loading} aria-busy="true" role="status">
@@ -123,18 +120,9 @@ export const summaryWaiting = ({ dailySummary, writing, shown, capped, onWrite, 
     <div className={styles.empty}>
       <h2 className={styles.emptyTitle}>{t(error ?? 'dailySummary.pitch')}</h2>
       <p className={styles.emptyText}>{t(error ? 'dailySummary.nothingLost' : 'dailySummary.pitchText')}</p>
-      {dailySummary.status !== 'limited' && (
-        <Button
-          look="ai"
-          icon={SparkleIcon}
-          onClick={onWrite}
-          busy={writing}
-          disabled={capped}
-          className={styles.generate}
-        >
-          {t(action)}
-        </Button>
-      )}
+      <Button look="ai" icon={SparkleIcon} onClick={onWrite} busy={writing} className={styles.generate}>
+        {t(action)}
+      </Button>
     </div>
   )
 }

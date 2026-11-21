@@ -86,7 +86,7 @@ export type SourceSuggestions =
       added: number
       limit: number | null
     }
-  | { status: 'unavailable' | 'not_found' | 'limited' | 'refused' | 'failed' }
+  | { status: 'unavailable' | 'not_found' | 'refused' | 'failed' }
 
 export const suggestSources = (topicId: string, replacing: string | null) =>
   sendJson<SourceSuggestions>('POST', '/sources/suggest', { topicId, replacing })
