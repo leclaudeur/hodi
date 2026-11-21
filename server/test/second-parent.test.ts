@@ -6,8 +6,8 @@ interface Child {
   accountId: number
   profileId: number
   name: string
-  parents: string[]
-  invited: string | null
+  parents: { name: string; handle: string | null; since: number; you: boolean }[]
+  invited: { name: string; handle: string | null } | null
 }
 
 interface Invitation {
@@ -43,12 +43,14 @@ describe('Mon compte › Mes enfants › Parents', () => {
 
   it('invites another adult by its @identifier, never an unknown one, a young one or a stranger’s child', async () => {
     assert.equal((await invite('personne')).status, 404)
-    assert.equal((await invite('zoe')).status, 404)
+    // A young one's account is never a parent, and the parent is told so.
+    assert.equal((await invite('zoe')).status, 409)
     // Sam is no parent of Zoé: Sam cannot invite anyone for her.
     assert.equal((await invite('sam', household.sam)).status, 404)
     const sent = await invite('@sam')
     assert.equal(sent.status, 201)
-    assert.equal(((await sent.json()) as Child).invited, 'sam')
+    // The invited adult's own name, with its @identifier.
+    assert.deepEqual(((await sent.json()) as Child).invited, { name: 'Sam', handle: 'sam' })
     assert.deepEqual(
       (await listOf(household.sam)).invitations.map(entry => [entry.childName, entry.from]),
       [['Zoé', 'Antho']]
@@ -64,7 +66,16 @@ describe('Mon compte › Mes enfants › Parents', () => {
     await invite('sam')
     const accepted = await household.call(path, household.sam, 'POST')
     assert.equal(accepted.status, 200)
-    assert.deepEqual(((await accepted.json()) as Child).parents, ['Antho', 'Sam'])
+    // Its parents the oldest first, with their @identifier and since when; the one asking is « you ».
+    const parents = ((await accepted.json()) as Child).parents
+    assert.deepEqual(
+      parents.map(parent => [parent.name, parent.handle, parent.you]),
+      [
+        ['Antho', household.accounts.get(household.anthoAccount.id)?.handle ?? null, false],
+        ['Sam', 'sam', true]
+      ]
+    )
+    assert.ok(parents.every(parent => parent.since > 0))
     assert.deepEqual((await listOf(household.sam)).invitations, [])
     // Sam has the same rights now: Zoé's rules are Sam's to change too.
     const renamed = await household.call(`/profiles/${zoe.profileId}`, household.sam, 'PATCH', { name: 'Zoé B.' })

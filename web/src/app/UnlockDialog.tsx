@@ -53,7 +53,6 @@ const useUnlock = (profile: Profile) => {
 
 interface PasswordFormProps {
   profile: Profile
-  own: number | null
   state: Unlocking
   // A private profile offers « Ne plus demander sur cet appareil »; a parent's forgotten code does not.
   trustable: boolean
@@ -61,12 +60,12 @@ interface PasswordFormProps {
 
 // A private profile: its person's password, and « Ne plus demander sur cet appareil » on a device of theirs. A parent
 // who forgot their code types their password the same way.
-const PasswordForm = ({ profile, own, state, trustable }: PasswordFormProps) => {
+const PasswordForm = ({ profile, state, trustable }: PasswordFormProps) => {
   const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [trust, setTrust] = useState(false)
-  const theirs = profile.hasAccount && profile.id !== own
-  const label = theirs ? t('profiles.passwordOf', { name: profile.name }) : t('profiles.yourPassword')
+  // The profile's name is right above the field: the field says only what to type.
+  const label = t('profiles.yourPassword')
   return (
     <form
       id="profile-unlock"
@@ -157,7 +156,7 @@ const UnlockDialog = ({ profile, own, onClose }: { profile: Profile; own: number
       {code ? (
         <CodeForm profile={profile} state={state} onForgot={() => setForgot(true)} />
       ) : (
-        <PasswordForm profile={profile} own={own} state={state} trustable={profile.lock !== 'code'} />
+        <PasswordForm profile={profile} state={state} trustable={profile.lock !== 'code'} />
       )}
       <DialogActions>
         <Button onClick={onClose}>{t('common.cancel')}</Button>

@@ -35,7 +35,12 @@ export const mountParentRoutes = (
     const invited = handle ? accounts.byHandle(handle) : null
     // An adult who reads in the young one's household: its rules and profile are read there.
     const here = invited !== null && accounts.profileOf(invited.id) !== null
-    if (!invited || !here || invited.email === null || young.isYoung(invited.id)) {
+    // A teen's or a child's account is never a parent: said apart, so that the parent knows why.
+    if (invited && young.isYoung(invited.id)) {
+      response.status(409).json({ error: 'young_handle' })
+      return
+    }
+    if (!invited || !here || invited.email === null) {
       response.status(404).json({ error: 'unknown_handle' })
       return
     }

@@ -14,9 +14,18 @@ export interface ChildAccount {
   handle: string | null
   // false until a parent gives one: it opens only on a device where a parent is signed in.
   hasPassword: boolean
-  parents: string[]
-  // The @identifier of the adult invited to be its parent too, while it has not answered.
-  invited: string | null
+  // Oldest first; you: the parent looking.
+  parents: ChildParent[]
+  // The adult invited to be its parent too, while it has not answered.
+  invited: { name: string; handle: string | null } | null
+}
+
+export interface ChildParent {
+  accountId: number
+  name: string
+  handle: string | null
+  since: number
+  you: boolean
 }
 
 // Another parent asks this adult to be a young one's parent too.

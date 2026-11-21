@@ -335,7 +335,6 @@
       "resetIntro": "With this code, {{name}} chooses a new password. On their device, {{name}} opens Hodi, chooses <i>I have a code</i> on the sign-in page, types these 8 characters, then the new password. <b>Their other devices are signed out</b>: they sign in again with the new one."
     },
     "wrongPassword": "That password is not the right one.",
-    "passwordOf": "{{name}}’s password",
     "yourPassword": "Password",
     "open": "Open",
     "noAccount": "{{name}} has no account yet. This profile opens once {{name}} makes one with their code.",
@@ -346,13 +345,13 @@
     "trustDevice": "Don’t ask again on this device",
     "addAccount": {
       "title": "Add my account",
-      "intro": "Sign in to find your profile on this device. The accounts already added to <i>Who’s in?</i> stay as they are.",
+      "intro": "Sign in to add an account to this device. The accounts already added to <i>Who’s in?</i> stay as they are.",
       "submit": "Sign in",
       "otherHousehold": "<b>{{email}}</b> is in the <b>{{household}}</b> household, and this device serves the <b>{{here}}</b> household.",
       "recovery": "Recovery code",
       "app": "App code"
     },
-    "forgotCode": "Forgot the code? Your password"
+    "forgotCode": "Forgot the code? The account’s password"
   },
   "limits": {
     "fiveMinutes": "Only 5 minutes of reading left today",
@@ -447,8 +446,6 @@
     "perDayCount": "{{count}} / day",
     "channels": "YouTube channels",
     "devices": "Devices",
-    "ownDevice": "Their device",
-    "ownDeviceHint": "A code, on their tablet or phone",
     "removeDevice": "Remove",
     "removeDeviceLabel": "Remove {{device}}",
     "deviceRemoved": "{{device}} removed",
@@ -893,7 +890,7 @@
     "handle": "Their username",
     "handlePlaceholder": "username",
     "add": "Add",
-    "unknown": "Nobody to send it to with this username.",
+    "unknown": "This account does not exist.",
     "findFailed": "The search failed. Try again."
   },
   "share": {
@@ -2624,7 +2621,7 @@
   },
   "children": {
     "create": {
-      "title": "Create an account",
+      "title": "Add a child",
       "passwordTitle": "{{name}}’s password",
       "button": "Create",
       "done": "{{name}}’s account created",
@@ -2632,8 +2629,8 @@
       "failed": "The account couldn’t be created. Try again."
     },
     "empty": {
-      "title": "No account yet",
-      "text": "Make a teen’s or a child’s account: they sign in with their username."
+      "title": "No child yet",
+      "text": "Add a teen’s or a child’s account: they sign in with their username."
     },
     "password": {
       "label": "Password",
@@ -2644,68 +2641,67 @@
       "title": "{{name}}’s password",
       "intro": "Their devices sign in with <b>@{{handle}}</b> and this password. Those that used the old one sign in again.",
       "confirmTitle": "Change {{name}}’s password?",
-      "confirmText": "Type your own password to confirm.",
+      "confirmText": "To confirm, type the password you sign in with.",
       "saved": "{{name}}’s password saved",
       "actionLabel": "{{name}}’s password"
     },
     "loadFailed": "Couldn’t load your children.",
     "parents": {
       "title": "Parents",
-      "you": "You",
-      "same": "Same rights as you",
-      "leave": "Stop being a parent",
+      "leave": "Step back",
       "waiting": "Invitation sent, waiting for an answer",
       "cancel": "Cancel",
-      "cancelLabel": "Cancel @{{handle}}’s invitation",
-      "second": "Second parent",
-      "secondHint": "Another adult with an account here",
-      "invite": "Invite",
+      "cancelLabel": "Cancel {{name}}’s invitation",
+      "second": "Invite a second parent",
       "inviteTitle": "Invite a parent",
       "inviteIntro": "Their username, from an account that already exists on this server. If they accept, they get the same rights as you over <b>{{name}}</b>.",
       "handle": "Username",
       "handlePlaceholder": "marie",
       "send": "Invite",
-      "sent": "Invitation sent to @{{handle}}",
-      "unknown": "No adult account with this username on this server.",
+      "sent": "Invitation sent to {{name}}",
+      "unknown": "This account does not exist.",
       "already": "This account is a parent already.",
       "full": "Two parents at most.",
       "tooMany": "Too many tries: try again in a minute.",
       "failed": "That didn’t work. Try again.",
       "leaveTitle": "Stop being {{name}}’s parent?",
       "leaveText": "You no longer run <b>{{name}}</b>: their other parent keeps everything. To be a parent again, they will have to invite you.",
-      "left": "You’re no longer {{name}}’s parent"
+      "left": "You’re no longer {{name}}’s parent",
+      "youName": "{{name}} (you)",
+      "since": "parent since {{date}}",
+      "leaveLabel": "Stop being {{name}}’s parent",
+      "young": "This is a teen’s or a child’s account: only an adult can be a parent."
     },
     "invitations": {
       "title": "Requests",
-      "hint": "{{name}} asks you to be their parent too",
-      "answer": "Answer",
-      "answerLabel": "Answer for {{name}}",
-      "dialogTitle": "Parent request",
-      "dialogText": "<b>{{from}}</b> wants you to be <b>{{name}}</b>’s parent too. You’ll have the same rights: their sources, hours, password and deletion.",
       "accept": "Accept",
       "refuse": "Refuse",
       "accepted": "You’re {{name}}’s parent",
       "refused": "Request refused",
-      "failed": "That didn’t work. Try again."
+      "failed": "That didn’t work. Try again.",
+      "row": "<b>{{from}}</b> asks you to be <b>{{name}}</b>’s parent too",
+      "acceptLabel": "Accept being {{name}}’s parent",
+      "refuseLabel": "Refuse being {{name}}’s parent"
     },
     "parentalCode": {
       "section": "On a shared device",
       "title": "Parental code",
       "hintOff": "Not chosen yet",
-      "hintOn": "Asked to open your profile",
+      "hintOn": "Asked to open this profile on a shared device",
       "code": "Code",
-      "codeValue": "6 digits",
-      "changeLabel": "Change your parental code",
-      "dialogTitle": "Your parental code",
-      "dialogIntro": "Six digits, asked to open your profile from <i>Who’s reading?</i> on a device where a teen or a child is signed in. Never on your own devices. Forgotten, your password stands in for it.",
+      "codeValue": "Forgotten? The account’s password stands in",
+      "changeLabel": "Change the parental code",
+      "dialogTitle": "The parental code",
+      "dialogIntro": "Six digits, asked to open this profile from <i>Who’s reading?</i> on a device where a teen or a child is signed in. Never on devices only you use. If forgotten, the account’s password stands in for it.",
       "newCode": "New code",
       "onTitle": "Save this parental code?",
-      "onText": "It will be asked to open your profile from <i>Who’s reading?</i>, on every device where a teen or a child is signed in.",
-      "offTitle": "Turn off your parental code?",
-      "offText": "Your profile will open again without a code from <i>Who’s reading?</i>, on the devices where a teen or a child is signed in.",
+      "onText": "It will be asked to open this profile from <i>Who’s reading?</i>, on every device where a teen or a child is signed in.",
+      "offTitle": "Turn off the parental code?",
+      "offText": "This profile will open again without a code from <i>Who’s reading?</i>, on the devices where a teen or a child is signed in.",
       "off": "Turn off",
       "hintAdvised": "Advised, not chosen yet"
-    }
+    },
+    "listTitle": "Children"
   },
   "catalogue": {
     "title": "Catalogue",

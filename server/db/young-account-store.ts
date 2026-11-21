@@ -21,10 +21,19 @@ export interface YoungAccount {
   handle: string | null
   // false until a parent gives it one: it then opens only on a device where a parent is signed in.
   hasPassword: boolean
-  // Its parents' names, the one asking included.
-  parents: string[]
-  // The @identifier of the adult invited to be its parent too, while it has not answered.
-  invited: string | null
+  // Its parents, the oldest first, the one asking included (you).
+  parents: YoungParent[]
+  // The adult invited to be its parent too, while it has not answered.
+  invited: { name: string; handle: string | null } | null
+}
+
+export interface YoungParent {
+  accountId: number
+  name: string
+  handle: string | null
+  // When they became its parent.
+  since: number
+  you: boolean
 }
 
 interface YoungRow {
@@ -42,6 +51,13 @@ interface YoungRow {
   invited: string | null
 }
 
+interface ParentRow {
+  accountId: number
+  name: string
+  handle: string | null
+  since: number
+}
+
 export interface NewYoungAccount {
   name: string
   color: ProfileColor
@@ -56,12 +72,15 @@ const SELECT_YOUNG = `
   SELECT u.id AS account_id, p.id AS profile_id, p.name, p.color, p.kind, p.avatar,
     CASE WHEN p.photo IS NULL THEN NULL ELSE p.photo_version END AS photo_version, u.handle, u.has_password,
     u.password_hash,
-    (SELECT group_concat(pp.name, char(31)) FROM account_parents ap
-      JOIN profiles pp ON pp.user_id = ap.parent_id WHERE ap.child_id = u.id ORDER BY ap.created_at) AS parents,
-    (SELECT iu.handle FROM parent_invitations pi JOIN users iu ON iu.id = pi.to_id WHERE pi.child_id = u.id) AS invited
+    (SELECT json_group_array(json_object('accountId', ap.parent_id, 'name', pp.name, 'handle', pu.handle,
+        'since', ap.created_at))
+      FROM (SELECT * FROM account_parents WHERE child_id = u.id ORDER BY created_at) ap
+      JOIN profiles pp ON pp.user_id = ap.parent_id JOIN users pu ON pu.id = ap.parent_id) AS parents,
+    (SELECT json_object('name', ip.name, 'handle', iu.handle) FROM parent_invitations pi
+      JOIN users iu ON iu.id = pi.to_id JOIN profiles ip ON ip.user_id = iu.id WHERE pi.child_id = u.id) AS invited
   FROM users u JOIN profiles p ON p.user_id = u.id`
 
-const toYoung = (row: YoungRow): YoungAccount => ({
+const toYoung = (row: YoungRow, viewer: number): YoungAccount => ({
   accountId: row.account_id,
   profileId: row.profile_id,
   name: row.name,
@@ -71,8 +90,11 @@ const toYoung = (row: YoungRow): YoungAccount => ({
   photoVersion: row.photo_version,
   handle: row.handle,
   hasPassword: row.has_password === 1 && row.password_hash !== NO_PASSWORD,
-  parents: row.parents ? row.parents.split('\u001f') : [],
-  invited: row.invited
+  parents: ((row.parents ? JSON.parse(row.parents) : []) as ParentRow[]).map(parent => ({
+    ...parent,
+    you: parent.accountId === viewer
+  })),
+  invited: row.invited ? (JSON.parse(row.invited) as YoungAccount['invited']) : null
 })
 
 export class YoungAccountStore {
@@ -93,7 +115,7 @@ export class YoungAccountStore {
         `${SELECT_YOUNG} JOIN account_parents mine ON mine.child_id = u.id AND mine.parent_id = ? ORDER BY p.created_at, p.id`
       )
       .all(parentId) as unknown as YoungRow[]
-    return rows.map(toYoung)
+    return rows.map(row => toYoung(row, parentId))
   }
 
   // One of the parent's, or null.
