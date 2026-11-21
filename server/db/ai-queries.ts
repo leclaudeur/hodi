@@ -97,21 +97,6 @@ export const aiCalls = (db: Database, since: number): AiCall[] => {
   }))
 }
 
-// "Remettre à 0": the calls since then, of one kind or all, of one profile or all, cleared to that level (never
-// lowered).
-export const clearAiCalls = (
-  db: Database,
-  since: number,
-  level: AiCleared,
-  kind: AiCallKind | null,
-  profileId: number | null
-) => {
-  db.prepare(
-    `UPDATE ai_calls SET cleared = ? WHERE at > ? AND cleared < ?
-       AND (? IS NULL OR kind = ?) AND (? IS NULL OR profile_id = ?)`
-  ).run(CLEARED_LEVELS[level], since, CLEARED_LEVELS[level], kind, kind, profileId, profileId)
-}
-
 // An article's summary in the given language, if the owner's AI wrote one.
 export const getSummary = (db: Database, id: string, language: Language, owner: string): string[] | null => {
   const row = db

@@ -1520,9 +1520,6 @@
       }
     }
   },
-  "pin": {
-    "change": "Changer"
-  },
   "addSource": {
     "videos": "Ses vidéos arrivent dans Vidéos.",
     "readable_one": "{{count}} article sur {{tried}} s’ouvre dans Hodi.",
@@ -2579,10 +2576,6 @@
       "message": "Ce compte est protégé par la validation en deux étapes. Tape le code à 6 chiffres que l’app affiche pour Hodi.",
       "button": "Continuer"
     }
-  },
-  "seo": {
-    "title": "Hodi - L’actu pour toute la famille, gratuite et partout",
-    "description": "Les sites d’actualités que tu préfères, triés par thème et réunis au même endroit. Un compte pour chacun, et on partage ce qui vaut la peine d’être lu."
   },
   "noHousehold": {
     "title": "Tu n’as plus de foyer",
