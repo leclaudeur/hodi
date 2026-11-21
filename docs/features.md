@@ -25,7 +25,7 @@ device at once, and with any other adult on the server by their @username. A tee
 ## [AI, if you like](features/ai.md)
 
 With a key from an AI provider, Hodi sums up an article, answers a question about it or writes the day's summary.
-Every request answers a click on a purple button, and daily caps keep the credits safe.
+Every request answers a click on a purple button, paid with the person's own key and counted in their usage.
 
 ## [Statistics and the game](features/game.md)
 

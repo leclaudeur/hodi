@@ -2,7 +2,7 @@ import { ArrowUp } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { type FormEvent, useState } from 'react'
 import { type AnswerSource, MAX_QUESTION_LENGTH, UnauthorizedError, askQuestion } from '../../api.ts'
-import { refreshAiUsage, useAiCapped } from '../../lib/ai-left.ts'
+import { refreshAiUsage } from '../../lib/ai-left.ts'
 import { hostOf } from '../../lib/format.ts'
 import SparkleIcon from '../../ui/SparkleIcon.tsx'
 import styles from './AiCards.module.css'
@@ -68,12 +68,11 @@ const QuestionsCard = ({ articleId, onUnauthorized }: QuestionsCardProps) => {
   const [exchanges, setExchanges] = useState<Exchange[]>([])
   const [question, setQuestion] = useState('')
   const asking = exchanges.some(exchange => exchange.answer === null && exchange.error === null)
-  const capped = useAiCapped('question')
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     const asked = question.trim()
-    if (!asked || asking || capped) return
+    if (!asked || asking) return
 
     setQuestion('')
     setExchanges(previous => [...previous, { question: asked, answer: null, sources: [], error: null }])
@@ -121,16 +120,15 @@ const QuestionsCard = ({ articleId, onUnauthorized }: QuestionsCardProps) => {
             type="text"
             value={question}
             onChange={event => setQuestion(event.target.value)}
-            placeholder={t(capped ? 'questions.capped' : 'questions.placeholder')}
+            placeholder={t('questions.placeholder')}
             aria-label={t('questions.yours')}
             maxLength={MAX_QUESTION_LENGTH}
-            disabled={capped}
             enterKeyHint="send"
           />
           <button
             className={styles.send}
             type="submit"
-            disabled={asking || capped || question.trim() === ''}
+            disabled={asking || question.trim() === ''}
             aria-label={t('questions.send')}
           >
             <ArrowUp size={18} aria-hidden="true" />

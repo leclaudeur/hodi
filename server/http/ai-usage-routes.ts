@@ -1,8 +1,6 @@
 import express from 'express'
 import { currentHouseholdId } from '../db/household-scope.ts'
-import type { AiCallKind } from '../db/ai-queries.ts'
 import { type NewsService } from '../news/news-service.ts'
-import { AI_KINDS } from '../news/ai-ledger.ts'
 import type { PluginRegistry } from '../plugins/registry.ts'
 import { profileIdOf, requireAdmin } from './profile-routes.ts'
 
@@ -10,21 +8,9 @@ import { profileIdOf, requireAdmin } from './profile-routes.ts'
 export const aiUsageRoutes = ({ news, plugins }: { news: NewsService; plugins?: PluginRegistry }) => {
   const router = express.Router()
 
-  // Mon compte › IA et crédits: the reader's own calls against its own caps, on its own key.
+  // Mon compte › IA et crédits: the reader's own calls of the last 24 hours, on its own key.
   router.get('/ai-usage', (_request, response) => {
     response.json(news.aiUsage(profileIdOf(response)))
-  })
-
-  // « Remettre à 0 »: the reader's own calls, one kind or all.
-  router.post('/ai-usage/reset', (request, response) => {
-    const { kind } = (request.body ?? {}) as { kind?: unknown }
-    if (!(kind === undefined || AI_KINDS.includes(kind as AiCallKind))) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    const profileId = profileIdOf(response)
-    news.resetAiUsage({ kind: (kind as AiCallKind | undefined) ?? null, profileId })
-    response.json(news.aiUsage(profileId))
   })
 
   if (plugins) {

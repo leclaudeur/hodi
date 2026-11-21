@@ -2,28 +2,16 @@ import type { PluginTranslations } from '../plugins/plugin-texts.ts'
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { ArticleResult, FeedItem, SourceStatus } from './news.ts'
 
-// The reader's calls to the API in the last 24 hours, on its own key, against each daily cap.
+// The reader's calls to the API in the last 24 hours, on its own key. No cap: the key is theirs.
 export interface AiUsage {
   // False without a key: no AI at all.
   available: boolean
-  kinds: { kind: 'summary' | 'question' | 'dailySummary' | 'sources' | 'plugin'; used: number; limit: number }[]
+  kinds: { kind: 'summary' | 'question' | 'dailySummary' | 'sources' | 'plugin'; used: number }[]
 }
 
 export type AiKind = AiUsage['kinds'][number]['kind']
 
 export const getAiUsage = () => getJson<AiUsage>('/ai-usage')
-
-// « Remettre à 0 »: the reader's own calls, one kind or all (no kind).
-export const resetAiUsage = async (reset: { kind?: AiKind }): Promise<AiUsage> => {
-  const response = await fetch('/api/ai-usage/reset', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(reset)
-  })
-  if (response.status === 401) throw new UnauthorizedError('Session expired')
-  if (!response.ok) throw new Error(`POST /ai-usage/reset failed with status ${response.status}`)
-  return (await response.json()) as AiUsage
-}
 
 // The admin's « Plugins »: the active plugins whose AiButton may ask a reader's AI, each with the admin's calls of the
 // last 24 hours and whether the household lets it.

@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { refreshAiUsage, useAiAvailable, useAiCapped } from '../lib/ai-left.ts'
+import { refreshAiUsage, useAiAvailable } from '../lib/ai-left.ts'
 import { useCurrentProfile } from '../lib/profiles.ts'
 import { showError } from '../lib/toast.ts'
 import Button from '../ui/Button.tsx'
@@ -29,14 +29,12 @@ interface AiButtonProps {
 const ERRORS: AiButtonError[] = ['unavailable', 'off', 'limited', 'refused', 'failed']
 
 // The only way a plugin reaches the household's AI: Hodi's violet button, so a click is always a person's, on a button
-// that looks like every other one that spends credits. Not shown to a young profile, nor without AI; turned off once
-// the day's plugin cap is reached.
+// that looks like every other one that spends credits. Not shown to a young profile, nor without AI.
 const AiButton = ({ action, input = null, onAnswer, onError, children, compact, wide, disabled }: AiButtonProps) => {
   const { t } = useTranslation()
   const id = usePluginId()
   const profile = useCurrentProfile()
   const available = useAiAvailable()
-  const capped = useAiCapped('plugin')
   const [busy, setBusy] = useState(false)
 
   if (profile?.kind !== 'adult' || available === false) return null
@@ -75,8 +73,7 @@ const AiButton = ({ action, input = null, onAnswer, onError, children, compact, 
       busy={busy}
       compact={compact}
       wide={wide}
-      disabled={disabled || capped}
-      title={capped ? t('plugins.aiButton.limited') : undefined}
+      disabled={disabled}
       onClick={() => void click()}
     >
       {children}

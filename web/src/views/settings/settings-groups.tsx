@@ -24,7 +24,7 @@ import { useMyRequests } from '../../lib/my-requests.ts'
 import { useNotificationSettings } from '../../lib/notifications.ts'
 import { usePreferences } from '../../lib/preferences.ts'
 import { isYoung, useProfiles } from '../../lib/profiles.ts'
-import { callsLeft, sourceState, useAiUsage, useSourceStatuses } from '../../lib/settings-data.ts'
+import { callsUsed, sourceState, useAiUsage, useSourceStatuses } from '../../lib/settings-data.ts'
 import {
   HISTORY_HREF,
   SERVER_HREF,
@@ -168,20 +168,22 @@ const yourGroups = (data: GroupData): Group[] => {
   ]
 }
 
+// The line under IA et crédits: the calls of the last 24 hours, or that there is no key.
+const aiHint = ({ t, usage }: GroupData) => {
+  if (!usage) return t('settings.hints.ai')
+  return usage.available ? t('settings.hints.callsUsed', { count: callsUsed(usage) }) : t('settings.hints.aiOff')
+}
+
 // The account's own key and its calls of the day, on Mon compte.
-const aiEntry = ({ t, usage, young }: GroupData): Entry => ({
+const aiEntry = (data: GroupData): Entry => ({
   id: 'ai',
   href: accountHref('ai'),
   leaves: true,
-  label: t('settings.nav.ai'),
-  hint: usage
-    ? usage.available
-      ? t('settings.hints.callsLeft', { count: callsLeft(usage) })
-      : t('settings.hints.aiOff')
-    : t('settings.hints.ai'),
+  label: data.t('settings.nav.ai'),
+  hint: aiHint(data),
   icon: 'ai',
   // A young profile has no account, so no key.
-  hidden: young
+  hidden: data.young
 })
 
 // This device, then the server and Hodi itself.
