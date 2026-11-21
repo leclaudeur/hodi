@@ -79,7 +79,7 @@ export class NewsAi {
     if (!suggest) return { status: 'unavailable' }
     const topic = this.#options.catalog().topics.find(candidate => candidate.id === topicId)
     if (!topic) return { status: 'not_found' }
-    this.#options.ledger.record('sources', profileId, this.#options.now())
+    if (!this.#options.ledger.take('sources', profileId, this.#options.now())) return { status: 'limited' }
     try {
       const language = this.#options.languageOf(profileId)
       const languages = [...new Set([language, this.#options.householdLanguage()])]
@@ -99,7 +99,7 @@ export class NewsAi {
   async askForPlugin(pluginId: string, profileId: number, question: PluginQuestion): Promise<PluginAskResult> {
     const ask = this.toolsOf(profileId)?.askForPlugin
     if (!ask) return { status: 'unavailable' }
-    this.#options.ledger.record('plugin', profileId, this.#options.now(), pluginId)
+    if (!this.#options.ledger.take('plugin', profileId, this.#options.now(), pluginId)) return { status: 'limited' }
     try {
       return { status: 'ok', text: await ask(question) }
     } catch (error) {
@@ -128,7 +128,7 @@ export class NewsAi {
     if (loaded.status !== 'ok') return { status: loaded.status }
 
     const now = this.#options.now()
-    this.#options.ledger.record('question', profileId, now)
+    if (!this.#options.ledger.take('question', profileId, now)) return { status: 'limited' }
 
     const { item, article } = loaded
 
@@ -202,7 +202,7 @@ export class NewsAi {
     const started = this.#summaries.get(key)
     if (started) return started.result
 
-    this.#options.ledger.record('summary', profileId, now)
+    if (!this.#options.ledger.take('summary', profileId, now)) return { status: 'limited' }
 
     const { item, article } = loaded
     const input = { title: item.title, sourceName: item.sourceName, contentHtml: article.contentHtml, language }

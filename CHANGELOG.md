@@ -18,8 +18,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   @username and the password the parent chooses. The young one signs in with that username and password; the parent
   changes the password from their card. Existing teen and child profiles become accounts linked to the household's
   adults, with no password until a parent chooses one.
-- **AI without caps.** Each account pays with its own key, so nothing stops its purple buttons any more: My
-  account › AI shows its calls of the last 24 hours, with nothing to reset. A plugin keeps its own hourly limit.
+- **AI without caps.** Each account pays with its own key, so no daily cap stops its purple buttons any more: My
+  account › AI shows its calls of the last 24 hours, with nothing to reset. Only a runaway guard stays: past 30 AI
+  calls in a minute, a person's next ones wait for the minute to pass. A plugin keeps its own hourly limit.
 - **Sources as cards.** Settings › Sources shows two grids of cards, the base sources then the account's own, the
   first card adding one. The catalogue shows the same cards by topic, in the topics' colours, searched and sorted
   apart (alphabetical or by readers, either way); a source already in My sources stays in place, ticked. The

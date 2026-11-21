@@ -2,6 +2,10 @@ import type { AiCall, AiCallKind } from '../db/ai-queries.ts'
 import type { NewsStore } from '../db/news-store.ts'
 
 const DAY_MS = 24 * 60 * 60 * 1000
+const MINUTE_MS = 60 * 1000
+
+// No cap on a day, but a runaway guard: far more than a person clicks in a minute, far less than a loop would.
+export const AI_CALLS_PER_MINUTE = 30
 
 export const AI_KINDS = ['summary', 'question', 'dailySummary', 'sources', 'plugin'] as const
 
@@ -11,7 +15,7 @@ export interface AiUsage {
   kinds: { kind: AiCallKind; used: number }[]
 }
 
-// The AI calls of the last day, by whom: everyone pays with their own key and sees what they used, with no cap.
+// The AI calls of the last day, by whom: everyone pays with their own key and sees what they used, with no daily cap.
 export class AiLedger {
   #calls: AiCall[] = []
   readonly #store: NewsStore | undefined
@@ -25,6 +29,14 @@ export class AiLedger {
   usage(profileId: number, now: number, available: boolean): AiUsage {
     const calls = this.#recent(now)
     return { available, kinds: AI_KINDS.map(kind => ({ kind, used: this.#used(calls, kind, profileId) })) }
+  }
+
+  // Records the call, unless this person already made AI_CALLS_PER_MINUTE in the last minute: then false, nothing sent.
+  take(kind: AiCallKind, profileId: number, at: number, pluginId?: string) {
+    const lastMinute = this.#calls.filter(call => call.profileId === profileId && call.at > at - MINUTE_MS)
+    if (lastMinute.length >= AI_CALLS_PER_MINUTE) return false
+    this.record(kind, profileId, at, pluginId)
+    return true
   }
 
   record(kind: AiCallKind, profileId: number, at: number, pluginId?: string) {
