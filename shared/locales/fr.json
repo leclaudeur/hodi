@@ -841,7 +841,8 @@
       "unreadable": "Cet article ne peut pas être résumé.",
       "unknown": "Cet article n’est plus dans les flux.",
       "unavailable": "Les résumés IA ne sont pas activés sur le serveur.",
-      "failed": "Le résumé n’a pas pu être généré."
+      "failed": "Le résumé n’a pas pu être généré.",
+      "limited": "Trop de demandes à l’IA en une minute. Réessaie dans un instant."
     }
   },
   "questions": {
@@ -856,7 +857,8 @@
       "unreadable": "Cet article ne peut pas être analysé.",
       "unknown": "Cet article n’est plus dans les flux.",
       "unavailable": "Les questions IA ne sont pas activées sur le serveur.",
-      "noAnswer": "Pas de réponse pour le moment. Réessaie."
+      "noAnswer": "Pas de réponse pour le moment. Réessaie.",
+      "limited": "Trop de demandes à l’IA en une minute. Réessaie dans un instant."
     }
   },
   "shareMenu": {
@@ -914,7 +916,8 @@
     "bubble": "Résumé",
     "errors": {
       "failed": "Le Résumé du jour n’a pas pu être écrit.",
-      "refused": "L’IA a refusé d’écrire le Résumé du jour."
+      "refused": "L’IA a refusé d’écrire le Résumé du jour.",
+      "limited": "Trop de demandes à l’IA en une minute. Réessaie dans un instant."
     },
     "yesterdayAt": "HIER {{time}}",
     "writingShort": "Écriture…",
@@ -1585,7 +1588,8 @@
       "unavailable": "L’IA n’est pas activée sur ce serveur.",
       "not_found": "Ce thème n’existe plus.",
       "refused": "L’IA n’a pas pu proposer de sources pour ce thème.",
-      "failed": "Les suggestions n’ont pas pu être faites. Réessaie dans un instant."
+      "failed": "Les suggestions n’ont pas pu être faites. Réessaie dans un instant.",
+      "limited": "Trop de demandes à l’IA en une minute. Réessaie dans un instant."
     },
     "noFeed": "Aucun site proposé n’a de flux lisible. Réessaie plus tard.",
     "last": "Dernier article : {{title}}"
@@ -1969,7 +1973,7 @@
     "aiButton": {
       "unavailable": "L’IA n’est pas activée pour ce foyer.",
       "off": "L’admin du foyer a coupé l’IA de ce plugin.",
-      "limited": "Ce plugin a assez demandé à l’IA pour cette heure. Réessaie plus tard.",
+      "limited": "Trop de demandes à l’IA pour l’instant. Réessaie plus tard.",
       "refused": "L’IA n’a pas voulu répondre à cette demande.",
       "failed": "La demande n’a pas abouti. Réessaie dans un instant."
     },

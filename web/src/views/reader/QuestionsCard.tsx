@@ -14,9 +14,10 @@ interface Exchange {
   error: ErrorKey | null
 }
 
-type ErrorKey = `questions.errors.${'refused' | 'unreadable' | 'unknown' | 'unavailable' | 'noAnswer'}`
+type ErrorKey = `questions.errors.${'limited' | 'refused' | 'unreadable' | 'unknown' | 'unavailable' | 'noAnswer'}`
 
 const errorKeys: Record<string, ErrorKey> = {
+  limited: 'questions.errors.limited',
   refused: 'questions.errors.refused',
   unreadable: 'questions.errors.unreadable',
   unknown: 'questions.errors.unknown',

@@ -3,6 +3,7 @@ import { describe, it } from 'node:test'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService, TOPIC_PAGE_SIZE } from '../news/news-service.ts'
 import { type AiTools } from '../news/news-types.ts'
+import { AI_CALLS_PER_MINUTE } from '../news/ai-ledger.ts'
 import type { DailySummaryStory } from '../news/daily-summary.ts'
 import { type SummaryInput, SummaryRefusedError, articleText } from '../news/summarizer.ts'
 import { itemId } from '../news/text.ts'
@@ -54,6 +55,11 @@ const feeds = { 'https://alpha.example/feed': alphaFeed, 'https://beta.example/f
 
 // More calls than any daily cap ever allowed: each reader pays with its own key, and nothing stops it.
 const MANY = 120
+// Calls a person may click through in a day: a few seconds apart, under the per-minute runaway guard.
+const spacedClock = () => {
+  let at = NOW
+  return { now: () => at, next: () => (at += 3_000) }
+}
 
 describe('NewsService', () => {
   it('does not fetch a source every profile turned off', async () => {
@@ -517,12 +523,12 @@ topics:
   })
 
   describe('summaries', () => {
-    const dailySummarySetup = (summarize: (input: SummaryInput) => Promise<string[]>) => {
+    const dailySummarySetup = (summarize: (input: SummaryInput) => Promise<string[]>, now = () => NOW) => {
       const fake = fakeFetch({ ...feeds, 'https://beta.example/elections': articlePage('Élections') })
       return new NewsService(catalog, {
         fetchText: fake.fetchText,
         summarize,
-        now: () => NOW,
+        now,
         log: () => {}
       })
     }
@@ -598,14 +604,18 @@ topics:
 
     it('never stops calling the API, and counts each reader’s calls apart', async () => {
       let calls = 0
+      const clock = spacedClock()
       const news = dailySummarySetup(async () => {
         calls++
         throw new Error('API down')
-      })
+      }, clock.now)
       await news.getTopic('world')
       const id = idOf('https://beta.example/elections')
 
-      for (let attempt = 0; attempt < MANY; attempt++) await news.getSummary(id, 1)
+      for (let attempt = 0; attempt < MANY; attempt++) {
+        await news.getSummary(id, 1)
+        clock.next()
+      }
       assert.equal(calls, MANY)
       // Another reader pays with its own key: its calls are its own.
       await news.getSummary(id, 2)
@@ -616,6 +626,33 @@ topics:
         { kind: 'summary', used: MANY }
       )
       assert.equal(news.aiUsage(2).kinds.find(kind => kind.kind === 'summary')!.used, 1)
+    })
+
+    it('stops a runaway: past 30 calls in a minute, nothing is sent until the minute has passed', async () => {
+      let calls = 0
+      let at = NOW
+      const news = dailySummarySetup(
+        async () => {
+          calls++
+          throw new Error('API down')
+        },
+        () => at
+      )
+      await news.getTopic('world')
+      const id = idOf('https://beta.example/elections')
+
+      for (let attempt = 0; attempt < AI_CALLS_PER_MINUTE; attempt++) await news.getSummary(id, 1)
+      assert.deepEqual(await news.getSummary(id, 1), { status: 'limited' })
+      assert.equal(calls, AI_CALLS_PER_MINUTE)
+      // Not counted: nothing was sent.
+      assert.equal(news.aiUsage(1).kinds.find(kind => kind.kind === 'summary')!.used, AI_CALLS_PER_MINUTE)
+      // Someone else is not held back.
+      await news.getSummary(id, 2)
+      assert.equal(calls, AI_CALLS_PER_MINUTE + 1)
+
+      at += 60_000
+      await news.getSummary(id, 1)
+      assert.equal(calls, AI_CALLS_PER_MINUTE + 2)
     })
 
     it("uses each reader's own key, and none for a reader without one", async () => {
@@ -665,8 +702,9 @@ topics:
   })
 
   describe('questions', () => {
-    it('answers questions about an article, within a daily cap', async () => {
+    it('answers questions about an article, with no daily cap', async () => {
       const asked: string[] = []
+      const clock = spacedClock()
       const fake = fakeFetch({ ...feeds, 'https://beta.example/elections': articlePage('Élections') })
       const news = new NewsService(catalog, {
         fetchText: fake.fetchText,
@@ -675,7 +713,7 @@ topics:
           if (question === 'refus') throw new SummaryRefusedError('no')
           return { answer: `${title} : réponse.`, sources: [{ url: 'https://wiki.example/x', title: 'X' }] }
         },
-        now: () => NOW,
+        now: clock.now,
         log: () => {}
       })
       await news.getTopic('world')
@@ -689,7 +727,10 @@ topics:
       assert.deepEqual(await news.answerQuestion(id, 'refus'), { status: 'refused' })
       assert.deepEqual(await news.answerQuestion('AAAAAAAAAAAAAAAA', 'Qui ?'), { status: 'unknown' })
 
-      for (let attempt = 2; attempt < MANY; attempt++) await news.answerQuestion(id, 'Encore ?')
+      for (let attempt = 2; attempt < MANY; attempt++) {
+        await news.answerQuestion(id, 'Encore ?')
+        clock.next()
+      }
       assert.equal((await news.answerQuestion(id, 'Encore une ?')).status, 'ok')
       assert.equal(asked.length, MANY + 1)
       assert.equal((await news.answerQuestion(id, 'Et Léa ?', 2)).status, 'ok')
@@ -699,15 +740,16 @@ topics:
   describe('plugin questions', () => {
     const QUESTION = { system: '', prompt: 'Résume', maxTokens: 100 }
 
-    it('asks for a plugin within the plugin caps, and counts each plugin', async () => {
+    it('asks for a plugin with no daily cap, and counts each plugin', async () => {
       const asked: unknown[] = []
       const db = openDatabase(':memory:')
+      const clock = spacedClock()
       let ai: AiTools | null = null
       const news = new NewsService(catalog, {
         fetchText: fakeFetch(feeds).fetchText,
         aiOf: () => ai,
         store: new NewsStore(db),
-        now: () => NOW,
+        now: clock.now,
         log: () => {}
       })
       assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'unavailable' })
@@ -722,7 +764,10 @@ topics:
       assert.equal(news.pluginAiLeft(1), true)
       assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'ok', text: 'Oui.' })
       assert.deepEqual(asked, [QUESTION])
-      for (let call = 1; call < MANY; call++) await news.askForPlugin('other', 1, QUESTION)
+      for (let call = 1; call < MANY; call++) {
+        await news.askForPlugin('other', 1, QUESTION)
+        clock.next()
+      }
       // No daily cap: only the plugin's own hourly one (plugins/ai.ts) stops it.
       assert.equal(news.pluginAiLeft(1), true)
       assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'ok', text: 'Oui.' })
@@ -759,15 +804,16 @@ topics:
   })
 
   describe('source suggestions', () => {
-    it('asks for sites in a topic, within a small daily cap', async () => {
+    it('asks for sites in a topic, with no daily cap', async () => {
       const asked: { topic: string; replacing: string | null }[] = []
+      const clock = spacedClock()
       const news = new NewsService(catalog, {
         fetchText: fakeFetch(feeds).fetchText,
         suggestSources: async ({ topic, replacing }) => {
           asked.push({ topic, replacing })
           return [{ name: 'Gamma', url: 'https://gamma.example/', reason: 'Sérieux.' }]
         },
-        now: () => NOW,
+        now: clock.now,
         log: () => {}
       })
 
@@ -778,7 +824,10 @@ topics:
       assert.deepEqual(asked, [{ topic: 'Monde', replacing: 'Beta' }])
       assert.deepEqual(await news.suggestSources('nope', 1, { current: [], replacing: null }), { status: 'not_found' })
 
-      for (let call = 1; call < MANY; call++) await news.suggestSources('world', 1, { current: [], replacing: null })
+      for (let call = 1; call < MANY; call++) {
+        await news.suggestSources('world', 1, { current: [], replacing: null })
+        clock.next()
+      }
       assert.equal((await news.suggestSources('world', 1, { current: [], replacing: null })).status, 'ok')
       assert.equal(asked.length, MANY + 1)
     })

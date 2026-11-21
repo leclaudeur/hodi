@@ -56,7 +56,8 @@ export const getArticle = async (id: string): Promise<ArticleResult> => {
 
 // failed covers a server or network error: trying again may work.
 export type SummaryResult =
-  { status: 'ok'; points: string[] } | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' }
+  | { status: 'ok'; points: string[] }
+  | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' | 'limited' }
 
 // Asks the AI for the key points of an article: the server calls the API once per article.
 export const summarizeArticle = async (id: string): Promise<SummaryResult> => {
@@ -81,7 +82,7 @@ export interface AnswerSource {
 
 export type AnswerResult =
   | { status: 'ok'; answer: string; sources: AnswerSource[] }
-  | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' }
+  | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' | 'limited' }
 
 export const MAX_QUESTION_LENGTH = 300
 
@@ -117,7 +118,7 @@ export interface DailySummaryPoint {
 // none: no daily summary written lately. pending: the server is still gathering the front page, ask again shortly.
 export type DailySummaryResult =
   | { status: 'ok'; points: DailySummaryPoint[]; generatedAt: string }
-  | { status: 'unavailable' | 'none' | 'pending' | 'failed' | 'refused' }
+  | { status: 'unavailable' | 'none' | 'pending' | 'failed' | 'refused' | 'limited' }
 
 // "Le Résumé du jour": the day's news, a paragraph per topic, written by the AI from the front page.
 // Reading the last one is free.
