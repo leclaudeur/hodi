@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 import {
   Baby,
+  BookImage,
   Bot,
   Car,
   Clapperboard,
@@ -20,6 +21,7 @@ import {
   PawPrint,
   Plane,
   Radio,
+  ShieldCheck,
   Shirt,
   Sofa,
   Trophy,
@@ -49,7 +51,9 @@ const ICONS: Record<string, LucideIcon> = {
   family: Baby,
   fashion: Shirt,
   climate: Leaf,
-  animals: PawPrint
+  animals: PawPrint,
+  cybersecurity: ShieldCheck,
+  'manga-anime': BookImage
 }
 
 // A topic's icon, decorative: the topic's name is always written beside it.

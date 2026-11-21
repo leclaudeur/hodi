@@ -85,7 +85,10 @@ const CataloguePage = () => {
     if (young) window.location.replace(settingsHref('sources'))
   }, [young])
 
-  const parts = catalogue.entries ? partsOf(catalogue.entries, catalogue.topics) : []
+  // Its topics in alphabetical order, in the sidebar as in the menu.
+  const parts = catalogue.entries
+    ? partsOf(catalogue.entries, catalogue.topics).sort((a, b) => a.label.localeCompare(b.label, getLanguage()))
+    : []
   const asked = route.name === 'catalogue' ? route.part : null
   const current = parts.find(topic => topic.id === asked)?.id ?? parts[0]?.id ?? ''
   const search = searches[current] ?? ''
