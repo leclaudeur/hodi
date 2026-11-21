@@ -57,7 +57,6 @@ const ParentInvitations = ({ invitations, onAnswered }: ParentInvitationsProps) 
               <RowButton
                 label={t('children.invitations.accept')}
                 ariaLabel={t('children.invitations.acceptLabel', { name: invitation.childName })}
-                look="primary"
                 icon={Check}
                 busy={busy === invitation.childId}
                 disabled={busy !== null}
