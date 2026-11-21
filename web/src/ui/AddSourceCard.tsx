@@ -17,8 +17,8 @@ const AddSourceCard = ({ title, text, label, tour, onAdd }: AddSourceCardProps) 
     <span className={styles.emptyAvatar} aria-hidden="true" />
     <h3 className={styles.name}>{title}</h3>
     <span className={styles.emptyLine}>{text}</span>
-    <span className={styles.actions}>
-      <Button compact icon={Plus} onClick={onAdd} data-tour={tour}>
+    <span className={styles.footer}>
+      <Button compact look="primary" icon={Plus} onClick={onAdd} data-tour={tour}>
         {label}
       </Button>
     </span>

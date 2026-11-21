@@ -1,13 +1,12 @@
-import { ArrowLeftRight, ExternalLink, Minus, MoreHorizontal, Tags, Trash2, TriangleAlert } from 'lucide-react'
+import { ArrowLeftRight, ExternalLink, ListMinus, Moon, Tags, Trash2, TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { SourceStatus } from '../../../api.ts'
 import { cardTopicOf } from '../../../lib/source-card.ts'
 import { sourceState } from '../../../lib/settings-data.ts'
-import Button from '../../../ui/Button.tsx'
-import Menu, { MenuItem } from '../../../ui/Menu.tsx'
 import RoundButton from '../../../ui/RoundButton.tsx'
 import SourceCard from '../../../ui/SourceCard.tsx'
 import styles from '../../../ui/SourceCard.module.css'
+import SourceReaders from '../../../ui/SourceReaders.tsx'
 
 export interface MySourceActions {
   replace: (() => void) | null
@@ -22,67 +21,77 @@ interface MySourceCardProps extends MySourceActions {
   topics: { id: string; label: string }[]
   // The topics filtered on: the card shows one of them first.
   chosenTopics: string[]
-  // Little read lately: said in the corner, and « Remplacer » offered.
+  // Little read lately: said on its logo, and « Remplacer » offered.
   low: boolean
-  open: boolean
-  onMore: (open: boolean) => void
   onTakeOut: () => void
 }
 
-// Replace, change its topics, delete: the rarer actions, in a "⋯" menu beside the card's buttons.
-const MoreMenu = ({ source, replace, retopic, deletable, removing, onRemove, open, onMore }: MySourceCardProps) => {
+// What is wrong with it, on its logo: a feed that fails (red), or a source little read (grey); its title says what.
+const Badge = ({ source, low }: { source: SourceStatus; low: boolean }) => {
   const { t } = useTranslation()
-  if (!replace && !retopic && !deletable) return null
-  const then = (action: () => void) => () => {
-    onMore(false)
-    action()
+  if (sourceState(source) === 'error') {
+    const title = source.error ? t('sources.errorTitle', { error: source.error }) : t('sources.status.error')
+    return (
+      <span className={`${styles.badge} ${styles.badgeError}`} title={title} role="img" aria-label={title}>
+        <TriangleAlert size={11} aria-hidden="true" />
+      </span>
+    )
   }
-  const label = t('sources.moreFor', { name: source.name })
+  if (!low) return null
   return (
-    <span className={styles.moreMenu}>
-      <RoundButton
-        icon={MoreHorizontal}
-        label={label}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => onMore(!open)}
-      />
-      <Menu open={open} onClose={() => onMore(false)} label={label} align="end">
-        {replace && (
-          <MenuItem icon={ArrowLeftRight} onClick={then(replace)}>
-            {t('sources.replace')}
-          </MenuItem>
-        )}
-        {retopic && (
-          <MenuItem icon={Tags} onClick={then(retopic)}>
-            {t('sources.changeTopics')}
-          </MenuItem>
-        )}
-        {deletable && (
-          <MenuItem icon={Trash2} tone="danger" disabled={removing} onClick={then(onRemove)}>
-            {t('sources.delete')}
-          </MenuItem>
-        )}
-      </Menu>
+    <span className={styles.badge} title={t('sourceCard.low')} role="img" aria-label={t('sourceCard.low')}>
+      <Moon size={11} aria-hidden="true" />
     </span>
   )
 }
 
-// What is wrong with it, in the corner: a feed that fails, or a source little read.
-const Corner = ({ source, low }: { source: SourceStatus; low: boolean }) => {
+// Its other actions, each a round with its name on hover: replace it, change its topics, its site, delete it.
+const OtherActions = ({ source, replace, retopic, deletable, removing, onRemove }: MySourceCardProps) => {
   const { t } = useTranslation()
-  if (sourceState(source) === 'error') {
-    const title = source.error ? t('sources.errorTitle', { error: source.error }) : undefined
-    return (
-      <span className={styles.warning} title={title}>
-        <TriangleAlert size={13} aria-hidden="true" /> {t('sources.status.error')}
-      </span>
-    )
-  }
-  return low ? <span>{t('sourceCard.low')}</span> : null
+  return (
+    <>
+      {replace && (
+        <RoundButton
+          size={34}
+          icon={ArrowLeftRight}
+          label={t('sources.replaceOf', { name: source.name })}
+          title={t('sources.replace')}
+          onClick={replace}
+        />
+      )}
+      {retopic && (
+        <RoundButton
+          size={34}
+          icon={Tags}
+          label={t('sources.changeTopicsOf', { name: source.name })}
+          title={t('sources.changeTopics')}
+          onClick={retopic}
+        />
+      )}
+      <RoundButton
+        size={34}
+        icon={ExternalLink}
+        label={t('addSource.seeSite', { name: source.name })}
+        title={t('catalogue.openSite')}
+        href={source.site}
+        external
+      />
+      {deletable && (
+        <RoundButton
+          size={34}
+          variant="danger"
+          icon={Trash2}
+          label={t('sources.deleteOf', { name: source.name })}
+          title={t('sources.delete')}
+          disabled={removing}
+          onClick={onRemove}
+        />
+      )}
+    </>
+  )
 }
 
-// A source of Mes sources: Retirer, its site, and the "⋯" menu.
+// A source of Mes sources: Retirer on the left, in red; its other actions on the right.
 const MySourceCard = (props: MySourceCardProps) => {
   const { t } = useTranslation()
   const { source, topics, chosenTopics, low, onTakeOut } = props
@@ -93,22 +102,19 @@ const MySourceCard = (props: MySourceCardProps) => {
       name={source.name}
       topic={topic}
       moreTopics={moreTopics}
-      corner={<Corner source={source} low={low} />}
-      actions={
-        <>
-          <Button compact icon={Minus} aria-label={t('catalogue.remove', { name: source.name })} onClick={onTakeOut}>
-            {t('sourceCard.remove')}
-          </Button>
-          <RoundButton
-            icon={ExternalLink}
-            label={t('addSource.seeSite', { name: source.name })}
-            title={t('catalogue.openSite')}
-            href={source.site}
-            external
-          />
-          <MoreMenu {...props} />
-        </>
+      corner={<SourceReaders readers={source.readers} />}
+      badge={<Badge source={source} low={low} />}
+      start={
+        <RoundButton
+          size={34}
+          variant="danger"
+          icon={ListMinus}
+          label={t('catalogue.remove', { name: source.name })}
+          title={t('sourceCard.remove')}
+          onClick={onTakeOut}
+        />
       }
+      end={<OtherActions {...props} />}
     />
   )
 }

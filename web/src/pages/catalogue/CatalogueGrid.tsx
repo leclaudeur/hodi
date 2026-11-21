@@ -1,15 +1,15 @@
-import { ArrowUpDown, Check, ExternalLink, LibraryBig, Minus, Plus, Users } from 'lucide-react'
+import { ArrowUpDown, ExternalLink, LibraryBig, ListMinus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TopicSummary } from '../../api.ts'
-import { CATALOGUE_SORTS, type CatalogueEntry, type CatalogueSort, readersCount } from '../../lib/catalogue.ts'
-import { getLanguage } from '../../lib/i18n.ts'
+import { CATALOGUE_SORTS, type CatalogueEntry, type CatalogueSort } from '../../lib/catalogue.ts'
 import { cardTopicOf } from '../../lib/source-card.ts'
 import Button from '../../ui/Button.tsx'
 import EmptyState from '../../ui/EmptyState.tsx'
 import Menu, { MenuItem } from '../../ui/Menu.tsx'
 import RoundButton from '../../ui/RoundButton.tsx'
 import SourceCard from '../../ui/SourceCard.tsx'
+import SourceReaders from '../../ui/SourceReaders.tsx'
 import cardStyles from '../../ui/SourceCard.module.css'
 import StatusLine from '../../ui/StatusLine.tsx'
 import RowsSkeleton from '../../views/settings/SettingsSkeleton.tsx'
@@ -57,25 +57,13 @@ interface CardProps {
   onRemove: () => void
 }
 
-// A source of the catalogue: its readers in the corner, or a check once it is in « Mes sources », where it stays.
+// A source of the catalogue: its readers in the corner; once in « Mes sources », it stays in place, its border in the
+// accent and Retirer in its footer.
 const CatalogueCard = ({ entry, topics, current, busy, onAdd, onRemove }: CardProps) => {
   const { t } = useTranslation()
   const { topic, moreTopics } = cardTopicOf(
     entry.topicIds.flatMap(id => topics.filter(candidate => candidate.id === id)),
     [current]
-  )
-  const readers = entry.readers
-  // Its readers once there are enough of them to say (source-view-routes.ts); a check once it is mine.
-  const corner = entry.mine ? (
-    <span className={cardStyles.check} title={t('catalogue.mine')}>
-      <Check size={13} aria-hidden="true" />
-    </span>
-  ) : (
-    readers !== undefined && (
-      <span title={t('sources.readers', { count: readers, formatted: readersCount(readers, getLanguage()) })}>
-        <Users size={13} aria-hidden="true" /> {readersCount(readers, getLanguage())}
-      </span>
-    )
   )
   return (
     <SourceCard
@@ -83,34 +71,40 @@ const CatalogueCard = ({ entry, topics, current, busy, onAdd, onRemove }: CardPr
       name={entry.name}
       topic={topic}
       moreTopics={moreTopics}
-      corner={corner}
+      corner={<SourceReaders readers={entry.readers} />}
       picked={entry.mine}
-      actions={
-        <>
-          {entry.mine ? (
-            <Button compact icon={Minus} aria-label={t('catalogue.remove', { name: entry.name })} onClick={onRemove}>
-              {t('sourceCard.remove')}
-            </Button>
-          ) : (
-            <Button
-              compact
-              look="primary"
-              icon={Plus}
-              busy={busy}
-              aria-label={t('catalogue.add', { name: entry.name })}
-              onClick={onAdd}
-            >
-              {t('sourceCard.add')}
-            </Button>
-          )}
+      start={
+        entry.mine ? (
           <RoundButton
-            icon={ExternalLink}
-            label={t('addSource.seeSite', { name: entry.name })}
-            title={t('catalogue.openSite')}
-            href={entry.site}
-            external
+            size={34}
+            variant="danger"
+            icon={ListMinus}
+            label={t('catalogue.remove', { name: entry.name })}
+            title={t('sourceCard.remove')}
+            onClick={onRemove}
           />
-        </>
+        ) : (
+          <Button
+            compact
+            look="primary"
+            icon={Plus}
+            busy={busy}
+            aria-label={t('catalogue.add', { name: entry.name })}
+            onClick={onAdd}
+          >
+            {t('sourceCard.add')}
+          </Button>
+        )
+      }
+      end={
+        <RoundButton
+          size={34}
+          icon={ExternalLink}
+          label={t('addSource.seeSite', { name: entry.name })}
+          title={t('catalogue.openSite')}
+          href={entry.site}
+          external
+        />
       }
     />
   )

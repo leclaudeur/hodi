@@ -1636,10 +1636,11 @@
     "loadFailed": "The sources could not be loaded. Try again in a moment.",
     "noMatch": "No source matches.",
     "topicsOf": "{{name}}’s topics",
-    "moreFor": "Actions for {{name}}",
     "replace": "Replace with another",
     "delete": "Delete the source",
-    "filterValue": "Filter sources: {{value}}"
+    "filterValue": "Filter sources: {{value}}",
+    "replaceOf": "Replace {{name}} with another",
+    "deleteOf": "Delete {{name}}"
   },
   "ai": {
     "kinds": {
@@ -2729,8 +2730,8 @@
     "sort": {
       "title": "Sort the sources",
       "label": "Sort: {{sort}}",
-      "az": "Alphabetical, A → Z",
-      "za": "Alphabetical, Z → A",
+      "az": "A to Z",
+      "za": "Z to A",
       "popular": "Most popular",
       "unpopular": "Least popular"
     }

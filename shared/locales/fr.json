@@ -1636,10 +1636,11 @@
     "loadFailed": "Impossible de charger les sources. Réessaie dans un instant.",
     "noMatch": "Aucune source ne correspond.",
     "topicsOf": "Thèmes de {{name}}",
-    "moreFor": "Actions pour {{name}}",
     "replace": "Remplacer par une autre",
     "delete": "Supprimer la source",
-    "filterValue": "Filtrer les sources : {{value}}"
+    "filterValue": "Filtrer les sources : {{value}}",
+    "replaceOf": "Remplacer {{name}} par une autre",
+    "deleteOf": "Supprimer {{name}}"
   },
   "ai": {
     "kinds": {
@@ -2729,8 +2730,8 @@
     "sort": {
       "title": "Trier les sources",
       "label": "Trier : {{sort}}",
-      "az": "Alphabétique, A → Z",
-      "za": "Alphabétique, Z → A",
+      "az": "De A à Z",
+      "za": "De Z à A",
       "popular": "Plus populaires",
       "unpopular": "Moins populaires"
     }

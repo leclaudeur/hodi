@@ -51,8 +51,6 @@ const useSourcesPage = (topics: TopicInfo[], onUnauthorized: () => void) => {
   const [filter, setFilter] = useState<SourceFilter>('all')
   // Some topics' sources only: a long list is easier to go through.
   const [topicFilter, setTopicFilter] = useState<string[]>([])
-  // The source whose "⋯" menu is open.
-  const [moreOf, setMoreOf] = useState<string | null>(null)
   const [adding, setAdding] = useState<AddSourceRequest | null>(null)
   const reader = useReader()
   const requests = useMyRequests(reader.teen)
@@ -74,14 +72,14 @@ const useSourcesPage = (topics: TopicInfo[], onUnauthorized: () => void) => {
   const add = () => setAdding({ topicId: list.chosenTopics[0] ?? null, replacing: null })
 
   return {
-    ...{ sources, failed, search, setSearch, setFilter, setTopicFilter, moreOf, setMoreOf, adding, setAdding, add },
+    ...{ sources, failed, search, setSearch, setFilter, setTopicFilter, adding, setAdding, add },
     ...{ reader, requests, asking, setAsking, actions, editing, setEditing, list, grids, browsing, takeOut }
   }
 }
 
 type SourcesPage = ReturnType<typeof useSourcesPage>
 
-// One card per source, its rarer actions in its "⋯" menu: none for a young profile, which only takes one out.
+// One card per source, its other actions as rounds: none for a young profile, which only takes one out.
 const cardOf = (page: SourcesPage) => (source: SourceStatus) => {
   const { reader, list, actions } = page
   const sourceTopics = list.topicsOf(source.id)
@@ -107,8 +105,6 @@ const cardOf = (page: SourcesPage) => (source: SourceStatus) => {
       deletable={mine && !reader.young && source.addedBy !== undefined}
       removing={actions.removing === source.id}
       onRemove={() => actions.remove(source)}
-      open={page.moreOf === source.id}
-      onMore={open => page.setMoreOf(open ? source.id : null)}
       onTakeOut={() => page.takeOut(source)}
     />
   )
@@ -160,11 +156,6 @@ const SourceGrids = ({ page }: { page: SourcesPage }) => {
       {reader.teen && page.browsing && page.requests && page.requests.length > 0 && (
         <RequestCards requests={page.requests} />
       )}
-      {grids.base.length > 0 && (
-        <GridSection title={t('sources.groups.base')} count={grids.base.length} action={hideLow(grids.base)}>
-          {grids.base.map(card)}
-        </GridSection>
-      )}
       <GridSection
         title={reader.young ? t('requests.byParents') : t('sources.groups.mine')}
         count={grids.mine.length}
@@ -173,11 +164,16 @@ const SourceGrids = ({ page }: { page: SourcesPage }) => {
         {page.browsing && <AddCard page={page} />}
         {grids.mine.map(card)}
       </GridSection>
+      {grids.base.length > 0 && (
+        <GridSection title={t('sources.groups.base')} count={grids.base.length} action={hideLow(grids.base)}>
+          {grids.base.map(card)}
+        </GridSection>
+      )}
     </>
   )
 }
 
-// Every feed as a card, in two grids: the base sources, then the account's own (the first card adds one, by link or
+// Every feed as a card, in two grids: the account's own, then the base sources (the first card adds one, by link or
 // with the AI). Beside the search, the filters find the little-read, the failing ones, and a topic's. The catalogue's
 // button goes under the grids, full width.
 const SourcesSection = ({ topics, layout, onUnauthorized }: SourcesSectionProps) => {
