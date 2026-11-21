@@ -2033,7 +2033,7 @@
       "backups": "Copies de toute la base de données",
       "mail": "Le serveur d’envoi des e-mails",
       "notifications": "E-mail et push, pour chaque type",
-      "inbox": "Ce que le serveur te signale",
+      "inbox": "Les demandes à régler",
       "inboxWaiting_one": "{{count}} demande à traiter",
       "inboxWaiting_other": "{{count}} demandes à traiter"
     },
@@ -2383,15 +2383,11 @@
       }
     },
     "inbox": {
-      "intro": "Ce que le serveur te dit. Les demandes à traiter restent en haut, en orange, jusqu’à ce qu’elles soient réglées.",
-      "open": {
-        "code": "Ouvrir le compte",
-        "report": "Voir la vue d’ensemble",
-        "plugin": "Ouvrir",
-        "source": "Ouvrir"
-      },
+      "intro": "Ce que le serveur te demande de faire. Une demande réglée passe dans <i>Traité</i>, où elle reste 7 jours.",
       "emptyTitle": "Rien pour l’instant",
-      "emptyHint": "Ce que le serveur te signale arrive ici.",
+      "emptyHint": "Ce que le serveur te demande de faire arrive ici.",
+      "handledEmptyTitle": "Rien de traité",
+      "handledEmptyHint": "Une demande réglée reste ici 7 jours.",
       "choose": "Choisir comment être prévenu",
       "meta_one": "{{count}} à traiter",
       "meta_other": "{{count}} à traiter",
@@ -2400,13 +2396,13 @@
         "all": "Tout",
         "source": "Sources",
         "code": "Mots de passe",
-        "report": "Rapports",
-        "plugin": "Plugins"
+        "plugin": "Plugins",
+        "handled": "Traité"
       },
       "failed": "Impossible de charger À traiter",
       "back": "Retour à À traiter",
       "noneTitle": "Rien à traiter",
-      "noneHint": "Ce que le serveur te dit arrive ici.",
+      "noneHint": "Choisis une demande dans la liste.",
       "handled": "Traité le {{date}}",
       "source": {
         "kinds": {
@@ -2415,11 +2411,13 @@
           "podcast": "Podcasts"
         },
         "topics": "Thèmes de {{name}}",
-        "teen": "OK ados",
+        "teen": "Convient aux ados",
         "teenHint": "Les parents peuvent la donner à un ado",
-        "child": "OK enfants",
+        "child": "Convient aux enfants",
         "childHint": "Les parents peuvent la donner à un enfant",
         "refuse": "Refuser",
+        "refuseTitle": "Refuser {{name}} ?",
+        "refuseText": "<b>{{name}}</b> n’entre pas dans le catalogue du serveur. Elle pourra être demandée de nouveau dans 30 jours.",
         "accept": "Accepter",
         "accepted": "{{name}} acceptée dans le catalogue",
         "refused": "{{name}} refusée",

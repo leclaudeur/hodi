@@ -2033,7 +2033,7 @@
       "backups": "Copies of the whole database",
       "mail": "The server that sends e-mails",
       "notifications": "E-mail and push, for each kind",
-      "inbox": "What the server tells you",
+      "inbox": "Requests to deal with",
       "inboxWaiting_one": "{{count}} request to handle",
       "inboxWaiting_other": "{{count}} requests to handle"
     },
@@ -2383,15 +2383,11 @@
       }
     },
     "inbox": {
-      "intro": "What the server tells you. Requests to handle stay at the top, in orange, until you deal with them.",
-      "open": {
-        "code": "Open the account",
-        "report": "See the overview",
-        "plugin": "Open",
-        "source": "Open"
-      },
+      "intro": "What the server asks you to do. A request dealt with moves to <i>Handled</i>, where it stays 7 days.",
       "emptyTitle": "Nothing yet",
-      "emptyHint": "What the server tells you lands here.",
+      "emptyHint": "What the server asks you to do lands here.",
+      "handledEmptyTitle": "Nothing handled",
+      "handledEmptyHint": "A request dealt with stays here 7 days.",
       "choose": "Choose how you’re told",
       "meta_one": "{{count}} to handle",
       "meta_other": "{{count}} to handle",
@@ -2400,13 +2396,13 @@
         "all": "All",
         "source": "Sources",
         "code": "Passwords",
-        "report": "Reports",
-        "plugin": "Plugins"
+        "plugin": "Plugins",
+        "handled": "Handled"
       },
       "failed": "Couldn’t load To do",
       "back": "Back to To do",
       "noneTitle": "Nothing to handle",
-      "noneHint": "What the server tells you lands here.",
+      "noneHint": "Pick a request in the list.",
       "handled": "Handled on {{date}}",
       "source": {
         "kinds": {
@@ -2415,11 +2411,13 @@
           "podcast": "Podcasts"
         },
         "topics": "{{name}}’s topics",
-        "teen": "OK for teens",
+        "teen": "Suits teens",
         "teenHint": "Parents may give it to a teen",
-        "child": "OK for children",
+        "child": "Suits children",
         "childHint": "Parents may give it to a child",
         "refuse": "Refuse",
+        "refuseTitle": "Refuse {{name}}?",
+        "refuseText": "<b>{{name}}</b> doesn’t join the server’s catalogue. It can be asked for again in 30 days.",
         "accept": "Accept",
         "accepted": "{{name}} accepted into the catalogue",
         "refused": "{{name}} refused",

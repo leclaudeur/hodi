@@ -12,7 +12,7 @@ import { HouseholdStore } from '../db/household-store.ts'
 import { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { PasswordResetStore } from '../db/password-reset-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
-import { ServerInboxStore } from '../db/server-inbox-store.ts'
+import { HANDLED_KEPT, ServerInboxStore } from '../db/server-inbox-store.ts'
 import { ServerNoticeStore } from '../db/server-notice-store.ts'
 import { ServerPeopleStore } from '../db/server-people-store.ts'
 import { ServerStatsStore } from '../db/server-stats-store.ts'
@@ -28,7 +28,7 @@ import { fakeFetch } from './helpers/news.ts'
 const PASSWORD = 'une phrase de passe assez longue'
 
 describe('Serveur › Notifications’ list', () => {
-  it('keeps every notice in each language, and a request once while it waits', async () => {
+  it('keeps each request in each language, once while it waits, and not a notice that asks nothing', async () => {
     const db = openDatabase(':memory:')
     const accounts = new UserAccountStore(db)
     accounts.createServerAdmin('admin@example.test', 'hash', 0)
@@ -49,24 +49,26 @@ describe('Serveur › Notifications’ list', () => {
     clock = 20
     // The same request, asked again while it waits: nothing more.
     await notifier.tell('core:code-request', notice, { important: 'code-request:2' })
-    const items = inbox.list()
-    assert.equal(items.length, 2)
+    const items = inbox.list(clock)
+    assert.equal(items.length, 1)
     assert.equal(items[0]?.texts.en?.title, 'Titre en')
     assert.equal(items[0]?.texts.fr?.title, 'Titre fr')
     assert.deepEqual(
       items.map(item => [item.type, item.important, item.handledAt]),
-      [
-        ['core:code-request', true, null],
-        ['core:weekly-report', false, null]
-      ]
+      [['core:code-request', true, null]]
     )
     assert.equal(inbox.waiting('code-request:2'), 10)
     inbox.handle('code-request:2', 30)
     assert.equal(inbox.waiting('code-request:2'), null)
-    assert.equal(inbox.list()[0]?.handledAt, 30)
+    assert.equal(inbox.list(30)[0]?.handledAt, 30)
     // Handled, a new request is told again.
     await notifier.tell('core:code-request', notice, { important: 'code-request:2' })
-    assert.equal(inbox.list().length, 3)
+    assert.equal(inbox.list(30).length, 2)
+    // A week after it was handled, the first one goes; the one waiting stays, however old.
+    assert.deepEqual(
+      inbox.list(30 + HANDLED_KEPT + 1).map(item => item.handledAt),
+      [null]
+    )
   })
 })
 

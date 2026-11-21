@@ -1,9 +1,9 @@
 import type { Language } from '../../shared/i18n.ts'
 import type { Database } from './database.ts'
 
-// Serveur › Notifications: every notice the server gave its admins, whatever way each chose to hear of it, so the
-// page lists them all. A request someone waits on (a code asked for) carries a key, and stays « À traiter » until
-// what it asks for is done; the same request is never listed twice while it waits.
+// Serveur › À traiter: the requests the server's admins are asked to act on (a code asked for, a source to judge),
+// whatever way each chose to hear of them. Each carries a key, and waits until what it asks for is done; the same
+// request is never listed twice while it waits. Once done, it stays a week under « Traité », then goes.
 
 export interface InboxTexts {
   from: string
@@ -33,6 +33,9 @@ interface InboxRow {
 
 // The most notices kept: the oldest handled ones go first.
 const MAX_ITEMS = 200
+
+// How long a handled request stays under « Traité ».
+export const HANDLED_KEPT = 7 * 24 * 60 * 60 * 1000
 
 const toItem = (row: InboxRow): InboxItem => ({
   id: row.id,
@@ -66,8 +69,9 @@ export class ServerInboxStore {
     return true
   }
 
-  // The newest first.
-  list(limit = 50): InboxItem[] {
+  // The newest first; the requests handled more than a week ago go first.
+  list(now: number, limit = 50): InboxItem[] {
+    this.#db.prepare('DELETE FROM server_inbox WHERE handled_at IS NOT NULL AND handled_at < ?').run(now - HANDLED_KEPT)
     return (
       this.#db
         .prepare('SELECT * FROM server_inbox ORDER BY created_at DESC, id DESC LIMIT ?')
