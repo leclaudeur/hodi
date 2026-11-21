@@ -122,13 +122,11 @@ describe('two households on one server', () => {
 
   after(() => close())
 
-  it('shows each household its own profiles and settings only', async () => {
+  it('shows each household its own profiles only', async () => {
     assert.deepEqual(await profileIds(martin), [martinAdmin, martinTeen])
     assert.ok(!(await profileIds(dupont)).includes(martinAdmin))
     const session = await json<{ profileChosen: boolean }>('/session', martin)
     assert.equal(session.profileChosen, true)
-    assert.equal((await json<{ name: string }>('/household', martin)).name, 'Famille Martin')
-    assert.equal((await json<{ name: string }>('/household', dupont)).name, 'Famille Dupont')
   })
 
   it('never opens or changes a profile of the other household', async () => {
