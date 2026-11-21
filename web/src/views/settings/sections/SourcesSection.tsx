@@ -210,7 +210,7 @@ const SourcesSection = ({ topics, layout, onUnauthorized }: SourcesSectionProps)
 
       {!reader.young && (
         <div className={sourceStyles.addLine}>
-          <Button icon={LibraryBig} href={catalogueHref()}>
+          <Button icon={LibraryBig} href={catalogueHref()} data-tour="catalogue">
             {t('catalogue.browse')}
           </Button>
         </div>

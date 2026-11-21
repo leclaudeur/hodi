@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next'
 import type { TopicInfo } from '../../../api.ts'
 import Button from '../../../ui/Button.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
+import { useAiAvailable } from '../../../lib/ai-left.ts'
 import Segmented from '../../../ui/Segmented.tsx'
 import TopicCapsule from '../../../ui/TopicCapsule.tsx'
 import styles from '../Settings.module.css'
 import AddSource from './AddSource.tsx'
 import dialogStyles from './AddSourceDialog.module.css'
-import SourceProposals, { useProposals } from './SourceProposals.tsx'
 import SourceSuggestions from './SourceSuggestions.tsx'
 import RichText from '../../../ui/RichText.tsx'
 
@@ -28,8 +28,9 @@ interface AddSourceDialogProps {
   onUnauthorized: () => void
 }
 
-// "Ajouter une source", over the page, one way at a time: a link pasted, or for a topic, the sites we propose and
-// those the AI finds. The topics show until one is picked, then give way to its sites.
+// "Ajouter une source", over the page, one way at a time: a link pasted, or with AI, the sites it finds for a topic
+// (the catalogue has the server's own). The topics show until one is picked, then give way to its sites.
+// Without AI, the link alone.
 type Way = 'link' | 'topic'
 
 interface WayProps {
@@ -38,7 +39,6 @@ interface WayProps {
   way: Way
   picked: string | null
   onPick: (id: string | null) => void
-  proposals: ReturnType<typeof useProposals>
   onAdded: (id: string) => void
   onUnauthorized: () => void
 }
@@ -49,7 +49,7 @@ const TopicPicker = ({ topics, onPick }: { topics: TopicInfo[]; onPick: (id: str
   return (
     <>
       <h3 className={styles.label}>{t('settings.addSource.pickTopic')}</h3>
-      <div className={dialogStyles.topics} data-tour="add-topics">
+      <div className={dialogStyles.topics}>
         {topics.map(choice => (
           <TopicCapsule
             key={choice.id}
@@ -64,8 +64,8 @@ const TopicPicker = ({ topics, onPick }: { topics: TopicInfo[]; onPick: (id: str
   )
 }
 
-// The way picked: a link pasted, or the sites we propose and those the AI finds for a topic.
-const WayContent = ({ topics, request, way, picked, onPick, proposals, onAdded, onUnauthorized }: WayProps) => {
+// The way picked: a link pasted, or the sites the AI finds for a topic.
+const WayContent = ({ topics, request, way, picked, onPick, onAdded, onUnauthorized }: WayProps) => {
   const { t } = useTranslation()
   const topic = topics.find(candidate => candidate.id === picked) ?? null
   if (way === 'link') {
@@ -78,9 +78,6 @@ const WayContent = ({ topics, request, way, picked, onPick, proposals, onAdded, 
         <TopicCapsule topicId={topic.id} label={topic.label} size="filter" selected href={null} />
         <Button onClick={() => onPick(null)}>{t('settings.addSource.changeTopic')}</Button>
       </div>
-      {proposals && (
-        <SourceProposals topic={topic} proposals={proposals} onAdded={onAdded} onUnauthorized={onUnauthorized} />
-      )}
       <SourceSuggestions
         // A new topic: the last suggestions go.
         key={picked}
@@ -97,7 +94,7 @@ const AddSourceDialog = ({ topics, request, onClose, onAdded, onUnauthorized }: 
   const { t } = useTranslation()
   const [picked, setPicked] = useState<string | null>(null)
   const [way, setWay] = useState<Way>('link')
-  const proposals = useProposals(request !== null, onUnauthorized)
+  const withAi = useAiAvailable() === true
   // Each opening starts on its own topic (the one of a source being replaced).
   const [opened, setOpened] = useState<AddSourceRequest | null>(null)
   if (request !== opened) {
@@ -125,7 +122,7 @@ const AddSourceDialog = ({ topics, request, onClose, onAdded, onUnauthorized }: 
     >
       {request && (
         <>
-          <div data-tour="add-way">
+          {withAi && (
             <Segmented
               label={t('settings.addSource.how')}
               wide
@@ -136,14 +133,13 @@ const AddSourceDialog = ({ topics, request, onClose, onAdded, onUnauthorized }: 
               ]}
               onChange={setWay}
             />
-          </div>
+          )}
           <WayContent
             topics={topics}
             request={request}
-            way={way}
+            way={withAi ? way : 'link'}
             picked={picked}
             onPick={setPicked}
-            proposals={proposals}
             onAdded={onAdded}
             onUnauthorized={onUnauthorized}
           />

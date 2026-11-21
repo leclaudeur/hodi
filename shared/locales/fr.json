@@ -555,25 +555,15 @@
       "what": "Les sites et les chaînes que Hodi lit pour toi.",
       "open": "Ouvre « Sources »."
     },
-    "add": {
-      "title": "Ajouter une source",
-      "how": "Par son lien ou parmi nos suggestions.",
-      "press": "Appuie ici pour en ajouter une."
-    },
-    "byTopic": {
-      "title": "Pour un thème",
-      "noLink": "Pas de lien sous la main ?",
-      "offers": "Hodi te propose des sites par thème.",
-      "pick": "Choisis « Pour un thème »."
-    },
     "topic": {
-      "suggestions": "Chaque thème a ses suggestions.",
-      "pick": "Choisis « {{topic}} »."
+      "suggestions": "Chaque thème a ses sources.",
+      "pick": "Choisis « {{topic}} ».",
+      "via": "Ouvre la liste des thèmes, puis choisis {{topic}}."
     },
     "site": {
-      "title": "Choisis un site",
-      "feed": "Hodi trouve son flux tout seul.",
-      "add": "Ajoute celui qui te plaît."
+      "title": "Choisis une source",
+      "feed": "Chacune est prête à lire.",
+      "add": "Ajoute celle qui te plaît."
     },
     "direction": {
       "title": "Direction {{topic}}",
@@ -615,6 +605,11 @@
         "enjoy": "Bonne lecture.",
         "go": "C’est parti"
       }
+    },
+    "catalogue": {
+      "title": "Le catalogue",
+      "what": "Les sources du serveur, rangées par thème.",
+      "open": "Ouvre le catalogue."
     }
   },
   "offline": {
@@ -1474,13 +1469,6 @@
       "gameHint": "Des points pour chaque lecture, des niveaux et des badges"
     },
     "proposals": {
-      "errors": {
-        "limit": "Le foyer a atteint son maximum de sources.",
-        "followed": "Cette source est déjà suivie.",
-        "none": "Ce site n’a plus de flux lisible. Essaie une autre source.",
-        "failed": "Le site ne répond pas. Réessaie dans un instant."
-      },
-      "trying": "Hodi cherche le flux du site et essaie trois articles.",
       "inLanguage": {
         "fr": "En français",
         "en": "En anglais"
@@ -2148,9 +2136,8 @@
         "invite": "Inviter",
         "inviteLabel": "Inviter un adulte",
         "inviteHint": "Un code et son QR, valable 24 h et une seule fois",
-        "full": "Serveur complet",
-        "fullHint": "Complet : un profil doit partir avant d’inviter quelqu’un",
         "full": "Complet",
+        "fullHint": "Complet : un profil doit partir avant d’inviter quelqu’un",
         "accounts": "Comptes",
         "noAccounts": "Aucun compte pour l’instant",
         "see": "Voir",

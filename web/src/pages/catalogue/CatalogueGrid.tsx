@@ -132,7 +132,7 @@ const CatalogueGrid = ({ entries, topics, current, failed, busy, onAdd, onRemove
     )
   return (
     <div className={styles.results}>
-      <ul className={cardStyles.grid}>
+      <ul className={cardStyles.grid} data-tour="catalogue-grid">
         {entries.map(entry => (
           <CatalogueCard
             key={entry.id}

@@ -555,24 +555,14 @@
       "what": "The sites and channels Hodi reads for you.",
       "open": "Open “Sources”."
     },
-    "add": {
-      "title": "Add a source",
-      "how": "By its link or from our suggestions.",
-      "press": "Tap here to add one."
-    },
-    "byTopic": {
-      "title": "By topic",
-      "noLink": "No link at hand?",
-      "offers": "Hodi suggests sites by topic.",
-      "pick": "Pick “By topic”."
-    },
     "topic": {
-      "suggestions": "Each topic has its suggestions.",
-      "pick": "Pick “{{topic}}”."
+      "suggestions": "Each topic has its sources.",
+      "pick": "Pick “{{topic}}”.",
+      "via": "Open the list of topics, then pick {{topic}}."
     },
     "site": {
-      "title": "Pick a site",
-      "feed": "Hodi finds its feed on its own.",
+      "title": "Pick a source",
+      "feed": "Each one is ready to read.",
       "add": "Add the one you like."
     },
     "direction": {
@@ -615,6 +605,11 @@
         "enjoy": "Happy reading.",
         "go": "Let's go"
       }
+    },
+    "catalogue": {
+      "title": "The catalogue",
+      "what": "The server’s sources, by topic.",
+      "open": "Open the catalogue."
     }
   },
   "offline": {
@@ -1474,13 +1469,6 @@
       "gameHint": "Points for every read, levels and badges"
     },
     "proposals": {
-      "errors": {
-        "limit": "The household has hit its source limit.",
-        "followed": "Source already followed.",
-        "none": "This site has no readable feed now. Try another source.",
-        "failed": "The site isn’t answering. Try again in a moment."
-      },
-      "trying": "Hodi looks for the site’s feed and tries 3 articles.",
       "inLanguage": {
         "fr": "In French",
         "en": "In English"
@@ -2148,9 +2136,8 @@
         "invite": "Invite",
         "inviteLabel": "Invite an adult",
         "inviteHint": "A code and its QR, valid for 24 h and once",
-        "full": "Server full",
-        "fullHint": "Full: a profile has to leave before anyone is invited",
         "full": "Full",
+        "fullHint": "Full: a profile has to leave before anyone is invited",
         "accounts": "Accounts",
         "noAccounts": "No account yet",
         "see": "See",

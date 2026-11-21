@@ -25,7 +25,12 @@ const Side = ({ parts, current }: { parts: TopicSummary[]; current: string }) =>
     <nav className={styles.side} aria-label={t('catalogue.title')}>
       <span className={styles.group}>{t('catalogue.title')}</span>
       {parts.map(topic => (
-        <a key={topic.id} href={catalogueHref(topic.id)} aria-current={topic.id === current ? 'page' : undefined}>
+        <a
+          key={topic.id}
+          href={catalogueHref(topic.id)}
+          aria-current={topic.id === current ? 'page' : undefined}
+          data-tour={`catalogue-${topic.id}`}
+        >
           <span className={`${styles.sq} ${styles.topicSq}`} data-topic={topic.id}>
             <TopicIcon topicId={topic.id} size={14} />
           </span>
@@ -48,7 +53,14 @@ const Crumb = ({ parts, current }: { parts: TopicSummary[]; current: string }) =
     <div className={styles.crumb}>
       <span className={styles.group}>{t('catalogue.title')}</span>
       <span className={styles.sections}>
-        <Button compact icon={ListTree} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <Button
+          compact
+          icon={ListTree}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+          data-tour="catalogue-parts"
+        >
           {t('catalogue.parts')}
         </Button>
         <Menu open={open} onClose={() => setOpen(false)} label={t('catalogue.parts')} align="end">
@@ -57,6 +69,7 @@ const Crumb = ({ parts, current }: { parts: TopicSummary[]; current: string }) =
               key={topic.id}
               lead={<TopicIcon topicId={topic.id} size={16} />}
               checked={topic.id === current}
+              tour={`catalogue-${topic.id}`}
               onClick={() => go(topic.id)}
             >
               {topic.label}
