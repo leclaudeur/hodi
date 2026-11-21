@@ -69,6 +69,13 @@ describe('Serveur › Notifications’ list', () => {
       inbox.list(30 + HANDLED_KEPT + 1).map(item => item.handledAt),
       [null]
     )
+    // The next request takes it away for good.
+    clock = 30 + HANDLED_KEPT + 1
+    await notifier.tell('core:code-request', notice, { important: 'code-request:3' })
+    assert.deepEqual(
+      inbox.list(0).map(item => item.handledAt),
+      [null, null]
+    )
   })
 })
 

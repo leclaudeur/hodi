@@ -66,16 +66,20 @@ export class ServerInboxStore {
            IS NOT NULL ORDER BY created_at DESC, id DESC LIMIT -1 OFFSET ?)`
       )
       .run(MAX_ITEMS)
+    // The requests handled more than a week ago are no longer listed: they go with the next one.
+    this.#db.prepare('DELETE FROM server_inbox WHERE handled_at IS NOT NULL AND handled_at < ?').run(now - HANDLED_KEPT)
     return true
   }
 
-  // The newest first; the requests handled more than a week ago go first.
+  // The newest first, without the requests handled more than a week ago.
   list(now: number, limit = 50): InboxItem[] {
-    this.#db.prepare('DELETE FROM server_inbox WHERE handled_at IS NOT NULL AND handled_at < ?').run(now - HANDLED_KEPT)
     return (
       this.#db
-        .prepare('SELECT * FROM server_inbox ORDER BY created_at DESC, id DESC LIMIT ?')
-        .all(limit) as unknown as InboxRow[]
+        .prepare(
+          `SELECT * FROM server_inbox WHERE handled_at IS NULL OR handled_at >= ?
+             ORDER BY created_at DESC, id DESC LIMIT ?`
+        )
+        .all(now - HANDLED_KEPT, limit) as unknown as InboxRow[]
     ).map(toItem)
   }
 
