@@ -3,29 +3,43 @@ import type { FeedItem } from '../api.ts'
 import { type Language, getLanguage, t } from './i18n.ts'
 import { DAY_MS } from '../../../shared/time.ts'
 
-// How the household writes the time of day (Réglages › Foyer): 24 ("21:00") or 12 ("9:00 PM"). Kept on the device
-// too, so the first screen shows the right one before the server answers.
+// How the time of day is written: 24 ("21:00") or 12 ("9:00 PM"). Each person's choice (Mon compte), else the
+// server's. Kept on the device too, so the first screen shows the right one before the server answers.
 export type HourCycle = 12 | 24
 const HOUR_CYCLE_KEY = 'hodi:hour-cycle'
-let hourCycle: HourCycle = (() => {
+let serverHourCycle: HourCycle = (() => {
   try {
     return localStorage.getItem(HOUR_CYCLE_KEY) === '12' ? 12 : 24
   } catch {
     return 24
   }
 })()
+let ownHourCycle: HourCycle | null = null
+let hourCycle: HourCycle = serverHourCycle
 const hourCycleListeners = new Set<() => void>()
 
-export const setHourCycle = (next: HourCycle) => {
+const applyHourCycle = () => {
+  const next = ownHourCycle ?? serverHourCycle
   if (next === hourCycle) return
   hourCycle = next
   try {
     localStorage.setItem(HOUR_CYCLE_KEY, String(next))
   } catch {
-    // Private browsing: the household's setting again at the next start.
+    // Private browsing: the server's setting again at the next start.
   }
   formatters.clear()
   hourCycleListeners.forEach(listener => listener())
+}
+
+export const setHourCycle = (next: HourCycle) => {
+  serverHourCycle = next
+  applyHourCycle()
+}
+
+// null: the server's.
+export const setOwnHourCycle = (next: HourCycle | null) => {
+  ownHourCycle = next
+  applyHourCycle()
 }
 
 export const useHourCycle = () =>
@@ -37,7 +51,7 @@ export const useHourCycle = () =>
     () => hourCycle
   )
 
-// The formatters of the interface language and the household's hour cycle, made once per language.
+// The formatters of the interface language and the hour cycle, made once per language.
 export const LOCALES: Record<Language, string> = { fr: 'fr-BE', en: 'en-GB' }
 const formatters = new Map<Language, ReturnType<typeof makeFormatters>>()
 const hours = () =>

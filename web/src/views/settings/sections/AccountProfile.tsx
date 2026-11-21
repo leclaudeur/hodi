@@ -9,7 +9,7 @@ import ProfileAvatar from '../../../ui/ProfileAvatar.tsx'
 import ProfileForm from '../../profiles/ProfileForm.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
-import LanguageRow from './LanguageRow.tsx'
+import PersonalRows from './PersonalRows.tsx'
 
 interface AccountProfileProps {
   account: AccountView
@@ -38,7 +38,7 @@ const AccountProfile = ({ account, onAccount }: AccountProfileProps) => {
             onClick: () => setEditing(true)
           }}
         />
-        <LanguageRow />
+        <PersonalRows />
       </div>
       <Dialog open={editing} onClose={() => setEditing(false)} title={t('settings.editProfileTitle')}>
         {editing && (

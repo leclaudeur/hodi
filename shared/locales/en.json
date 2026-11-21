@@ -22,8 +22,6 @@
   "language": {
     "label": "Language",
     "profileHint": "The interface’s; articles stay in their own",
-    "householdLabel": "Default language",
-    "householdHint": "For the sign-in screen and the accounts that haven’t picked one",
     "in": {
       "fr": "In French",
       "en": "In English"
@@ -1477,10 +1475,7 @@
       "newPassword": "New password",
       "game": "Game",
       "gameToggle": "Levels and badges",
-      "gameHint": "Points for every read, a challenge and a ranking each week",
-      "gameOn": "Game on",
-      "gameOff": "Game off",
-      "gameFailed": "The game could not be changed. Try again in a moment."
+      "gameHint": "Points for every read, levels and badges"
     },
     "proposals": {
       "errors": {
@@ -1719,7 +1714,7 @@
   },
   "hourCycle": {
     "label": "Time format",
-    "hint": "For every account: settings, notifications, times",
+    "hint": "Settings, notifications, times",
     "option24": "24 h",
     "option12": "12 h",
     "example24": "21:00",
@@ -2253,8 +2248,6 @@
     "general": {
       "intro": "Hodi’s address, which the e-mails’ links open, and the public home page. A browser that never opened Hodi lands on that site, for example your presentation page; everyone else lands on <i>Sign in</i>. Then what holds for every account.",
       "addresses": "Addresses",
-      "everyone": "For every account",
-      "defaultsFailed": "This setting couldn’t be saved. Try again in a moment.",
       "invalid": "Write a full address, with https://.",
       "saved": "Address saved",
       "failed": "The address could not be saved.",
