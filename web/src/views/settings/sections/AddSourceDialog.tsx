@@ -116,7 +116,7 @@ const AddSourceDialog = ({ topics, request, onClose, onAdded, onUnauthorized }: 
         request?.replacing ? (
           <RichText i18nKey="dialogIntro.replaceSource" values={{ name: request.replacing.name }} />
         ) : (
-          <RichText i18nKey="dialogIntro.addSource" />
+          <RichText i18nKey={withAi ? 'dialogIntro.addSource' : 'dialogIntro.addSourceLink'} />
         )
       }
     >
