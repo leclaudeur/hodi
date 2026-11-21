@@ -18,7 +18,7 @@ import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow, { RowButton } from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import ClearStatsRow from './ClearStatsRow.tsx'
-import LanguageRow from './LanguageRow.tsx'
+import PersonalRows from './PersonalRows.tsx'
 import { formatMinutes } from './young/format.ts'
 
 // "00:34:52": the time left, every second.
@@ -110,7 +110,7 @@ const GeneralSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
         <>
           <OwnRow own={own} onEdit={() => setEditing(true)} />
           <div className={styles.card}>
-            <LanguageRow />
+            <PersonalRows />
           </div>
         </>
       )}

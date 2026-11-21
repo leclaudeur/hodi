@@ -22,7 +22,7 @@ import StatusLine from '../../ui/StatusLine.tsx'
 import TextField from '../../ui/TextField.tsx'
 import SettingRow from '../settings/SettingRow.tsx'
 import styles from '../settings/Settings.module.css'
-import profileStyles from '../settings/sections/ProfilesSection.module.css'
+import profileStyles from './Profiles.module.css'
 import householdStyles from '../household/Household.module.css'
 import { useChildAccount } from './ChildPasswordRow.tsx'
 

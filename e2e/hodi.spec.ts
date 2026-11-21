@@ -242,10 +242,10 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   const waiting = page.getByRole('main').locator('h2:text-is("À traiter") + ul')
   await expect(waiting.getByText('Sam demande un code')).toBeVisible()
 
-  // Sam's password is Sam's: Réglages › Ados et enfants lists the young profiles only, never another adult.
-  await page.goto('/#/settings/profiles')
+  // Sam's password is Sam's: Mon compte › Mes enfants lists the young ones only, never another adult.
+  await page.goto('/#/account/children')
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Ados et enfants' }).first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Mes enfants', level: 1 })).toBeVisible()
   await expect(page.getByRole('main').getByText('Sam', { exact: true })).toHaveCount(0)
 
   // The server's admin opens the request, then makes the code: their own password first, and a wrong one stays in
@@ -319,11 +319,9 @@ test('creates a teen’s account, which signs in with its username and the passw
   // Her card opens, with the password she signs in with.
   await expect(page.getByText('Se connecte avec @zoe')).toBeVisible()
 
-  // Each kind under its own title; the adults are accounts, not in this list.
-  await page.goto('/#/settings/profiles')
-  const group = (title: string) => page.getByRole('main').locator(`h2:text-is("${title}") + ul`)
-  await expect(page.getByRole('main').locator('h2:text-is("Adultes")')).toHaveCount(0)
-  await expect(group('Ados').getByRole('listitem').filter({ hasText: 'Zoé' })).toHaveCount(1)
+  // In Mes enfants, where every young one is; the adults are accounts, not in this list.
+  await page.goto('/#/account/children')
+  await expect(page.getByRole('link', { name: 'Gérer Zoé' })).toHaveCount(1)
 
   // Her own phone: her username and her password, no e-mail.
   const phone = await browser.newPage()
@@ -354,7 +352,7 @@ test('signs Zoé’s own tablet in with her username, which opens her profile on
   await expect(tablet.getByRole('button', { name: /Alex|Sam/ })).toHaveCount(0)
 
   // A parent removes it from her card: it asks to sign in again.
-  await page.goto('/#/settings/profiles')
+  await page.goto('/#/account/children')
   await page.getByRole('link', { name: 'Gérer Zoé' }).click()
   // She signed in on a phone too, in the test before: each device goes.
   const removes = page.getByRole('button', { name: /^Retirer / })
@@ -383,7 +381,7 @@ test('opens a parent with their Code parental, and a private profile with its pa
   await expect(own.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
   await own.goto('/#/account/sign-in')
   await own.getByRole('switch', { name: 'Profil privé' }).click()
-  const question = own.getByRole('dialog', { name: 'Rendre ton profil privé ?' })
+  const question = own.getByRole('dialog', { name: 'Rendre ce profil privé ?' })
   await question.getByLabel('Mon mot de passe').fill(SAM_PASSWORD)
   await question.getByRole('button', { name: 'Rendre privé' }).click()
   await expect(own.getByRole('switch', { name: 'Profil privé' })).toHaveAttribute('aria-checked', 'true')
@@ -563,11 +561,13 @@ test('shows no household: nothing to leave, no Foyer in Réglages, no Foyers in 
   await expect(page.getByRole('heading', { name: 'Données', level: 1 })).toBeVisible()
   await expect(page.getByRole('main').getByRole('button', { name: 'Quitter' })).toHaveCount(0)
   await page.goto('/#/settings')
-  await expect(page.getByRole('link', { name: /Ados et enfants/ }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Général/ }).first()).toBeVisible()
+  // The young ones are their parents' Mon compte › Mes enfants, not a Réglages entry.
+  await expect(page.getByRole('link', { name: /Ados et enfants/ })).toHaveCount(0)
   await expect(page.getByRole('link', { name: /^Foyer/ })).toHaveCount(0)
   // The old addresses open where their settings went: Serveur › Général, Serveur › Comptes.
   await page.goto('/#/settings/household')
-  await expect(page.getByRole('heading', { name: 'Pour tous les comptes' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Général' }).first()).toBeVisible()
   await page.goto('/#/server/households')
   await expect(page.getByRole('button', { name: 'Inviter quelqu’un' })).toBeVisible()
   await expect(page.getByRole('link', { name: /^Foyers/ })).toHaveCount(0)
@@ -741,7 +741,7 @@ test('switches the interface to English and back', async () => {
 })
 
 test('makes Sam Zoé’s second parent: Alex invites Sam’s username, Sam accepts', async () => {
-  await page.goto('/#/settings/profiles')
+  await page.goto('/#/account/children')
   await page.getByRole('link', { name: 'Gérer Zoé' }).click()
   await page.getByRole('button', { name: 'Inviter un second parent' }).click()
   const invite = page.getByRole('dialog', { name: 'Inviter un parent' })
@@ -828,7 +828,7 @@ test('closes the app for a teen outside the hours its parents set', async () => 
   const lateEvening = hour * 60 + minute < 22 * 60 + 30
   const [start, end] = lateEvening ? ['23', '23'] : ['01', '02']
 
-  await page.goto('/#/settings/profiles')
+  await page.goto('/#/account/children')
   await page.getByRole('link', { name: 'Gérer Zoé' }).click()
   // The settings row shows the hours under its title and opens them with « Changer »: the innermost div holding both.
   const hoursRow = page

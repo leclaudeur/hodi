@@ -14,8 +14,7 @@ import {
   Rss,
   Send,
   Server,
-  Type,
-  Users
+  Type
 } from 'lucide-react'
 import type { TFunction } from 'i18next'
 import type { ComponentType, ReactNode } from 'react'
@@ -185,26 +184,6 @@ const aiEntry = ({ t, usage, young }: GroupData): Entry => ({
   hidden: young
 })
 
-// The young profiles its adults look after.
-const familyGroups = ({ t, young, household }: GroupData): Group[] => {
-  const count = household?.profiles.filter(isYoung).length ?? 0
-  return [
-    {
-      id: 'household',
-      label: t('settings.groups.household'),
-      hidden: young,
-      entries: [
-        {
-          id: 'profiles',
-          label: t('settings.nav.profiles'),
-          hint: count ? t('count.profile', { count }) : t('settings.hints.none'),
-          icon: Users
-        }
-      ]
-    }
-  ]
-}
-
 // This device, then the server and Hodi itself.
 const deviceGroups = ({ t, notifications, household }: GroupData): Group[] => [
   {
@@ -264,7 +243,7 @@ export const useGroups = (onUnauthorized: () => void): Group[] => {
   const { plugins, web } = usePlugins()
 
   const data = { t, preferences, notifications, sources, usage, household, profile, failing, asked, young }
-  const groups = [...readingGroups(data), ...yourGroups(data), ...familyGroups(data), ...deviceGroups(data)]
+  const groups = [...readingGroups(data), ...yourGroups(data), ...deviceGroups(data)]
   // Plugins' own pages, where their manifests place them.
   return placePlugins(groups, menuPlugins(plugins, web), ({ id }) =>
     pluginEntry(

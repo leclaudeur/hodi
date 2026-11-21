@@ -644,6 +644,17 @@ describe('reader state', () => {
     assert.equal(reset.preferences.language, null)
   })
 
+  it('keeps a person’s own time format and game, or none for the server’s', async () => {
+    assert.equal((await call('PUT', '/preferences', { preferences: { hourCycle: 13 } })).status, 400)
+    assert.equal((await call('PUT', '/preferences', { preferences: { game: 'off' } })).status, 400)
+    assert.equal((await call('PUT', '/preferences', { preferences: { hourCycle: 12, game: false } })).status, 200)
+    const chosen = (await (await call('GET', '/')).json()) as { preferences: Record<string, unknown> }
+    assert.deepEqual([chosen.preferences.hourCycle, chosen.preferences.game], [12, false])
+    assert.equal((await call('PUT', '/preferences', { preferences: { hourCycle: null, game: null } })).status, 200)
+    const reset = (await (await call('GET', '/')).json()) as { preferences: Record<string, unknown> }
+    assert.deepEqual([reset.preferences.hourCycle, reset.preferences.game], [null, null])
+  })
+
   it('merges a preferences change, so a device with an older copy keeps the rest', async () => {
     assert.equal((await call('PUT', '/preferences', { preferences: { followedWords: ['Courtois'] } })).status, 200)
     assert.equal((await call('PUT', '/preferences', { preferences: { hideRead: true } })).status, 200)

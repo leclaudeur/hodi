@@ -22,8 +22,6 @@
   "language": {
     "label": "Langue",
     "profileHint": "Celle de l’interface ; les articles restent dans la leur",
-    "householdLabel": "Langue par défaut",
-    "householdHint": "Pour l’écran de connexion et les comptes qui n’en ont pas choisi",
     "in": {
       "fr": "En français",
       "en": "En anglais"
@@ -91,7 +89,7 @@
     "newAccount": "Créer un nouveau compte",
     "signIn": "Rejoindre",
     "alreadyMember": "Ce compte a déjà un profil sur ce serveur : connecte-toi avec lui.",
-    "otherHousehold": "Ton compte {{email}} est déjà dans {{current}}. Pour rejoindre {{household}}, quitte d’abord ton foyer dans Réglages › Mon compte."
+    "otherHousehold": "Le compte <b>{{email}}</b> est déjà dans {{current}}. Pour rejoindre {{household}}, quitte d’abord ce foyer dans <i>Mon compte</i>."
   },
   "password": {
     "show": "Afficher le mot de passe",
@@ -207,7 +205,7 @@
     "start": {
       "kicker": "Bienvenue dans Hodi",
       "title": "L’actu de toute la maison",
-      "lead": "Tes sites d’info préférés, <b>rangés par thème</b>, et lus <b>sans pub ni pistage</b>. Chacun a son compte, et on se partage ce qui vaut la peine d’être lu.",
+      "lead": "Les sites d’info que tu préfères, <b>rangés par thème</b>, et lus <b>sans pub ni pistage</b>. Chacun a son compte, et on se partage ce qui vaut la peine d’être lu.",
       "codeNoticeTitle": "Le code est dans le journal du serveur",
       "codeNoticeText": "Prends la dernière ligne <i>Setup code</i> de <code>docker compose logs app</code>.",
       "code": "Code d’installation",
@@ -365,7 +363,7 @@
     "switch": "Changer de profil",
     "timeUpTomorrow": "Le temps de lecture du jour est fini. Tu pourras relire demain.",
     "meHint": "Nom, photo, langue, temps du jour",
-    "meIntro": "Ton prénom, ta photo, ta langue et ton temps de lecture du jour. Tu peux aussi revoir la visite guidée, ou remettre tes réglages à zéro.",
+    "meIntro": "Le prénom, la photo, la langue et le temps de lecture du jour. Tu peux aussi revoir la visite guidée, ou remettre les réglages à zéro.",
     "today": "Aujourd’hui",
     "readingTime": "Temps d’écran restant",
     "readingHint": "{{time}} / jour · réglé par les parents",
@@ -1364,18 +1362,18 @@
       "moreDevices_one": "Voir l’autre",
       "moreDevices_other": "Voir les {{count}} autres",
       "private": "Profil privé",
-      "privateHint": "Ton mot de passe pour ouvrir ton profil",
+      "privateHint": "Le mot de passe du compte, pour ouvrir ce profil",
       "trusted": "S’ouvre sans mot de passe",
       "askAgain": "Redemander",
       "trustedDevices": "Appareils de confiance",
-      "privateFailed": "Ton profil privé n’a pas pu être changé. Réessaie dans un instant."
+      "privateFailed": "Le profil privé n’a pas pu être changé. Réessaie dans un instant."
     },
     "edit": "Modifier",
     "editName": "Modifier {{name}}",
     "editProfileTitle": "Modifier le profil",
     "profileSaved": "Profil enregistré",
     "me": {
-      "intro": "Revoir la visite guidée, ou remettre tes réglages par défaut. Ton prénom, ta photo, ta langue et tes statistiques sont dans <i>Mon compte</i>.",
+      "intro": "Revoir la visite guidée, ou remettre les réglages par défaut. Le prénom, la photo, la langue et les statistiques sont dans <i>Mon compte</i>.",
       "help": "Aide",
       "tour": "Visite guidée",
       "tourHint": "Ajouter une source pas à pas, comme au premier jour",
@@ -1477,10 +1475,7 @@
       "newPassword": "Nouveau mot de passe",
       "game": "Jeu",
       "gameToggle": "Niveaux et badges",
-      "gameHint": "Des points pour chaque lecture, un défi et un classement chaque semaine",
-      "gameOn": "Jeu activé",
-      "gameOff": "Jeu désactivé",
-      "gameFailed": "Le jeu n’a pas pu être changé. Réessaie dans un instant."
+      "gameHint": "Des points pour chaque lecture, des niveaux et des badges"
     },
     "proposals": {
       "errors": {
@@ -1613,9 +1608,9 @@
     "hideOneTitle": "Masquer {{name}} ?",
     "hideLowMessage": "Leurs articles quittent le fil et les thèmes de ce profil. Tu peux les réafficher ici une par une.",
     "hideAll": "Tout retirer",
-    "hidden_one": "Source retirée de tes sources",
-    "hidden_other": "{{count}} sources retirées de tes sources",
-    "replaced": "Source ajoutée, {{name}} retirée de tes sources",
+    "hidden_one": "Source retirée de Mes sources",
+    "hidden_other": "{{count}} sources retirées de Mes sources",
+    "replaced": "Source ajoutée, {{name}} retirée de Mes sources",
     "added": "Source ajoutée",
     "topicsSaved": "Thèmes enregistrés",
     "topicsFailed": "Les thèmes n’ont pas pu être enregistrés. Réessaie dans un instant.",
@@ -1642,7 +1637,7 @@
     "changeTopics": "Changer les thèmes",
     "seeSite": "Voir le site",
     "deleteFor": "Supprimer {{name}} pour tout le foyer",
-    "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Allume celles que tu lis : ce sont tes sources, gardées avec ton compte. Une source que tu ajoutes ne va que dans les tiennes, les autres l’ajoutent s’ils la veulent. Les sources de base s’éteignent mais ne se suppriment pas.",
+    "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Allume celles que tu lis : elles restent avec le compte. Une source que tu ajoutes ne va que dans les sources de ce compte, les autres l’ajoutent s’ils la veulent. Les sources de base s’éteignent mais ne se suppriment pas.",
     "search": "Chercher une source ou un thème",
     "searchLabel": "Chercher une source",
     "filter": "Filtrer les sources",
@@ -1719,7 +1714,7 @@
   },
   "hourCycle": {
     "label": "Format des heures",
-    "hint": "Pour tous les comptes : réglages, notifications, horaires",
+    "hint": "Réglages, notifications, horaires",
     "option24": "24 h",
     "option12": "12 h",
     "example24": "21:00",
@@ -1744,12 +1739,12 @@
     },
     "hideSource": {
       "title": "Retirer la source ?",
-      "message": "Les articles de <b>{{name}}</b> quittent ton fil et tes thèmes. Tu pourras la reprendre dans le <i>Catalogue</i>.",
+      "message": "Les articles de <b>{{name}}</b> quittent le fil et les thèmes. Tu pourras la reprendre dans le <i>Catalogue</i>.",
       "button": "Retirer la source"
     },
     "hideSources": {
       "title": "Retirer {{count}} sources ?",
-      "message": "Les articles de ces {{count}} sources quittent ton fil et tes thèmes. Tu pourras les reprendre dans le <i>Catalogue</i>.",
+      "message": "Les articles de ces {{count}} sources quittent le fil et les thèmes. Tu pourras les reprendre dans le <i>Catalogue</i>.",
       "button": "Retirer les {{count}} sources"
     },
     "clearTexts": {
@@ -1820,15 +1815,15 @@
       "button": "Annuler l’invitation"
     },
     "privateOn": {
-      "title": "Rendre ton profil privé ?",
-      "message": "Ton mot de passe sera demandé pour ouvrir ton profil depuis <i>Qui lit ?</i>, sur tous les appareils. Sur les tiens, coche <i>Ne plus demander sur cet appareil</i>.",
+      "title": "Rendre ce profil privé ?",
+      "message": "Le mot de passe du compte sera demandé pour ouvrir ce profil depuis <i>Qui lit ?</i>, sur tous les appareils. Sur ceux qui sont à toi, coche <i>Ne plus demander sur cet appareil</i>.",
       "button": "Rendre privé"
     },
     "signOut": {
       "title": "Se déconnecter de cet appareil ?",
-      "message_one": "Ton profil part de <i>Qui lit ?</i> sur cet appareil, mais ton compte et tes lectures restent intacts. <b>{{others}}</b> reste ici. Pour revenir plus tard, touche <i>Ajouter</i> et entre ton e-mail et ton mot de passe.",
-      "message_other": "Ton profil part de <i>Qui lit ?</i> sur cet appareil, mais ton compte et tes lectures restent intacts. <b>{{others}}</b> restent ici. Pour revenir plus tard, touche <i>Ajouter</i> et entre ton e-mail et ton mot de passe.",
-      "messageAlone": "Cet appareil revient à la connexion. Ton compte et tes lectures restent intacts.",
+      "message_one": "Le profil part de <i>Qui lit ?</i> sur cet appareil, mais le compte et les lectures restent intacts. <b>{{others}}</b> reste ici. Pour revenir plus tard, touche <i>Ajouter</i> et entre l’e-mail et le mot de passe du compte.",
+      "message_other": "Le profil part de <i>Qui lit ?</i> sur cet appareil, mais le compte et les lectures restent intacts. <b>{{others}}</b> restent ici. Pour revenir plus tard, touche <i>Ajouter</i> et entre l’e-mail et le mot de passe du compte.",
+      "messageAlone": "Cet appareil revient à la connexion. Le compte et les lectures restent intacts.",
       "messageLast_one": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quitte aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte pourra le reconnecter quand il veut.",
       "messageLast_other": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quittent aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte pourra le reconnecter quand il veut.",
       "button": "Se déconnecter"
@@ -2251,10 +2246,8 @@
       "oneText": "Ce serveur a déjà le sien. Pour y lire, demande à son admin de t’inviter."
     },
     "general": {
-      "intro": "L’adresse de Hodi, que les liens des e-mails ouvrent, et la page d’accueil publique. Un navigateur qui n’a jamais ouvert Hodi arrive sur ce site, par exemple ta page de présentation ; les autres arrivent sur <i>Connexion</i>. Puis ce qui vaut pour tous les comptes.",
+      "intro": "L’adresse de Hodi, que les liens des e-mails ouvrent, et la page d’accueil publique. Un navigateur qui n’a jamais ouvert Hodi arrive sur ce site, par exemple une page de présentation ; les autres arrivent sur <i>Connexion</i>.",
       "addresses": "Adresses",
-      "everyone": "Pour tous les comptes",
-      "defaultsFailed": "Ce réglage n’a pas pu être enregistré. Réessaie dans un instant.",
       "invalid": "Écris une adresse complète, avec https://.",
       "saved": "Adresse enregistrée",
       "failed": "L’adresse n’a pas pu être enregistrée.",
@@ -2269,7 +2262,7 @@
       "publicHome": {
         "label": "Page d’accueil publique",
         "none": "Aucune : Connexion s’ouvre",
-        "intro": "Une personne qui n’a jamais ouvert Hodi sur son navigateur arrive sur ce site, par exemple ta page de présentation. Laisse vide pour ouvrir <i>Connexion</i>.",
+        "intro": "Une personne qui n’a jamais ouvert Hodi sur son navigateur arrive sur ce site, par exemple une page de présentation. Laisse vide pour ouvrir <i>Connexion</i>.",
         "field": "Adresse du site",
         "placeholder": "https://exemple.be"
       }
@@ -2309,7 +2302,7 @@
       }
     },
     "backups": {
-      "intro": "Chaque nuit, une copie de toute la base et des données des plugins. Elle contient les données de tout le monde : ton mot de passe la protège, et mieux vaut en garder une hors du serveur. La copie d’un seul compte est dans <i>Réglages › Mon compte</i>.",
+      "intro": "Chaque nuit, une copie de toute la base et des données des plugins. Elle contient les données de tout le monde : un mot de passe la protège, et mieux vaut en garder une hors du serveur. La copie d’un seul compte est dans <i>Mon compte</i>.",
       "settings": "Réglages",
       "kept": "Copies gardées",
       "keptValue_one": "{{count}} copie",
@@ -2381,15 +2374,15 @@
       "removeHint": "Hodi oublie ces réglages",
       "removeButton": "Retirer",
       "removed": "Réglages retirés",
-      "serverIntro": "L’adresse du serveur d’envoi et sa sécurité, données par l’hébergeur de ton adresse e-mail (Gmail, OVH, Infomaniak…). STARTTLS va avec le port 587, TLS avec le 465.",
-      "loginIntro": "L’identifiant et le mot de passe du serveur d’envoi, souvent ton adresse e-mail et son mot de passe. Laisse vide si le serveur n’en demande pas. Une fois enregistré, le mot de passe n’est plus jamais affiché.",
+      "serverIntro": "L’adresse du serveur d’envoi et sa sécurité, données par l’hébergeur de l’adresse e-mail (Gmail, OVH, Infomaniak…). STARTTLS va avec le port 587, TLS avec le 465.",
+      "loginIntro": "L’identifiant et le mot de passe du serveur d’envoi, souvent l’adresse e-mail et son mot de passe. Laisse vide si le serveur n’en demande pas. Une fois enregistré, le mot de passe n’est plus jamais affiché.",
       "senderIntro": "L’adresse d’où partent les e-mails de Hodi, par exemple no-reply@exemple.be. Le serveur d’envoi doit accepter de l’utiliser.",
       "toFill": "À remplir"
     },
     "logout": "Se déconnecter",
     "notifications": {
       "title": "Alertes",
-      "intro": "Comment le serveur te prévient de chaque chose : par e-mail à ton adresse, en push sur tes appareils, ou les deux. Tout reste aussi dans <i>Notifications</i>.",
+      "intro": "Comment le serveur te prévient de chaque chose : par e-mail, en push sur les appareils où tu es connecté, ou les deux. Tout reste aussi dans <i>Notifications</i>.",
       "core": "Serveur",
       "thisDevice": "Cet appareil",
       "device": "Push sur cet appareil",
@@ -2438,7 +2431,7 @@
     },
     "reset": {
       "subject": "Hodi : choisir un nouveau mot de passe",
-      "eyebrow": "Ton compte",
+      "eyebrow": "Mon compte",
       "title": "Nouveau mot de passe",
       "text": "Un nouveau mot de passe a été demandé pour le compte Hodi {{email}}. Entre ce code sur la page Mot de passe oublié, ou ouvre le bouton : il est valable une heure, une seule fois.",
       "button": "Choisir un mot de passe",
@@ -2471,15 +2464,15 @@
     "invite": {
       "subject": "{{name}} t’invite sur Hodi",
       "title": "Invitation sur Hodi",
-      "text": "{{name}} t’invite sur Hodi. Avec ce code, tu crées ton propre compte. Il est valable 24 heures, une seule fois.",
-      "code": "Ton code : {{code}}",
+      "text": "{{name}} t’invite sur Hodi. Avec ce code, tu crées un compte à toi. Il est valable 24 heures, une seule fois.",
+      "code": "Le code : {{code}}",
       "button": "Créer mon compte",
       "note": "Si tu ne connais pas cette personne, ignore cet e-mail : sans le code, rien ne se passe."
     }
   },
   "forgot": {
     "title": "Mot de passe oublié",
-    "intro": "Entre l’e-mail de ton compte. Tu y reçois un code de 8 caractères, puis tu choisis un nouveau mot de passe.",
+    "intro": "Entre l’e-mail du compte. Tu y reçois un code de 8 caractères, puis tu choisis un nouveau mot de passe.",
     "send": "Envoyer un code",
     "haveCode": "J’ai un code",
     "codeTitle": "Entre le code",
@@ -2492,16 +2485,16 @@
     "wrongCode": "Ce code ne marche pas : il a peut-être déjà servi, ou son heure est passée. Demandes-en un autre.",
     "failed": "Le code n’a pas pu partir. Réessaie dans un instant.",
     "newTitle": "Nouveau mot de passe",
-    "newIntro": "Pour <b>{{email}}</b>. Une fois enregistré, tes autres appareils se déconnectent et celui-ci se connecte avec le nouveau.",
+    "newIntro": "Pour <b>{{email}}</b>. Une fois enregistré, les autres appareils se déconnectent et celui-ci se connecte avec le nouveau.",
     "save": "Enregistrer",
     "doneTitle": "C’est fait",
-    "doneIntro": "Ton nouveau mot de passe est enregistré. Il te sert désormais sur chacun de tes appareils : garde-le dans un gestionnaire de mots de passe pour ne plus avoir à le chercher.",
+    "doneIntro": "Le nouveau mot de passe est enregistré. Il sert désormais sur chaque appareil : garde-le dans un gestionnaire de mots de passe pour ne plus avoir à le chercher.",
     "doneNotice": "Mot de passe changé",
-    "doneText": "Tes autres appareils sont déconnectés, celui-ci est déjà connecté.",
+    "doneText": "Les autres appareils sont déconnectés, celui-ci est déjà connecté.",
     "enter": "Entrer dans Hodi",
-    "askIntro": "Ce serveur n’envoie pas d’e-mails : c’est son admin qui te fait un code de 8 caractères. Entre l’e-mail de ton compte et demande-le : l’admin est prévenu et te transmet le code.",
+    "askIntro": "Ce serveur n’envoie pas d’e-mails : c’est son admin qui te fait un code de 8 caractères. Entre l’e-mail du compte et demande-le : l’admin est prévenu et te transmet le code.",
     "ask": "Demander",
-    "askedIntro": "L’admin du serveur a reçu ta demande. Dès qu’il t’a transmis le code, entre-le ici. Il reste valable 24 heures et ne sert qu’une fois.",
+    "askedIntro": "L’admin du serveur a reçu la demande. Dès qu’il t’a transmis le code, entre-le ici. Il reste valable 24 heures et ne sert qu’une fois.",
     "askedIntroTyped": "Les 8 caractères que l’admin du serveur t’a transmis. Le code reste valable 24 heures et ne sert qu’une fois."
   },
   "twoFactor": {
@@ -2586,11 +2579,11 @@
   },
   "seo": {
     "title": "Hodi - L’actu pour toute la famille, gratuite et partout",
-    "description": "Tes sites d’actualités préférés, triés par thème et réunis au même endroit. Un compte pour chacun, et on partage ce qui vaut la peine d’être lu."
+    "description": "Les sites d’actualités que tu préfères, triés par thème et réunis au même endroit. Un compte pour chacun, et on partage ce qui vaut la peine d’être lu."
   },
   "noHousehold": {
     "title": "Tu n’as plus de foyer",
-    "text": "Ton compte <b>{{email}}</b> n’est plus dans aucun foyer, mais il existe toujours : tu le retrouves dans <i>Mon compte</i>. Pour rejoindre un foyer, déconnecte-toi, puis entre dans <i>J’ai un code</i> celui qu’un de ses adultes te donne.",
+    "text": "Le compte <b>{{email}}</b> n’est plus dans aucun foyer, mais il existe toujours : tu le retrouves dans <i>Mon compte</i>. Pour rejoindre un foyer, déconnecte-toi, puis entre dans <i>J’ai un code</i> celui qu’un de ses adultes te donne.",
     "deleteMessage": "<b>{{email}}</b> est effacé tout de suite. Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
     "account": "Mon compte"
   },
@@ -2706,23 +2699,23 @@
     "title": "Catalogue",
     "official": "Officielles",
     "parts": "Sections",
-    "intro": "Les sources de ce thème sur le serveur, dans ta langue d’abord. Le bouton + en ajoute une à tes sources, le bouton − l’en retire.",
-    "introOfficial": "Les sources choisies avec Hodi, dans ta langue d’abord. Les sources de base sont déjà dans les tiennes ; le bouton + en ajoute d’autres.",
+    "intro": "Les sources de ce thème sur le serveur, celles en français d’abord. Le bouton + en ajoute une à <i>Mes sources</i>, le bouton − l’en retire.",
+    "introOfficial": "Les sources choisies avec Hodi, celles en français d’abord. Les sources de base sont déjà dans <i>Mes sources</i> ; le bouton + en ajoute d’autres.",
     "search": "Chercher une source",
     "searching": "Recherche",
-    "mine": "dans tes sources",
-    "add": "Ajouter {{name}} à tes sources",
-    "addShort": "Ajouter à tes sources",
-    "remove": "Retirer {{name}} de tes sources",
-    "removeShort": "Retirer de tes sources",
+    "mine": "dans Mes sources",
+    "add": "Ajouter {{name}} à Mes sources",
+    "addShort": "Ajouter à Mes sources",
+    "remove": "Retirer {{name}} de Mes sources",
+    "removeShort": "Retirer de Mes sources",
     "openSite": "Ouvrir le site",
-    "added": "{{name}} ajoutée à tes sources",
-    "removed": "{{name}} retirée de tes sources",
+    "added": "{{name}} ajoutée à Mes sources",
+    "removed": "{{name}} retirée de Mes sources",
     "addFailed": "La source n’a pas pu être ajoutée. Réessaie dans un instant.",
     "browse": "Parcourir le catalogue",
     "empty": {
       "title": "Aucune source",
-      "text": "Rien ne correspond à ta recherche."
+      "text": "Rien ne correspond à cette recherche."
     }
   }
 }

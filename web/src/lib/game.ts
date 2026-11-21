@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import { type GameNews, type HouseholdGame, getHouseholdGame, markGameSeen, setGameEnabled } from '../api.ts'
+import { type GameNews, type HouseholdGame, getHouseholdGame, markGameSeen } from '../api.ts'
 import { currentProfileId } from './profiles.ts'
 import { subscribeChangesSent } from './user-state.ts'
 
@@ -60,6 +60,19 @@ const rememberOn = (on: boolean) => {
     // Private window: the colour ring shows until the answer, as before.
   }
 }
+// What the avatars show: the server's answer, with the person's own choice of levels and badges (null: the server's).
+let ownChoice: boolean | null = null
+let shown: HouseholdGame | null = null
+const show = () => {
+  shown = game && { ...game, enabled: ownChoice ?? game.enabled }
+  listeners.forEach(listener => listener())
+}
+export const setOwnGame = (choice: boolean | null) => {
+  if (choice === ownChoice) return
+  ownChoice = choice
+  show()
+}
+
 let loading: Promise<void> | null = null
 let watchers = 0
 const listeners = new Set<() => void>()
@@ -79,8 +92,8 @@ export const refreshGame = () => {
         playedAt = 0
       }
       game = next
-      rememberOn(next.enabled)
-      listeners.forEach(listener => listener())
+      rememberOn(ownChoice ?? next.enabled)
+      show()
     })
     .catch(() => {})
     .finally(() => {
@@ -94,7 +107,7 @@ export const refreshGame = () => {
 let earned = false
 
 export const refreshGameSoon = () => {
-  if (game?.enabled === false) return
+  if (shown?.enabled === false) return
   earned = true
 }
 
@@ -114,7 +127,7 @@ const focused = () => void refreshGame()
 
 // null while unknown. active false: neither fetched nor watched (an avatar outside the game).
 const useGame = (active: boolean) => {
-  const value = useSyncExternalStore(subscribe, () => game)
+  const value = useSyncExternalStore(subscribe, () => shown)
   useEffect(() => {
     if (!active) return
     if (!game) void refreshGame()
@@ -138,13 +151,8 @@ export const useHouseholdGame = (active = true) => {
   return value?.enabled ? value : null
 }
 
-// The admin's switch (Réglages > Foyer): null while unknown.
+// The person's switch (Mon compte › Profil): null while unknown.
 export const useGameEnabled = () => useGame(true)?.enabled ?? null
-
-export const switchGame = async (enabled: boolean) => {
-  await setGameEnabled(enabled)
-  await refreshGame()
-}
 
 // A profile's level and badge, for its avatar; null when the game is off, or for no profile. 'loading' while the
 // first answer is on its way in a household where the game was on.

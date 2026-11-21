@@ -33,7 +33,7 @@ describe('hash routes', () => {
     expect(parseRoute(watchHref('v1'))).toEqual({ name: 'listen', itemId: 'v1' })
     expect(parseRoute(storyHref('world'))).toEqual({ name: 'story', topicId: 'world' })
     expect(parseRoute(requestHref(12))).toEqual({ name: 'settings', section: null, request: 12 })
-    expect(parseRoute(youngProfileHref(3))).toEqual({ name: 'settings', section: 'profiles', item: '3' })
+    expect(parseRoute(youngProfileHref(3))).toEqual({ name: 'account', part: 'children', item: '3' })
     expect(parseRoute(pluginPageHref('diagnostic'))).toEqual({
       name: 'settings',
       section: 'plugin',
@@ -111,10 +111,16 @@ describe('hash routes', () => {
 
   it('links to English addresses only', () => {
     expect(searchHref('liège')).toBe('#/search/li%C3%A8ge')
-    expect(settingsHref('profiles')).toBe('#/settings/profiles')
+    expect(youngProfileHref(3)).toBe('#/account/children/3')
     expect(settingsHref('themes')).toBe('#/settings/topics')
     expect(requestHref(4)).toBe('#/settings/requests/4')
     expect(storyHref('monde')).toBe('#/stories/monde')
+  })
+
+  it('sends Réglages › Ados et enfants, which went, to Mon compte › Mes enfants', () => {
+    expect(parseRoute('#/settings/profiles')).toEqual({ name: 'account', part: 'children' })
+    expect(parseRoute('#/settings/profiles/3')).toEqual({ name: 'account', part: 'children', item: '3' })
+    expect(parseRoute('#/reglages/profils/3')).toEqual({ name: 'account', part: 'children', item: '3' })
   })
 
   it('turns the French addresses of earlier versions into English ones', () => {
