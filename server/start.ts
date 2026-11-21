@@ -113,7 +113,8 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
     sources: {
       store: stores.sources,
       find: createSourceFinder({ fetchText: outside.findFetchText, isPublic: outside.isPublicLink }),
-      file: stores.file
+      file: stores.file,
+      reviews: stores.sourceReviews
     }
   }).listen(config.port, config.host, () => {
     console.log(`hodi listening on http://${config.host}:${config.port}`)

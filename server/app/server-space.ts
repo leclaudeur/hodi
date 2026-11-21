@@ -1,4 +1,6 @@
 import { serverInboxRoutes } from '../http/server-inbox-routes.ts'
+import { sourceReviewRoutes } from '../http/source-review-routes.ts'
+import { sourceReviewKey } from '../notices/source-review.ts'
 import { codeRequestKey, freshRequest } from '../notices/code-request.ts'
 import type express from 'express'
 import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
@@ -70,10 +72,28 @@ const mountNotices = (api: express.Router, { options }: Wiring) => {
     serverNoticeRoutes({
       store: serverNotices.store,
       accountOf: response => accountAsking(response, accounts)?.id ?? null,
-      coreKinds: ['code-request', 'weekly-report'],
+      coreKinds: ['code-request', 'source-review', 'weekly-report'],
       plugins: noticePlugins(plugins),
       mailReady: () => serverMail?.store.get() != null,
       publicKey: serverNotices.publicKey || null,
+      now
+    })
+  )
+}
+
+// À traiter's sources: the decision on each, and Serveur › Contenu's « Valider les sources ».
+const mountReviews = (api: express.Router, { options }: Wiring) => {
+  const { sources, news, users, profiles, serverInbox, now } = options
+  if (!sources?.reviews) return
+  api.use(
+    '/server/reviews',
+    requireServerAdmin,
+    sourceReviewRoutes({
+      reviews: sources.reviews,
+      news,
+      sources: sources.store,
+      onAccepted: () => profiles?.list().forEach(profile => users?.(profile.id).sources.catalogueChanged(now())),
+      onDecided: sourceId => serverInbox?.notifier.handled?.(sourceReviewKey(sourceId)),
       now
     })
   )
@@ -101,6 +121,7 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
   mountNotices(api, wiring)
   const inbox = options.serverInbox?.store
   if (inbox) api.use('/server/inbox', requireServerAdmin, serverInboxRoutes(inbox))
+  mountReviews(api, wiring)
   if (!serverStats) return
   api.use(
     '/server',

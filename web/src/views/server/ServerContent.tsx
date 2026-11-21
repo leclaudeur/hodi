@@ -1,7 +1,14 @@
 import { Pencil } from 'lucide-react'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { type ContentKey, type ServerContent as Content, getServerContent, setServerContent } from '../../api.ts'
+import {
+  type ContentKey,
+  type ServerContent as Content,
+  getServerContent,
+  getSourceReviews,
+  setServerContent,
+  setSourceValidation
+} from '../../api.ts'
 import { contentDays, setContentDays } from '../../lib/content-days.ts'
 import { showError, showSaved } from '../../lib/toast.ts'
 import Button from '../../ui/Button.tsx'
@@ -158,7 +165,32 @@ const MaxSourcesDialog = ({ open, content, onClose, onSaved }: MaxSourcesDialogP
   )
 }
 
-// Serveur › Contenu: how long the server keeps what it fetches, and how many sources a household may follow.
+// « Valider les sources »: a source someone adds waits in À traiter before the others can add it.
+const ValidationRow = () => {
+  const { t } = useTranslation()
+  const [on, setOn] = useState<boolean | null>(null)
+  useEffect(() => {
+    getSourceReviews()
+      .then(answer => setOn(answer.validating))
+      .catch(() => setOn(null))
+  }, [])
+  if (on === null) return null
+  const change = (next: boolean) => {
+    setOn(next)
+    setSourceValidation(next).catch(() => {
+      setOn(!next)
+      showError(t('server.content.validation.failed'))
+    })
+  }
+  return (
+    <SettingRow label={t('server.content.validation.label')} hint={t('server.content.validation.hint')}>
+      <Toggle label={t('server.content.validation.label')} checked={on} onChange={change} />
+    </SettingRow>
+  )
+}
+
+// Serveur › Contenu: how long the server keeps what it fetches, how many sources a household may follow, and whether
+// a new one waits for the admin.
 const ServerContent = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
   const [content, setContent] = useState<Content | null>(null)
@@ -205,6 +237,7 @@ const ServerContent = ({ layout }: { layout: 'desktop' | 'phone' }) => {
               }
               action={{ label: t('common.change'), icon: Pencil, onClick: () => setLimitOpen(true) }}
             />
+            <ValidationRow />
           </div>
           <MaxSourcesDialog
             key={limitOpen ? 'open' : 'closed'}

@@ -12,6 +12,7 @@ import { sourceViewRoutes } from '../http/source-view-routes.ts'
 import { userRoutes } from '../http/user-routes.ts'
 import { mySourcesRoutes } from '../http/my-sources-routes.ts'
 import { allSources } from '../news/catalog.ts'
+import { SOURCE_REVIEW, sourceReviewKey, sourceReviewNotice } from '../notices/source-review.ts'
 import { withPluginFeeds } from '../plugins/feeds.ts'
 import type { Wiring } from './wiring.ts'
 
@@ -33,7 +34,9 @@ const mountProfileState = (api: express.Router, { options, youthSources, session
     '/me/sources',
     mySourcesRoutes({
       users: response => users(profileIdOf(response)),
-      listed: id => news.getSourceStatuses().some(source => source.id === id),
+      // Out of the catalogue (À traiter, refused): not someone else's to add by id.
+      listed: id =>
+        !options.sources?.reviews?.unlisted().has(id) && news.getSourceStatuses().some(source => source.id === id),
       lock,
       now
     })
@@ -62,10 +65,29 @@ const mountStorage = (api: express.Router, { options }: Wiring) => {
   })
 }
 
+// While the server validates sources, a new one waits in À traiter: only its adder reads it until the admin decides.
+const askReview = ({ options }: Wiring, sourceId: string) => {
+  const reviews = options.sources?.reviews
+  const source = options.news.getSourceStatuses().find(candidate => candidate.id === sourceId)
+  if (!reviews || !source) return
+  reviews.ask(sourceId, options.now())
+  options.serverInbox?.notifier
+    .tell(SOURCE_REVIEW, language => sourceReviewNotice(source, language), { important: sourceReviewKey(sourceId) })
+    .catch((error: unknown) => console.error(`Source review not told: ${String(error)}`))
+}
+
 // "Ajouter une source".
-const mountSources = (api: express.Router, { options }: Wiring) => {
+const mountSources = (api: express.Router, wiring: Wiring) => {
+  const { options } = wiring
   const { sources, news, plugins, serverSettings, users, profiles, now } = options
   if (!sources) return
+  const reviews = sources.reviews
+  // Everyone else's list hears of one more in the catalogue.
+  const toOthers = (profileId: number | null) =>
+    profiles
+      ?.list()
+      .filter(profile => profile.id !== profileId)
+      .forEach(profile => users?.(profile.id).sources.catalogueChanged(now()))
   api.use(
     '/sources',
     sourceRoutes({
@@ -78,11 +100,18 @@ const mountSources = (api: express.Router, { options }: Wiring) => {
       // In its adder's « Mes sources » only: the others add it from the catalogue if they want it.
       onAdded: (sourceId, profileId) => {
         users?.(profileId).sources.add([sourceId], now())
-        profiles
-          ?.list()
-          .filter(profile => profile.id !== profileId)
-          .forEach(profile => users?.(profile.id).sources.catalogueChanged(now()))
+        if (reviews?.validating()) askReview(wiring, sourceId)
+        else toOthers(profileId)
       },
+      ...(reviews
+        ? {
+            unlisted: () => reviews.unlisted(),
+            onAddedAgain: (sourceId: string, profileId: number) => {
+              users?.(profileId).sources.add([sourceId], now())
+              if (reviews.get(sourceId)?.state === 'refused') askReview(wiring, sourceId)
+            }
+          }
+        : {}),
       now
     })
   )
@@ -96,6 +125,7 @@ export const mountReading = (api: express.Router, wiring: Wiring) => {
     sourceViewRoutes({
       ...{ news, users, youth, icons, now },
       readers: sources && (() => sources.store.readers()),
+      unlisted: sources?.reviews && (() => sources.reviews?.unlisted() ?? new Set<string>()),
       official: sources && (() => new Set(allSources(sources.file).map(source => source.id)))
     })
   )

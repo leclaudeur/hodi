@@ -25,7 +25,8 @@ import ServerBackups from './ServerBackups.tsx'
 import ServerContent from './ServerContent.tsx'
 import ServerGeneral from './ServerGeneral.tsx'
 import ServerMail from './ServerMail.tsx'
-import ServerInbox from './ServerInbox.tsx'
+import InboxList from './inbox/InboxList.tsx'
+import InboxPage from './inbox/InboxPage.tsx'
 import ServerNotifications from './ServerNotifications.tsx'
 import ServerOverview from './ServerOverview.tsx'
 import AccountPage from './AccountPage.tsx'
@@ -46,7 +47,7 @@ const Page = ({ section, item, layout }: { section: ServerSection; item?: string
     case 'overview':
       return <ServerOverview layout={layout} />
     case 'inbox':
-      return <ServerInbox layout={layout} />
+      return <InboxPage item={item} layout={layout} />
     case 'backups':
       return <ServerBackups layout={layout} />
     case 'general':
@@ -147,6 +148,7 @@ const desktopSpace = (section: ServerSection | null, item: string | undefined, p
     <div className={homeStyles.desktop}>
       <ServerSidebar active={open} />
       {isList(open) && <PeopleList kind={open} active={shown} />}
+      {open === 'inbox' && <InboxList active={item} />}
       <main className={homeStyles.main}>
         <ScrollArea className={homeStyles.panel}>
           <Page key={`${open}-${shown ?? ''}`} section={open} item={shown} layout="desktop" />
@@ -164,6 +166,13 @@ const phoneSpace = (
   t: TFunction
 ) => {
   if (!section) return <ServerHome />
+  if (section === 'inbox' && !item) return <InboxList />
+  if (section === 'inbox')
+    return (
+      <MobilePage title={t('server.titles.inbox')} backHref={serverHref('inbox')} backLabel={t('server.inbox.back')}>
+        <Page section={section} item={item} layout="phone" />
+      </MobilePage>
+    )
   if (isList(section)) {
     if (!item) return <PeopleList kind={section} />
     return (

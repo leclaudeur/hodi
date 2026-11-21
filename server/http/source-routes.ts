@@ -44,6 +44,10 @@ interface SourceRoutesOptions {
   maxSources: () => number | null
   // Turned off for the household's other profiles.
   onAdded: (sourceId: string, profileId: number) => void
+  // Out of the catalogue (À traiter, refused): its link is free to add again.
+  unlisted?: () => Set<string>
+  // Its link added again while it is out of the catalogue: in this person's list, back to À traiter if refused.
+  onAddedAgain?: (sourceId: string, profileId: number) => void
   now: () => number
 }
 
@@ -114,7 +118,7 @@ type SourceHelpers = ReturnType<typeof sourceHelpers>
 
 const mountFindRoutes = (
   router: express.Router,
-  { news, sources, maxSources }: SourceRoutesOptions,
+  { news, sources, maxSources, unlisted }: SourceRoutesOptions,
   { lookUp, linkOf }: SourceHelpers
 ) => {
   router.post('/find', async (request, response) => {
@@ -124,7 +128,9 @@ const mountFindRoutes = (
       return
     }
     const result = await lookUp(link)
-    const followed = result.status === 'ok' ? sources.findByUrl(result.source.url) : null
+    const known = result.status === 'ok' ? sources.findByUrl(result.source.url) : null
+    // One out of the catalogue is not said to exist: adding it puts it in this person's list.
+    const followed = known && !unlisted?.().has(known.id) ? known : null
     response.json({
       ...result,
       // Already in the catalogue: nothing to add.
@@ -226,7 +232,7 @@ const mountProposalRoutes = (
 
 const mountAddRoute = (
   router: express.Router,
-  { sources }: SourceRoutesOptions,
+  { sources, unlisted, onAddedAgain }: SourceRoutesOptions,
   { full, lookUp, linkOf, topicIdsOf, save }: SourceHelpers
 ) => {
   router.post('/', async (request, response) => {
@@ -249,7 +255,13 @@ const mountAddRoute = (
       return
     }
     const { source: found } = result
-    if (sources.findByUrl(found.url)) {
+    const known = sources.findByUrl(found.url)
+    if (known && onAddedAgain && unlisted?.().has(known.id)) {
+      onAddedAgain(known.id, profileId)
+      response.status(201).json({ id: known.id, name: known.name })
+      return
+    }
+    if (known) {
       response.status(409).json({ error: 'followed' })
       return
     }

@@ -2017,7 +2017,7 @@
       "mail": "E-mail",
       "plugins": "Plugins",
       "notifications": "Alertes",
-      "inbox": "Notifications"
+      "inbox": "À traiter"
     },
     "pluginsIntro": "Des fonctions en plus, pour tout le serveur, depuis le registre de Hodi ou un fichier. Chaque plugin tourne à part, avec ses propres données. Seuls les plugins vérifiés ajoutent des pages à Hodi.",
     "hints": {
@@ -2258,6 +2258,11 @@
         "toggle": "Limiter les sources",
         "toggleHint": "Sinon, chaque foyer en ajoute autant qu’il veut.",
         "unlimited": "Illimité"
+      },
+      "validation": {
+        "label": "Valider les sources",
+        "hint": "Une source ajoutée attend dans À traiter avant d’entrer dans le catalogue",
+        "failed": "Le réglage n’a pas pu être enregistré. Réessaie dans un instant."
       }
     },
     "backups": {
@@ -2366,17 +2371,58 @@
       "codeRequest": {
         "label": "Demandes de code",
         "hint": "Quand quelqu’un a oublié son mot de passe"
+      },
+      "sourceReview": {
+        "label": "Sources à valider",
+        "hint": "Quand une source ajoutée attend une décision"
       }
     },
     "inbox": {
-      "intro": "Ce que le serveur te signale. Les demandes à traiter restent en haut, en orange, jusqu’à ce que tu les règles.",
-      "waiting": "À traiter",
-      "earlier": "Plus tôt",
-      "open": "Voir",
-      "openName": "Voir : {{title}}",
+      "intro": "Ce que le serveur te dit. Les demandes à traiter restent en haut, en orange, jusqu’à ce qu’elles soient réglées.",
+      "open": {
+        "code": "Ouvrir le compte",
+        "report": "Voir la vue d’ensemble",
+        "plugin": "Ouvrir",
+        "source": "Ouvrir"
+      },
       "emptyTitle": "Rien pour l’instant",
       "emptyHint": "Ce que le serveur te signale arrive ici.",
-      "choose": "Choisir comment être prévenu"
+      "choose": "Choisir comment être prévenu",
+      "meta_one": "{{count}} à traiter",
+      "meta_other": "{{count}} à traiter",
+      "filter": "Filtrer par sorte",
+      "kinds": {
+        "all": "Tout",
+        "source": "Sources",
+        "code": "Mots de passe",
+        "report": "Rapports",
+        "plugin": "Plugins"
+      },
+      "failed": "Impossible de charger À traiter",
+      "back": "Retour à À traiter",
+      "noneTitle": "Rien à traiter",
+      "noneHint": "Ce que le serveur te dit arrive ici.",
+      "handled": "Traité le {{date}}",
+      "source": {
+        "kinds": {
+          "article": "Articles",
+          "video": "Vidéos",
+          "podcast": "Podcasts"
+        },
+        "topics": "Thèmes de {{name}}",
+        "teen": "OK ados",
+        "teenHint": "Les parents peuvent la donner à un ado",
+        "child": "OK enfants",
+        "childHint": "Les parents peuvent la donner à un enfant",
+        "refuse": "Refuser",
+        "accept": "Accepter",
+        "accepted": "{{name}} acceptée dans le catalogue",
+        "refused": "{{name}} refusée",
+        "failed": "La décision n’a pas pu être enregistrée. Réessaie dans un instant.",
+        "what": "La source",
+        "topicsLabel": "Ses thèmes",
+        "young": "Pour les jeunes"
+      }
     }
   },
   "mail": {
@@ -2427,6 +2473,11 @@
       "code": "Le code : {{code}}",
       "button": "Créer mon compte",
       "note": "Si tu ne connais pas cette personne, ignore cet e-mail : sans le code, rien ne se passe."
+    },
+    "sourceReview": {
+      "eyebrow": "Serveur",
+      "title": "Source à valider : {{name}}",
+      "text": "{{name}} vient d’être ajoutée. Elle reste hors du catalogue tant qu’elle n’est pas acceptée dans À traiter."
     }
   },
   "forgot": {
