@@ -50,10 +50,11 @@ const setWriting = (next: boolean) => {
 export const useDailySummaryWriting = () => useSyncExternalStore(subscribe, () => writing)
 
 export const DAILY_SUMMARY_ERRORS: Partial<
-  Record<DailySummaryResult['status'], `dailySummary.errors.${'failed' | 'refused'}`>
+  Record<DailySummaryResult['status'], `dailySummary.errors.${'failed' | 'refused' | 'limited'}`>
 > = {
   failed: 'dailySummary.errors.failed',
-  refused: 'dailySummary.errors.refused'
+  refused: 'dailySummary.errors.refused',
+  limited: 'dailySummary.errors.limited'
 }
 
 // Said in a toast too: writing takes a while, the page may be left meanwhile, and a daily summary already

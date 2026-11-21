@@ -13,7 +13,8 @@ const AI_ERROR_STATUS = {
   unknown: 404,
   unreadable: 422,
   failed: 502,
-  refused: 422
+  refused: 422,
+  limited: 429
 } as const
 
 const ITEM_ID_PATTERN = /^[\w-]{16}$/

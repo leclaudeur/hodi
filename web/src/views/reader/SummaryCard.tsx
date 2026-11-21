@@ -14,9 +14,10 @@ type State =
   | { status: 'ok'; points: string[] }
   | { status: 'error'; message: ErrorKey; retry: boolean }
 
-type ErrorKey = `summary.errors.${'refused' | 'unreadable' | 'unknown' | 'unavailable' | 'failed'}`
+type ErrorKey = `summary.errors.${'limited' | 'refused' | 'unreadable' | 'unknown' | 'unavailable' | 'failed'}`
 
 const errorMessages: Record<string, { message: ErrorKey; retry: boolean }> = {
+  limited: { message: 'summary.errors.limited', retry: false },
   refused: { message: 'summary.errors.refused', retry: false },
   unreadable: { message: 'summary.errors.unreadable', retry: false },
   unknown: { message: 'summary.errors.unknown', retry: false },

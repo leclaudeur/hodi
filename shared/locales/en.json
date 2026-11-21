@@ -842,7 +842,8 @@
       "unreadable": "This article can’t be summarized.",
       "unknown": "This article has left the feeds.",
       "unavailable": "AI summaries aren’t turned on on the server.",
-      "failed": "The summary couldn’t be written."
+      "failed": "The summary couldn’t be written.",
+      "limited": "Too many requests to the AI in a minute. Try again in a moment."
     }
   },
   "questions": {
@@ -857,7 +858,8 @@
       "unreadable": "This article can’t be analysed.",
       "unknown": "This article has left the feeds.",
       "unavailable": "AI questions aren’t turned on on the server.",
-      "noAnswer": "No answer for now. Try again."
+      "noAnswer": "No answer for now. Try again.",
+      "limited": "Too many requests to the AI in a minute. Try again in a moment."
     }
   },
   "shareMenu": {
@@ -915,7 +917,8 @@
     "bubble": "Summary",
     "errors": {
       "failed": "The Daily summary couldn’t be written.",
-      "refused": "The AI refused to write the Daily summary."
+      "refused": "The AI refused to write the Daily summary.",
+      "limited": "Too many requests to the AI in a minute. Try again in a moment."
     },
     "yesterdayAt": "YESTERDAY {{time}}",
     "writingShort": "Writing…",
@@ -1586,7 +1589,8 @@
       "unavailable": "AI isn’t turned on on this server.",
       "not_found": "This topic is gone.",
       "refused": "The AI couldn’t suggest sources for this topic.",
-      "failed": "The suggestions could not be made. Try again in a moment."
+      "failed": "The suggestions could not be made. Try again in a moment.",
+      "limited": "Too many requests to the AI in a minute. Try again in a moment."
     },
     "noFeed": "None of the sites has a readable feed. Try again later.",
     "last": "Last article: {{title}}"
@@ -1988,7 +1992,7 @@
     "aiButton": {
       "unavailable": "AI isn’t turned on for this household.",
       "off": "The household’s admin turned this plugin’s AI off.",
-      "limited": "This plugin asked the AI enough for this hour. Try again later.",
+      "limited": "Too many requests to the AI for now. Try again later.",
       "refused": "The AI declined to answer this request.",
       "failed": "The request didn’t go through. Try again in a moment."
     },

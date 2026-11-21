@@ -11,8 +11,9 @@ own:
 - **A plugin's purple button**: a signed plugin with the permission asks one question per click. It is never shown to
   a teen or a child.
 
-There is no daily cap: each account pays for what it uses with its own key. A plugin may still ask at most 10 times
-an hour, so a plugin's bug cannot empty a key.
+There is no daily cap: each account pays for what it uses with its own key. A runaway guard stays: past 30 calls in
+one minute, a person's next calls are refused, with nothing sent, until the minute has passed. A plugin may still ask
+at most 10 times an hour, so a plugin's bug cannot empty a key.
 
 _AI and credits_ shows the account's own calls of the last 24 hours, kind by kind, and its country, used for the AI's
 web searches. Once a plugin has a purple button, the admin's page lists it with their calls of the last 24
