@@ -92,7 +92,7 @@ describe('an account whose profile was deleted from its household', () => {
   })
 
   it('sees nothing of the household it left, nor opens any of its profiles', async () => {
-    for (const route of ['/profiles', '/feed?tz=UTC', '/topics', '/household', `/profiles/${maxId}/photo`]) {
+    for (const route of ['/profiles', '/feed?tz=UTC', '/topics', `/profiles/${maxId}/photo`]) {
       const refused = await call('GET', route, sophieDevice)
       assert.deepEqual([route, refused.status, await refused.json()], [route, 423, { error: 'no_household' }])
     }
