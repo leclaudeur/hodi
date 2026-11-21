@@ -58,7 +58,7 @@ small hooks under `lib/`.
 
 - **Migrations**: a schema change is a new entry at the end of `db/migrations.ts`
 - **Outgoing requests**: through `news/fetch-text.ts`, and the SSRF guard for any URL a user gives
-- **AI**: through `news/ai-providers.ts`, only from a click, counted against the daily caps
+- **AI**: through `news/ai-providers.ts`, only from a click, counted in each account's usage
 - **Households**: `db/household-scope.ts` keeps the request's household, so a route never sees another's
 
 A feed is one row of `sources` for the whole server, fetched once whoever follows it. Which household follows it, and
