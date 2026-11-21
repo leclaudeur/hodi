@@ -82,6 +82,8 @@ const ChildrenPart = ({ account, onAccount }: ChildrenPartProps) => {
           if (child) setChildren([...children, child])
         }}
       />
+      {/* Under the requests, its own label: a request is never read as one of the children. */}
+      {invitations.length > 0 && <h2 className={styles.label}>{t('children.listTitle')}</h2>}
       {children.length === 0 ? (
         <EmptyState icon={<Users size={28} />} title={t('children.empty.title')} compact>
           {t('children.empty.text')}

@@ -335,7 +335,6 @@
       "resetIntro": "Avec ce code, {{name}} choisit un nouveau mot de passe. Sur son appareil, {{name}} ouvre Hodi, choisit <i>J’ai un code</i> sur la page Connexion et tape ces 8 caractères, puis son nouveau mot de passe. <b>Ses autres appareils se déconnectent</b> : il faudra s’y reconnecter avec le nouveau."
     },
     "wrongPassword": "Ce mot de passe n’est pas le bon.",
-    "passwordOf": "Mot de passe de {{name}}",
     "yourPassword": "Mot de passe",
     "open": "Ouvrir",
     "noAccount": "{{name}} n’a pas encore de compte. Son profil s’ouvrira quand {{name}} l’aura créé avec son code.",
@@ -346,13 +345,13 @@
     "trustDevice": "Ne plus demander sur cet appareil",
     "addAccount": {
       "title": "Ajouter mon compte",
-      "intro": "Connecte-toi pour retrouver ton profil sur cet appareil. Les comptes déjà ajoutés à <i>Qui lit ?</i> restent comme ils sont.",
+      "intro": "Connecte-toi pour ajouter un compte à cet appareil. Les comptes déjà ajoutés à <i>Qui lit ?</i> restent comme ils sont.",
       "submit": "Se connecter",
       "otherHousehold": "<b>{{email}}</b> est dans le foyer <b>{{household}}</b>, et cet appareil sert le foyer <b>{{here}}</b>.",
       "recovery": "Code de secours",
       "app": "Code de l’app"
     },
-    "forgotCode": "Code oublié ? Ton mot de passe"
+    "forgotCode": "Code oublié ? Le mot de passe du compte"
   },
   "limits": {
     "fiveMinutes": "Plus que 5 minutes de lecture aujourd’hui",
@@ -447,8 +446,6 @@
     "perDayCount": "{{count}} / jour",
     "channels": "Chaînes YouTube",
     "devices": "Appareils",
-    "ownDevice": "Son appareil",
-    "ownDeviceHint": "Un code, sur sa tablette ou son téléphone",
     "removeDevice": "Retirer",
     "removeDeviceLabel": "Retirer {{device}}",
     "deviceRemoved": "{{device}} retiré",
@@ -893,7 +890,7 @@
     "handle": "Son identifiant",
     "handlePlaceholder": "identifiant",
     "add": "Ajouter",
-    "unknown": "Personne à qui l’envoyer avec cet identifiant.",
+    "unknown": "Ce compte n’existe pas.",
     "findFailed": "La recherche n’a pas abouti. Réessaie."
   },
   "share": {
@@ -2624,7 +2621,7 @@
   },
   "children": {
     "create": {
-      "title": "Créer un compte",
+      "title": "Ajouter un enfant",
       "passwordTitle": "Le mot de passe de {{name}}",
       "button": "Créer",
       "done": "Compte de {{name}} créé",
@@ -2632,8 +2629,8 @@
       "failed": "Le compte n’a pas pu être créé. Réessaie."
     },
     "empty": {
-      "title": "Aucun compte pour l’instant",
-      "text": "Crée le compte d’un ado ou d’un enfant : il se connecte avec son identifiant."
+      "title": "Aucun enfant pour l’instant",
+      "text": "Ajoute le compte d’un ado ou d’un enfant : il se connecte avec son identifiant."
     },
     "password": {
       "label": "Mot de passe",
@@ -2644,68 +2641,66 @@
       "title": "Le mot de passe de {{name}}",
       "intro": "Ses appareils se connectent avec <b>@{{handle}}</b> et ce mot de passe. Ceux qui utilisaient l’ancien devront se reconnecter.",
       "confirmTitle": "Changer le mot de passe de {{name}} ?",
-      "confirmText": "Tape ton propre mot de passe pour confirmer.",
+      "confirmText": "Pour confirmer, tape le mot de passe avec lequel tu te connectes.",
       "saved": "Mot de passe de {{name}} enregistré",
       "actionLabel": "Mot de passe de {{name}}"
     },
-    "loadFailed": "Impossible de charger tes enfants.",
+    "loadFailed": "Impossible de charger les enfants.",
     "parents": {
       "title": "Parents",
-      "you": "Toi",
-      "same": "Mêmes droits que toi",
-      "leave": "Ne plus être parent",
+      "leave": "Me retirer",
       "waiting": "Invitation envoyée, en attente de réponse",
       "cancel": "Annuler",
-      "cancelLabel": "Annuler l’invitation de @{{handle}}",
-      "second": "Second parent",
-      "secondHint": "Un autre adulte qui a un compte ici",
-      "invite": "Inviter",
+      "cancelLabel": "Annuler l’invitation de {{name}}",
+      "second": "Inviter un second parent",
       "inviteTitle": "Inviter un parent",
       "inviteIntro": "Son identifiant, d’un compte qui existe déjà sur ce serveur. S’il accepte, il aura les mêmes droits que toi sur <b>{{name}}</b>.",
       "handle": "Identifiant",
       "handlePlaceholder": "marie",
       "send": "Inviter",
-      "sent": "Invitation envoyée à @{{handle}}",
-      "unknown": "Aucun compte adulte avec cet identifiant sur ce serveur.",
+      "sent": "Invitation envoyée à {{name}}",
+      "unknown": "Ce compte n’existe pas.",
       "already": "Ce compte est déjà parent.",
       "full": "Deux parents au plus.",
       "tooMany": "Trop d’essais : réessaie dans une minute.",
       "failed": "Ça n’a pas marché. Réessaie.",
       "leaveTitle": "Ne plus être parent de {{name}} ?",
       "leaveText": "Tu ne gères plus <b>{{name}}</b> : son autre parent garde tout. Pour redevenir parent, il faudra qu’il t’invite.",
-      "left": "Tu n’es plus parent de {{name}}"
+      "left": "Tu n’es plus parent de {{name}}",
+      "youName": "{{name}} (toi)",
+      "since": "parent depuis le {{date}}",
+      "leaveLabel": "Ne plus être parent de {{name}}"
     },
     "invitations": {
       "title": "Demandes",
-      "hint": "{{name}} te demande d’être aussi son parent",
-      "answer": "Répondre",
-      "answerLabel": "Répondre pour {{name}}",
-      "dialogTitle": "Demande de parent",
-      "dialogText": "<b>{{from}}</b> veut que tu sois aussi parent de <b>{{name}}</b>. Vous aurez les mêmes droits : ses sources, ses horaires, son mot de passe et sa suppression.",
       "accept": "Accepter",
       "refuse": "Refuser",
       "accepted": "Tu es parent de {{name}}",
       "refused": "Demande refusée",
-      "failed": "Ça n’a pas marché. Réessaie."
+      "failed": "Ça n’a pas marché. Réessaie.",
+      "row": "<b>{{from}}</b> te demande d’être aussi parent de <b>{{name}}</b>",
+      "acceptLabel": "Accepter d’être parent de {{name}}",
+      "refuseLabel": "Refuser d’être parent de {{name}}"
     },
     "parentalCode": {
       "section": "Sur un appareil partagé",
       "title": "Code parental",
       "hintOff": "Pas encore choisi",
-      "hintOn": "Demandé pour ouvrir ton profil",
+      "hintOn": "Demandé pour ouvrir ce profil sur un appareil partagé",
       "code": "Code",
-      "codeValue": "6 chiffres",
-      "changeLabel": "Changer ton code parental",
-      "dialogTitle": "Ton code parental",
-      "dialogIntro": "Six chiffres, demandés pour ouvrir ton profil depuis <i>Qui lit ?</i> sur un appareil où un ado ou un enfant est connecté. Sur tes propres appareils, jamais. Oublié, ton mot de passe le remplace.",
+      "codeValue": "Oublié ? Le mot de passe du compte le remplace",
+      "changeLabel": "Changer le code parental",
+      "dialogTitle": "Le code parental",
+      "dialogIntro": "Six chiffres, demandés pour ouvrir ce profil depuis <i>Qui lit ?</i> sur un appareil où un ado ou un enfant est connecté. Jamais sur les appareils où il n’y a que toi. En cas d’oubli, le mot de passe du compte le remplace.",
       "newCode": "Nouveau code",
       "onTitle": "Enregistrer ce code parental ?",
-      "onText": "Il sera demandé pour ouvrir ton profil depuis <i>Qui lit ?</i>, sur chaque appareil où un ado ou un enfant est connecté.",
-      "offTitle": "Désactiver ton code parental ?",
-      "offText": "Ton profil s’ouvrira de nouveau sans code depuis <i>Qui lit ?</i>, sur les appareils où un ado ou un enfant est connecté.",
+      "onText": "Il sera demandé pour ouvrir ce profil depuis <i>Qui lit ?</i>, sur chaque appareil où un ado ou un enfant est connecté.",
+      "offTitle": "Désactiver le code parental ?",
+      "offText": "Ce profil s’ouvrira de nouveau sans code depuis <i>Qui lit ?</i>, sur les appareils où un ado ou un enfant est connecté.",
       "off": "Désactiver",
       "hintAdvised": "Conseillé, pas encore choisi"
-    }
+    },
+    "listTitle": "Enfants"
   },
   "catalogue": {
     "title": "Catalogue",

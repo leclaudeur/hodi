@@ -56,10 +56,8 @@ const PasswordForm = ({ opening, profile }: { opening: Opening; profile: Profile
   const trustable = profile.lock !== 'code'
   const { t } = useTranslation()
   const { password, error } = opening
-  const label =
-    profile.hasAccount && profile.id !== opening.value?.own
-      ? t('profiles.passwordOf', { name: profile.name })
-      : t('profiles.yourPassword')
+  // The profile's name is right above the field: the field says only what to type.
+  const label = t('profiles.yourPassword')
   return (
     <form
       className={styles.pinBox}
