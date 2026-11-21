@@ -13,9 +13,8 @@ interface YoungDevicesProps {
   profile: { id: number; name: string }
 }
 
-// A young profile's own devices, on its page (Réglages > Profils > Gérer > Appareils): each one linked by a parent's
-// code, and "Retirer" to unlink it (it then asks for a new code). Nothing while there is none: the "Connecter un
-// appareil" row under them says it all.
+// A young one's own devices, on its card › Appareils: those it signed in on with its @identifier (and those a parent's
+// code linked before), and "Retirer" to sign one out. Nothing while there is none.
 const YoungDevices = ({ profile }: YoungDevicesProps) => {
   const { t } = useTranslation()
   const [devices, setDevices] = useState<ProfileDevice[]>([])
@@ -38,9 +37,9 @@ const YoungDevices = ({ profile }: YoungDevicesProps) => {
       message: <RichText i18nKey="confirm.removeYoungDevice.message" values={{ name: profile.name }} />,
       label: t('confirm.removeYoungDevice.button'),
       onConfirm: () =>
-        void removeProfileDevice(profile.id, device.id)
+        void removeProfileDevice(profile.id, device)
           .then(() => {
-            setDevices(current => current.filter(other => other.id !== device.id))
+            setDevices(current => current.filter(other => other !== device))
             showSaved(t('young.deviceRemoved', { device: label }))
           })
           .catch(() => showError(t('young.deviceRemoveFailed')))
@@ -50,7 +49,7 @@ const YoungDevices = ({ profile }: YoungDevicesProps) => {
     const label = deviceLabel(device.userAgent, { browser: t('settings.account.browser') })
     return (
       <SettingRow
-        key={device.id}
+        key={`${device.kind}-${device.id}`}
         label={label}
         hint={t('settings.account.used', { when: timeAgo(new Date(device.lastSeenAt).toISOString()) })}
         action={{
