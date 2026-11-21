@@ -10,9 +10,10 @@ const SourceReaders = ({ readers }: { readers: number | undefined }) => {
   const formatted = readersCount(readers, getLanguage())
   const label = t('sources.readers', { count: readers, formatted })
   return (
-    <span title={label} aria-label={label}>
+    <span title={label}>
       <UserRound size={14} aria-hidden="true" />
-      {formatted}
+      <span aria-hidden="true">{formatted}</span>
+      <span className="visually-hidden">{label}</span>
     </span>
   )
 }
