@@ -56,16 +56,11 @@ const Notice = ({
     </div>
     {action && (
       <div className={styles.side}>
-        <Button
-          className={`${styles.wideAction} ${styles.toned}`}
-          icon={action.icon}
-          onClick={action.onClick}
-          href={action.href}
-        >
+        <Button className={styles.wideAction} icon={action.icon} onClick={action.onClick} href={action.href}>
           {action.label}
         </Button>
         <RoundButton
-          className={`${styles.roundAction} ${styles.toned}`}
+          className={styles.roundAction}
           icon={action.icon}
           label={action.label}
           size={38}
