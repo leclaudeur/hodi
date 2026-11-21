@@ -10,7 +10,9 @@ const AddChildCard = ({ onAdd }: { onAdd: () => void }) => {
   const { t } = useTranslation()
   return (
     <div className={`${settingsStyles.row} ${styles.card}`}>
-      <span className={styles.avatar} aria-hidden="true" />
+      <span className={styles.avatar} aria-hidden="true">
+        <UserPlus size={20} />
+      </span>
       <span className={settingsStyles.rowText}>
         <span className={settingsStyles.rowLabel}>{t('children.create.title')}</span>
         <span className={settingsStyles.rowHint}>{t('children.addCard')}</span>

@@ -1,8 +1,9 @@
-import { ArrowLeftRight, ExternalLink, ListMinus, Moon, Tags, Trash2, TriangleAlert } from 'lucide-react'
+import { ArrowLeftRight, ExternalLink, Minus, Moon, Tags, Trash2, TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { SourceStatus } from '../../../api.ts'
 import { cardTopicOf } from '../../../lib/source-card.ts'
 import { sourceState } from '../../../lib/settings-data.ts'
+import Button from '../../../ui/Button.tsx'
 import RoundButton from '../../../ui/RoundButton.tsx'
 import SourceCard from '../../../ui/SourceCard.tsx'
 import styles from '../../../ui/SourceCard.module.css'
@@ -91,7 +92,7 @@ const OtherActions = ({ source, replace, retopic, deletable, removing, onRemove 
   )
 }
 
-// A source of Mes sources: Retirer on the left, in red; its other actions on the right.
+// A source of Mes sources: Retirer on the left, in red, as the catalogue's Ajouter; its other actions on the right.
 const MySourceCard = (props: MySourceCardProps) => {
   const { t } = useTranslation()
   const { source, topics, chosenTopics, low, onTakeOut } = props
@@ -105,14 +106,15 @@ const MySourceCard = (props: MySourceCardProps) => {
       corner={<SourceReaders readers={source.readers} />}
       badge={<Badge source={source} low={low} />}
       start={
-        <RoundButton
-          size={34}
-          variant="danger"
-          icon={ListMinus}
-          label={t('catalogue.remove', { name: source.name })}
-          title={t('sourceCard.remove')}
+        <Button
+          compact
+          look="danger"
+          icon={Minus}
+          aria-label={t('catalogue.remove', { name: source.name })}
           onClick={onTakeOut}
-        />
+        >
+          {t('sourceCard.remove')}
+        </Button>
       }
       end={<OtherActions {...props} />}
     />

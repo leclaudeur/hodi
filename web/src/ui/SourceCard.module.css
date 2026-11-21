@@ -65,7 +65,12 @@
 }
 
 .badgeError {
-  background: var(--danger);
+  background: var(--destructive-border);
+  color: var(--on-topic);
+}
+
+.badge svg {
+  display: block;
 }
 
 .corner {
@@ -186,10 +191,18 @@
 }
 
 .emptyAvatar {
+  display: grid;
+  place-items: center;
   width: 44px;
   height: 44px;
   border: 1.5px dashed var(--border);
   border-radius: 50%;
+  color: var(--text-3);
+}
+
+/* The card still to fill has one button: in the middle. */
+.centred {
+  justify-content: center;
 }
 
 .emptyLine {

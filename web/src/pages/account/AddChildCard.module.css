@@ -5,9 +5,12 @@
 }
 
 .avatar {
+  display: grid;
   flex: none;
+  place-items: center;
   width: 44px;
   height: 44px;
   border: 1.5px dashed var(--border);
   border-radius: 50%;
+  color: var(--text-3);
 }

@@ -1,4 +1,4 @@
-import { ArrowUpDown, ExternalLink, LibraryBig, ListMinus, Plus } from 'lucide-react'
+import { ArrowUpDown, ExternalLink, LibraryBig, Minus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TopicSummary } from '../../api.ts'
@@ -75,14 +75,15 @@ const CatalogueCard = ({ entry, topics, current, busy, onAdd, onRemove }: CardPr
       picked={entry.mine}
       start={
         entry.mine ? (
-          <RoundButton
-            size={34}
-            variant="danger"
-            icon={ListMinus}
-            label={t('catalogue.remove', { name: entry.name })}
-            title={t('sourceCard.remove')}
+          <Button
+            compact
+            look="danger"
+            icon={Minus}
+            aria-label={t('catalogue.remove', { name: entry.name })}
             onClick={onRemove}
-          />
+          >
+            {t('sourceCard.remove')}
+          </Button>
         ) : (
           <Button
             compact

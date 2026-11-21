@@ -14,10 +14,12 @@ interface AddSourceCardProps {
 // The first card of Mes sources: a source's card still to fill, dashed, with its button.
 const AddSourceCard = ({ title, text, label, tour, onAdd }: AddSourceCardProps) => (
   <li className={`${styles.card} ${styles.empty}`}>
-    <span className={styles.emptyAvatar} aria-hidden="true" />
+    <span className={styles.emptyAvatar} aria-hidden="true">
+      <Plus size={20} />
+    </span>
     <h3 className={styles.name}>{title}</h3>
     <span className={styles.emptyLine}>{text}</span>
-    <span className={styles.footer}>
+    <span className={`${styles.footer} ${styles.centred}`}>
       <Button compact look="primary" icon={Plus} onClick={onAdd} data-tour={tour}>
         {label}
       </Button>
