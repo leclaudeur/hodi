@@ -3,6 +3,10 @@ import type { Database } from './database.ts'
 // À traiter's sources: those added while the server validates them, until its admin accepts or refuses each. Who
 // added one is never kept here: the admin judges the source, not the person.
 
+// A refused source is asked about again once a month at most, so that adding its link over and over never floods the
+// admin with requests.
+export const ASK_AGAIN_AFTER = 30 * 24 * 60 * 60 * 1000
+
 export type ReviewState = 'pending' | 'accepted' | 'refused'
 
 export interface SourceReview {
@@ -90,6 +94,12 @@ export class SourceReviewStore {
       )
       .run(decision.state, decision.teen ? 1 : 0, decision.child ? 1 : 0, now, sourceId)
     return Number(result.changes) > 0
+  }
+
+  // Added again after a refusal: asked anew only once the refusal is a month old.
+  mayAskAgain(sourceId: string, now: number): boolean {
+    const review = this.get(sourceId)
+    return review?.state === 'refused' && (review.decidedAt ?? 0) <= now - ASK_AGAIN_AFTER
   }
 
   // Out of the catalogue: still waiting, or refused. They keep working for those who read them.

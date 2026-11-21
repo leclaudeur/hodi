@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net'
 import { after, describe, it } from 'node:test'
 import express from 'express'
 import { openDatabase } from '../db/database.ts'
-import { SourceReviewStore } from '../db/source-review-store.ts'
+import { ASK_AGAIN_AFTER, SourceReviewStore } from '../db/source-review-store.ts'
 import { SourceStore } from '../db/source-store.ts'
 import { sourceReviewRoutes } from '../http/source-review-routes.ts'
 import { sourceRoutes } from '../http/source-routes.ts'
@@ -20,7 +20,7 @@ const catalog = () =>
   }) as unknown as Catalog
 
 describe('À traiter › sources', () => {
-  it('keeps a source out of the catalogue while it waits or once refused, and asks again when added again', () => {
+  it('keeps a source out of the catalogue while it waits or once refused, and asks again a month after a refusal', () => {
     const db = openDatabase(':memory:')
     const store = new SourceStore(db)
     store.add(
@@ -50,17 +50,23 @@ describe('À traiter › sources', () => {
     assert.deepEqual([...reviews.unlisted()], ['p1-gamma'])
     // Decided already: nothing to decide again until it is asked anew.
     assert.equal(reviews.decide('p1-gamma', { state: 'accepted', teen: true, child: false }, 30), false)
-    reviews.ask('p1-gamma', 40)
+    // Its link added again and again: no new request before the refusal is a month old, then one only.
+    assert.equal(reviews.mayAskAgain('p1-gamma', 21), false)
+    assert.equal(reviews.mayAskAgain('p1-gamma', 20 + ASK_AGAIN_AFTER - 1), false)
+    const later = 20 + ASK_AGAIN_AFTER
+    assert.equal(reviews.mayAskAgain('p1-gamma', later), true)
+    reviews.ask('p1-gamma', later)
     assert.equal(reviews.get('p1-gamma')?.state, 'pending')
-    assert.equal(reviews.decide('p1-gamma', { state: 'accepted', teen: true, child: false }, 50), true)
+    assert.equal(reviews.mayAskAgain('p1-gamma', later + 1), false)
+    assert.equal(reviews.decide('p1-gamma', { state: 'accepted', teen: true, child: false }, later + 50), true)
     assert.deepEqual([...reviews.unlisted()], [])
     assert.deepEqual(reviews.get('p1-gamma'), {
       sourceId: 'p1-gamma',
       state: 'accepted',
       teen: true,
       child: false,
-      askedAt: 40,
-      decidedAt: 50
+      askedAt: later,
+      decidedAt: later + 50
     })
   })
 

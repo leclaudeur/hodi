@@ -108,7 +108,7 @@ const mountSources = (api: express.Router, wiring: Wiring) => {
             unlisted: () => reviews.unlisted(),
             onAddedAgain: (sourceId: string, profileId: number) => {
               users?.(profileId).sources.add([sourceId], now())
-              if (reviews.get(sourceId)?.state === 'refused') askReview(wiring, sourceId)
+              if (reviews.mayAskAgain(sourceId, now())) askReview(wiring, sourceId)
             }
           }
         : {}),
