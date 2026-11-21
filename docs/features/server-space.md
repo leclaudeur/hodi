@@ -33,9 +33,10 @@ to the app.
 - **E-mail**: the mail server Hodi sends through, one row at a time: the server with its port and security, its user
   name and password, and the sender. Until the server and the sender are both there, Hodi sends no e-mail at all. Once
   saved, the server's password is never shown again, not even to the admin. A test goes to the admin's address.
-- **Notifications**: an inbox of what the server told its admins, in their language. A request someone waits on, such
-  as a code asked for a forgotten password, stays on top under _To handle_ until it is handled, and its count shows
-  beside _Notifications_ in the sidebar.
+- **To do**: what the server told its admins, in their language, one row each, filtered by kind (sources, password
+  codes, reports, plugins). A row someone waits on keeps an orange tile until it is handled, and the count of those
+  shows beside _To do_ in the sidebar. Opening a row shows it in full with its action: a source to review is accepted
+  or refused there, with its topics and whether parents may give it to a teen or a child.
 - **Alerts**: for each kind of notification, Hodi's and the plugins', whether it also goes out by e-mail or push, or
   not at all.
 - **Plugins**: the server's admin adds, turns on and off, sets and removes them. _Available_ lists the plugins of

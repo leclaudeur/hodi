@@ -30,6 +30,7 @@ import { loadRules } from '../game/rules.ts'
 import { loadCatalog } from '../news/catalog.ts'
 import { ArticleImages } from '../news/article-images.ts'
 import { ServerInboxStore } from '../db/server-inbox-store.ts'
+import { SourceReviewStore } from '../db/source-review-store.ts'
 import { ServerNoticeStore } from '../db/server-notice-store.ts'
 import type { Outside } from './outside.ts'
 
@@ -103,6 +104,7 @@ export const openStores = (
     mailSettings: new MailSettingsStore(db),
     serverNotices: new ServerNoticeStore(db),
     serverInbox: new ServerInboxStore(db),
+    sourceReviews: new SourceReviewStore(db),
     passwordResets: new PasswordResetStore(db, config.sessionSecret),
     pluginStore: new PluginStore(db)
   }

@@ -6,7 +6,7 @@ import { RENAMED_TOPICS } from './renamed-topics.ts'
 // #/saved (saved articles), #/search/<words> (search), #/followed (followed subjects), #/shares (sent by the household),
 // #/settings/<section>[/<item>] (settings; #/settings/requests/<id>, a teen's request), #/summary (Résumé du jour),
 // #/stories/<topic> (À la une, as stories), #/history (the last 7 days' reading), #/profiles ("Qui lit ?"),
-// #/account/<part> (Mon compte), #/catalogue/<official|topic> (the server's sources), #/server/<section>[/<item>] (the server's admin space; #/server/plugin/<id>/<section>[/<path>], a plugin's section).
+// #/account/<part> (Mon compte), #/catalogue/<topic> (the server's sources), #/server/<section>[/<item>] (the server's admin space; #/server/plugin/<id>/<section>[/<path>], a plugin's section).
 // The French addresses of earlier versions still open: see LEGACY_PATHS and RENAMED_TOPICS.
 export type Route =
   | { name: 'frontPage' }

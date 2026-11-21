@@ -208,3 +208,25 @@ export const removeServerMail = () => sendJson<{ mail: null }>('DELETE', '/serve
 
 // « Envoyer un essai »: to the admin's own address, which comes back.
 export const sendTestMail = () => sendJson<{ to: string }>('POST', '/server/mail/test')
+
+// À traiter's sources: those that wait for the server's admin, never with who added them.
+export interface SourceReview {
+  id: string
+  name: string
+  site: string
+  kind: 'article' | 'video' | 'podcast'
+  lang: 'fr' | 'en'
+  description: string | null
+  topicIds: string[]
+  askedAt: number
+}
+
+export const getSourceReviews = () => getJson<{ validating: boolean; sources: SourceReview[] }>('/server/reviews')
+
+export const setSourceValidation = (on: boolean) =>
+  sendJson<{ validating: boolean }>('PUT', '/server/reviews/validation', { on })
+
+export const decideSource = (
+  id: string,
+  decision: { decision: 'accept' | 'refuse'; topicIds?: string[]; teen: boolean; child: boolean }
+) => sendJson<null>('POST', `/server/reviews/sources/${encodeURIComponent(id)}`, decision)

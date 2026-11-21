@@ -1344,6 +1344,19 @@ const MIGRATIONS: string[] = [
   // A source's description, as its site gives it (og:description), read when it is added: the catalogue shows it.
   `
   ALTER TABLE sources ADD COLUMN description TEXT;
+  `,
+  // À traiter: a source added while Serveur › Contenu asks to validate them waits for the server's admin before it
+  // reaches the others' catalogue. A source with no row is in the catalogue, as every one before. teen, child: the
+  // admin's « OK ados », « OK enfants ».
+  `
+  CREATE TABLE source_reviews (
+    source_id TEXT PRIMARY KEY REFERENCES sources (id) ON DELETE CASCADE,
+    state TEXT NOT NULL CHECK (state IN ('pending', 'accepted', 'refused')),
+    teen INTEGER NOT NULL DEFAULT 0,
+    child INTEGER NOT NULL DEFAULT 0,
+    asked_at INTEGER NOT NULL,
+    decided_at INTEGER
+  );
   `
 ]
 
