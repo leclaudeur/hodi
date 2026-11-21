@@ -7,7 +7,7 @@ import { askToConfirm } from '../../../lib/confirm.ts'
 import { isYoung, removeProfile, useProfiles } from '../../../lib/profiles.ts'
 import { usePendingRequests } from '../../../lib/requests.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
-import { settingsHref } from '../../../lib/use-hash-route.ts'
+import { accountHref } from '../../../lib/use-hash-route.ts'
 import Button from '../../../ui/Button.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
 import StatusLine from '../../../ui/StatusLine.tsx'
@@ -15,7 +15,6 @@ import ChildParents from '../../profiles/ChildParents.tsx'
 import ChildPasswordRow from '../../profiles/ChildPasswordRow.tsx'
 import YoungDevices from '../../profiles/YoungDevices.tsx'
 import RichText from '../../../ui/RichText.tsx'
-import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
@@ -23,34 +22,26 @@ import { ReadingRows, TimeRows, WeekRows, YoungHead } from './young/YoungRows.ts
 import { dialogsOf } from './young/young-dialogs.tsx'
 import { type Opened, useYoungLoad } from './young/young-load.ts'
 
-type Layout = 'desktop' | 'phone'
+const CHILDREN_HREF = accountHref('children')
 
-// Gone, or not a young one (an address typed by hand): back to the list. Plain functions, not components: the page
-// keeps the same SectionPage from loading to loaded.
-const notFound = (title: string, layout: Layout, t: TFunction) => {
-  return (
-    <SectionPage title={title} layout={layout}>
-      <StatusLine tone="info">{t('young.notFound')}</StatusLine>
-      <Button href={settingsHref('profiles')}>{t('common.back')}</Button>
-    </SectionPage>
-  )
-}
+// Gone, or not a young one (an address typed by hand): back to the list.
+const notFound = (t: TFunction) => (
+  <>
+    <StatusLine tone="info">{t('young.notFound')}</StatusLine>
+    <Button href={CHILDREN_HREF}>{t('common.back')}</Button>
+  </>
+)
 
-const loading = (title: string, layout: Layout, failed: boolean, t: TFunction) => {
-  return (
-    <SectionPage title={title} layout={layout}>
-      {failed ? (
-        <StatusLine tone="error">{t('young.loadFailed')}</StatusLine>
-      ) : (
-        <>
-          <RowsSkeleton rows={1} lead="round" end="button" />
-          <RowsSkeleton rows={2} lead="none" end="button" />
-          <RowsSkeleton rows={3} lead="none" end="button" />
-        </>
-      )}
-    </SectionPage>
+const loading = (failed: boolean, t: TFunction) =>
+  failed ? (
+    <StatusLine tone="error">{t('young.loadFailed')}</StatusLine>
+  ) : (
+    <>
+      <RowsSkeleton rows={1} lead="round" end="button" />
+      <RowsSkeleton rows={2} lead="none" end="button" />
+      <RowsSkeleton rows={3} lead="none" end="button" />
+    </>
   )
-}
 
 // Asked over its form, which goes with the profile; then back to the list.
 const confirmRemove = (id: number, name: string, close: () => void, t: TFunction) =>
@@ -63,7 +54,7 @@ const confirmRemove = (id: number, name: string, close: () => void, t: TFunction
       void removeProfile(id)
         .then(() => {
           showSaved(t('young.deleted', { name }))
-          window.location.hash = settingsHref('profiles')
+          window.location.hash = CHILDREN_HREF
         })
         .catch((failure: unknown) => {
           const twoParents = failure instanceof RequestError && failure.code === 'two_parents'
@@ -72,9 +63,9 @@ const confirmRemove = (id: number, name: string, close: () => void, t: TFunction
     }
   })
 
-// Mon compte › Mes enfants › Gérer: a young one's page, for its parents. What it reads (sources, themes), when and how
+// Mon compte › Mes enfants › Gérer: a young one's card, for its parents. What it reads (sources, themes), when and how
 // long (time per day, hours, quiet hours), its week, its parents, its password and devices. Every change happens in a dialog.
-const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => {
+const YoungProfileSection = ({ id }: { id: number }) => {
   const { t } = useTranslation()
   const value = useProfiles({ fresh: true })
   const [opened, setOpened] = useState<Opened | null>(null)
@@ -86,9 +77,8 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
   const asked = usePendingRequests(profile?.kind === 'teen').filter(request => request.profileId === id)
   const { loaded, setLoaded, failed } = useYoungLoad(id, young)
 
-  const title = profile?.name ?? t('young.manage')
-  if (value && (!profile || !young)) return notFound(title, layout, t)
-  if (!profile || !loaded) return loading(title, layout, failed, t)
+  if (value && (!profile || !young)) return notFound(t)
+  if (!profile || !loaded) return loading(failed, t)
 
   const name = profile.name
   const close = () => setOpened(null)
@@ -97,7 +87,7 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
   const rows = { profile, loaded, onOpen: setOpened }
 
   return (
-    <SectionPage title={name} layout={layout}>
+    <>
       <YoungHead {...rows} />
 
       <h2 className={styles.label}>{t('young.reading')}</h2>
@@ -145,7 +135,7 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
       >
         {dialog?.body}
       </Dialog>
-    </SectionPage>
+    </>
   )
 }
 
