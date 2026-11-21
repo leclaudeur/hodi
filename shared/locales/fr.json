@@ -2624,10 +2624,8 @@
       "handleTaken": "Cet identifiant est déjà pris : reviens en arrière pour en choisir un autre.",
       "failed": "Le compte n’a pas pu être créé. Réessaie."
     },
-    "empty": {
-      "title": "Aucun enfant pour l’instant",
-      "text": "Ajoute le compte d’un ado ou d’un enfant : il se connecte avec son identifiant."
-    },
+    "addCard": "Un ado ou un enfant, qui se connecte avec son identifiant à lui.",
+    "addButton": "Ajouter",
     "password": {
       "label": "Mot de passe",
       "hint": "Se connecte avec @{{handle}}",
@@ -2667,13 +2665,13 @@
       "leaveLabel": "Ne plus être parent de {{name}}"
     },
     "invitations": {
-      "title": "Demandes",
+      "title": "{{from}} te demande d’être parent de {{name}}",
+      "text": "Si tu acceptes, tu as les mêmes droits que <b>{{from}}</b> sur <b>{{name}}</b> : ses sources, ses heures et son mot de passe.",
       "accept": "Accepter",
       "refuse": "Refuser",
       "accepted": "Tu es parent de {{name}}",
       "refused": "Demande refusée",
       "failed": "Ça n’a pas marché. Réessaie.",
-      "row": "<b>{{from}}</b> te demande d’être aussi parent de <b>{{name}}</b>",
       "acceptLabel": "Accepter d’être parent de {{name}}",
       "refuseLabel": "Refuser d’être parent de {{name}}"
     },

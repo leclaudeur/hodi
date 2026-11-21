@@ -2624,10 +2624,8 @@
       "handleTaken": "This username is taken: go back to pick another one.",
       "failed": "The account couldn’t be created. Try again."
     },
-    "empty": {
-      "title": "No child yet",
-      "text": "Add a teen’s or a child’s account: they sign in with their username."
-    },
+    "addCard": "A teen or a child, who signs in with their own username.",
+    "addButton": "Add",
     "password": {
       "label": "Password",
       "hint": "Signs in with @{{handle}}",
@@ -2667,13 +2665,13 @@
       "leaveLabel": "Stop being {{name}}’s parent"
     },
     "invitations": {
-      "title": "Requests",
+      "title": "{{from}} asks you to be {{name}}’s parent",
+      "text": "If you accept, you have the same rights as <b>{{from}}</b> over <b>{{name}}</b>: their sources, hours and password.",
       "accept": "Accept",
       "refuse": "Refuse",
       "accepted": "You’re {{name}}’s parent",
       "refused": "Request refused",
       "failed": "That didn’t work. Try again.",
-      "row": "<b>{{from}}</b> asks you to be <b>{{name}}</b>’s parent too",
       "acceptLabel": "Accept being {{name}}’s parent",
       "refuseLabel": "Refuse being {{name}}’s parent"
     },
