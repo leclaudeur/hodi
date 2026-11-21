@@ -1,9 +1,11 @@
-import { Check, X } from 'lucide-react'
+import { Check, ExternalLink, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type SourceReview, type TopicInfo, decideSource, getTopics } from '../../../api.ts'
+import { askToConfirm } from '../../../lib/confirm.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
 import Button from '../../../ui/Button.tsx'
+import { rich } from '../../../ui/rich.tsx'
 import SourceAvatar from '../../../ui/SourceAvatar.tsx'
 import Toggle from '../../../ui/Toggle.tsx'
 import SettingRow from '../../settings/SettingRow.tsx'
@@ -24,8 +26,25 @@ const useTopics = () => {
   return topics
 }
 
-// A source added while the server validates them: what it is, its topics as the admin corrects them, « OK ados »
-// and « OK enfants », then Refuser or Accepter. Who added it is never shown.
+// What the source is: its logo, name, site and language, a way to its site, then what it says of itself.
+const SourceAbout = ({ review }: { review: SourceReview }) => {
+  const { t } = useTranslation()
+  const meta = [hostOf(review.site), t(`server.inbox.source.kinds.${review.kind}`), review.lang.toUpperCase()]
+  return (
+    <div className={settingsStyles.card}>
+      <SettingRow
+        lead={<SourceAvatar sourceId={review.id} sourceName={review.name} size={44} />}
+        label={review.name}
+        hint={meta.join(' · ')}
+        action={{ label: t('catalogue.openSite'), icon: ExternalLink, href: review.site, external: true }}
+      />
+      {review.description && <p className={styles.description}>{review.description}</p>}
+    </div>
+  )
+}
+
+// A source added while the server validates them: what it is, its topics as the admin corrects them, whether it suits
+// teens and children, then Refuser (asked first) or Accepter. Who added it is never shown.
 const SourceReviewPanel = ({ review }: { review: SourceReview }) => {
   const { t } = useTranslation()
   const topics = useTopics()
@@ -50,25 +69,18 @@ const SourceReviewPanel = ({ review }: { review: SourceReview }) => {
       .finally(() => setBusy(null))
   }
 
+  const refuse = () =>
+    askToConfirm({
+      title: t('server.inbox.source.refuseTitle', { name: review.name }),
+      message: rich(t('server.inbox.source.refuseText', { name: review.name })),
+      label: t('server.inbox.source.refuse'),
+      onConfirm: () => decide('refuse')
+    })
+
   return (
     <>
       <h2 className={settingsStyles.label}>{t('server.inbox.source.what')}</h2>
-      <div className={settingsStyles.card}>
-        <div className={styles.source}>
-          <SourceAvatar sourceId={review.id} sourceName={review.name} size={44} />
-          <span className={styles.sourceText}>
-            <a className={styles.sourceName} href={review.site} target="_blank" rel="noreferrer">
-              {review.name}
-            </a>
-            <span className={styles.sourceMeta}>
-              {[hostOf(review.site), t(`server.inbox.source.kinds.${review.kind}`), review.lang.toUpperCase()].join(
-                ' · '
-              )}
-            </span>
-          </span>
-        </div>
-        {review.description && <p className={styles.description}>{review.description}</p>}
-      </div>
+      <SourceAbout review={review} />
       {withTopics && <h2 className={settingsStyles.label}>{t('server.inbox.source.topicsLabel')}</h2>}
       {withTopics && (
         <div className={`${settingsStyles.card} ${styles.topics}`}>
@@ -90,7 +102,7 @@ const SourceReviewPanel = ({ review }: { review: SourceReview }) => {
         </SettingRow>
       </div>
       <div className={styles.decision}>
-        <Button icon={X} busy={busy === 'refuse'} disabled={busy !== null} onClick={() => decide('refuse')}>
+        <Button look="danger" icon={X} busy={busy === 'refuse'} disabled={busy !== null} onClick={refuse}>
           {t('server.inbox.source.refuse')}
         </Button>
         <Button

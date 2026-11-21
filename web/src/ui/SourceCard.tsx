@@ -10,22 +10,37 @@ interface SourceCardProps {
   topic: { id: string; label: string } | null
   // Its other themes, as « +2 ».
   moreTopics: number
-  // At the card's top corner: its readers, the mark of a source already in Mes sources, or what is wrong with it.
+  // At the card's top corner: how many read it.
   corner?: ReactNode
-  // Already in Mes sources, in the catalogue: a card set apart.
+  // On its logo: what is wrong with it (a feed that fails, a source little read).
+  badge?: ReactNode
+  // Already in Mes sources, in the catalogue: an accent border.
   picked?: boolean
-  actions: ReactNode
+  // Its footer, under a line across the card: the main action on the left, the others on the right.
+  start: ReactNode
+  end?: ReactNode
 }
 
-// A source as a card, in a grid: its logo in a round, its name, a theme and how many more, then its buttons. The same
-// card in Mes sources and in the Catalogue.
-const SourceCard = ({ sourceId, name, topic, moreTopics, corner, picked = false, actions }: SourceCardProps) => {
+// A source as a card, in a grid: its logo in a round, its name, a theme and how many more, then a footer with its
+// buttons, as a dialog's. The same card in Mes sources and in the Catalogue.
+const SourceCard = ({
+  sourceId,
+  name,
+  topic,
+  moreTopics,
+  corner,
+  badge,
+  picked = false,
+  start,
+  end
+}: SourceCardProps) => {
   const { t } = useTranslation()
   return (
     <li className={picked ? `${styles.card} ${styles.picked}` : styles.card}>
       {corner && <span className={styles.corner}>{corner}</span>}
       <span className={styles.logo}>
         <SourceAvatar sourceId={sourceId} sourceName={name} size={44} />
+        {badge}
       </span>
       <h3 className={styles.name} title={name}>
         {name}
@@ -42,7 +57,10 @@ const SourceCard = ({ sourceId, name, topic, moreTopics, corner, picked = false,
           )}
         </span>
       )}
-      <span className={styles.actions}>{actions}</span>
+      <span className={styles.footer}>
+        <span className={styles.footerSide}>{start}</span>
+        {end && <span className={styles.footerSide}>{end}</span>}
+      </span>
     </li>
   )
 }

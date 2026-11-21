@@ -555,24 +555,14 @@
       "what": "The sites and channels Hodi reads for you.",
       "open": "Open “Sources”."
     },
-    "add": {
-      "title": "Add a source",
-      "how": "By its link or from our suggestions.",
-      "press": "Tap here to add one."
-    },
-    "byTopic": {
-      "title": "By topic",
-      "noLink": "No link at hand?",
-      "offers": "Hodi suggests sites by topic.",
-      "pick": "Pick “By topic”."
-    },
     "topic": {
-      "suggestions": "Each topic has its suggestions.",
-      "pick": "Pick “{{topic}}”."
+      "suggestions": "Each topic has its sources.",
+      "pick": "Pick “{{topic}}”.",
+      "via": "Open the list of topics, then pick {{topic}}."
     },
     "site": {
-      "title": "Pick a site",
-      "feed": "Hodi finds its feed on its own.",
+      "title": "Pick a source",
+      "feed": "Each one is ready to read.",
       "add": "Add the one you like."
     },
     "direction": {
@@ -615,6 +605,11 @@
         "enjoy": "Happy reading.",
         "go": "Let's go"
       }
+    },
+    "catalogue": {
+      "title": "The catalogue",
+      "what": "The server’s sources, by topic.",
+      "open": "Open the catalogue."
     }
   },
   "offline": {
@@ -1459,8 +1454,8 @@
       "clearing": "Clearing…",
       "backups": "Backups",
       "backupsHint": "A copy of the database every night, the last 7 kept",
-      "backupsCount_one": "A copy of the database every night, the last 7 kept ({{count}} so far)",
-      "backupsCount_other": "A copy of the database every night, the last 7 kept ({{count}} so far)",
+      "backupsCount_one": "{{count}} copy",
+      "backupsCount_other": "{{count}} copies",
       "sevenKept": "7 kept"
     },
     "household": {
@@ -1474,13 +1469,6 @@
       "gameHint": "Points for every read, levels and badges"
     },
     "proposals": {
-      "errors": {
-        "limit": "The household has hit its source limit.",
-        "followed": "Source already followed.",
-        "none": "This site has no readable feed now. Try another source.",
-        "failed": "The site isn’t answering. Try again in a moment."
-      },
-      "trying": "Hodi looks for the site’s feed and tries 3 articles.",
       "inLanguage": {
         "fr": "In French",
         "en": "In English"
@@ -1636,10 +1624,11 @@
     "loadFailed": "The sources could not be loaded. Try again in a moment.",
     "noMatch": "No source matches.",
     "topicsOf": "{{name}}’s topics",
-    "moreFor": "Actions for {{name}}",
     "replace": "Replace with another",
     "delete": "Delete the source",
-    "filterValue": "Filter sources: {{value}}"
+    "filterValue": "Filter sources: {{value}}",
+    "replaceOf": "Replace {{name}} with another",
+    "deleteOf": "Delete {{name}}"
   },
   "ai": {
     "kinds": {
@@ -1805,7 +1794,8 @@
     "timeZone": "It sets <b>when each day starts</b>: new feed, <i>Daily summary</i>, quiet hours and young readers’ screen time.",
     "country": "It places the <b>AI’s web searches</b>: <i>will it rain tomorrow?</i> looks near you.",
     "share": "The <b>original link</b>, to the publisher’s site, to send anywhere.",
-    "addSource": "Paste a <b>site’s link</b>, or pick a theme to see suggestions. The source reaches <b>the whole household</b>’s feed.",
+    "addSource": "Paste a <b>site’s link</b>, or pick a topic for the AI to suggest sites. The source joins <i>My sources</i>.",
+    "addSourceLink": "Paste the <b>link of a site</b>, an RSS feed or a YouTube channel. The source joins <i>My sources</i>.",
     "replaceSource": "Find another source to replace <b>{{name}}</b>. It’s hidden once the new one is added.",
     "aiTurnOn": "Paste an <b>API key</b> from your provider. It’s checked without spending credits, then kept on this server.",
     "aiReplace": "The new key replaces the old one <b>for this account</b>. It’s checked without spending credits.",
@@ -2032,7 +2022,7 @@
       "backups": "Copies of the whole database",
       "mail": "The server that sends e-mails",
       "notifications": "E-mail and push, for each kind",
-      "inbox": "What the server tells you",
+      "inbox": "Requests to deal with",
       "inboxWaiting_one": "{{count}} request to handle",
       "inboxWaiting_other": "{{count}} requests to handle"
     },
@@ -2147,8 +2137,9 @@
         "invite": "Invite",
         "inviteLabel": "Invite an adult",
         "inviteHint": "A code and its QR, valid for 24 h and once",
-        "fullHint": "Full: a profile has to leave before anyone is invited",
         "full": "Full",
+        "serverFull": "Server full",
+        "fullHint": "Full: a profile has to leave before anyone is invited",
         "accounts": "Accounts",
         "noAccounts": "No account yet",
         "see": "See",
@@ -2382,15 +2373,11 @@
       }
     },
     "inbox": {
-      "intro": "What the server tells you. Requests to handle stay at the top, in orange, until you deal with them.",
-      "open": {
-        "code": "Open the account",
-        "report": "See the overview",
-        "plugin": "Open",
-        "source": "Open"
-      },
+      "intro": "What the server asks you to do. A request dealt with moves to <i>Handled</i>, where it stays 7 days.",
       "emptyTitle": "Nothing yet",
-      "emptyHint": "What the server tells you lands here.",
+      "emptyHint": "What the server asks you to do lands here.",
+      "handledEmptyTitle": "Nothing handled",
+      "handledEmptyHint": "A request dealt with stays here 7 days.",
       "choose": "Choose how you’re told",
       "meta_one": "{{count}} to handle",
       "meta_other": "{{count}} to handle",
@@ -2399,13 +2386,13 @@
         "all": "All",
         "source": "Sources",
         "code": "Passwords",
-        "report": "Reports",
-        "plugin": "Plugins"
+        "plugin": "Plugins",
+        "handled": "Handled"
       },
       "failed": "Couldn’t load To do",
       "back": "Back to To do",
       "noneTitle": "Nothing to handle",
-      "noneHint": "What the server tells you lands here.",
+      "noneHint": "Pick a request in the list.",
       "handled": "Handled on {{date}}",
       "source": {
         "kinds": {
@@ -2414,11 +2401,13 @@
           "podcast": "Podcasts"
         },
         "topics": "{{name}}’s topics",
-        "teen": "OK for teens",
+        "teen": "Suits teens",
         "teenHint": "Parents may give it to a teen",
-        "child": "OK for children",
+        "child": "Suits children",
         "childHint": "Parents may give it to a child",
         "refuse": "Refuse",
+        "refuseTitle": "Refuse {{name}}?",
+        "refuseText": "<b>{{name}}</b> doesn’t join the server’s catalogue. It can be asked for again in 30 days.",
         "accept": "Accept",
         "accepted": "{{name}} accepted into the catalogue",
         "refused": "{{name}} refused",
@@ -2635,10 +2624,8 @@
       "handleTaken": "This username is taken: go back to pick another one.",
       "failed": "The account couldn’t be created. Try again."
     },
-    "empty": {
-      "title": "No child yet",
-      "text": "Add a teen’s or a child’s account: they sign in with their username."
-    },
+    "addCard": "A teen or a child, who signs in with their own username.",
+    "addButton": "Add",
     "password": {
       "label": "Password",
       "hint": "Signs in with @{{handle}}",
@@ -2674,18 +2661,17 @@
       "leaveTitle": "Stop being {{name}}’s parent?",
       "leaveText": "You no longer run <b>{{name}}</b>: their other parent keeps everything. To be a parent again, they will have to invite you.",
       "left": "You’re no longer {{name}}’s parent",
-      "youName": "{{name}} (you)",
       "since": "parent since {{date}}",
       "leaveLabel": "Stop being {{name}}’s parent"
     },
     "invitations": {
-      "title": "Requests",
+      "title": "{{from}} asks you to be {{name}}’s parent",
+      "text": "If you accept, you have the same rights as <b>{{from}}</b> over <b>{{name}}</b>: their sources, hours and password.",
       "accept": "Accept",
       "refuse": "Refuse",
       "accepted": "You’re {{name}}’s parent",
       "refused": "Request refused",
       "failed": "That didn’t work. Try again.",
-      "row": "<b>{{from}}</b> asks you to be <b>{{name}}</b>’s parent too",
       "acceptLabel": "Accept being {{name}}’s parent",
       "refuseLabel": "Refuse being {{name}}’s parent"
     },
@@ -2729,8 +2715,8 @@
     "sort": {
       "title": "Sort the sources",
       "label": "Sort: {{sort}}",
-      "az": "Alphabetical, A → Z",
-      "za": "Alphabetical, Z → A",
+      "az": "A to Z",
+      "za": "Z to A",
       "popular": "Most popular",
       "unpopular": "Least popular"
     }

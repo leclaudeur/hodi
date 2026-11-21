@@ -159,3 +159,15 @@
   --control: var(--raised);
   --border: var(--border-strong);
 }
+
+/* Every button of a notice takes its colours, even one that asks first: red or the accent would clash with an
+   orange or a green card. Under .notice to win over the buttons' own looks, hovered too. */
+.notice .side :is(button, a) {
+  border-color: var(--notice-border);
+  background: var(--notice-mark);
+  color: var(--notice-icon);
+}
+
+.notice .side :is(button, a):not(:disabled):hover {
+  border-color: var(--notice-icon);
+}

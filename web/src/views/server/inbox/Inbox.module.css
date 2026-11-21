@@ -1,41 +1,19 @@
-/* « Choisir comment c'est dit », under the list: the column's width, as Comptes' Inviter. */
+/* « Choisir comment être prévenu », under the list: the column's foot as « Charger le jour… », as Comptes' Inviter. */
 .choose {
   display: flex;
-  padding: 12px;
 }
 
-/* The source waiting: its logo, its name and site, what it says it is. */
-.source {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
+@media (max-width: 1023px) {
+  .choose {
+    padding: 12px var(--gutter) 16px;
+  }
 }
 
-.sourceText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.sourceName {
-  color: var(--text);
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.sourceMeta {
-  overflow: hidden;
-  color: var(--text-3);
-  font: 400 12px/1.4 var(--font-mono);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+/* What the source says of itself, under its row. */
 .description {
   margin: 0;
-  padding: 0 16px 16px;
+  padding: 14px 16px 16px;
+  border-top: 1px solid var(--border);
   color: var(--text-2);
   font-size: 14px;
   line-height: 1.6;
@@ -77,4 +55,13 @@
   color: var(--text-2);
   font-size: 15px;
   line-height: 1.6;
+}
+
+/* A handled request: said, not opened. */
+.handled {
+  cursor: default;
+}
+
+.handled:hover {
+  background: none;
 }

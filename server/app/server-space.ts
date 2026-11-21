@@ -120,7 +120,7 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
   }
   mountNotices(api, wiring)
   const inbox = options.serverInbox?.store
-  if (inbox) api.use('/server/inbox', requireServerAdmin, serverInboxRoutes(inbox))
+  if (inbox) api.use('/server/inbox', requireServerAdmin, serverInboxRoutes(inbox, now))
   mountReviews(api, wiring)
   if (!serverStats) return
   api.use(

@@ -27,8 +27,15 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   Official tab is gone: everything in the catalogue is approved.
 - **Sources to review.** With Server › Content › Review sources on, a source someone adds from a link stays out of
   everyone else's catalogue until a server admin accepts it in Server › To do, with its topics and whether it suits
-  teens and children. Its adder keeps reading it meanwhile. Server › Notifications becomes To do: one list, filtered
-  by kind, each item opening on its own page with its action.
+  teens and children. Its adder keeps reading it meanwhile. Server › Notifications becomes To do: the requests
+  waiting, filtered by kind, each opening where it is done (a password code on the account that asked it); a
+  request done moves to Handled for 7 days. The weekly report only goes out by e-mail or push.
+- **Board review.** Source cards end on a footer line, Retirer a red round on the left and each other action its
+  own round on the right, with the readers count in the corner and a red or grey mark on the logo for a feed that
+  fails or a source little read. My sources come before the base sources, catalogue topics are in alphabetical
+  order, and Cyber and Manga/Anime get their colours. Every button that asks a confirmation first is red. Add a
+  source keeps only the AI's suggestions (the catalogue has the rest), and the guided tour adds its first source
+  from the catalogue. Offline reading has its own section in My account.
 - **Your own time format, game and language.** The time format, Levels and badges and the language are each
   person's, in My account › Profile (a teen's in Settings › General); the language follows the browser until
   someone picks one. Server › General no longer sets them for everyone. A young one's card lives in My account ›

@@ -162,6 +162,12 @@
   --topic-animals: #a98466;
   --topic-animals-border: #42372e;
   --topic-animals-surface: #221f1c;
+  --topic-cybersecurity: #7c9be0;
+  --topic-cybersecurity-border: #353f55;
+  --topic-cybersecurity-surface: #1d2027;
+  --topic-manga-anime: #e2728f;
+  --topic-manga-anime-border: #553038;
+  --topic-manga-anime-surface: #261c1f;
   /* Behind a site's icon: light, as most icons are drawn for a light page (a black logo stays legible). */
   --icon-tile: #ececee;
   /* Soft colour glows (a halo in the desktop reader before an article is open): five topic colours, and how strong. */
@@ -308,6 +314,12 @@
   --topic-animals: #705743;
   --topic-animals-border: #d4ccc3;
   --topic-animals-surface: #ede8e2;
+  --topic-cybersecurity: #46598f;
+  --topic-cybersecurity-border: #bcc6e0;
+  --topic-cybersecurity-surface: #e9ebf2;
+  --topic-manga-anime: #9c3f55;
+  --topic-manga-anime-border: #e6bcc6;
+  --topic-manga-anime-surface: #f4e6e9;
   --icon-tile: #ffffff;
   /* The topics' light shades: their text colours would make the glows muddy on beige. */
   --glow-1: #f0a877;
@@ -489,6 +501,12 @@
     --topic-animals: #705743;
     --topic-animals-border: #d4ccc3;
     --topic-animals-surface: #ede8e2;
+    --topic-cybersecurity: #46598f;
+    --topic-cybersecurity-border: #bcc6e0;
+    --topic-cybersecurity-surface: #e9ebf2;
+    --topic-manga-anime: #9c3f55;
+    --topic-manga-anime-border: #e6bcc6;
+    --topic-manga-anime-surface: #f4e6e9;
     --icon-tile: #ffffff;
     /* The topics' light shades: their text colours would make the glows muddy on beige. */
     --glow-1: #f0a877;
@@ -610,6 +628,16 @@
   --topic: var(--topic-animals);
   --topic-border: var(--topic-animals-border);
   --topic-surface: var(--topic-animals-surface);
+}
+[data-topic='cybersecurity'] {
+  --topic: var(--topic-cybersecurity);
+  --topic-border: var(--topic-cybersecurity-border);
+  --topic-surface: var(--topic-cybersecurity-surface);
+}
+[data-topic='manga-anime'] {
+  --topic: var(--topic-manga-anime);
+  --topic-border: var(--topic-manga-anime-border);
+  --topic-surface: var(--topic-manga-anime-surface);
 }
 
 /* Réglages > Couleur d’accent: one of the profile colours instead of the theme's own (rust, or Poudré's pink)
