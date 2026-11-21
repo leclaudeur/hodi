@@ -6,7 +6,7 @@ import type { YoungAccountRoutesOptions } from './young-account-routes.ts'
 
 type ParentOf = (request: express.Request, response: express.Response) => UserAccount | null
 
-// The young one's card › Parents: « Inviter un parent » by its @identifier, its answer, and « Ne plus être parent ».
+// The young one's card › Parents: « Inviter un parent » by its @identifier, its answer, and « Me retirer ».
 // Both parents have the same rights, and neither can take the other off: in a separation, no parent cuts the other
 // off from their child.
 export const mountParentRoutes = (
@@ -35,12 +35,8 @@ export const mountParentRoutes = (
     const invited = handle ? accounts.byHandle(handle) : null
     // An adult who reads in the young one's household: its rules and profile are read there.
     const here = invited !== null && accounts.profileOf(invited.id) !== null
-    // A teen's or a child's account is never a parent: said apart, so that the parent knows why.
-    if (invited && young.isYoung(invited.id)) {
-      response.status(409).json({ error: 'young_handle' })
-      return
-    }
-    if (!invited || !here || invited.email === null) {
+    // Unknown, out of reach or a minor's: the same answer, so that no one learns which handles are minors'.
+    if (!invited || !here || invited.email === null || young.isYoung(invited.id)) {
       response.status(404).json({ error: 'unknown_handle' })
       return
     }
