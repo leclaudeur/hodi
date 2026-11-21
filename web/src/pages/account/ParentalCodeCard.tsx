@@ -27,7 +27,6 @@ const CodeDialog = ({ onClose, onSaved }: { onClose: () => void; onSaved: (next:
       title: t('children.parentalCode.onTitle'),
       message: <RichText i18nKey="children.parentalCode.onText" />,
       label: t('common.save'),
-      look: 'primary',
       proof: hasNoPassword() ? { noPassword: true } : {},
       onConfirm: async proof => onSaved(await setParentalCode(code, proof))
     })
@@ -57,7 +56,7 @@ const CodeDialog = ({ onClose, onSaved }: { onClose: () => void; onSaved: (next:
         />
         <DialogActions>
           <Button onClick={onClose}>{t('common.cancel')}</Button>
-          <Button type="submit" look="primary" disabled={code.length < CODE_LENGTH}>
+          <Button type="submit" look="danger" disabled={code.length < CODE_LENGTH}>
             {t('common.save')}
           </Button>
         </DialogActions>

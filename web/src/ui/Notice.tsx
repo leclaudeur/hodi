@@ -9,6 +9,8 @@ export type NoticeTone = 'info' | 'warning' | 'error' | 'success'
 export interface NoticeAction {
   label: string
   icon: LucideIcon
+  // Red when it asks a confirmation first, as every such button.
+  look?: 'neutral' | 'danger'
   onClick?: () => void
   href?: string
 }
@@ -56,13 +58,20 @@ const Notice = ({
     </div>
     {action && (
       <div className={styles.side}>
-        <Button className={styles.wideAction} icon={action.icon} onClick={action.onClick} href={action.href}>
+        <Button
+          className={styles.wideAction}
+          look={action.look}
+          icon={action.icon}
+          onClick={action.onClick}
+          href={action.href}
+        >
           {action.label}
         </Button>
         <RoundButton
           className={styles.roundAction}
           icon={action.icon}
           label={action.label}
+          variant={action.look === 'danger' ? 'danger' : 'default'}
           size={38}
           onClick={action.onClick}
           href={action.href}

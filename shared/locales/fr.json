@@ -1459,8 +1459,8 @@
       "clearing": "Vidage…",
       "backups": "Sauvegardes",
       "backupsHint": "Une copie de la base chaque nuit, les 7 dernières gardées",
-      "backupsCount_one": "Une copie de la base chaque nuit, les 7 dernières gardées ({{count}} pour l’instant)",
-      "backupsCount_other": "Une copie de la base chaque nuit, les 7 dernières gardées ({{count}} pour l’instant)",
+      "backupsCount_one": "{{count}} copie",
+      "backupsCount_other": "{{count}} copies",
       "sevenKept": "7 gardées"
     },
     "household": {
@@ -2148,6 +2148,7 @@
         "invite": "Inviter",
         "inviteLabel": "Inviter un adulte",
         "inviteHint": "Un code et son QR, valable 24 h et une seule fois",
+        "full": "Serveur complet",
         "fullHint": "Complet : un profil doit partir avant d’inviter quelqu’un",
         "full": "Complet",
         "accounts": "Comptes",
@@ -2673,7 +2674,6 @@
       "leaveTitle": "Ne plus être parent de {{name}} ?",
       "leaveText": "Tu ne gères plus <b>{{name}}</b> : son autre parent garde tout. Pour redevenir parent, il faudra qu’il t’invite.",
       "left": "Tu n’es plus parent de {{name}}",
-      "youName": "{{name}} (toi)",
       "since": "parent depuis le {{date}}",
       "leaveLabel": "Ne plus être parent de {{name}}"
     },

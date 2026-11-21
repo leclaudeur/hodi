@@ -1459,8 +1459,8 @@
       "clearing": "Clearing…",
       "backups": "Backups",
       "backupsHint": "A copy of the database every night, the last 7 kept",
-      "backupsCount_one": "A copy of the database every night, the last 7 kept ({{count}} so far)",
-      "backupsCount_other": "A copy of the database every night, the last 7 kept ({{count}} so far)",
+      "backupsCount_one": "{{count}} copy",
+      "backupsCount_other": "{{count}} copies",
       "sevenKept": "7 kept"
     },
     "household": {
@@ -2148,6 +2148,7 @@
         "invite": "Invite",
         "inviteLabel": "Invite an adult",
         "inviteHint": "A code and its QR, valid for 24 h and once",
+        "full": "Server full",
         "fullHint": "Full: a profile has to leave before anyone is invited",
         "full": "Full",
         "accounts": "Accounts",
@@ -2673,7 +2674,6 @@
       "leaveTitle": "Stop being {{name}}’s parent?",
       "leaveText": "You no longer run <b>{{name}}</b>: their other parent keeps everything. To be a parent again, they will have to invite you.",
       "left": "You’re no longer {{name}}’s parent",
-      "youName": "{{name}} (you)",
       "since": "parent since {{date}}",
       "leaveLabel": "Stop being {{name}}’s parent"
     },

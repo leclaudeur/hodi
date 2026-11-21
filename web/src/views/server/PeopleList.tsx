@@ -161,10 +161,10 @@ const InviteButton = ({ loaded }: { loaded: People }) => {
   const full = space.adults + space.young >= loaded.maxProfiles
   return (
     <div className={serverStyles.invite}>
+      {/* Full, the button says so and stays greyed, with no line more. */}
       <Button icon={UserPlus} wide disabled={full} onClick={() => setInviting(true)}>
-        {t('profiles.code.invite')}
+        {t(full ? 'server.people.household.full' : 'profiles.code.invite')}
       </Button>
-      {full && <p className={serverStyles.inviteHint}>{t('server.people.household.fullHint')}</p>}
       <CodeDialog
         target={inviting ? null : undefined}
         onClose={() => setInviting(false)}

@@ -89,7 +89,6 @@ const PasswordForm = ({ child, onCancel, onSaved }: PasswordFormProps) => {
       title: t('children.password.confirmTitle', { name: child.name }),
       message: t('children.password.confirmText'),
       label: t('common.save'),
-      look: 'primary',
       proof: {},
       onConfirm: async proof => {
         onSaved(await setChildPassword(child.accountId, password, proof))
@@ -102,7 +101,7 @@ const PasswordForm = ({ child, onCancel, onSaved }: PasswordFormProps) => {
       <NewPasswordFields password={password} confirm={again} onPassword={setPassword} onConfirm={setAgain} autoFocus />
       <DialogActions>
         <Button onClick={onCancel}>{t('common.cancel')}</Button>
-        <Button type="submit" look="primary" disabled={password === '' || password !== again}>
+        <Button type="submit" look="danger" disabled={password === '' || password !== again}>
           {t('common.save')}
         </Button>
       </DialogActions>
