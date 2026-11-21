@@ -103,7 +103,7 @@ export class DailySummaries {
     // Another request may have started the daily summary while the front page loaded.
     const started = this.#pending.get(profileId)
     if (started) return started
-    if (!ledger.take('dailySummary', profileId, now)) return this.#latestOr(last, { status: 'limited' })
+    ledger.record('dailySummary', profileId, now)
 
     const pending = write(stories, language)
       .then(

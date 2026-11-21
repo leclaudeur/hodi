@@ -1,14 +1,13 @@
 import type { Catalog, Language, Source } from './catalog.ts'
 import { allSources } from './catalog.ts'
 import type { PluginQuestion } from './summarizer.ts'
-import type { AiCallKind } from '../db/ai-queries.ts'
 import type { NewsStore } from '../db/news-store.ts'
 import type { Trend } from './trends.ts'
 import { labelIn } from '../labels.ts'
 import { VideoLengths } from './video-lengths.ts'
 import { CheckQueue } from './check-queue.ts'
 import { CACHE_TTL_MS, FeedCache } from './feed-cache.ts'
-import { AI_CAPS, type AiUsage } from './ai-ledger.ts'
+import type { AiUsage } from './ai-ledger.ts'
 import { NO_FILTER, type ReaderFilter, filtered } from './reader-filter.ts'
 import type {
   ArticleResult,
@@ -79,7 +78,6 @@ export class NewsService {
       suggestSources,
       store,
       isPaused = () => false,
-      aiCaps = AI_CAPS,
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
       languageOf = () => 'fr',
       householdLanguage = () => 'fr',
@@ -128,7 +126,7 @@ export class NewsService {
     })
     const tools = { summarize, writeDailySummary, answerQuestion, suggestSources }
     const timeZones = (profileId: number) => readerTimeZoneOf?.(profileId) ?? this.#timeZones.get()
-    const wiring = { tools, aiOf, store, caps: aiCaps, languageOf, householdLanguage, now, log }
+    const wiring = { tools, aiOf, store, languageOf, householdLanguage, now, log }
     this.#newsAi = createNewsAi({ ...wiring, timeZone: timeZones }, this)
   }
 
@@ -157,11 +155,6 @@ export class NewsService {
 
   aiUsage(profileId = DEFAULT_PROFILE_ID): AiUsage {
     return this.#newsAi.usage(profileId)
-  }
-
-  // « Remettre à 0 »: the reader's own calls.
-  resetAiUsage({ kind = null, profileId = DEFAULT_PROFILE_ID }: { kind?: AiCallKind | null; profileId?: number }) {
-    this.#newsAi.reset(kind, profileId)
   }
 
   // The catalogue of the household the request is for (household-scope.ts).

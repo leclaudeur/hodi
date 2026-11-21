@@ -7,7 +7,6 @@ import { CONTENT_RETENTION_MS, NewsStore } from '../db/news-store.ts'
 import { AccountAiStore } from '../db/account-ai-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
-import { MAX_SUMMARIES_PER_DAY } from '../news/ai-ledger.ts'
 import { itemId } from '../news/text.ts'
 import { type FakeResponse, articlePage, fakeFetch, rssFeed } from './helpers/news.ts'
 
@@ -93,13 +92,10 @@ describe('NewsStore', () => {
     assert.deepEqual(await second.news.getSummary(sommet), { status: 'ok', points: ['Un point'] })
     assert.equal(calls, 1)
     assert.deepEqual(store.aiCalls(NOW - 24 * HOUR), [{ kind: 'summary', at: NOW, profileId: 1 }])
-    assert.ok(MAX_SUMMARIES_PER_DAY > 1)
 
-    // Put back to 0 by the reader: kept across a restart.
-    second.news.resetAiUsage({ kind: 'summary', profileId: 1 })
-    assert.deepEqual(store.aiCalls(NOW - 24 * HOUR), [{ kind: 'summary', at: NOW, profileId: 1, cleared: 'profile' }])
+    // The day's calls are still counted after a restart.
     const third = start(store, responses, { summarize })
-    assert.equal(third.news.aiUsage(1).kinds.find(kind => kind.kind === 'summary')!.used, 0)
+    assert.equal(third.news.aiUsage(1).kinds.find(kind => kind.kind === 'summary')!.used, 1)
   })
 
   it("keeps each account's summary to that account alone", async () => {

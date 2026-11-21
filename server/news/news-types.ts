@@ -8,7 +8,6 @@ import type { WriteDailySummary, WrittenPoint } from './daily-summary.ts'
 import type { AnswerQuestion, PluginQuestion, SuggestSources, Summarize } from './summarizer.ts'
 import type { FetchVideoDuration } from './video-durations.ts'
 import type { NewsStore } from '../db/news-store.ts'
-import type { AiCaps } from './ai-ledger.ts'
 
 // What NewsService answers, and what it is built with.
 export interface SourceStatus {
@@ -115,24 +114,23 @@ export type ArticleResult =
   | { status: 'unreadable'; item: FeedItem }
   | { status: 'ok'; item: FeedItem; article: ExtractedArticle }
 
-// unavailable: no API key configured. limited: the daily cap is reached.
+// unavailable: no API key configured.
 export type SummaryResult =
-  | { status: 'ok'; points: string[] }
-  | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' | 'limited' }
+  { status: 'ok'; points: string[] } | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' }
 
 // none: no daily summary written lately. pending: the front page is still filling up, ask again shortly.
 export type DailySummaryResult =
   | { status: 'ok'; points: DailySummaryPoint[]; generatedAt: string }
-  | { status: 'unavailable' | 'none' | 'pending' | 'failed' | 'refused' | 'limited' }
+  | { status: 'unavailable' | 'none' | 'pending' | 'failed' | 'refused' }
 
 export type DailySummaryPoint = WrittenPoint & { topicId: string | null }
 
 export type AnswerResult =
   | { status: 'ok'; answer: string; sources: AnswerSource[] }
-  | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' | 'limited' }
+  | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' }
 
 export type SourceSuggestionResult =
-  { status: 'ok'; sites: SuggestedSite[] } | { status: 'unavailable' | 'not_found' | 'limited' | 'refused' | 'failed' }
+  { status: 'ok'; sites: SuggestedSite[] } | { status: 'unavailable' | 'not_found' | 'refused' | 'failed' }
 
 // The AI's tasks, all from the same provider and key.
 export interface AiTools {
@@ -144,8 +142,7 @@ export interface AiTools {
   askForPlugin?: (question: PluginQuestion) => Promise<string>
 }
 
-export type PluginAskResult =
-  { status: 'ok'; text: string } | { status: 'unavailable' | 'limited' | 'refused' | 'failed' }
+export type PluginAskResult = { status: 'ok'; text: string } | { status: 'unavailable' | 'refused' | 'failed' }
 
 export interface NewsServiceOptions {
   fetchText: FetchText
@@ -174,8 +171,6 @@ export interface NewsServiceOptions {
   store?: NewsStore
   // Sources nobody reads (every profile turned them off): their feeds are not fetched.
   isPaused?: (sourceId: string) => boolean
-  // Daily caps on each reader's API calls, AI_CAPS by default.
-  aiCaps?: AiCaps
   // Where "today" is for the Résumé du jour: the server's own time zone by default.
   timeZone?: string
   // The language the AI writes in for a profile: its own, else the household's. French in tests by default.

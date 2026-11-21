@@ -3,7 +3,6 @@ import { describe, it } from 'node:test'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService, TOPIC_PAGE_SIZE } from '../news/news-service.ts'
 import { type AiTools } from '../news/news-types.ts'
-import { AI_CAPS } from '../news/ai-ledger.ts'
 import type { DailySummaryStory } from '../news/daily-summary.ts'
 import { type SummaryInput, SummaryRefusedError, articleText } from '../news/summarizer.ts'
 import { itemId } from '../news/text.ts'
@@ -53,8 +52,8 @@ const isFeed = (url: string) => url.endsWith('/feed')
 
 const feeds = { 'https://alpha.example/feed': alphaFeed, 'https://beta.example/feed': betaFeed }
 
-// Each reader's own daily cap, on its own key.
-const capOf = (kind: keyof typeof AI_CAPS) => AI_CAPS[kind]
+// More calls than any daily cap ever allowed: each reader pays with its own key, and nothing stops it.
+const MANY = 120
 
 describe('NewsService', () => {
   it('does not fetch a source every profile turned off', async () => {
@@ -597,7 +596,7 @@ topics:
       assert.equal(calls, 2)
     })
 
-    it('stops calling the API after the daily cap, each reader against its own', async () => {
+    it('never stops calling the API, and counts each reader’s calls apart', async () => {
       let calls = 0
       const news = dailySummarySetup(async () => {
         calls++
@@ -605,46 +604,18 @@ topics:
       })
       await news.getTopic('world')
       const id = idOf('https://beta.example/elections')
-      const cap = capOf('summary')
 
-      for (let attempt = 0; attempt < cap; attempt++) await news.getSummary(id, 1)
-      assert.deepEqual(await news.getSummary(id, 1), { status: 'limited' })
-      assert.equal(calls, cap)
+      for (let attempt = 0; attempt < MANY; attempt++) await news.getSummary(id, 1)
+      assert.equal(calls, MANY)
       // Another reader pays with its own key: its calls are its own.
       await news.getSummary(id, 2)
-      assert.equal(calls, cap + 1)
+      assert.equal(calls, MANY + 1)
 
       assert.deepEqual(
         news.aiUsage(1).kinds.find(kind => kind.kind === 'summary'),
-        { kind: 'summary', used: cap, limit: cap }
+        { kind: 'summary', used: MANY }
       )
       assert.equal(news.aiUsage(2).kinds.find(kind => kind.kind === 'summary')!.used, 1)
-    })
-
-    it("puts the reader's own calls back to 0, one kind or all, and no one else's", async () => {
-      const news = dailySummarySetup(async () => {
-        throw new Error('API down')
-      })
-      await news.getTopic('world')
-      const id = idOf('https://beta.example/elections')
-      const summaries = (profileId: number) => news.aiUsage(profileId).kinds.find(kind => kind.kind === 'summary')!
-
-      for (let attempt = 0; attempt < 3; attempt++) await news.getSummary(id, 1)
-      await news.getSummary(id, 2)
-
-      news.resetAiUsage({ kind: 'question', profileId: 1 })
-      assert.equal(summaries(1).used, 3)
-      news.resetAiUsage({ kind: 'summary', profileId: 1 })
-      assert.equal(summaries(1).used, 0)
-      assert.equal(summaries(2).used, 1)
-
-      // Its calls freed, the reader asks again up to its cap.
-      for (let attempt = 0; attempt < capOf('summary'); attempt++) await news.getSummary(id, 1)
-      assert.equal(summaries(1).used, capOf('summary'))
-
-      news.resetAiUsage({ profileId: 1 })
-      assert.equal(summaries(1).used, 0)
-      assert.equal(summaries(2).used, 1)
     })
 
     it("uses each reader's own key, and none for a reader without one", async () => {
@@ -718,9 +689,9 @@ topics:
       assert.deepEqual(await news.answerQuestion(id, 'refus'), { status: 'refused' })
       assert.deepEqual(await news.answerQuestion('AAAAAAAAAAAAAAAA', 'Qui ?'), { status: 'unknown' })
 
-      for (let attempt = 2; attempt < capOf('question'); attempt++) await news.answerQuestion(id, 'Encore ?')
-      assert.deepEqual(await news.answerQuestion(id, 'Une de trop ?'), { status: 'limited' })
-      assert.equal(asked.length, capOf('question'))
+      for (let attempt = 2; attempt < MANY; attempt++) await news.answerQuestion(id, 'Encore ?')
+      assert.equal((await news.answerQuestion(id, 'Encore une ?')).status, 'ok')
+      assert.equal(asked.length, MANY + 1)
       assert.equal((await news.answerQuestion(id, 'Et Léa ?', 2)).status, 'ok')
     })
   })
@@ -751,11 +722,12 @@ topics:
       assert.equal(news.pluginAiLeft(1), true)
       assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'ok', text: 'Oui.' })
       assert.deepEqual(asked, [QUESTION])
-      for (let call = 1; call < capOf('plugin'); call++) await news.askForPlugin('other', 1, QUESTION)
-      assert.equal(news.pluginAiLeft(1), false)
-      assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'limited' })
-      assert.equal(asked.length, capOf('plugin'))
-      assert.deepEqual(news.pluginAiCalls(1), { helper: 1, other: capOf('plugin') - 1 })
+      for (let call = 1; call < MANY; call++) await news.askForPlugin('other', 1, QUESTION)
+      // No daily cap: only the plugin's own hourly one (plugins/ai.ts) stops it.
+      assert.equal(news.pluginAiLeft(1), true)
+      assert.deepEqual(await news.askForPlugin('helper', 1, QUESTION), { status: 'ok', text: 'Oui.' })
+      assert.equal(asked.length, MANY + 1)
+      assert.deepEqual(news.pluginAiCalls(1), { helper: 2, other: MANY - 1 })
       // Recorded with the plugin that asked, across a restart.
       assert.deepEqual(
         new NewsStore(db)
@@ -806,10 +778,9 @@ topics:
       assert.deepEqual(asked, [{ topic: 'Monde', replacing: 'Beta' }])
       assert.deepEqual(await news.suggestSources('nope', 1, { current: [], replacing: null }), { status: 'not_found' })
 
-      for (let call = 1; call < capOf('sources'); call++)
-        await news.suggestSources('world', 1, { current: [], replacing: null })
-      assert.deepEqual(await news.suggestSources('world', 1, { current: [], replacing: null }), { status: 'limited' })
-      assert.equal(asked.length, capOf('sources'))
+      for (let call = 1; call < MANY; call++) await news.suggestSources('world', 1, { current: [], replacing: null })
+      assert.equal((await news.suggestSources('world', 1, { current: [], replacing: null })).status, 'ok')
+      assert.equal(asked.length, MANY + 1)
     })
 
     it("asks in the profile's language, for sites in it and in the household's", async () => {
@@ -975,7 +946,7 @@ topics:
       assert.deepEqual(news.getDailySummary(), { status: 'none' })
     })
 
-    it('keeps the last daily summary when writing a new one fails, and caps the day', async () => {
+    it('keeps the last daily summary when writing a new one fails, however often it fails', async () => {
       let calls = 0
       const { news, writeSettled, advance } = dailySummarySetup(async () => {
         calls++
@@ -989,9 +960,8 @@ topics:
       advance(60 * 60 * 1000)
       assert.deepEqual(await writeSettled(), first)
 
-      for (let attempt = 0; attempt < capOf('dailySummary'); attempt++) await writeSettled()
-      assert.equal(calls, capOf('dailySummary'))
-      assert.deepEqual(await writeSettled(), first)
+      for (let attempt = 0; attempt < 10; attempt++) assert.deepEqual(await writeSettled(), first)
+      assert.equal(calls, 12)
     })
 
     it('is unavailable without an API key', async () => {
