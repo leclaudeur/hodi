@@ -135,7 +135,6 @@ const confirmLeave = (child: ChildAccount, t: TFunction) =>
 
 const ERRORS: Record<string, string> = {
   unknown_handle: 'children.parents.unknown',
-  young_handle: 'children.parents.young',
   already_parent: 'children.parents.already',
   parents_full: 'children.parents.full',
   too_many_requests: 'children.parents.tooMany'

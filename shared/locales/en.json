@@ -2669,8 +2669,7 @@
       "left": "You’re no longer {{name}}’s parent",
       "youName": "{{name}} (you)",
       "since": "parent since {{date}}",
-      "leaveLabel": "Stop being {{name}}’s parent",
-      "young": "This is a teen’s or a child’s account: only an adult can be a parent."
+      "leaveLabel": "Stop being {{name}}’s parent"
     },
     "invitations": {
       "title": "Requests",

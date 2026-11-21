@@ -44,7 +44,8 @@ describe('Mon compte › Mes enfants › Parents', () => {
   it('invites another adult by its @identifier, never an unknown one, a young one or a stranger’s child', async () => {
     assert.equal((await invite('personne')).status, 404)
     // A young one's account is never a parent, and the parent is told so.
-    assert.equal((await invite('zoe')).status, 409)
+    // A minor's handle answers as an unknown one: telling them apart would show which handles are minors'.
+    assert.equal((await invite('zoe')).status, 404)
     // Sam is no parent of Zoé: Sam cannot invite anyone for her.
     assert.equal((await invite('sam', household.sam)).status, 404)
     const sent = await invite('@sam')

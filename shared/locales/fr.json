@@ -2669,8 +2669,7 @@
       "left": "Tu n’es plus parent de {{name}}",
       "youName": "{{name}} (toi)",
       "since": "parent depuis le {{date}}",
-      "leaveLabel": "Ne plus être parent de {{name}}",
-      "young": "C’est le compte d’un ado ou d’un enfant : seul un adulte peut être parent."
+      "leaveLabel": "Ne plus être parent de {{name}}"
     },
     "invitations": {
       "title": "Demandes",
