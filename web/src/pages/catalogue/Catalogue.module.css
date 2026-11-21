@@ -1,0 +1,35 @@
+/* Four cards across once the page is wide enough, three otherwise (SourceCard.module.css). */
+main.wide {
+  max-width: 920px;
+}
+
+.results {
+  container: catalogue / inline-size;
+}
+
+/* The search on the left, the sort on the right; on a phone the sort goes under the search. */
+.toolbar {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.toolbar > :first-child {
+  flex: 1 1 300px;
+  max-width: 420px;
+  min-width: 0;
+}
+
+.sort {
+  position: relative;
+}
+
+@media (max-width: 600px) {
+  .toolbar > :first-child {
+    max-width: none;
+  }
+}
