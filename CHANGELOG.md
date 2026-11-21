@@ -18,6 +18,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   @username and the password the parent chooses. The young one signs in with that username and password; the parent
   changes the password from their card. Existing teen and child profiles become accounts linked to the household's
   adults, with no password until a parent chooses one.
+- **Your own time format, game and language.** The time format, Levels and badges and the language are each
+  person's, in My account › Profile (a teen's in Settings › General); the language follows the browser until
+  someone picks one. Server › General no longer sets them for everyone. A young one's card lives in My account ›
+  My children (Settings › Teens and children is gone), and Invite someone sits at the foot of Server › Accounts.
 - **My children, after review.** A parent's requests and children are two lists, a request answered in its row
   (Accept, Refuse); the parents' list shows names and since when; a teen's devices signed in with its username are
   on its card for its parents to sign out; Link a device is gone. Statistics no longer show the household challenge.
