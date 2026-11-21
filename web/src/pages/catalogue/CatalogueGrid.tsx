@@ -1,0 +1,158 @@
+import { ArrowUpDown, Check, ExternalLink, LibraryBig, Minus, Plus, Users } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TopicSummary } from '../../api.ts'
+import { CATALOGUE_SORTS, type CatalogueEntry, type CatalogueSort, readersCount } from '../../lib/catalogue.ts'
+import { getLanguage } from '../../lib/i18n.ts'
+import { cardTopicOf } from '../../lib/source-card.ts'
+import Button from '../../ui/Button.tsx'
+import EmptyState from '../../ui/EmptyState.tsx'
+import Menu, { MenuItem } from '../../ui/Menu.tsx'
+import RoundButton from '../../ui/RoundButton.tsx'
+import SourceCard from '../../ui/SourceCard.tsx'
+import cardStyles from '../../ui/SourceCard.module.css'
+import StatusLine from '../../ui/StatusLine.tsx'
+import RowsSkeleton from '../../views/settings/SettingsSkeleton.tsx'
+import styles from './Catalogue.module.css'
+
+// Alphabétique or Plus populaires, each either way, in a menu beside the search.
+export const SortMenu = ({ value, onChange }: { value: CatalogueSort; onChange: (sort: CatalogueSort) => void }) => {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  return (
+    <span className={styles.sort}>
+      <Button
+        icon={ArrowUpDown}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={t('catalogue.sort.label', { sort: t(`catalogue.sort.${value}`) })}
+        onClick={() => setOpen(!open)}
+      >
+        {t(`catalogue.sort.${value}`)}
+      </Button>
+      <Menu open={open} onClose={() => setOpen(false)} label={t('catalogue.sort.title')} align="end">
+        {CATALOGUE_SORTS.map(sort => (
+          <MenuItem
+            key={sort}
+            checked={sort === value}
+            onClick={() => {
+              setOpen(false)
+              onChange(sort)
+            }}
+          >
+            {t(`catalogue.sort.${sort}`)}
+          </MenuItem>
+        ))}
+      </Menu>
+    </span>
+  )
+}
+
+interface CardProps {
+  entry: CatalogueEntry
+  topics: TopicSummary[]
+  current: string
+  busy: boolean
+  onAdd: () => void
+  onRemove: () => void
+}
+
+// A source of the catalogue: its readers in the corner, or a check once it is in « Mes sources », where it stays.
+const CatalogueCard = ({ entry, topics, current, busy, onAdd, onRemove }: CardProps) => {
+  const { t } = useTranslation()
+  const { topic, moreTopics } = cardTopicOf(
+    entry.topicIds.flatMap(id => topics.filter(candidate => candidate.id === id)),
+    [current]
+  )
+  const readers = entry.readers
+  // Its readers once there are enough of them to say (source-view-routes.ts); a check once it is mine.
+  const corner = entry.mine ? (
+    <span className={cardStyles.check} title={t('catalogue.mine')}>
+      <Check size={13} aria-hidden="true" />
+    </span>
+  ) : (
+    readers !== undefined && (
+      <span title={t('sources.readers', { count: readers, formatted: readersCount(readers, getLanguage()) })}>
+        <Users size={13} aria-hidden="true" /> {readersCount(readers, getLanguage())}
+      </span>
+    )
+  )
+  return (
+    <SourceCard
+      sourceId={entry.id}
+      name={entry.name}
+      topic={topic}
+      moreTopics={moreTopics}
+      corner={corner}
+      picked={entry.mine}
+      actions={
+        <>
+          {entry.mine ? (
+            <Button compact icon={Minus} aria-label={t('catalogue.remove', { name: entry.name })} onClick={onRemove}>
+              {t('sourceCard.remove')}
+            </Button>
+          ) : (
+            <Button
+              compact
+              look="primary"
+              icon={Plus}
+              busy={busy}
+              aria-label={t('catalogue.add', { name: entry.name })}
+              onClick={onAdd}
+            >
+              {t('sourceCard.add')}
+            </Button>
+          )}
+          <RoundButton
+            icon={ExternalLink}
+            label={t('addSource.seeSite', { name: entry.name })}
+            title={t('catalogue.openSite')}
+            href={entry.site}
+            external
+          />
+        </>
+      }
+    />
+  )
+}
+
+interface GridProps {
+  entries: CatalogueEntry[] | null
+  topics: TopicSummary[]
+  current: string
+  failed: boolean
+  busy: string | null
+  onAdd: (entry: CatalogueEntry) => void
+  onRemove: (entry: CatalogueEntry) => void
+}
+
+const CatalogueGrid = ({ entries, topics, current, failed, busy, onAdd, onRemove }: GridProps) => {
+  const { t } = useTranslation()
+  if (failed) return <StatusLine tone="error">{t('sources.loadFailed')}</StatusLine>
+  if (!entries) return <RowsSkeleton rows={4} end="round" />
+  if (entries.length === 0)
+    return (
+      <EmptyState icon={<LibraryBig size={24} />} title={t('catalogue.empty.title')} compact>
+        {t('catalogue.empty.text')}
+      </EmptyState>
+    )
+  return (
+    <div className={styles.results}>
+      <ul className={cardStyles.grid}>
+        {entries.map(entry => (
+          <CatalogueCard
+            key={entry.id}
+            entry={entry}
+            topics={topics}
+            current={current}
+            busy={busy === entry.id}
+            onAdd={() => onAdd(entry)}
+            onRemove={() => onRemove(entry)}
+          />
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export default CatalogueGrid

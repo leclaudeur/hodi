@@ -1,23 +1,8 @@
-import type { TFunction } from 'i18next'
 import type { SourceStatus, TopicInfo } from '../../../api.ts'
 import { getLanguage } from '../../../lib/i18n.ts'
 import { sourceState } from '../../../lib/settings-data.ts'
 import { foldText } from '../../../../../shared/word-match.ts'
 import type { SourceFilter } from './SourceFilters.tsx'
-
-export type GroupId = 'requests' | 'mine' | 'channels' | 'household' | 'base'
-
-export interface SourceGroup {
-  id: GroupId
-  title: string
-  sources: SourceStatus[]
-}
-
-export interface SourceSection {
-  id: string
-  label: string
-  sources: SourceStatus[]
-}
 
 // A source's site as its row's line: "lejde.be".
 export const hostOf = (url: string) => {
@@ -86,58 +71,12 @@ export const filterSources = ({
   return { topicsOf, hidden, lowOf, counts, chosen, filterTopics, chosenTopics, wanted, shown }
 }
 
-interface SectionInput {
-  topics: TopicInfo[]
-  chosenTopics: string[]
-  placedOff: (id: string) => boolean
-  t: TFunction
-}
-
-// A group's sources under a separator per topic, as Le fil's days: each under its first topic (the first filtered
-// on, if any), in the topics' order, then those without one (channels) by kind, by name with the hidden ones last.
-export const sectionsOf = (list: SourceStatus[], { topics, chosenTopics, placedOff, t }: SectionInput) => {
-  const sections: SourceSection[] = []
-  for (const source of list) {
-    const tagged = topicsOfSource(topics, source.id)
-    const topic = tagged.find(candidate => chosenTopics.includes(candidate.id)) ?? tagged[0]
-    const id = topic?.id ?? source.kind
-    const section = sections.find(candidate => candidate.id === id)
-    if (section) section.sources.push(source)
-    else sections.push({ id, label: topic?.label ?? t(`sources.kinds.${source.kind}`), sources: [source] })
+// Mes sources' two grids: the base ones, then every other the account reads (its own, its channels, those another
+// account added), each by name.
+export const gridsOf = (shown: SourceStatus[]) => {
+  const byName = (a: SourceStatus, b: SourceStatus) => a.name.localeCompare(b.name, getLanguage())
+  return {
+    base: shown.filter(source => source.addedBy === undefined).sort(byName),
+    mine: shown.filter(source => source.addedBy !== undefined).sort(byName)
   }
-  const rank = (id: string) => {
-    const index = topics.findIndex(topic => topic.id === id)
-    return index === -1 ? topics.length : index
-  }
-  sections.sort((a, b) => rank(a.id) - rank(b.id))
-  sections.forEach(section =>
-    section.sources.sort(
-      (a, b) => Number(placedOff(a.id)) - Number(placedOff(b.id)) || a.name.localeCompare(b.name, getLanguage())
-    )
-  )
-  return sections
-}
-
-// The profile's own sites and channels, the household's, the base ones.
-export const groupsOf = (shown: SourceStatus[], current: number | null | undefined, young: boolean, t: TFunction) => {
-  const own = (source: SourceStatus) => source.addedBy !== undefined && source.addedBy === current
-  const groups: SourceGroup[] = [
-    {
-      id: 'mine',
-      title: t('sources.groups.mine'),
-      sources: shown.filter(source => own(source) && source.kind === 'article')
-    },
-    {
-      id: 'channels',
-      title: t('sources.groups.channels'),
-      sources: shown.filter(source => own(source) && source.kind !== 'article')
-    },
-    {
-      id: 'household',
-      title: young ? t('requests.byParents') : t('sources.groups.household'),
-      sources: shown.filter(source => source.addedBy !== undefined && source.addedBy !== current)
-    },
-    { id: 'base', title: t('sources.groups.base'), sources: shown.filter(source => source.addedBy === undefined) }
-  ]
-  return groups
 }

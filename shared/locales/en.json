@@ -608,7 +608,6 @@
         "sources": "Then Sources.",
         "paste": "Paste the link of a site you like here.",
         "parents": "Your parents get your request and decide.",
-        "requests": "Open My requests.",
         "press": "Tap Ask for a source."
       },
       "end": {
@@ -1606,30 +1605,20 @@
     "added": "Source added",
     "topicsSaved": "Topics saved",
     "topicsFailed": "The topics could not be saved. Try again in a moment.",
-    "kinds": {
-      "article": "Articles",
-      "video": "Videos",
-      "podcast": "Podcasts"
-    },
     "groups": {
-      "mine": "Added by you",
-      "channels": "My channels",
-      "household": "Added by others",
+      "mine": "My sources",
       "base": "Base sources"
     },
     "status": {
       "error": "Error"
     },
-    "deletedProfile": "a deleted profile",
     "errorTitle": "Error: {{error}}",
-    "by": "By {{name}}",
     "readers_one": "{{formatted}} readers",
     "readers_other": "{{formatted}} readers",
     "changeTopicsOf": "Change {{name}}’s topics",
     "changeTopics": "Change topics",
-    "seeSite": "See the site",
     "deleteFor": "Delete {{name}} for the whole home",
-    "intro": "The sites and channels that fill your feed, checked every 15 minutes. Turn on the ones you read: they are your sources, kept with your account. A source you add goes into yours only, and others add it if they want it. Base sources can be turned off but not deleted.",
+    "intro": "The sites and channels that fill the feed, checked every 15 minutes. A source added here only goes into this account’s sources. Base sources can be removed but not deleted.",
     "search": "Search a source or a topic",
     "searchLabel": "Search a source",
     "filter": "Filter sources",
@@ -1643,14 +1632,6 @@
     "loadFailed": "The sources could not be loaded. Try again in a moment.",
     "noMatch": "No source matches.",
     "topicsOf": "{{name}}’s topics",
-    "groupIntros": {
-      "mine": "The sites you added. Only you, and the admin, can change their topics or delete them.",
-      "channels": "The YouTube channels and podcasts you follow. They arrive in Videos, never in the feed.",
-      "household": "Added to the server by other accounts, and that you read too.",
-      "parents": "The sources your parents chose for you. Take out the ones you don’t care about.",
-      "base": "Chosen with Hodi for a good start. You can take them out, not delete them.",
-      "requests": "The sources you asked for. They come into your feed when your parents accept them."
-    },
     "moreFor": "Actions for {{name}}",
     "replace": "Replace with another",
     "delete": "Delete the source",
@@ -2675,17 +2656,11 @@
   },
   "catalogue": {
     "title": "Catalogue",
-    "official": "Official",
     "parts": "Sections",
-    "intro": "This topic’s sources on the server, in your language first. The + button adds one to your sources, the − button takes it out.",
-    "introOfficial": "The sources chosen with Hodi, in your language first. The base sources are already in yours; the + button adds others.",
-    "search": "Search for a source",
-    "searching": "Search",
+    "intro": "This topic’s sources on the server, all approved by the admin. <i>Add</i> puts one in <i>My sources</i>, where it stays ticked here; <i>Remove</i> takes it out.",
     "mine": "in your sources",
     "add": "Add {{name}} to your sources",
-    "addShort": "Add to your sources",
     "remove": "Take {{name}} out of your sources",
-    "removeShort": "Take out of your sources",
     "openSite": "Open the site",
     "added": "{{name}} added to your sources",
     "removed": "{{name}} taken out of your sources",
@@ -2694,6 +2669,27 @@
     "empty": {
       "title": "No source",
       "text": "Nothing matches your search."
+    },
+    "searchIn": "Search for a source in {{topic}}",
+    "sort": {
+      "title": "Sort the sources",
+      "label": "Sort: {{sort}}",
+      "az": "Alphabetical, A → Z",
+      "za": "Alphabetical, Z → A",
+      "popular": "Most popular",
+      "unpopular": "Least popular"
     }
+  },
+  "sourceCard": {
+    "add": "Add",
+    "remove": "Remove",
+    "moreTopics_one": "{{count}} more topic",
+    "moreTopics_other": "{{count}} more topics",
+    "low": "Little read",
+    "addTitle": "Add a source",
+    "addText": "From its link, or found with the AI.",
+    "ask": "Ask",
+    "askTitle": "Ask for a source",
+    "askText": "The parents approve it before it arrives."
   }
 }

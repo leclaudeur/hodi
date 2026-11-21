@@ -116,6 +116,13 @@
   background: var(--raised);
   color: var(--text);
 }
+/* The catalogue's topics, in their colours as the app's sidebar. */
+.side a .topicSq,
+.side a[aria-current='page'] .topicSq {
+  border-color: var(--topic-border);
+  background: var(--topic-surface);
+  color: var(--topic);
+}
 .main {
   display: flex;
   flex-direction: column;

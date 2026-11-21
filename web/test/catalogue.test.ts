@@ -47,14 +47,22 @@ describe('the catalogue', () => {
     expect(entries.find(entry => entry.id === 'rfi')?.topicIds).toEqual(['world'])
   })
 
-  it('lists a part in the person’s language first, then the most read', () => {
-    expect(entriesOf(entries, 'official', 'fr').map(entry => entry.id)).toEqual(['rtl', 'rfi', 'bbc'])
-    expect(entriesOf(entries, 'official', 'en').map(entry => entry.id)).toEqual(['bbc', 'rtl', 'rfi'])
-    expect(entriesOf(entries, 'tech', 'fr').map(entry => entry.id)).toEqual(['blog'])
+  const ids = (query: Parameters<typeof entriesOf>[1]) => entriesOf(entries, query).map(entry => entry.id)
+
+  it('lists a topic’s sources by name, A to Z by default', () => {
+    expect(ids({ topicId: 'world', language: 'fr' })).toEqual(['bbc', 'rfi', 'rtl'])
+    expect(ids({ topicId: 'world', language: 'fr', sort: 'za' })).toEqual(['rtl', 'rfi', 'bbc'])
+    expect(ids({ topicId: 'tech', language: 'fr' })).toEqual(['blog'])
   })
 
-  it('searches every part, by name and description', () => {
-    expect(entriesOf(entries, 'official', 'fr', 'cuisiniere').map(entry => entry.id)).toEqual(['blog'])
+  it('lists them by readers, then by name', () => {
+    expect(ids({ topicId: 'world', language: 'fr', sort: 'popular' })).toEqual(['bbc', 'rtl', 'rfi'])
+    expect(ids({ topicId: 'world', language: 'fr', sort: 'unpopular' })).toEqual(['rfi', 'rtl', 'bbc'])
+  })
+
+  it('searches the topic’s sources only, by name and description', () => {
+    expect(ids({ topicId: 'tech', language: 'fr', search: 'cuisiniere' })).toEqual(['blog'])
+    expect(ids({ topicId: 'world', language: 'fr', search: 'cuisiniere' })).toEqual([])
   })
 
   it('shows only the topics it has sources in', () => {

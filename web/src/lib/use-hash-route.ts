@@ -29,7 +29,7 @@ export type Route =
   // Mon compte, a page of its own with its sections (#/account/<part>). part null: its first one. item: one thing
   // of the part (#/account/children/<id>, a young one's card for its parents).
   | { name: 'account'; part: AccountPart | null; item?: string }
-  // The catalogue, a page of its own: 'official' (sources.yml's) or a topic's id. part null: the first one.
+  // The catalogue, a page of its own: a topic's id. part null: the first one.
   | { name: 'catalogue'; part: string | null }
   // The server's admin space. section null: the list of its sections (phone), the first one (computer). item: one
   // thing of the section (#/server/plugins/<id>, a plugin's page). plugin: one of a plugin's own sections of the space,

@@ -608,7 +608,6 @@
         "sources": "Puis sur Sources.",
         "paste": "Ici, colle le lien d’un site que tu aimes.",
         "parents": "Les parents reçoivent la demande et décident.",
-        "requests": "Ouvre Mes demandes.",
         "press": "Appuie sur Demander une source."
       },
       "end": {
@@ -1606,30 +1605,20 @@
     "added": "Source ajoutée",
     "topicsSaved": "Thèmes enregistrés",
     "topicsFailed": "Les thèmes n’ont pas pu être enregistrés. Réessaie dans un instant.",
-    "kinds": {
-      "article": "Articles",
-      "video": "Vidéos",
-      "podcast": "Podcasts"
-    },
     "groups": {
-      "mine": "Ajoutées par toi",
-      "channels": "Mes chaînes",
-      "household": "Ajoutées par d’autres",
+      "mine": "Mes sources",
       "base": "Sources de base"
     },
     "status": {
       "error": "Erreur"
     },
-    "deletedProfile": "un profil supprimé",
     "errorTitle": "Erreur : {{error}}",
-    "by": "Par {{name}}",
     "readers_one": "{{formatted}} lecteurs",
     "readers_other": "{{formatted}} lecteurs",
     "changeTopicsOf": "Changer les thèmes de {{name}}",
     "changeTopics": "Changer les thèmes",
-    "seeSite": "Voir le site",
     "deleteFor": "Supprimer {{name}} pour tout le foyer",
-    "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Allume celles que tu lis : elles restent avec le compte. Une source que tu ajoutes ne va que dans les sources de ce compte, les autres l’ajoutent s’ils la veulent. Les sources de base s’éteignent mais ne se suppriment pas.",
+    "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Une source ajoutée ici ne va que dans les sources de ce compte. Les sources de base se retirent mais ne se suppriment pas.",
     "search": "Chercher une source ou un thème",
     "searchLabel": "Chercher une source",
     "filter": "Filtrer les sources",
@@ -1643,14 +1632,6 @@
     "loadFailed": "Impossible de charger les sources. Réessaie dans un instant.",
     "noMatch": "Aucune source ne correspond.",
     "topicsOf": "Thèmes de {{name}}",
-    "groupIntros": {
-      "mine": "Les sites que tu as ajoutés. Toi seul, et l’admin, pouvez changer leurs thèmes ou les supprimer.",
-      "channels": "Les chaînes YouTube et les podcasts que tu suis. Ils arrivent dans Vidéos, jamais dans le fil.",
-      "household": "Ajoutées au serveur par d’autres comptes, et que tu lis aussi.",
-      "parents": "Les sources choisies par les parents. Retire celles qui ne t’intéressent pas.",
-      "base": "Choisies avec Hodi pour bien démarrer. Tu peux les retirer, pas les supprimer.",
-      "requests": "Les sources que tu as demandées. Elles arrivent dans le fil quand les parents les acceptent."
-    },
     "moreFor": "Actions pour {{name}}",
     "replace": "Remplacer par une autre",
     "delete": "Supprimer la source",
@@ -2675,17 +2656,11 @@
   },
   "catalogue": {
     "title": "Catalogue",
-    "official": "Officielles",
     "parts": "Sections",
-    "intro": "Les sources de ce thème sur le serveur, celles en français d’abord. Le bouton + en ajoute une à <i>Mes sources</i>, le bouton − l’en retire.",
-    "introOfficial": "Les sources choisies avec Hodi, celles en français d’abord. Les sources de base sont déjà dans <i>Mes sources</i> ; le bouton + en ajoute d’autres.",
-    "search": "Chercher une source",
-    "searching": "Recherche",
+    "intro": "Les sources de ce thème sur le serveur, toutes validées par l’admin. <i>Ajouter</i> en met une dans <i>Mes sources</i>, où elle reste cochée ici ; <i>Retirer</i> l’en sort.",
     "mine": "dans Mes sources",
     "add": "Ajouter {{name}} à Mes sources",
-    "addShort": "Ajouter à Mes sources",
     "remove": "Retirer {{name}} de Mes sources",
-    "removeShort": "Retirer de Mes sources",
     "openSite": "Ouvrir le site",
     "added": "{{name}} ajoutée à Mes sources",
     "removed": "{{name}} retirée de Mes sources",
@@ -2694,6 +2669,27 @@
     "empty": {
       "title": "Aucune source",
       "text": "Rien ne correspond à cette recherche."
+    },
+    "searchIn": "Chercher une source dans {{topic}}",
+    "sort": {
+      "title": "Trier les sources",
+      "label": "Trier : {{sort}}",
+      "az": "Alphabétique, A → Z",
+      "za": "Alphabétique, Z → A",
+      "popular": "Plus populaires",
+      "unpopular": "Moins populaires"
     }
+  },
+  "sourceCard": {
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "moreTopics_one": "Encore {{count}} thème",
+    "moreTopics_other": "Encore {{count}} thèmes",
+    "low": "Peu ouverte",
+    "addTitle": "Ajouter une source",
+    "addText": "Par son lien, ou trouvée avec l’IA.",
+    "ask": "Demander",
+    "askTitle": "Demander une source",
+    "askText": "Les parents la valident avant qu’elle arrive."
   }
 }

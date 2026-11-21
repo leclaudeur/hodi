@@ -12,16 +12,19 @@ interface SectionPageProps {
   aside?: ReactNode
   // On a phone the title is in the page's header.
   layout: 'desktop' | 'phone'
+  // Wider on a computer, for a grid of cards (Sources).
+  wide?: boolean
   children: ReactNode
 }
 
 // A settings section: its title and line, then its cards.
 // On a tablet the aside goes up beside the page's title; a phone has no room there, so it goes under it,
 // full width.
-const SectionPage = ({ title, intro, aside, layout, children }: SectionPageProps) => {
+const SectionPage = ({ title, intro, aside, layout, wide = false, children }: SectionPageProps) => {
   const phone = useIsPhone()
+  const classes = [styles.page, layout === 'phone' ? styles.phonePage : '', wide ? styles.widePage : ''].join(' ')
   return (
-    <div className={layout === 'phone' ? `${styles.page} ${styles.phonePage}` : styles.page} data-section-page>
+    <div className={classes} data-section-page>
       {layout === 'phone' && !phone && aside && <HeaderActions>{aside}</HeaderActions>}
       {(layout === 'desktop' || intro) && (
         <div className={styles.header}>
