@@ -71,7 +71,7 @@ const CodeAsked = ({ at, name, onMake }: { at: number; name: string; onMake: () 
       tone="warning"
       icon={KeyRound}
       title={t('server.people.account.codeAskedTitle', { date: dateOf(at), time: clockTime(at) })}
-      action={{ label: t('server.people.account.resetLabel'), icon: KeyRound, look: 'danger', onClick: onMake }}
+      action={{ label: t('server.people.account.resetLabel'), icon: KeyRound, onClick: onMake }}
     >
       {t('server.people.account.codeAskedText', { name })}
     </Notice>

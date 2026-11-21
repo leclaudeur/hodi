@@ -159,3 +159,11 @@
   --control: var(--raised);
   --border: var(--border-strong);
 }
+
+/* The notice's own button takes its colours, even when it asks first: red would clash with an orange or a green
+   card. */
+.side .toned {
+  border-color: var(--notice-border);
+  background: var(--notice-mark);
+  color: var(--notice-icon);
+}
