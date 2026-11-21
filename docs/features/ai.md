@@ -11,11 +11,11 @@ own:
 - **A plugin's purple button**: a signed plugin with the permission asks one question per click. It is never shown to
   a teen or a child.
 
-Daily caps protect the credits. Each account has 100 summaries, 100 questions, 8 daily summaries, 10 source
-suggestions and 20 plugin requests a day, and each plugin 10 an hour.
+There is no daily cap: each account pays for what it uses with its own key. A plugin may still ask at most 10 times
+an hour, so a plugin's bug cannot empty a key.
 
-_AI and credits_ shows the account's own calls of the last 24 hours, which it can reset, and its country, used for
-the AI's web searches. Once a plugin has a purple button, the admin's page lists it with their calls of the last 24
+_AI and credits_ shows the account's own calls of the last 24 hours, kind by kind, and its country, used for the AI's
+web searches. Once a plugin has a purple button, the admin's page lists it with their calls of the last 24
 hours and a switch to turn its AI off for the household.
 
 [← Back to the features](../features.md)
