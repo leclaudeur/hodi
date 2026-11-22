@@ -2855,7 +2855,7 @@
     "button": "Signaler",
     "label": "Signaler le partage de {{name}}",
     "title": "Signaler ce partage",
-    "intro": "Seul l’admin du serveur le voit, sans savoir que c’est toi. Rien ne change pour <b>{{name}}</b> avant sa décision.",
+    "intro": "Seul l’admin du serveur le voit, sans que ton nom lui soit montré. Rien ne change pour <b>{{name}}</b> avant sa décision.",
     "reasonsLabel": "Le motif",
     "reasons": {
       "harassment": {

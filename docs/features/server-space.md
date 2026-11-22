@@ -43,7 +43,8 @@ to the app.
   it suits teens and children; a reported source in _To do_ too, with how many reported it and why (never who), then
   _Ignore_ or _Take out of the catalogue_ (asked first: those who read it keep it); a reported share in _To do_ as
   well, as it was received with its note and the reason, and its sender, whose account page blocks or deletes it, then
-  _Ignore_ (never who reported it). Once done, a request leaves _All_ for _Handled_, the last filter, for 7 days, then goes.
+  _Ignore_ (who reported it is never shown). A report keeps its copy of the share (title, link, note, sender's name)
+  until the admin ignores it, then 30 days; blocking the share's site leaves that copy as the admin's record. Once done, a request leaves _All_ for _Handled_, the last filter, for 7 days, then goes.
   A notice that asks nothing, such as the weekly report, only goes out by e-mail or push.
   Under a source to review or a reported one, _Block this site_ is for illegal content. Its dialog first says what goes;
   after the admin's password and app code, its site's whole domain is blocked, or on a host many people share (YouTube,

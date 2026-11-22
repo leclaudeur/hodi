@@ -2855,7 +2855,7 @@
     "button": "Report",
     "label": "Report {{name}}’s share",
     "title": "Report this share",
-    "intro": "Only the server’s admin sees it, without knowing it was you. Nothing changes for <b>{{name}}</b> until they decide.",
+    "intro": "Only the server’s admin sees it, without your name being shown. Nothing changes for <b>{{name}}</b> until they decide.",
     "reasonsLabel": "The reason",
     "reasons": {
       "harassment": {
