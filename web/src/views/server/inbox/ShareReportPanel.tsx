@@ -1,4 +1,4 @@
-import { Ban, CircleHelp, Megaphone, ShieldAlert, UserRound, X } from 'lucide-react'
+import { UserRound, X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type ShareReportView, ignoreShareReport } from '../../../api.ts'
@@ -9,8 +9,6 @@ import settingsStyles from '../../settings/Settings.module.css'
 import { serverHref } from '../../../lib/use-hash-route.ts'
 import styles from './Inbox.module.css'
 import { inboxChanged } from './use-inbox.ts'
-
-const REASON_ICONS = { harassment: Ban, hateful: ShieldAlert, spam: Megaphone, other: CircleHelp }
 
 // A reported share as it was received: the article, its sender's word and the reason, then its sender's account,
 // where it is blocked or deleted. Never who reported it.
@@ -27,18 +25,13 @@ const ShareReportPanel = ({ report }: { report: ShareReportView }) => {
       .catch(() => showError(t('server.inbox.share.failed')))
       .finally(() => setBusy(false))
   }
-  const ReasonIcon = REASON_ICONS[report.reason]
   return (
     <>
       <h2 className={settingsStyles.label}>{t('server.inbox.share.what')}</h2>
       <div className={settingsStyles.card}>
         <SettingRow label={report.item.title} hint={report.item.sourceName} />
         {report.note && <SettingRow label={t('server.inbox.share.note')} value={report.note} />}
-        <SettingRow
-          label={t('server.inbox.share.why')}
-          value={t(`shareReport.reasons.${report.reason}.label`)}
-          lead={<ReasonIcon size={20} aria-hidden="true" />}
-        />
+        <SettingRow label={t('server.inbox.share.why')} value={t(`shareReport.reasons.${report.reason}.label`)} />
       </div>
       <h2 className={settingsStyles.label}>{t('server.inbox.share.sender')}</h2>
       <div className={settingsStyles.card}>
