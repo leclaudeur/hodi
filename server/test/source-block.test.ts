@@ -70,6 +70,12 @@ const start = () => {
     db.prepare("INSERT INTO my_sources (owner, source_id, added_at) VALUES ('a2', ?, 0)").run(id)
   }
   db.prepare("INSERT INTO saved_articles (owner, article_id, item, saved_at) VALUES ('a2', 'p2-evil-1', '{}', 0)").run()
+  db.prepare(
+    `INSERT INTO source_requests (profile_id, source, status, at) VALUES (3, '{"url":"https://evil.example/rss"}', 'pending', 0)`
+  ).run()
+  db.prepare(
+    "INSERT INTO shares (profile_id, article_id, from_profile, item, shared_at) VALUES (3, 'p1-news-evil-1', 2, '{}', 0)"
+  ).run()
 
   const removed: [UserAccount, boolean][] = []
   const erased: string[][] = []
@@ -110,13 +116,16 @@ const start = () => {
 }
 
 describe('« Bloquer » a source', () => {
-  it('blocks its domain with the proof, erases every source on it and blocks who added them, never the admin', async () => {
+  it('blocks its domain with the proof, erases every source on it, and blocks the account that added this one', async () => {
     const { db, news, call, removed, erased, sam } = start()
     assert.equal((await call('/server/sources/nope/block', 'POST', { password: 'yes' })).status, 404)
     assert.equal((await call('/server/sources/p2-evil/block', 'POST', {})).status, 403)
 
+    // Said before the password: the domain, its two sources, and an account.
+    const preview = await call('/server/sources/p2-evil/block', 'GET')
+    assert.deepEqual(await preview.json(), { target: 'evil.example', sources: 2, account: true })
     const blocked = await call('/server/sources/p2-evil/block', 'POST', { password: 'yes' })
-    assert.deepEqual([blocked.status, await blocked.json()], [200, { domain: 'evil.example' }])
+    assert.deepEqual([blocked.status, await blocked.json()], [200, { target: 'evil.example' }])
     // Its subdomain's source too; the other site stays.
     assert.deepEqual(erased, [['p2-evil', 'p1-news-evil']])
     assert.deepEqual(
@@ -126,10 +135,13 @@ describe('« Bloquer » a source', () => {
     assert.equal(count(db, "SELECT COUNT(*) AS n FROM sources WHERE id LIKE '%evil'"), 0)
     assert.equal(count(db, "SELECT COUNT(*) AS n FROM articles WHERE source_id LIKE '%evil'"), 0)
     assert.equal(count(db, 'SELECT COUNT(*) AS n FROM saved_articles'), 0)
+    // Shared with someone before: gone from their Partages too.
+    assert.equal(count(db, 'SELECT COUNT(*) AS n FROM shares'), 0)
+    assert.equal(count(db, 'SELECT COUNT(*) AS n FROM source_requests'), 0)
     assert.equal(count(db, "SELECT COUNT(*) AS n FROM my_sources WHERE source_id LIKE '%evil'"), 0)
     assert.equal(count(db, "SELECT COUNT(*) AS n FROM household_sources WHERE source_id LIKE '%evil'"), 0)
     assert.equal(count(db, "SELECT COUNT(*) AS n FROM articles WHERE source_id = 'p3-good'"), 1)
-    // Sam added one, and is blocked; the admin added the other, and stays.
+    // Sam added the one blocked, and is blocked; whoever added another feed of the site is not.
     assert.deepEqual(
       removed.map(([account, blocks]) => [account.id, blocks]),
       [[sam.id, true]]
@@ -149,8 +161,31 @@ describe('« Bloquer » a source', () => {
     )
     assert.equal((await call('/server/blocks/official.example', 'DELETE', {})).status, 403)
     assert.equal((await call('/server/blocks/nope.example', 'DELETE', { password: 'yes' })).status, 404)
-    assert.equal((await call('/server/blocks/official.example', 'DELETE', { password: 'yes' })).status, 204)
+    assert.equal((await call('/server/blocks/WWW.Official.example', 'DELETE', { password: 'yes' })).status, 204)
     assert.deepEqual(domains.all(), [])
+  })
+
+  it('blocks a feed alone on a host many share, never the whole host', async () => {
+    const { db, news, domains, call } = start()
+    const channel = (id: string, channelId: string): Source & { addedBy: number } => ({
+      ...source(id, 'www.youtube.com', 3),
+      url: `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`,
+      kind: 'video',
+      domains: []
+    })
+    for (const added of [channel('p3-bad', 'BAD'), channel('p3-fine', 'FINE')]) {
+      new SourceStore(db).add(added, 'listen', ['videos'], 0)
+      news.addSource(added, 'topic', ['belgium'])
+    }
+    const preview = (await (await call('/server/sources/p3-bad/block', 'GET')).json()) as { target: string }
+    assert.equal(preview.target, 'https://www.youtube.com/feeds/videos.xml?channel_id=BAD')
+    await call('/server/sources/p3-bad/block', 'POST', { password: 'yes' })
+    assert.equal(domains.covers(channel('x', 'BAD')), true)
+    assert.equal(domains.covers(channel('x', 'FINE')), false)
+    assert.equal(
+      news.getSourceStatuses().some(status => status.id === 'p3-fine'),
+      true
+    )
   })
 
   it('refuses a feed of a blocked domain when it is looked for or added, at once', async () => {

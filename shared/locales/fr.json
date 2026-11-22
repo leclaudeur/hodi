@@ -2475,8 +2475,14 @@
         "short": "Bloquer",
         "button": "Bloquer partout",
         "title": "Bloquer {{name}} ?",
-        "text": "Tout le domaine <b>{{domain}}</b> est bloqué : son flux n’est plus lu, tout ce qui en a été lu est effacé du serveur, il quitte les listes de tous les comptes, et plus personne ne pourra l’ajouter. Le compte qui l’a ajouté est bloqué, sans que tu saches lequel. <b>Il n’y a pas de retour en arrière.</b>",
-        "done": "{{domain}} est bloqué"
+        "done": "{{target}} est bloqué",
+        "textDomain": "Tout le domaine <b>{{target}}</b> est bloqué : son flux n’est plus lu, et plus personne ne pourra l’ajouter.",
+        "textFeed": "Ce flux de <b>{{host}}</b> est bloqué, seul : le reste du site n’est pas touché, et plus personne ne pourra l’ajouter.",
+        "erased_one": "Sa source quitte les listes de tous les comptes, avec tout ce qui en a été lu sur le serveur.",
+        "erased_other": "Ses {{count}} sources quittent les listes de tous les comptes, avec tout ce qui en a été lu sur le serveur.",
+        "account": "Le compte qui l’a ajoutée est bloqué, sans que tu saches lequel.",
+        "final": "<b>Il n’y a pas de retour en arrière.</b>",
+        "failed": "Impossible de préparer le blocage. Réessaie dans un instant."
       }
     }
   },
