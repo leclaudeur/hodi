@@ -81,7 +81,7 @@ const askReview = ({ options }: Wiring, sourceId: string) => {
 
 // « Signaler »: the first report on a source since the admin's last decision waits in À traiter.
 const mountReports = (api: express.Router, { options }: Wiring) => {
-  const { sources, news, accounts, serverInbox, now } = options
+  const { sources, news, accounts, users, serverInbox, now } = options
   const reports = sources?.reports
   if (!reports || !accounts) return
   api.use(
@@ -90,6 +90,9 @@ const mountReports = (api: express.Router, { options }: Wiring) => {
       reports,
       news,
       accountOf: response => accountAsking(response, accounts)?.id ?? null,
+      // As GET /sources lists them: in the catalogue, or in this person's own list.
+      visible: (response, id) =>
+        !sources.reviews?.unlisted().has(id) || (users?.(profileIdOf(response)).sources.mine().includes(id) ?? false),
       onFirst: source =>
         serverInbox?.notifier
           .tell(SOURCE_REPORT, language => sourceReportNotice(source, language), {
