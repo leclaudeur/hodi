@@ -122,6 +122,7 @@ const mountSources = (api: express.Router, wiring: Wiring) => {
       news,
       sources: sources.store,
       find: sources.find,
+      blocked: sources.blocked && (source => sources.blocked!.covers(source)),
       // A plugin's feeds are offered with sources.yml's.
       proposals: () => sources.store.proposals(withPluginFeeds(sources.file, plugins)),
       maxSources: () => serverSettings?.maxSources() ?? null,

@@ -1,3 +1,4 @@
+import type { BlockedDomainStore } from './db/blocked-domain-store.ts'
 import type { LoginThrottle } from './auth/login-throttle.ts'
 import type { AccountDataStore } from './db/account-data.ts'
 import type { Database } from './db/database.ts'
@@ -64,6 +65,8 @@ export interface AppOptions {
     reviews?: SourceReviewStore
     // « Signaler »: the reports À traiter shows.
     reports?: SourceReportStore
+    // « Bloquer »: the domains no feed comes from any more.
+    blocked?: BlockedDomainStore
   }
   // The household game's points (gamification.yml); absent in tests that do not need it.
   game?: GameStore

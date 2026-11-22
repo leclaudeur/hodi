@@ -103,7 +103,7 @@ export const getMySourceAnswers = async () =>
 export const seeMySourceAnswers = (ids: number[]) => sendJson<void>('POST', '/me/source-requests/answers/seen', { ids })
 
 // Refused with the reason: 'following' (it reads it already), 'pending' (asked already), 'full' (three waiting), or the finder's ('none',
-// 'invalid', 'blocked', 'empty', 'failed', 'reddit').
+// 'invalid', 'blocked', 'empty', 'failed', 'reddit', 'unavailable').
 // As the server: a teen waits for this many answers at most.
 export const MAX_PENDING_REQUESTS = 3
 

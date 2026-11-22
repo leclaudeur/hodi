@@ -1,3 +1,4 @@
+import { BlockedDomainStore } from '../db/blocked-domain-store.ts'
 import path from 'node:path'
 import type { Config } from '../config.ts'
 import type { Database } from '../db/database.ts'
@@ -107,6 +108,7 @@ export const openStores = (
     serverInbox: new ServerInboxStore(db),
     sourceReviews: new SourceReviewStore(db),
     sourceReports: new SourceReportStore(db),
+    blockedDomains: new BlockedDomainStore(db),
     passwordResets: new PasswordResetStore(db, config.sessionSecret),
     pluginStore: new PluginStore(db)
   }

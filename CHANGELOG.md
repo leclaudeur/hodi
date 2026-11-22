@@ -13,6 +13,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Report a source.** A flag on every source card, in My sources and the catalogue, tells the server's admin why a
   source does not belong (illegal, hateful, misleading, something else). The admin sees how many reported it and why,
   never who, in Server › To do, and ignores it or takes it out of the catalogue. A new kind in Server › Alerts.
+- **Block a site.** For illegal content, Server › To do › a source › Block this site blocks its whole domain: every
+  source on it is erased with everything read of it, leaves every list, and can't be added again; the account that
+  added it is blocked too, without the admin learning which. Server › Blocks lists the blocked domains, to unblock one,
+  and unblocks an e-mail address.
 - **Block an account.** Server › Accounts › an account › Block deletes it, as Delete does, and its e-mail can never
   make an account on the server again. The person is told so at sign-in.
 - **Username.** Every account has an @username, unique on the server, for friends and mentions to come. It is suggested

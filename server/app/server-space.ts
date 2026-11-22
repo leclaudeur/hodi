@@ -12,6 +12,7 @@ import { requireServerAdmin } from '../http/profile-routes.ts'
 import { accountAsking } from '../http/proof.ts'
 import { serverNoticeRoutes } from '../http/server-notice-routes.ts'
 import { serverRoutes } from '../http/server-routes.ts'
+import { allSources } from '../news/catalog.ts'
 import type { Wiring } from './wiring.ts'
 
 const mountPlugins = (api: express.Router, wiring: Wiring) => {
@@ -52,6 +53,26 @@ const deletionsOf = ({ options, profileHooks }: Wiring) => {
         // The core's household left as a new install's: its server's admin goes on in /server, where
         // « Créer un foyer » starts it again.
         if (id === DEFAULT_ACCOUNT_ID) serverSettings?.setHouseholdLater(true)
+      }
+    }
+  }
+}
+
+// « Bloquer » a source: À traiter forgets it, everyone's lists hear of it.
+const blocksOf = ({ options }: Wiring) => {
+  const { sources, news, users, profiles, serverInbox, now } = options
+  if (!sources?.blocked) return {}
+  return {
+    blocks: {
+      domains: sources.blocked,
+      news,
+      official: () => new Set(allSources(sources.file).map(source => source.id)),
+      onErased: (ids: string[]) => {
+        for (const id of ids) {
+          serverInbox?.notifier.handled?.(sourceReviewKey(id))
+          serverInbox?.notifier.handled?.(sourceReportKey(id))
+        }
+        profiles?.list().forEach(profile => users?.(profile.id).sources.catalogueChanged(now()))
       }
     }
   }
@@ -172,6 +193,7 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
         : {}),
       ...(twoFactor ? { twoFactorOn: (id: number) => twoFactor.isOn(id) } : {}),
       ...deletionsOf(wiring),
+      ...blocksOf(wiring),
       now
     })
   )

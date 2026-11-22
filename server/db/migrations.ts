@@ -1381,6 +1381,13 @@ const MIGRATIONS: string[] = [
     hash TEXT PRIMARY KEY,
     at INTEGER NOT NULL
   );
+  `,
+  // « Bloquer » a source, for illegal content: its domain, so no feed of that site is added again.
+  `
+  CREATE TABLE blocked_domains (
+    domain TEXT PRIMARY KEY,
+    at INTEGER NOT NULL
+  );
   `
 ]
 

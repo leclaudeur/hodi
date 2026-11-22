@@ -46,6 +46,8 @@ interface SourceRoutesOptions {
   onAdded: (sourceId: string, profileId: number) => void
   // Out of the catalogue (À traiter, refused): its link is free to add again.
   unlisted?: () => Set<string>
+  // A feed on a domain the server's admin blocked: never added again, by anyone.
+  blocked?: (source: { url: string; domains: string[] }) => boolean
   // Its link added again while it is out of the catalogue: in this person's list, back to À traiter if refused.
   onAddedAgain?: (sourceId: string, profileId: number) => void
   now: () => number
@@ -61,14 +63,14 @@ export const sourceRoutes = (options: SourceRoutesOptions) => {
   return router
 }
 
-const sourceHelpers = ({ news, sources, find, maxSources, onAdded, now }: SourceRoutesOptions) => {
+const sourceHelpers = ({ news, sources, find, maxSources, onAdded, blocked, now }: SourceRoutesOptions) => {
   const found = new Map<string, { at: number; result: Promise<FindResult> }>()
   const full = () => {
     const limit = maxSources()
     return limit !== null && sources.count() >= limit
   }
 
-  const lookUp = (link: string) => {
+  const cached = (link: string) => {
     for (const [key, entry] of found) if (now() - entry.at > FOUND_TTL_MS) found.delete(key)
     const known = found.get(link)
     if (known) return known.result
@@ -77,6 +79,11 @@ const sourceHelpers = ({ news, sources, find, maxSources, onAdded, now }: Source
     // A failure is tried again next time.
     void result.then(answer => answer.status === 'failed' && found.delete(link))
     return result
+  }
+  // Read after the cache: a domain blocked a minute ago is refused at once.
+  const lookUp = async (link: string): Promise<FindResult> => {
+    const result = await cached(link)
+    return result.status === 'ok' && blocked?.(result.source) ? { status: 'unavailable' } : result
   }
 
   const linkOf = (request: express.Request) => {

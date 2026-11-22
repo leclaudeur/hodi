@@ -12,6 +12,7 @@ import SettingRow from '../../settings/SettingRow.tsx'
 import settingsStyles from '../../settings/Settings.module.css'
 import TopicField from '../../settings/sections/TopicField.tsx'
 import { hostOf } from '../../settings/sections/sources-model.ts'
+import BlockSourceRow from './BlockSourceRow.tsx'
 import styles from './Inbox.module.css'
 import { inboxChanged } from './use-inbox.ts'
 
@@ -119,6 +120,7 @@ const SourceReviewPanel = ({ review }: { review: SourceReview }) => {
           {t('server.inbox.source.accept')}
         </Button>
       </div>
+      <BlockSourceRow source={review} />
     </>
   )
 }

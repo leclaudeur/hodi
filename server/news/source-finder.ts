@@ -30,7 +30,8 @@ export type FindResult =
   | { status: 'ok'; source: FoundSource }
   // invalid: not a link; blocked: a private or local address; none: no feed found; empty: a feed without items;
   // reddit: Reddit closed its feeds (November 2026), its communities cannot be followed.
-  | { status: 'invalid' | 'blocked' | 'none' | 'empty' | 'failed' | 'reddit' }
+  // unavailable: its site's domain was blocked by the server's admin.
+  | { status: 'invalid' | 'blocked' | 'none' | 'empty' | 'failed' | 'reddit' | 'unavailable' }
 
 const READER_SAMPLE = 3
 const YOUTUBE_FEED = 'https://www.youtube.com/feeds/videos.xml?channel_id='

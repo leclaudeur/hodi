@@ -106,7 +106,11 @@ const mountSourceRequests = (api: express.Router, { options, youthSources }: Wir
     '/me',
     sourceRequestMeRoutes({
       youth,
-      find: sources.find,
+      // A teen does not ask for a site the server's admin blocked.
+      find: async link => {
+        const result = await sources.find(link)
+        return result.status === 'ok' && sources.blocked?.covers(result.source) ? { status: 'unavailable' } : result
+      },
       news,
       now,
       // Every parent's devices hear of it.

@@ -17,7 +17,9 @@ export interface FoundSource {
 }
 
 export type FindSourceResult = (
-  { status: 'ok'; source: FoundSource } | { status: 'invalid' | 'blocked' | 'none' | 'empty' | 'failed' | 'reddit' }
+  | { status: 'ok'; source: FoundSource }
+  // unavailable: a domain the server's admin blocked.
+  | { status: 'invalid' | 'blocked' | 'none' | 'empty' | 'failed' | 'reddit' | 'unavailable' }
 ) & {
   // Already in the catalogue.
   followed: { id: string; name: string } | null
@@ -29,7 +31,7 @@ export type FindSourceResult = (
 export const findSource = (url: string) => sendJson<FindSourceResult>('POST', '/sources/find', { url })
 
 export type AddSourceError =
-  'limit' | 'followed' | 'bad_section' | 'invalid' | 'blocked' | 'none' | 'empty' | 'failed' | 'reddit'
+  'limit' | 'followed' | 'bad_section' | 'invalid' | 'blocked' | 'none' | 'empty' | 'failed' | 'reddit' | 'unavailable'
 
 type AddSourceResult = { ok: true; id: string } | { ok: false; error: AddSourceError }
 
