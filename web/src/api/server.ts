@@ -1,7 +1,7 @@
 import { type Language as InterfaceLanguage } from '../lib/i18n.ts'
 import { RequestError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
-import type { ReportReason } from './sources.ts'
+import type { ReportReason, ShareReportReason } from './sources.ts'
 
 // Serveur › Vue d'ensemble: every household and profile together, totals only, day by day (YYYY-MM-DD).
 export interface ServerDay {
@@ -250,6 +250,22 @@ export const getSourceReports = () => getJson<{ reports: SourceReportView[] }>('
 // Ignorer keeps the source; Retirer du catalogue takes it out for those who do not read it yet.
 export const decideReport = (id: string, decision: 'ignore' | 'unlist') =>
   sendJson<null>('POST', `/server/reports/${encodeURIComponent(id)}`, { decision })
+
+// A share someone reported, as it was received, and its sender's account (null once deleted); never who reported it.
+export interface ShareReportView {
+  id: number
+  sender: number | null
+  senderName: string
+  item: { title: string; sourceName: string; link: string; kind: string }
+  note: string | null
+  reason: ShareReportReason
+  day: number
+}
+
+export const getShareReports = () => getJson<{ reports: ShareReportView[] }>('/server/share-reports')
+
+export const ignoreShareReport = (id: number) =>
+  sendJson<null>('POST', `/server/share-reports/${id}`, { decision: 'ignore' })
 
 // What « Bloquer » takes, said before the password: its domain (or on a shared host, its feed's address), how many
 // sources go, and whether the account that added it goes.

@@ -13,6 +13,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Report a source.** A flag on every source card, in My sources and the catalogue, tells the server's admin why a
   source does not belong (illegal, hateful, misleading, something else). The admin sees how many reported it and why,
   never who, in Server › To do, and ignores it or takes it out of the catalogue. A new kind in Server › Alerts.
+- **Report a share.** Under a share received, Report tells the server's admin why it should not have come
+  (harassment, hateful, spam, something else), once per share and at most 5 a day; Stop receiving their shares mutes
+  its sender at once. The admin sees the share and its sender, never who reported it, in Server › To do, and ignores it
+  or blocks the account. A new kind in Server › Alerts.
 - **Block a site.** For illegal content, Server › To do › a source › Block this site blocks its whole domain: every
   source on it is erased with everything read of it, leaves every list, and can't be added again; the account that
   added it is blocked too, without the admin learning which. Server › Blocks lists the blocked domains, to unblock one,

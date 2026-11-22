@@ -42,4 +42,10 @@ other adult on the server is added by typing their @username. A teen or a child 
 nobody outside it can reach them. The receiver finds it in **Shared**, gets a notification and can react at the end of
 the article. Turning sharing off, or muting one person, stops what they send.
 
+Under a share received, at the end of the article, **Stop receiving their shares** mutes its sender at once (taken back
+in Settings › Sharing), and **Report** tells the server's admin, with one reason (harassment, hateful, spam, something
+else), that the share should not have come. Nothing happens to the sender on its own: the admin sees the share as it
+was received, its note and its sender, never who reported it, and ignores it or blocks the sender's account. An
+account reports a share once, and at most 5 a day.
+
 [← Back to the features](../features.md)

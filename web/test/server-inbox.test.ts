@@ -6,6 +6,7 @@ import {
   inboxItemOf,
   inboxKindOf,
   isWaiting,
+  reportedShareOf,
   reportedSourceOf,
   reviewedSourceOf,
   sortInbox
@@ -28,6 +29,7 @@ describe('À traiter', () => {
   it('sorts each request into its kind, a plugin’s own as plugin', () => {
     expect(inboxKindOf(item(1, 'core:source-review'))).toBe('source')
     expect(inboxKindOf(item(1, 'core:source-report'))).toBe('report')
+    expect(inboxKindOf(item(1, 'core:share-report'))).toBe('report')
     expect(inboxKindOf(item(1, 'core:code-request'))).toBe('code')
     expect(inboxKindOf(item(1, 'plugin:village:signup'))).toBe('plugin')
   })
@@ -63,6 +65,14 @@ describe('À traiter', () => {
     expect(reviewedSourceOf(report)).toBeNull()
     expect(reportedSourceOf(item(2, 'core:source-review', { url: '#/server/inbox/source-p1-gamma' }))).toBeNull()
     expect(inboxHrefOf(report)).toBe('#/server/inbox/1')
+  })
+
+  it('reads the share a report is about, and opens it first when nothing else waits', () => {
+    const share = item(3, 'core:share-report', { url: '#/server/inbox/share-12' })
+    expect(reportedShareOf(share)).toBe(12)
+    expect(reportedSourceOf(share)).toBeNull()
+    expect(reportedShareOf(item(4, 'core:share-report', { url: '#/server/inbox/share-x' }))).toBeNull()
+    expect(firstOpen([item(5, 'core:code-request', { url: '#/server/accounts/2' }), share])).toBe(share)
   })
 
   it('opens a request where it is done, and a source to judge in À traiter', () => {

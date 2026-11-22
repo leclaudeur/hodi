@@ -69,10 +69,23 @@
   font-size: 15px;
 }
 
+/* Report and mute: a line of their own under the reply, at its end. */
+.safety {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* On a phone: the question above, the emojis under it, everything centred. */
 @media (max-width: 600px) {
   .reply {
     flex-direction: column;
+    justify-content: center;
+  }
+
+  .safety {
     justify-content: center;
   }
 }

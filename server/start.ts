@@ -108,6 +108,7 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
       catalog: new PluginCatalog({ fetchText: outside.fetchText, fetchBytes: outside.fetchPackages })
     },
     household: stores.household,
+    shareReports: stores.shareReports,
     setupCode: drawSetupCode(stores),
     onHouseholdChange: running.applyHousehold,
     sources: {

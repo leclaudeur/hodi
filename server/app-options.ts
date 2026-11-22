@@ -15,6 +15,7 @@ import type { ServerStatsStore } from './db/server-stats-store.ts'
 import type { SignInCodeStore } from './db/sign-in-code-store.ts'
 import type { SourceReportStore } from './db/source-report-store.ts'
 import type { SourceReviewStore } from './db/source-review-store.ts'
+import type { ShareReportStore } from './db/share-report-store.ts'
 import type { SourceStore } from './db/source-store.ts'
 import type { TwoFactorStore } from './db/two-factor-store.ts'
 import type { HandleStore } from './db/handle-store.ts'
@@ -85,6 +86,8 @@ export interface AppOptions {
   // The people's own accounts; absent in tests of an install from before them, which signs in with the household's
   // password.
   accounts?: UserAccountStore
+  // « Signaler ce partage »: the shares À traiter shows; absent in tests that do not need them.
+  shareReports?: ShareReportStore
   // The accounts' @identifiers; absent in tests without accounts.
   handles?: HandleStore
   // Each account's own AI key (Mon compte › IA et crédits); with accounts.

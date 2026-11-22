@@ -32,6 +32,7 @@ import { loadCatalog } from '../news/catalog.ts'
 import { ArticleImages } from '../news/article-images.ts'
 import { ServerInboxStore } from '../db/server-inbox-store.ts'
 import { SourceReportStore } from '../db/source-report-store.ts'
+import { ShareReportStore } from '../db/share-report-store.ts'
 import { SourceReviewStore } from '../db/source-review-store.ts'
 import { ServerNoticeStore } from '../db/server-notice-store.ts'
 import type { Outside } from './outside.ts'
@@ -108,6 +109,7 @@ export const openStores = (
     serverInbox: new ServerInboxStore(db),
     sourceReviews: new SourceReviewStore(db),
     sourceReports: new SourceReportStore(db),
+    shareReports: new ShareReportStore(db),
     blockedDomains: new BlockedDomainStore(db),
     passwordResets: new PasswordResetStore(db, config.sessionSecret),
     pluginStore: new PluginStore(db)
