@@ -251,9 +251,14 @@ export const getSourceReports = () => getJson<{ reports: SourceReportView[] }>('
 export const decideReport = (id: string, decision: 'ignore' | 'unlist') =>
   sendJson<null>('POST', `/server/reports/${encodeURIComponent(id)}`, { decision })
 
-// « Bloquer » a source, for illegal content: its domain, everywhere, with the admin's password and app code.
+// What « Bloquer » takes, said before the password: its domain (or on a shared host, its feed's address), how many
+// sources go, and whether the account that added it goes.
+export const getBlockPreview = (id: string) =>
+  getJson<{ target: string; sources: number; account: boolean }>(`/server/sources/${encodeURIComponent(id)}/block`)
+
+// « Bloquer » a source, for illegal content, with the admin's password and app code.
 export const blockSource = (id: string, proof: AdminProof) =>
-  sendJson<{ domain: string }>('POST', `/server/sources/${encodeURIComponent(id)}/block`, proof)
+  sendJson<{ target: string }>('POST', `/server/sources/${encodeURIComponent(id)}/block`, proof)
 
 export interface BlockedDomain {
   domain: string

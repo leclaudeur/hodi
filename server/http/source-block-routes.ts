@@ -1,12 +1,13 @@
 import type express from 'express'
-import { type BlockedDomainStore, domainOf } from '../db/blocked-domain-store.ts'
+import { type BlockedDomainStore, blockTargetOf, coversTarget } from '../db/blocked-domain-store.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
-import { allSources } from '../news/catalog.ts'
+import { type Source, allSources } from '../news/catalog.ts'
 import type { NewsService } from '../news/news-service.ts'
 import { accountAsking } from './proof.ts'
 
-// « Bloquer » a source, for illegal content: its domain, everywhere, for everyone, after the server admin's password
-// and app code. Nothing of it stays, and the account that added it is blocked too; the admin never learns which.
+// « Bloquer » a source, for illegal content: its site's domain (on a host shared by many, its feed alone), everywhere,
+// for everyone, after the server admin's password and app code. Nothing of it stays, and the account that added it is
+// blocked too; the admin never learns which.
 
 export interface SourceBlockOptions {
   domains: BlockedDomainStore
@@ -25,20 +26,25 @@ interface Helpers {
   now: () => number
 }
 
-// Every source on the blocked domain, gone, and the accounts that added them blocked: never the server's admin.
-const blockDomain = ({ domains, news, official, onErased }: SourceBlockOptions, helpers: Helpers, domain: string) => {
-  const { accounts, removeAccount, now } = helpers
-  domains.block(domain, now())
-  const hit = allSources(news.catalog).filter(source => !official().has(source.id) && domains.covers(source))
-  const adders = new Set(hit.flatMap(source => (source.addedBy === undefined ? [] : [source.addedBy])))
-  const ids = hit.map(source => source.id)
-  domains.erase(ids)
+// What blocking this source takes: the other sources on its domain (never sources.yml's), and its adder's account.
+const reachOf = ({ news, official }: SourceBlockOptions, accounts: UserAccountStore, source: Source) => {
+  const target = blockTargetOf(source)
+  if (!target) return null
+  const hit = allSources(news.catalog).filter(item => !official().has(item.id) && coversTarget(target, item))
+  const adder = source.addedBy === undefined ? null : accounts.ofProfile(source.addedBy)
+  return { target, hit, adder: adder && !adder.serverAdmin ? adder : null }
+}
+
+// The target blocked, every source on it gone, and the account that added this one blocked: only that one, as the
+// others may have added another, harmless feed of the same site.
+const block = (options: SourceBlockOptions, reach: NonNullable<ReturnType<typeof reachOf>>, helpers: Helpers) => {
+  const { domains, news, onErased } = options
+  domains.block(reach.target, helpers.now())
+  domains.erase(reach.hit)
+  const ids = reach.hit.map(source => source.id)
   ids.forEach(id => news.removeSource(id))
   onErased(ids)
-  for (const profileId of adders) {
-    const adder = accounts.ofProfile(profileId)
-    if (adder && !adder.serverAdmin) removeAccount?.(adder, true)
-  }
+  if (reach.adder) helpers.removeAccount?.(reach.adder, true)
 }
 
 export const mountSourceBlockRoutes = (router: express.Router, options: SourceBlockOptions, helpers: Helpers) => {
@@ -51,31 +57,43 @@ export const mountSourceBlockRoutes = (router: express.Router, options: SourceBl
     response.json({ domains: domains.all() })
   })
 
-  router.post('/sources/:id/block', async (request, response) => {
+  const sourceOrRefuse = (request: express.Request, response: express.Response) => {
     const source = allSources(news.catalog).find(candidate => candidate.id === request.params.id)
     if (!source) {
       response.status(404).json({ error: 'not_found' })
-      return
+      return null
     }
     if (official().has(source.id)) {
       response.status(403).json({ error: 'official' })
-      return
+      return null
     }
-    const domain = domainOf(source.domains[0] ? `https://${source.domains[0]}/` : source.url)
-    if (!domain) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
+    const reach = reachOf(options, accounts, source)
+    if (!reach) response.status(400).json({ error: 'bad_request' })
+    return reach
+  }
+
+  // Said in the dialog before the password: what is blocked, how many sources go, and whether an account goes.
+  router.get('/sources/:id/block', (request, response) => {
+    const reach = sourceOrRefuse(request, response)
+    if (reach) response.json({ target: reach.target, sources: reach.hit.length, account: reach.adder !== null })
+  })
+
+  router.post('/sources/:id/block', async (request, response) => {
+    if (!sourceOrRefuse(request, response)) return
     if (!(await proven(request, response))) return
-    // The admin who blocks it never goes with it, even if they added it.
+    // Read again after the password, which takes a moment; the admin who blocks it never goes with it.
+    const reach = sourceOrRefuse(request, response)
+    if (!reach) return
     const asking = accountAsking(response, accounts)
-    blockDomain(options, { ...helpers, removeAccount: guarded(helpers.removeAccount, asking) }, domain)
-    response.json({ domain })
+    block(options, { ...reach, adder: reach.adder?.id === asking?.id ? null : reach.adder }, helpers)
+    response.json({ target: reach.target })
   })
 
   // « Débloquer »: someone may add it again; nothing that was erased comes back.
   router.delete('/blocks/:domain', async (request, response) => {
-    const domain = request.params.domain.toLowerCase()
+    // As it is listed; a domain typed with capitals or « www. » is the same one.
+    const typed = request.params.domain
+    const domain = typed.includes('/') ? typed : typed.toLowerCase().replace(/^www\./, '')
     if (!domains.all().some(entry => entry.domain === domain)) {
       response.status(404).json({ error: 'not_found' })
       return
@@ -85,6 +103,3 @@ export const mountSourceBlockRoutes = (router: express.Router, options: SourceBl
     response.status(204).end()
   })
 }
-
-const guarded = (remove: Helpers['removeAccount'], asking: UserAccount | null) =>
-  remove && ((account: UserAccount, blocks: boolean) => account.id !== asking?.id && remove(account, blocks))

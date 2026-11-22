@@ -2475,8 +2475,14 @@
         "short": "Block",
         "button": "Block everywhere",
         "title": "Block {{name}}?",
-        "text": "The whole domain <b>{{domain}}</b> is blocked: its feed is no longer read, everything read from it is erased from the server, it leaves every account’s list, and nobody can add it again. The account that added it is blocked, without you knowing which. <b>There is no going back.</b>",
-        "done": "{{domain}} is blocked"
+        "done": "{{target}} is blocked",
+        "textDomain": "The whole domain <b>{{target}}</b> is blocked: its feed is no longer read, and nobody can add it again.",
+        "textFeed": "This feed of <b>{{host}}</b> is blocked alone: the rest of the site is untouched, and nobody can add it again.",
+        "erased_one": "Its source leaves every account’s list, with everything read of it on the server.",
+        "erased_other": "Its {{count}} sources leave every account’s list, with everything read of them on the server.",
+        "account": "The account that added it is blocked, without you knowing which.",
+        "final": "<b>There is no going back.</b>",
+        "failed": "The block could not be prepared. Try again in a moment."
       }
     }
   },

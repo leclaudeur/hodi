@@ -43,11 +43,13 @@ to the app.
   it suits teens and children; a reported source in _To do_ too, with how many reported it and why (never who), then
   _Ignore_ or _Take out of the catalogue_ (asked first: those who read it keep it). Once done, a request leaves _All_ for _Handled_, the last filter, for 7 days, then goes.
   A notice that asks nothing, such as the weekly report, only goes out by e-mail or push.
-  Under a source to review or a reported one, _Block this site_ is for illegal content: after the admin's password and
-  app code, its whole domain is blocked. Every source on it goes, with everything read of it (articles, texts, pictures,
-  copies in _Saved_), it leaves every account's list, and nobody can add a feed of that domain again (_Source
-  unavailable on this server_). The account that added it is blocked too, and the admin never learns which; never the
-  server admin's own. A source of `sources.yml` is never blocked.
+  Under a source to review or a reported one, _Block this site_ is for illegal content. Its dialog first says what goes;
+  after the admin's password and app code, its site's whole domain is blocked, or on a host many people share (YouTube,
+  Substack, a podcast host…) its feed alone. Every source on it goes, with everything read of it (articles, texts,
+  pictures, copies in _Saved_ and _Shared_, a teen's requests), it leaves every account's list, and nobody can add it
+  again (_Source unavailable on this server_). The account that added this source is blocked too, and the admin never
+  learns which; never the server admin's own. A source of `sources.yml` is never blocked. The server's backups keep
+  their copy until they rotate out.
 - **Blocks**: the blocked domains, latest first, with a search, each unblocked after the admin's password (nothing
   erased comes back); and _Unblock an address_ for an account blocked by mistake, whose e-mail the admin types.
 - **Alerts**: for each kind of notification, Hodi's and the plugins', whether it also goes out by e-mail or push, or
