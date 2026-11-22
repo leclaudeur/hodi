@@ -4,6 +4,6 @@
 declare const __APP_VERSION__: string
 
 declare module 'virtual:hodi-config' {
-  const config: import('../../shared/config-schema.ts').Config
+  const config: import('../../shared/config-web.ts').WebConfig
   export default config
 }

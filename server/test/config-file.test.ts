@@ -5,6 +5,7 @@ import { describe, it } from 'node:test'
 import { stringify, parse } from 'yaml'
 import { parseConfig } from '../../shared/config-file.ts'
 import { CONFIG_SCHEMA } from '../../shared/config-schema.ts'
+import { WEB_GROUPS, webShare } from '../../shared/config-web.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 const realText = readFileSync(path.resolve('config.yml'), 'utf8')
@@ -53,5 +54,13 @@ describe('config.yml', () => {
 
   it('stops at an empty file', () => {
     assert.throws(() => parseConfig(''), /config\.yml is empty/)
+  })
+
+  it('gives the web app only the groups it reads', () => {
+    const share = webShare(CONFIG)
+    assert.deepEqual(Object.keys(share).sort(), [...WEB_GROUPS].sort())
+    assert.equal('signIn' in share, false)
+    assert.equal('pluginSandbox' in share, false)
+    assert.equal(share.app.searchMinLength, CONFIG.app.searchMinLength)
   })
 })

@@ -82,7 +82,8 @@ export const threadData = ({
 
 export const startThread = (data: SandboxData) =>
   new Worker(workerFile(), {
-    workerData: data,
+    // The fixed settings go along, so the thread never reads config.yml.
+    workerData: { ...data, hodiConfig: CONFIG },
     // The thread's own heap, beside the engine's memory: what the bridge holds stays small.
     resourceLimits: THREAD_LIMITS,
     // Nothing of Hodi's environment (keys, settings) reaches the thread.

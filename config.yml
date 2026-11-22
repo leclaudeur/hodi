@@ -3,15 +3,17 @@
 # ======================================================================================================================
 #
 # Every limit, duration, rate and size Hodi works with, except the ones an admin changes in Serveur (/server).
+# This file is for developers and forks: an install never needs to touch it, and every choice a household makes stays
+# in the browser.
 #
 # How to change a value
-#   - Server values: edit this file, then restart Hodi (docker compose up -d --build).
-#   - Values the web app reads (the « app » group, and the lines marked « App: ») are built into the page: they change
-#     with the next build of the image.
+#   - Edit this file, then rebuild and restart Hodi (docker compose up -d --build). The server reads it at start, and
+#     the web app's groups (listed in shared/config-web.ts) are built into the page: editing the file inside a running
+#     image without a rebuild would leave the two apart.
 #
 # How values are written
 #   - Durations: 500ms, 30s, 15m, 3h, 7d.
-#   - Sizes: 256KB, 8MB.
+#   - Sizes: 256KB, 8MB (1KB is 1024 bytes).
 #   - Counts: whole numbers. Ratios: decimals, 0.25 is a quarter.
 #
 # Every setting must be here, with a value of its kind, and nothing else: a typo, a missing line or a wrong kind of
