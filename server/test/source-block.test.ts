@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import type { AddressInfo } from 'node:net'
 import { after, describe, it } from 'node:test'
 import express from 'express'
-import { BlockedDomainStore } from '../db/blocked-domain-store.ts'
+import { BlockedDomainStore, feedKeyOf } from '../db/blocked-domain-store.ts'
 import { openDatabase } from '../db/database.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SourceStore } from '../db/source-store.ts'
@@ -178,9 +178,13 @@ describe('« Bloquer » a source', () => {
       news.addSource(added, 'topic', ['belgium'])
     }
     const preview = (await (await call('/server/sources/p3-bad/block', 'GET')).json()) as { target: string }
-    assert.equal(preview.target, 'https://www.youtube.com/feeds/videos.xml?channel_id=BAD')
+    assert.equal(preview.target, 'youtube.com/channel_id=BAD')
     await call('/server/sources/p3-bad/block', 'POST', { password: 'yes' })
     assert.equal(domains.covers(channel('x', 'BAD')), true)
+    // The same channel typed another way.
+    const again = { url: 'http://m.youtube.com/feeds/videos.xml?x=1&channel_id=BAD#top', domains: [] }
+    assert.equal(domains.covers(again), true)
+    assert.equal(feedKeyOf('https://www.substack.com/feed/?b=2&a=1'), feedKeyOf('http://substack.com/feed?a=1&b=2'))
     assert.equal(domains.covers(channel('x', 'FINE')), false)
     assert.equal(
       news.getSourceStatuses().some(status => status.id === 'p3-fine'),

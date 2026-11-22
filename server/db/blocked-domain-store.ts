@@ -47,15 +47,36 @@ const SHARED_HOSTS = [
 const isUnder = (host: string, domain: string) => host === domain || host.endsWith(`.${domain}`)
 
 // What blocking a source blocks: its site's domain, or on a shared host its feed's exact address.
+// A feed's address as blocked, so the same feed typed another way is the same one: no scheme, no « www. » or « m. »,
+// no trailing « / » or fragment, its query sorted; a YouTube feed by its channel or playlist alone.
+export const feedKeyOf = (link: string) => {
+  try {
+    const url = new URL(link)
+    const host = url.hostname.toLowerCase().replace(/^(www|m)\./, '')
+    if (isUnder(host, 'youtube.com'))
+      for (const key of ['channel_id', 'playlist_id', 'user']) {
+        const value = url.searchParams.get(key)
+        if (value) return `youtube.com/${key}=${value}`
+      }
+    const query = [...url.searchParams]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&')
+    return `${host}${url.pathname.replace(/\/+$/, '')}${query ? `?${query}` : ''}`
+  } catch {
+    return null
+  }
+}
+
 export const blockTargetOf = (source: { url: string; domains: string[] }) => {
   const host = domainOf(source.domains[0] ? `https://${source.domains[0]}/` : source.url)
   if (!host) return null
-  return SHARED_HOSTS.some(shared => isUnder(host, shared)) ? source.url : host
+  return SHARED_HOSTS.some(shared => isUnder(host, shared)) ? feedKeyOf(source.url) : host
 }
 
-// An entry is a domain, or a feed's address (with its « / »).
+// An entry is a domain, or a feed's key (with its « / »).
 export const coversTarget = (entry: string, source: { url: string; domains: string[] }) => {
-  if (entry.includes('/')) return source.url === entry
+  if (entry.includes('/')) return feedKeyOf(source.url) === entry
   const hosts = [source.url, ...source.domains.map(domain => `https://${domain}/`)].map(domainOf)
   return hosts.some(host => host !== null && isUnder(host, entry))
 }
