@@ -2,15 +2,16 @@ import type { Source } from '../news/catalog.ts'
 import { dayOf, dayRange } from '../news/days.ts'
 import { type Database, transaction } from './database.ts'
 import { HEARTBEAT_MS, MINUTE_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // What the parents set for a young profile (its fiche in Réglages > Profils), and the time it spent reading
 // today. Everything is judged here, with the server's clock and the household's time zone, never the device's.
 
-export const MIN_DAILY_MINUTES = 5
-export const MAX_DAILY_MINUTES = 240
-export const DAILY_MINUTES_STEP = 5
-export const MAX_EXPLAIN_PER_DAY = 20
-export const DEFAULT_EXPLAIN_PER_DAY = 5
+export const MIN_DAILY_MINUTES = CONFIG.young.dailyMinutesMin
+export const MAX_DAILY_MINUTES = CONFIG.young.dailyMinutesMax
+export const DAILY_MINUTES_STEP = CONFIG.young.dailyMinutesStep
+export const MAX_EXPLAIN_PER_DAY = CONFIG.young.explainPerDayMax
+export const DEFAULT_EXPLAIN_PER_DAY = CONFIG.young.explainPerDayDefault
 
 // A silence longer than a few heartbeats counts for nothing: the device slept, or the app was in the background.
 const MAX_GAP_MS = 3 * HEARTBEAT_MS

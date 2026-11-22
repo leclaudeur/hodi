@@ -5,6 +5,15 @@ import type { FromSandbox, SandboxData, ToSandbox } from './protocol.ts'
 import { MAX_RESULT_BYTES, SandboxError, type SandboxRequest } from './sandbox-limits.ts'
 import type { Job } from './call-lanes.ts'
 import type { PluginSandbox } from './sandbox.ts'
+import { CONFIG } from '../../fixed-config.ts'
+
+const MB = 1024 * 1024
+// Node's own limits on the plugin's thread, outside the engine's.
+const THREAD_LIMITS = {
+  maxOldGenerationSizeMb: CONFIG.pluginSandbox.threadHeap / MB,
+  maxYoungGenerationSizeMb: CONFIG.pluginSandbox.threadYoungHeap / MB,
+  stackSizeMb: CONFIG.pluginSandbox.threadStack / MB
+}
 
 // The threads of every plugin's sandbox: which run now, starting one, and answering its requests.
 
@@ -75,7 +84,7 @@ export const startThread = (data: SandboxData) =>
   new Worker(workerFile(), {
     workerData: data,
     // The thread's own heap, beside the engine's memory: what the bridge holds stays small.
-    resourceLimits: { maxOldGenerationSizeMb: 32, maxYoungGenerationSizeMb: 8, stackSizeMb: 4 },
+    resourceLimits: THREAD_LIMITS,
     // Nothing of Hodi's environment (keys, settings) reaches the thread.
     env: {},
     stdout: true,

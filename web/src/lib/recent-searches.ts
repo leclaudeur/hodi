@@ -1,8 +1,9 @@
 import { useSyncExternalStore } from 'react'
+import { CONFIG } from './config.ts'
 
 // "Récentes": the last searches, on this device only.
 export const RECENT_SEARCHES_KEY = 'hodi:recent-searches'
-const MAX_RECENT = 5
+const MAX_RECENT = CONFIG.app.recentSearches
 
 const listeners = new Set<() => void>()
 let recent: string[] | null = null

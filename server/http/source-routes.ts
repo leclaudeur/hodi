@@ -6,6 +6,7 @@ import type { FindResult } from '../news/source-finder.ts'
 import { isPluginFeed } from '../plugins/feeds.ts'
 import { isAdminOf, profileIdOf } from './profile-routes.ts'
 import { newSuggestions } from './source-suggestions.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // "Ajouter une source": a profile pastes a link, sees what it would follow, picks its topics, adds it to the
 // household's catalogue; or adds one of sources.yml's proposals. The household holds up to Serveur › Contenu's limit, if
@@ -13,11 +14,11 @@ import { newSuggestions } from './source-suggestions.ts'
 // profile removes only its own, the admin any. A source added shows for the profile that added it: the others
 // find it off, in "Ajoutées par le foyer".
 
-const MAX_LINK_LENGTH = 500
+const MAX_LINK_LENGTH = CONFIG.sources.linkMaxLength
 // The same link looked at, then added: found once.
-const FOUND_TTL_MS = 10 * 60 * 1000
+const FOUND_TTL_MS = CONFIG.sources.foundKeptFor
 // Of the sites the AI names, the ones offered.
-const MAX_SUGGESTIONS = 4
+const MAX_SUGGESTIONS = CONFIG.sources.aiSuggestions
 
 export const slug = (name: string) =>
   name

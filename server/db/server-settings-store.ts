@@ -1,16 +1,29 @@
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Serveur › Contenu: how long the server keeps what it fetches, in days. Each setting has its bounds and its default;
 // a value outside them is refused.
 
 export const CONTENT_SETTINGS = {
   // How long an article stays in the lists.
-  articleDays: { min: 1, max: 14, byDefault: 3 },
+  articleDays: {
+    min: CONFIG.serverSettings.articleDaysMin,
+    max: CONFIG.serverSettings.articleDaysMax,
+    byDefault: CONFIG.serverSettings.articleDaysDefault
+  },
   // How long a video or an episode stays in Vidéos.
-  videoDays: { min: 7, max: 180, byDefault: 60 },
+  videoDays: {
+    min: CONFIG.serverSettings.videoDaysMin,
+    max: CONFIG.serverSettings.videoDaysMax,
+    byDefault: CONFIG.serverSettings.videoDaysDefault
+  },
   // How long the server keeps the text read in Hodi; a saved article always keeps its own.
-  textDays: { min: 1, max: 30, byDefault: 7 }
-} as const
+  textDays: {
+    min: CONFIG.serverSettings.textDaysMin,
+    max: CONFIG.serverSettings.textDaysMax,
+    byDefault: CONFIG.serverSettings.textDaysDefault
+  }
+}
 
 export type ContentKey = keyof typeof CONTENT_SETTINGS
 export type ContentSettings = Record<ContentKey, number>
@@ -28,14 +41,21 @@ export const DEFAULT_CONTENT = Object.fromEntries(
 ) as ContentSettings
 
 // Serveur › Sauvegardes: how many copies of the database are kept, one a night (and those made by hand).
-export const BACKUP_COPIES = { min: 1, max: 30, byDefault: 7 } as const
+export const BACKUP_COPIES = {
+  min: CONFIG.serverSettings.backupCopiesMin,
+  max: CONFIG.serverSettings.backupCopiesMax,
+  byDefault: CONFIG.serverSettings.backupCopiesDefault
+}
 
 export const isValidCopies = (value: unknown): value is number =>
   Number.isInteger(value) && (value as number) >= BACKUP_COPIES.min && (value as number) <= BACKUP_COPIES.max
 
 // Serveur › Contenu: how many sources a household may follow, all its profiles together, since each one is fetched.
 // No row means no limit.
-export const MAX_SOURCES = { min: 10, max: 1000 } as const
+export const MAX_SOURCES = {
+  min: CONFIG.serverSettings.maxSourcesMin,
+  max: CONFIG.serverSettings.maxSourcesMax
+}
 
 export const isValidMaxSources = (value: unknown): value is number | null =>
   value === null ||

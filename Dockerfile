@@ -11,7 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-COPY tsconfig*.json vite.config.ts ./
+COPY tsconfig*.json vite.config.ts config.yml ./
 COPY server ./server
 COPY shared ./shared
 COPY web ./web
@@ -44,7 +44,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY sources.yml gamification.yml ./
+COPY sources.yml gamification.yml config.yml ./
 
 # The SQLite database lives in a volume mounted here; the node user must own it.
 COPY --from=deps --chown=node:node /app/data ./data

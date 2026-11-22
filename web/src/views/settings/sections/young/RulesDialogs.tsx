@@ -20,6 +20,7 @@ import Toggle from '../../../../ui/Toggle.tsx'
 import settingsStyles from '../../Settings.module.css'
 import { formatMinutes } from './format.ts'
 import styles from './Young.module.css'
+import { CONFIG } from '../../../../lib/config.ts'
 
 interface RuleDialogProps {
   profileId: number
@@ -89,7 +90,7 @@ const SwitchRow = ({
   </div>
 )
 
-const DEFAULT_DAILY_MINUTES = 90
+const DEFAULT_DAILY_MINUTES = CONFIG.young.dailyMinutesDefault
 
 // "Temps par jour": off, or 5 minutes to 4 hours by steps of 5 minutes.
 export const DailyDialog = ({ rules, ...props }: RuleDialogProps) => {

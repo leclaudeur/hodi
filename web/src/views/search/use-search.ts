@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { type SearchResult, type Trend, UnauthorizedError, getTrends, searchArticles } from '../../api.ts'
+import { CONFIG } from '../../lib/config.ts'
 
 // Waits for a pause in typing before asking the server.
-const DEBOUNCE_MS = 300
-export const MIN_LENGTH = 2
+const DEBOUNCE_MS = CONFIG.app.searchDebounce
+export const MIN_LENGTH = CONFIG.app.searchMinLength
 // The server checks matching articles it has not opened yet: searched again until it is done.
-const POLL_INTERVAL_MS = 2500
-const MAX_POLLS = 8
+const POLL_INTERVAL_MS = CONFIG.app.searchPollEvery
+const MAX_POLLS = CONFIG.app.searchPolls
 
 export type Results = ({ query: string } & SearchResult) | { query: string; error: true }
 

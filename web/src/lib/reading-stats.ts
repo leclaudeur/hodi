@@ -1,5 +1,6 @@
 import { refreshGameSoon } from './game.ts'
 import { changeUserState, getUserState } from './user-state.ts'
+import { CONFIG } from './config.ts'
 
 // What was read and when, for the stats page. Kept on the server and shared by every device.
 
@@ -27,7 +28,7 @@ export type ReadingProgress = Pick<Required<ReadingEntry>, 'minutes' | 'progress
   Pick<ReadingEntry, 'estimate'>
 
 // The stats can't hold more than 10 hours for one entry.
-const MAX_MINUTES = 600
+const MAX_MINUTES = CONFIG.reading.maxMinutesPerDay
 
 export const getReadings = (): ReadingEntry[] => getUserState().readings
 

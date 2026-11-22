@@ -1,6 +1,7 @@
 import type { PluginTranslations } from '../plugins/plugin-texts.ts'
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { ArticleResult, FeedItem, SourceStatus } from './news.ts'
+import { CONFIG } from '../lib/config.ts'
 
 // The reader's calls to the API in the last 24 hours, on its own key. No cap: the key is theirs.
 export interface AiUsage {
@@ -84,7 +85,7 @@ export type AnswerResult =
   | { status: 'ok'; answer: string; sources: AnswerSource[] }
   | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' | 'limited' }
 
-export const MAX_QUESTION_LENGTH = 300
+export const MAX_QUESTION_LENGTH = CONFIG.ai.questionMaxLength
 
 // Asks the AI a question about an article: each question is a new API call, with web searches when needed.
 export const askQuestion = async (id: string, question: string): Promise<AnswerResult> => {

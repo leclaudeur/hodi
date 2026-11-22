@@ -1,4 +1,5 @@
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // « Signaler ce partage »: someone tells the server's admin that a share they received should not have been sent. The
 // admin sees that share only, as it was received, and who sent it; never who reported it.
@@ -11,10 +12,10 @@ export const isShareReportReason = (value: unknown): value is ShareReportReason 
   typeof value === 'string' && (SHARE_REPORT_REASONS as readonly string[]).includes(value)
 
 // Reports one account may send in a day: enough for real trouble, too few to bury the admin.
-export const SHARE_REPORTS_PER_DAY = 5
+export const SHARE_REPORTS_PER_DAY = CONFIG.shares.reportsPerDay
 const DAY_MS = 24 * 60 * 60 * 1000
 // How long a report the admin handled keeps the same share from being reported again.
-const HANDLED_KEPT_MS = 30 * DAY_MS
+const HANDLED_KEPT_MS = CONFIG.shares.reportHandledKeptFor
 
 export interface ShareReport {
   id: number

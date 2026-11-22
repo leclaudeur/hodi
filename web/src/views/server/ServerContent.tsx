@@ -21,6 +21,7 @@ import SectionPage from '../settings/SectionPage.tsx'
 import SettingRow from '../settings/SettingRow.tsx'
 import styles from '../settings/Settings.module.css'
 import youngStyles from '../settings/sections/young/Young.module.css'
+import { CONFIG } from '../../lib/config.ts'
 
 const KEYS: ContentKey[] = ['articleDays', 'videoDays', 'textDays']
 
@@ -91,7 +92,7 @@ const DurationDialog = ({ setting, content, onClose, onSaved }: DurationDialogPr
 }
 
 // Offered when the limit is turned on.
-const DEFAULT_MAX_SOURCES = 200
+const DEFAULT_MAX_SOURCES = CONFIG.serverSettings.maxSourcesDefault
 
 interface MaxSourcesDialogProps {
   open: boolean

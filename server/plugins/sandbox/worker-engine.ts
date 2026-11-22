@@ -8,6 +8,7 @@ import {
 } from 'quickjs-emscripten'
 import type { SandboxData, SandboxShape } from './protocol.ts'
 import { PRELUDE, RUNTIME } from './worker-scripts.ts'
+import { CONFIG } from '../../fixed-config.ts'
 
 // The QuickJS engine a plugin's code runs in (worker.ts): its memory, its clock, the modules it may import, and
 // settling what the plugin's code returns.
@@ -15,7 +16,7 @@ import { PRELUDE, RUNTIME } from './worker-scripts.ts'
 export class Fatal extends Error {}
 
 // What the engine's WebAssembly build starts with.
-const ENGINE_BASE_BYTES = 16 * 1024 * 1024
+const ENGINE_BASE_BYTES = CONFIG.pluginSandbox.engineBaseMemory
 // The server's TypeScript settings leave out the DOM library, where WebAssembly's types live.
 type WasmMemoryConstructor = new (descriptor: { initial: number; maximum: number }) => object
 
@@ -46,7 +47,7 @@ export const newEngine = async (data: SandboxData, clock: Clock) => {
   const QuickJS = await newQuickJSWASMModuleFromVariant(newVariant(RELEASE_SYNC, { wasmMemory }))
   const runtime: QuickJSRuntime = QuickJS.newRuntime()
   runtime.setMemoryLimit(data.memoryBytes)
-  runtime.setMaxStackSize(512 * 1024)
+  runtime.setMaxStackSize(CONFIG.pluginSandbox.engineStack)
   runtime.setInterruptHandler(() => {
     if (Date.now() <= clock.deadline) return false
     clock.interrupted = true

@@ -1,5 +1,6 @@
 import type { AlertPayload } from '../news/followed-alerts.ts'
 import { DAY_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // ctx.notify: a plugin tells a person something on their devices (« Ta demande est acceptée »), through the same push
 // as shares, in each device's quiet hours and with its « Plugins » switch. The core builds the notification from
@@ -7,10 +8,10 @@ import { DAY_MS } from '../../shared/time.ts'
 // in the main thread, where a restart of the plugin's thread cannot reset them.
 
 // How many notices one plugin may send to one profile in a day.
-export const PLUGIN_NOTICES_PER_DAY = 10
+export const PLUGIN_NOTICES_PER_DAY = CONFIG.pluginNotices.perDay
 
-const MAX_TITLE = 80
-const MAX_TEXT = 240
+const MAX_TITLE = CONFIG.pluginNotices.titleMaxLength
+const MAX_TEXT = CONFIG.pluginNotices.textMaxLength
 // A path under the plugin's page: letters, digits and a few signs, never "..".
 const PATH = /^(?!.*\.\.)[A-Za-z0-9._~/-]{1,200}$/
 // One line for the title, a few for the text; no other control character.

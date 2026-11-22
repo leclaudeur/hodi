@@ -7,10 +7,11 @@ import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
 import { clientAddressOf } from './client-address.ts'
 import { type Guard, guardOf, isAccountGuard, isCodeGuard } from './profile-guard.ts'
 import type { TrustedDevices } from './trusted-devices.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // « Qui lit ? »: which profile this device reads as, after what its guard asks for.
 
-const MAX_PASSWORD_LENGTH = 256
+const MAX_PASSWORD_LENGTH = CONFIG.passwords.maxLength
 
 export interface CurrentRoutesOptions {
   profiles: ProfileStore

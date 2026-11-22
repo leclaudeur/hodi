@@ -1,3 +1,5 @@
+import { CONFIG } from '../fixed-config.ts'
+
 // A plugin's kinds of server notices (manifest.serverNotifications): the events its code may tell the server's admin
 // of with ctx.notifyServerAdmin, each a row of Serveur › Notifications under the plugin's name, where the admin
 // chooses e-mail, push, both or neither. Their texts in other languages are in its locales, under
@@ -11,9 +13,12 @@ export interface ServerNoticeSpec {
   hint: string | null
 }
 
-export const MAX_SERVER_NOTICES = 10
+export const MAX_SERVER_NOTICES = CONFIG.pluginManifest.serverNotices
 const TYPE = /^[a-z][a-z0-9-]{0,31}$/
-export const NOTICE_LIMITS = { label: 60, hint: 80 } as const
+export const NOTICE_LIMITS = {
+  label: CONFIG.pluginManifest.noticeLabelMaxLength,
+  hint: CONFIG.pluginManifest.noticeHintMaxLength
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)

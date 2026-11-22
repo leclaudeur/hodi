@@ -3,6 +3,7 @@ import type { Config } from '../config.ts'
 import { type FetchBytes, type FetchText, createFetchBytes, createFetchText } from '../news/fetch-text.ts'
 import { type FetchVideoDuration, createFetchVideoDuration } from '../news/video-durations.ts'
 import { type IsPublicUrl, isPublicUrl } from '../news/source-finder.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Everything Hodi reaches outside the server: the sites it reads and the push services. index.ts gives the real ones;
 // the end-to-end tests give pages of their own (e2e/server.ts).
@@ -23,12 +24,12 @@ export interface Outside {
 
 export const realOutside = (): Outside => ({
   // Feeds and article pages: a slow moment of a site (or of the server, busy with a refresh) gets 10 seconds.
-  fetchText: createFetchText({ timeoutMs: 10_000 }),
-  findFetchText: createFetchText({ timeoutMs: 8000 }),
+  fetchText: createFetchText({ timeoutMs: CONFIG.fetch.textTimeout }),
+  findFetchText: createFetchText({ timeoutMs: CONFIG.fetch.findTimeout }),
   isPublicLink: isPublicUrl,
   fetchBytes: createFetchBytes(),
-  fetchPictures: createFetchBytes({ timeoutMs: 10_000 }),
-  fetchPackages: createFetchBytes({ timeoutMs: 60_000 }),
+  fetchPictures: createFetchBytes({ timeoutMs: CONFIG.fetch.picturesTimeout }),
+  fetchPackages: createFetchBytes({ timeoutMs: CONFIG.fetch.packagesTimeout }),
   fetchVideoDuration: createFetchVideoDuration(),
   sendPush: async (target, payload, vapid) => {
     await webpush.sendNotification(target, JSON.stringify(payload), {

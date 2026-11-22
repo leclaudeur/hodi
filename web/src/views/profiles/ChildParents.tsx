@@ -25,9 +25,10 @@ import styles from '../settings/Settings.module.css'
 import profileStyles from './Profiles.module.css'
 import householdStyles from '../household/Household.module.css'
 import { useChildAccount } from './ChildPasswordRow.tsx'
+import { CONFIG } from '../../lib/config.ts'
 
 // Two parents at most: the one who made the account, and the one they invite.
-const MAX_PARENTS = 2
+const MAX_PARENTS = CONFIG.children.parents
 
 interface ChildParentsProps {
   profileId: number

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { NOTICE_LIMITS } from './manifest-notices.ts'
 import { localesOf } from './web-parts.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A plugin's name and description in other languages: manifest.name and manifest.description in its
 // locales/<language>.json. plugin.json keeps the reference text, shown where a language has none.
@@ -14,7 +15,10 @@ export interface ManifestText {
 export type ManifestTranslations = Record<string, ManifestText>
 
 // The same limits as plugin.json's name and description.
-const LIMITS = { name: 60, description: 280 } as const
+const LIMITS = {
+  name: CONFIG.pluginManifest.nameMaxLength,
+  description: CONFIG.pluginManifest.descriptionMaxLength
+}
 
 const clean = (value: unknown, max: number) =>
   typeof value === 'string' && value.trim() && value.length <= max ? value.trim() : undefined

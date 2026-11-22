@@ -5,13 +5,14 @@ import { isHidden, usePreferences } from './preferences.ts'
 import { rememberRelated } from './related.ts'
 import { loadDailySummary } from './daily-summary.ts'
 import { sendPendingChanges } from './user-state.ts'
+import { CONFIG } from './config.ts'
 
 // "À la une": the three most covered stories of each topic, kept for the visit.
-const STALE_AFTER_MS = 10 * 60 * 1000
+const STALE_AFTER_MS = CONFIG.app.frontPageStaleAfter
 // A topic whose articles the server is still checking (a fresh install, a source just added) is asked again soon:
 // its stories would otherwise wait the ten minutes above.
-const POLL_INTERVAL_MS = 3000
-const MAX_POLLS = 12
+const POLL_INTERVAL_MS = CONFIG.app.frontPagePollEvery
+const MAX_POLLS = CONFIG.app.frontPagePolls
 
 let sections: FrontPageSection[] | null = null
 // Asked once, answered or not: the lists wait for it, so that its row does not come in above them later.

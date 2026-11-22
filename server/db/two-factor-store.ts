@@ -2,6 +2,7 @@ import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomInt } 
 import { Secret, TOTP } from 'otpauth'
 import { type Database, transaction } from './database.ts'
 import { SIGN_IN_CODE_ALPHABET } from './sign-in-code-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // « Validation en deux étapes »: an authenticator app (Google Authenticator, 1Password, Aegis…) shows a new 6-digit code
 // every 30 seconds from a secret it shares with Hodi (TOTP, RFC 6238, through otpauth). Ten recovery codes stand in
@@ -11,10 +12,10 @@ export const TWO_FACTOR_DIGITS = 6
 const PERIOD_SECONDS = 30
 // The step before and after count too: a phone's clock a little off, or a code typed as it changed.
 const WINDOW = 1
-export const RECOVERY_CODES = 10
+export const RECOVERY_CODES = CONFIG.twoFactor.recoveryCodes
 const RECOVERY_LENGTH = 8
 // A secret shown and not confirmed is forgotten after this.
-export const PENDING_LIFETIME = 15 * 60 * 1000
+export const PENDING_LIFETIME = CONFIG.twoFactor.setupLifetime
 
 const totpOf = (secret: string, label: string) =>
   new TOTP({

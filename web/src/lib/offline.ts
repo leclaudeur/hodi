@@ -4,13 +4,14 @@ import { useConnection } from './connection.ts'
 import { isHidden, isInHiddenTopic, usePreferences } from './preferences.ts'
 import { isRead } from './read-state.ts'
 import { useSaved } from './saved.ts'
+import { CONFIG } from './config.ts'
 
 // "Lecture hors ligne": the unread articles of "Le fil" are fetched ahead, one at a time, while the app is open
 // and online, so the service worker keeps their text (see public/sw.js). A setting of this device only.
 
 const STORAGE_KEY = 'hodi:offline-reading'
 // The service worker keeps the last 200 articles opened: room for these and the ones read.
-const MAX_KEPT = 40
+const MAX_KEPT = CONFIG.app.offlineKept
 
 let enabled = (() => {
   try {
@@ -52,7 +53,7 @@ export const refreshKept = async () => {
 }
 
 // Waits a few seconds after the app opened, then for a moment the browser has nothing else to do.
-const START_DELAY_MS = 5000
+const START_DELAY_MS = CONFIG.app.offlineStartDelay
 const afterStart = () =>
   new Promise<void>(resolve => {
     const wait = Math.max(0, START_DELAY_MS - performance.now())

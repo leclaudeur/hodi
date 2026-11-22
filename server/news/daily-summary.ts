@@ -1,5 +1,6 @@
 import type { Language } from './catalog.ts'
 import { type AiClient, askJson } from './summarizer.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 export interface DailySummaryStory {
   topicId: string
@@ -21,7 +22,7 @@ export interface WrittenPoint {
 export type WriteDailySummary = (stories: DailySummaryStory[], language: Language) => Promise<WrittenPoint[]>
 
 // Feed summaries can be long: the start says enough for an overview.
-const MAX_SUMMARY_LENGTH = 500
+const MAX_SUMMARY_LENGTH = CONFIG.ai.dailySummaryMaxLength
 
 // Written in the language the AI answers in, so it is not tempted to mix the two.
 const SYSTEM_PROMPTS: Record<Language, string> = {

@@ -2,6 +2,7 @@ import { appendFileSync, existsSync, readFileSync, renameSync, writeFileSync } f
 import path from 'node:path'
 import { type Database, transaction } from './database.ts'
 import { DEFAULT_ACCOUNT_ID } from './household-scope.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // What was deleted of people, kept outside Hodi's database (data/forgotten.jsonl) so that « Restaurer » cannot bring it
 // back: a copy made before a deletion still holds the person, and after the copy takes the database's place, every
@@ -31,7 +32,7 @@ export type ForgetRecord = ForgetEntry & { at: number }
 
 // A deletion this close before a copy was made may be missing from it (the copy reads the database as it starts):
 // it is done again too. Doing one again that the copy already has changes nothing.
-export const FORGET_MARGIN_MS = 5 * 60 * 1000
+export const FORGET_MARGIN_MS = CONFIG.backups.forgetMargin
 
 export class ForgetLog {
   readonly #file: string

@@ -4,6 +4,7 @@ import path from 'node:path'
 import { type ManifestTranslations, manifestTranslations } from './manifest-texts.ts'
 import { type Manifest, signedOnlyAsked } from './manifest.ts'
 import { TRUSTED_KEYS, unpackPackage } from './package.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Installing a plugin takes two steps, so the admin sees what a package is before any of it is kept:
 //   1. stage: the package is unpacked apart, in plugins/.incoming/<token>/, and described;
@@ -12,7 +13,7 @@ import { TRUSTED_KEYS, unpackPackage } from './package.ts'
 // Removing a plugin deletes its folder only: its settings, its tables and data/plugin-data/<id>/ stay, so installing
 // it again finds them.
 
-const STAGED_FOR_MS = 15 * 60 * 1000
+const STAGED_FOR_MS = CONFIG.plugins.stagedFor
 
 export interface Staged {
   token: string

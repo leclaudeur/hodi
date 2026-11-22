@@ -1,7 +1,8 @@
 import { AtSign } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HANDLE_MAX_LENGTH, cleanHandle, handleBase } from '../../../../shared/handle.ts'
+import { CONFIG } from '../../lib/config.ts'
+import { cleanHandle, handleBase } from '../../lib/handle.ts'
 import { checkHandle } from '../../api.ts'
 import { LOCALES } from '../../lib/format.ts'
 import { getLanguage } from '../../lib/i18n.ts'
@@ -9,7 +10,7 @@ import StatusLine from '../../ui/StatusLine.tsx'
 import styles from './ProfileForm.module.css'
 
 // Typing stops this long before the server is asked.
-const CHECK_DELAY_MS = 300
+const CHECK_DELAY_MS = CONFIG.app.handleCheckDelay
 
 type HandleStatus = 'rules' | 'checking' | 'free' | 'taken' | 'own'
 
@@ -114,7 +115,7 @@ const HandleField = ({ handle, lockedUntil = null }: HandleFieldProps) => {
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
-          maxLength={HANDLE_MAX_LENGTH}
+          maxLength={CONFIG.accounts.handleMaxLength}
           aria-invalid={handle.status === 'taken'}
           onChange={event => handle.onHandle(event.target.value.trim().replace(/^@/, '').toLowerCase())}
         />

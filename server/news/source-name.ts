@@ -1,15 +1,16 @@
 import { decodeEntities } from './text.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A source's name, from what its feed calls itself. Feed titles are often an address ("https://www.voici.fr : flux
 // d'articles"), a label ("Journal des Femmes : Derniers contenus") or a sentence: the site's own name is kept, with
 // a short section after it ("Marie Claire Belgique · Beauté"), else the name the site gives itself, else its address.
 
-const MAX_LENGTH = 60
+const MAX_LENGTH = CONFIG.sources.nameMaxLength
 // A description longer than this is cut: the catalogue shows two lines of it.
-const MAX_DESCRIPTION = 200
+const MAX_DESCRIPTION = CONFIG.sources.descriptionMaxLength
 // A section after the name: a word or three ("Beauté", "Sciences et santé"), never a sentence.
-const MAX_SECTION_WORDS = 3
-const MAX_PART_WORDS = 6
+const MAX_SECTION_WORDS = CONFIG.sources.nameSectionWords
+const MAX_PART_WORDS = CONFIG.sources.namePartWords
 
 // What says "this is a feed" or "the latest news" rather than who publishes it, in French and English.
 const PHRASE =

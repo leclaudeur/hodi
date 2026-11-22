@@ -1,3 +1,5 @@
+import { CONFIG } from '../lib/config.ts'
+
 // Hodi restarts after a plugin is installed, updated or removed. Each start has its own boot id (/health): the app
 // waits for a new one, then reloads on the new plugins.
 
@@ -20,7 +22,7 @@ export const waitForRestart = async (
   before: string | null,
   {
     interval = 1000,
-    timeout = 60_000,
+    timeout = CONFIG.app.restartWait,
     now = Date.now,
     onStopped
   }: { interval?: number; timeout?: number; now?: () => number; onStopped?: () => void } = {}

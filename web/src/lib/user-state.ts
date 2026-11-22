@@ -5,6 +5,7 @@
 
 import { t } from './i18n.ts'
 import { showError, showInfo, showSaved } from './toast.ts'
+import { CONFIG } from './config.ts'
 
 export interface StoredSavedEntry {
   item: { id: string } & Record<string, unknown>
@@ -56,8 +57,8 @@ const LEGACY_KEYS = {
   readings: 'hodi:reading-stats'
 } as const
 // Coming back to the app after this long fetches the state again (a cheap request when nothing changed).
-const REFRESH_AFTER_MS = 60 * 1000
-const MAX_READ = 5000
+const REFRESH_AFTER_MS = CONFIG.app.userStateRefreshAfter
+const MAX_READ = CONFIG.myData.readMax
 
 const EMPTY: UserState = { revision: 0, preferences: null, saved: [], read: [], hidden: [], readings: [] }
 

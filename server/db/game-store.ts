@@ -6,6 +6,7 @@ import { type Database, transaction } from './database.ts'
 import { badgeCounts } from './game-badges.ts'
 import { ownerOf } from './stats-owner.ts'
 import { DAY_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The household game's points: one row per thing that earned them, kept for good (the readings themselves are
 // pruned after a year). A thing earns once (its kind and ref).
@@ -69,16 +70,16 @@ export interface WeeklyChallenge {
 }
 
 // How late a reading made offline may reach the server and still earn on its own day.
-const LATE_SYNC_MS = 7 * DAY_MS
+const LATE_SYNC_MS = CONFIG.game.lateSync
 // What one profile counts in a day, at most: far more than anyone reads, so only a script sending made-up readings or
 // alerts meets it (120 articles is six hours at three minutes each). Past it, nothing counts, neither for points nor
 // for the badges.
 export const DAILY_COUNT_LIMITS: Partial<Record<GameEventKind, number>> = {
-  article_read: 120,
-  video_watched: 120,
-  alert_opened: 40,
-  share_sent: 40,
-  reaction_received: 40
+  article_read: CONFIG.game.dailyArticles,
+  video_watched: CONFIG.game.dailyVideos,
+  alert_opened: CONFIG.game.dailyAlerts,
+  share_sent: CONFIG.game.dailyShares,
+  reaction_received: CONFIG.game.dailyReactions
 }
 
 // What the server itself knows of an article or a video: the client's word is not taken for its kind, its theme or

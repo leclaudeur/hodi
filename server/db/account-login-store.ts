@@ -1,9 +1,10 @@
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The ways in a plugin keeps for accounts, besides their password (« Se connecter avec Google »): the plugin's own name
 // for the person there, such as google:<id>. Each plugin only reads its own, and a name leads to one account.
 
-export const MAX_LOGIN_LENGTH = 200
+export const MAX_LOGIN_LENGTH = CONFIG.accounts.loginMaxLength
 
 export const isLogin = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= MAX_LOGIN_LENGTH && !/[\s\p{Cc}]/u.test(value)

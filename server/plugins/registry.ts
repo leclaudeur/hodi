@@ -22,6 +22,7 @@ import { type LoadDeps, type RequestDeps, loadPlugin, pruneKeptData } from './lo
 import type { ReportRow } from './report-rows.ts'
 import { aiActionRunner, articleTeller, dataExporter, weeklyReporter, dueTasks, signInChecker } from './plugin-calls.ts'
 import type { WebParts } from './web-parts.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 export { MAX_EXPORT_BYTES } from './plugin-calls.ts'
 
@@ -121,9 +122,9 @@ export type AiActionResult =
   { ok: true; answer: unknown; asked: boolean } | { ok: false; error: unknown; outcome: PluginAiStatus | null }
 
 // The log lines kept for each plugin.
-const KEPT_LOG_LINES = 200
+const KEPT_LOG_LINES = CONFIG.plugins.logLines
 // How often Hodi looks for a task that is due.
-const TASK_TICK_MS = 60_000
+const TASK_TICK_MS = CONFIG.plugins.taskTick
 
 export interface LoadPluginsOptions extends Partial<RequestDeps> {
   dir: string

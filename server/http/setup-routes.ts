@@ -1,4 +1,4 @@
-import { cleanHandle } from '../../shared/handle.ts'
+import { cleanHandle } from '../handle.ts'
 import { timingSafeEqual } from 'node:crypto'
 import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'

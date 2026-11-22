@@ -8,14 +8,15 @@ import {
 } from '../../lib/reading-stats.ts'
 import { forgetResumePosition, resumePositionOf } from '../../lib/resume.ts'
 import { MINUTE_MS } from '../../../../shared/time.ts'
+import { CONFIG } from '../../lib/config.ts'
 
 // An article counts as read once this much of it scrolled by AND this share of its estimated time was spent: scrolling
 // to the end alone does not read it (it earns the game's points), nor does leaving it open. The estimate is at about
 // 230 words a minute: 35% still lets a fast reader through.
-const DONE_PROGRESS = 0.8
-const DONE_TIME = 0.35
+const DONE_PROGRESS = CONFIG.reading.doneAt
+const DONE_TIME = CONFIG.reading.doneTime
 // An article left open counts no more than twice its estimated time.
-const MAX_TIME = 2
+const MAX_TIME = CONFIG.reading.maxTime
 
 // The scrolling box an element is in: the desktop panel, or the page itself on a phone.
 const scrollerOf = (element: HTMLElement): HTMLElement => {

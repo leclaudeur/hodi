@@ -1,7 +1,9 @@
+import { CONFIG } from '../fixed-config.ts'
+
 // Readability checks run a few at a time. What the reader waits for goes first; the periodic pass over every topic
 // leaves room for it.
-const CHECK_CONCURRENCY = 4
-const BACKGROUND_CONCURRENCY = 2
+const CHECK_CONCURRENCY = CONFIG.feeds.checksAtOnce
+const BACKGROUND_CONCURRENCY = CONFIG.feeds.backgroundChecksAtOnce
 
 interface Pass {
   startedAt: number

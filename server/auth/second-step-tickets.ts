@@ -1,13 +1,14 @@
 import { randomBytes } from 'node:crypto'
+import { CONFIG } from '../fixed-config.ts'
 
 // A plugin vouched for an account whose « Validation en deux étapes » is on (« Se connecter avec Google », its
 // password checked by the plugin): the device signs in only once the person types the app's code in Hodi's own dialog.
 // The ticket stands for that first step: random, kept in memory only, good for a few minutes and a few codes, used once.
 
-export const SECOND_STEP_MS = 5 * 60 * 1000
-export const SECOND_STEP_TRIES = 5
+export const SECOND_STEP_MS = CONFIG.signIn.secondStepWindow
+export const SECOND_STEP_TRIES = CONFIG.signIn.secondStepTries
 // The most tickets waiting at once: past it, the oldest goes.
-const MAX_TICKETS = 1000
+const MAX_TICKETS = CONFIG.signIn.secondStepTickets
 
 export class SecondStepTickets {
   #tickets = new Map<string, { accountId: number; expires: number; tries: number }>()

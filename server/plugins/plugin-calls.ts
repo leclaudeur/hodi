@@ -5,9 +5,10 @@ import { type AiTicket, callContext } from './call-context.ts'
 import { SandboxError } from './sandbox/sandbox.ts'
 import { message } from './sandbox-requests.ts'
 import type { AiActionResult, LoadedPlugin, SignInRefusal } from './registry.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The most a plugin's part of « Télécharger une copie » may weigh, as JSON.
-export const MAX_EXPORT_BYTES = 512 * 1024
+export const MAX_EXPORT_BYTES = CONFIG.pluginSandbox.exportMaxSize
 
 // What a refusal may name: a key of the plugin's locales, never text or markup for the page.
 const MESSAGE_KEY = /^[A-Za-z][A-Za-z0-9_-]*(?:\.[A-Za-z][A-Za-z0-9_-]*){0,4}$/

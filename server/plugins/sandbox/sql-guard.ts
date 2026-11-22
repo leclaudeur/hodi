@@ -1,3 +1,5 @@
+import { CONFIG } from '../../fixed-config.ts'
+
 // What a plugin's SQL may do in its own database: read and write its own tables, and shape them. Never reach another
 // database file (ATTACH, VACUUM INTO), change how SQLite runs (PRAGMA) or load code (extensions are off besides).
 // One statement at a time: a second one after a ";" is refused, so nothing rides behind an allowed one.
@@ -106,7 +108,8 @@ const checkNames = (words: string[]) => {
 
 // Throws SqlRefused for a statement the plugin may not run.
 export const checkPluginSql = (sql: unknown): string => {
-  if (typeof sql !== 'string' || sql.length === 0 || sql.length > 100_000) throw new SqlRefused('invalid_sql')
+  if (typeof sql !== 'string' || sql.length === 0 || sql.length > CONFIG.pluginSandbox.sqlMaxLength)
+    throw new SqlRefused('invalid_sql')
   const words = wordsOf(sql)
   if (!words) throw new SqlRefused('one_statement_only')
   if (words.length === 0) throw new SqlRefused('invalid_sql')

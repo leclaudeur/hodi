@@ -4,9 +4,10 @@ import type { PluginInstaller } from '../plugins/installer.ts'
 import { MAX_PACKAGE_BYTES, PackageError } from '../plugins/package.ts'
 import type { PluginRegistry } from '../plugins/registry.ts'
 import { clientAddressOf } from './client-address.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // « npx hodi-plugin dev » sends a build per save and reads the log every two seconds: room for both, not for guessing.
-export const DEV_REQUESTS_PER_MINUTE = 60
+export const DEV_REQUESTS_PER_MINUTE = CONFIG.plugins.devRequestsPerMinute
 
 // « npx hodi-plugin dev »: while Mode développeur is on, the code it shows installs a build of a plugin, unsigned, and
 // reads its log. Before any session: the code is the only way in, so every request without it is refused alike.

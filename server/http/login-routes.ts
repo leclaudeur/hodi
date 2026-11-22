@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { cleanHandle } from '../../shared/handle.ts'
+import { cleanHandle } from '../handle.ts'
 import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { NO_PASSWORD, hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
@@ -17,8 +17,9 @@ import type { CookieFor, accountSession } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
 import type { profileDeviceSession } from './profile-device-session.ts'
 import { type CheckSignIn, refuseSignIn } from './sign-in-check.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const MAX_PASSWORD_LENGTH = 256
+const MAX_PASSWORD_LENGTH = CONFIG.passwords.maxLength
 
 interface LoginRoutesOptions {
   accounts?: UserAccountStore

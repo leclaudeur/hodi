@@ -5,6 +5,7 @@ import path from 'node:path'
 import { promisify } from 'node:util'
 import { brotliCompress, constants } from 'node:zlib'
 import { type Plugin, defineConfig } from 'vite'
+import { hodiConfig } from './web/config-plugin.ts'
 
 // Réglages › À propos shows the version of package.json.
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
@@ -49,7 +50,7 @@ const precompress = (): Plugin => ({
 
 export default defineConfig({
   root: 'web',
-  plugins: [react(), preloadFonts(), precompress()],
+  plugins: [react(), hodiConfig(path.resolve('config.yml')), preloadFonts(), precompress()],
   define: {
     __APP_VERSION__: JSON.stringify(version)
   },

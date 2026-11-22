@@ -1,8 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { parseHTML } from 'linkedom'
 import type { Language } from './catalog.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-export const DEFAULT_SUMMARY_MODEL = 'claude-haiku-5-5'
+export const DEFAULT_SUMMARY_MODEL = CONFIG.ai.defaultModel
 // Key points of a summary, by the article's length: a short piece keeps 3, a long one up to 7, so neither is
 // padded nor cut down too far.
 const POINTS_BY_WORDS: [maxWords: number, points: number][] = [
@@ -11,7 +12,7 @@ const POINTS_BY_WORDS: [maxWords: number, points: number][] = [
   [1500, 5],
   [2500, 6]
 ]
-const MAX_POINTS = 7
+const MAX_POINTS = CONFIG.ai.summaryPoints
 
 export const pointsFor = (text: string) => {
   const words = text.split(/\s+/).filter(Boolean).length
@@ -88,7 +89,7 @@ export const createAiClient = ({
   timeZone?: string
   country?: string | null
 }): AiClient => ({
-  client: new Anthropic({ apiKey, maxRetries: 1, timeout: 60_000 }),
+  client: new Anthropic({ apiKey, maxRetries: 1, timeout: CONFIG.ai.requestTimeout }),
   model,
   timeZone,
   country
@@ -101,7 +102,7 @@ export const askJson = async (
 ): Promise<unknown> => {
   const response = await client.messages.create({
     model,
-    max_tokens: 4000,
+    max_tokens: CONFIG.ai.maxTokens,
     system,
     // These tasks are easy: low effort keeps them fast and cheap.
     output_config: { effort: 'low', format: { type: 'json_schema', schema } },
@@ -175,9 +176,9 @@ If the question has nothing to do with the article, still answer briefly.`,
 }
 
 // A few searches cover a question; each costs $0.01 on top of the tokens.
-const MAX_SEARCHES = 3
+const MAX_SEARCHES = CONFIG.ai.summarySearches
 // A long search turn can be paused by the API; it is resumed this many times at most.
-const MAX_CONTINUATIONS = 2
+const MAX_CONTINUATIONS = CONFIG.ai.summaryContinuations
 
 export const createQuestionAnswerer = ({
   client,
@@ -201,7 +202,7 @@ export const createQuestionAnswerer = ({
     for (let turn = 0; ; turn++) {
       const response = await client.messages.create({
         model,
-        max_tokens: 4000,
+        max_tokens: CONFIG.ai.maxTokens,
         system: prompts.system,
         output_config: { effort: 'low' },
         tools: [
@@ -311,7 +312,7 @@ const SOURCES_SCHEMA = {
   additionalProperties: false
 }
 
-const MAX_SUGGESTED = 6
+const MAX_SUGGESTED = CONFIG.ai.summarySuggested
 
 export const createSourceSuggester =
   (ai: AiClient): SuggestSources =>

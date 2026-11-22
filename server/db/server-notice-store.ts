@@ -1,5 +1,6 @@
 import type { PushTarget } from '../news/followed-alerts.ts'
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Serveur › Notifications: for each server admin, how each kind of event reaches them, and the devices of their
 // account that take the push ones. A kind they never chose comes by e-mail: the server's admin hears of what happens
@@ -13,7 +14,7 @@ export interface NoticeChoice {
 export const DEFAULT_CHOICE: NoticeChoice = { email: true, push: false }
 
 // The most devices one account keeps: the one not heard from for longest goes.
-const MAX_DEVICES = 10
+const MAX_DEVICES = CONFIG.serverNotices.devices
 
 export class ServerNoticeStore {
   readonly #db: Database

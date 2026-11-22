@@ -1,0 +1,725 @@
+# ======================================================================================================================
+# Hodi's fixed settings
+# ======================================================================================================================
+#
+# Every limit, duration, rate and size Hodi works with, except the ones an admin changes in Serveur (/server).
+#
+# How to change a value
+#   - Server values: edit this file, then restart Hodi (docker compose up -d --build).
+#   - Values the web app reads (the « app » group, and the lines marked « App: ») are built into the page: they change
+#     with the next build of the image.
+#
+# How values are written
+#   - Durations: 500ms, 30s, 15m, 3h, 7d.
+#   - Sizes: 256KB, 8MB.
+#   - Counts: whole numbers. Ratios: decimals, 0.25 is a quarter.
+#
+# Every setting must be here, with a value of its kind, and nothing else: a typo, a missing line or a wrong kind of
+# value stops Hodi at start with a message naming the line (shared/config-schema.ts lists them all).
+#
+# Sections
+#   1. Security and accounts       sign_in … backups
+#   2. Content                     blocks … engagement
+#   3. Reading, sharing, young     retention … young
+#   4. AI and notifications        ai … weekly_report
+#   5. Serveur's own bounds        server_settings
+#   6. Plugins                     plugins … plugin_notices
+#   7. Web app                     app
+
+# ======================================================================================================================
+# 1. Security and accounts
+# ======================================================================================================================
+
+# Signing in: how many failed tries before waiting, and how long a session lasts.
+sign_in:
+  # Failed sign-ins from one device within the window, then from all devices together, before they must wait.
+  failures_per_client: 10
+  failure_window: 15m
+  failures_server_wide: 100
+  # Devices whose failures are remembered at once; the oldest is forgotten past this.
+  tracked_clients: 10000
+  # The two-factor step after the password: how long it stays open, its tries, and how many can be open at once.
+  second_step_window: 5m
+  second_step_tries: 5
+  second_step_tickets: 1000
+  # How long a device stays signed in.
+  session_lifetime: 90d
+  # Accounts signed in together on one device (Qui lit ?).
+  accounts_per_device: 5
+  # Past this time after signing in, a sensitive action asks for the password again.
+  recent_sign_in: 5m
+  # Passwords checked at once: each takes memory and a moment of CPU.
+  hashing_at_once: 2
+
+# Password length, in characters.
+passwords:
+  min_length: 8
+  max_length: 256
+
+# A private profile's password: wrong tries before waiting, per profile and on the whole server.
+profile_pin:
+  failures: 5
+  failures_server_wide: 50
+
+# Two-factor sign-in.
+two_factor:
+  # Recovery codes given when two-factor is turned on.
+  recovery_codes: 10
+  # How long a new setup waits for its first code.
+  setup_lifetime: 15m
+
+# One-time codes.
+codes:
+  # A sign-in code (J'ai un code) works this long.
+  sign_in_lifetime: 24h
+  # A password reset code works this long, and a new one can be made after this wait.
+  reset_lifetime: 1h
+  reset_interval: 1m
+  # A request for a code waits this long in À traiter.
+  request_kept: 7d
+
+# Accounts: lengths, the @username, devices.
+accounts:
+  email_max_length: 254
+  # A sign-in name a plugin keeps for an account, such as google:<id>.
+  login_max_length: 200
+  # The @username: its length, how often it may change, and the availability checks a minute.
+  handle_min_length: 3
+  handle_max_length: 20
+  handle_change_days: 30
+  handle_checks_per_minute: 60
+  # Mon compte › Compte et données › download a copy: copies a minute.
+  copies_per_minute: 5
+  # A young one's device is forgotten after this long unused.
+  profile_device_idle: 90d
+  # A device's last visit is written at most this often.
+  device_seen_step: 1h
+  user_agent_max_length: 300
+  # Vue d'ensemble shows an account online for this long after its last request.
+  online_for: 5m
+
+# Profiles of a household.
+profiles:
+  max: 5
+  name_max_length: 24
+  photo_max_size: 200KB
+  # A photo is resized to at most this side, in pixels.
+  photo_side: 1024
+
+# Teens and children created by a parent.
+children:
+  # Young accounts one parent creates, the creations a minute, and the parents one young account may have.
+  max: 10
+  creates_per_minute: 5
+  parents: 2
+
+# Invitations sent from Serveur › Comptes.
+invitations:
+  name_max_length: 40
+  # Invitation e-mails a day, per account and for the whole server.
+  mails_per_day: 10
+  server_mails_per_day: 300
+
+household:
+  name_max_length: 40
+
+# The mail server settings (Serveur › E-mail): field lengths, and how long sending may take.
+mail:
+  host_max_length: 253
+  user_max_length: 254
+  password_max_length: 256
+  timeout: 15s
+
+# Every request to the server.
+requests:
+  # Requests a minute from one device, all routes together.
+  per_minute: 3000
+
+# The SQLite database.
+database:
+  # How long a write waits for another one to finish before it fails.
+  busy_timeout: 5s
+
+# Nightly backups (how many are kept is chosen in Serveur › Sauvegardes).
+backups:
+  # How often the server checks whether tonight's copy is due.
+  check_every: 1h
+  # A restored copy also forgets what was deleted up to this long before it was made.
+  forget_margin: 5m
+
+# ======================================================================================================================
+# 2. Content
+# ======================================================================================================================
+
+# Blocked sources.
+blocks:
+  # Hosts where many people publish: blocking one feed there blocks that feed only, never the whole host.
+  shared_hosts:
+    - youtube.com
+    - medium.com
+    - substack.com
+    - feedburner.com
+    - blogspot.com
+    - wordpress.com
+    - tumblr.com
+    - github.io
+    - reddit.com
+    - google.com
+    - apple.com
+    - spotify.com
+    - soundcloud.com
+    - anchor.fm
+    - podbean.com
+    - libsyn.com
+    - buzzsprout.com
+    - acast.com
+    - ausha.co
+    - rss.app
+    - feedly.com
+
+# Reading the RSS feeds.
+feeds:
+  # A feed's answer is kept this long, a failed answer this long, and a refresh asked by hand waits at least this.
+  cache_for: 15m
+  error_cache_for: 1m
+  forced_refresh_every: 1m
+  # Feeds read at once.
+  at_once: 10
+  # New sources checked at once: asked by someone, and in the background.
+  checks_at_once: 4
+  background_checks_at_once: 2
+  # A feed item's summary, in characters.
+  summary_length: 280
+
+# Every request Hodi makes to another site.
+fetch:
+  # Redirects followed before giving up.
+  redirects: 5
+  # The most a YouTube page may weigh, and the part of it read for a video.
+  youtube_page_max_size: 8MB
+  video_page_max_size: 4MB
+  # How long an answer may take and how much it may weigh, unless one of the lines below says otherwise.
+  default_timeout: 5s
+  default_max_size: 5MB
+  # Feeds and article pages.
+  text_timeout: 10s
+  # Pages looked at when someone adds a source, and YouTube pages read for a video's length.
+  find_timeout: 8s
+  # Pictures and source icons.
+  pictures_timeout: 10s
+  # Plugin packages from the catalogue.
+  packages_timeout: 60s
+  # A plugin's own requests (ctx.http).
+  plugin_timeout: 10s
+  plugin_max_size: 1MB
+
+# Sources: adding, naming, reporting.
+sources:
+  link_max_length: 500
+  # A feed found for a link is kept this long, for the add that follows.
+  found_kept_for: 10m
+  # Sources the AI suggests for a topic.
+  ai_suggestions: 4
+  # Articles of a new source tried in the reader before it is added.
+  reader_sample: 3
+  name_max_length: 60
+  description_max_length: 200
+  # A source's name made from its feed keeps this many words of a section, and of a part.
+  name_section_words: 3
+  name_part_words: 6
+  topics_max: 8
+  # A source's number of readers is shown from this count on: below, it would point at the few people reading it.
+  readers_shown_from: 10
+  # A refused source suggested again is asked again only after this.
+  review_ask_again_after: 30d
+  # Reports one account sends in an hour, and how long an ignored source is not reported again.
+  reports_per_hour: 10
+  report_ignored_for: 30d
+
+# Source icons (favicons).
+source_icons:
+  # An icon is kept this long, and a site without one is asked again after this.
+  kept_for: 30d
+  missing_kept_for: 7d
+  max_size: 256KB
+  # Icons a page offers that are tried.
+  candidates: 4
+
+# The lists of articles: themes, À la une, Vidéos.
+lists:
+  # How far back each list looks.
+  topic_window: 72h
+  front_page_window: 24h
+  listen_window: 60d
+  # Articles a theme shows at once, and at most.
+  topic_page_size: 30
+  topic_max: 300
+  # A theme with nothing new for this many days is hidden.
+  empty_days_max: 7
+  # Stories in À la une.
+  front_page_size: 3
+
+# Grouping the articles of several sources on one story into one card.
+stories:
+  # Articles published within this gap of each other may share a card.
+  gap: 36h
+  # Titles whose analysis is kept in memory.
+  analyses_kept: 5000
+  # Two titles tell the same story when they share this many words and this share of the shorter one, or when their
+  # words are nearly the same (shared words over all their words).
+  shared_words: 4
+  shared_ratio: 0.6
+  same_words_ratio: 0.75
+  # Titles whose comparison key is kept in memory.
+  title_keys_kept: 20000
+
+# The reader view.
+reader:
+  # A shorter extracted text is not shown in the reader.
+  text_min_length: 600
+  # Reading speed used for an article's reading time.
+  characters_per_minute: 1380
+  author_max_length: 80
+  # Extracted articles kept in memory.
+  articles_cached: 400
+  # Other articles of the source compared with one, to find the site's own blocks in it.
+  template_sample: 5
+  # Verdicts kept on whether an article opens in the reader.
+  verdicts_kept: 5000
+  # The extraction workers stop after this long unused.
+  workers_idle: 60s
+
+# Articles' pictures, made smaller on the server.
+images:
+  # JPEG quality of the copies, and of the tiny blurred preview shown while one loads (its width in pixels).
+  quality: 72
+  preview_quality: 40
+  preview_width: 16
+  # A larger picture, in bytes or in pixels, is not downloaded or not decoded.
+  max_size: 8MB
+  max_pixels: 16000000
+  downloads_at_once: 4
+  # Pictures of recent articles are prepared ahead: how often, how many at a time, and how far back.
+  warm_every: 1m
+  warm_batch: 20
+  warm_window: 3d
+
+videos:
+  # A shorter video is a Short, and left out.
+  short_max_seconds: 60
+  # A video page that gave no length is read again after this.
+  duration_retry: 1h
+
+# Recherche.
+search:
+  query_max_length: 100
+  # Articles shown for a search.
+  results: 60
+  # Older articles taken from the database for a search, before they are filtered like the feeds' ones.
+  stored_rows: 300
+  # Articles checked against the search's words.
+  checks: 20
+
+# Tendances.
+trends:
+  # How far back trends look, and how long they are kept.
+  window: 48h
+  cache_for: 10m
+  # A trend needs this many articles, and has at most this many words.
+  min_articles: 3
+  max_words: 3
+
+# Sources barely read, offered for removal.
+engagement:
+  # Measured over the window, once there is this much history and this much reading.
+  window: 30d
+  min_history: 14d
+  min_articles: 15
+  min_profile_reads: 20
+  # Little read: under this share of the profile's usual source, and always under this rate.
+  low_share_of_median: 0.25
+  low_rate_floor: 0.02
+  # The same for a video channel.
+  channel_min_items: 4
+  channel_min_profile_reads: 5
+
+# ======================================================================================================================
+# 3. Reading, sharing, young accounts
+# ======================================================================================================================
+
+# How long Hodi keeps each kind of data.
+retention:
+  # What each account read, its reading times, the shares received, the stories seen, the AI calls counted.
+  read: 365d
+  readings: 400d
+  shares: 7d
+  seen_stories: 3d
+  ai_calls: 2d
+  video_durations: 90d
+  # Résumés du jour, in days.
+  daily_summaries: 30
+  # Vue d'ensemble's figures, in days.
+  visits_days: 31
+  reading_days: 400
+  active_days: 30
+
+# Serveur › À traiter.
+inbox:
+  items: 200
+  # A handled item stays this long.
+  handled_kept_for: 7d
+  # Items shown at once.
+  page_size: 50
+
+# Historique, Reprendre and when an article counts as read.
+reading:
+  # Historique: how far back, and at most.
+  history_window: 7d
+  history_max: 500
+  # Reprendre: articles read between these parts, within the window.
+  resume_window: 3d
+  resume_max: 20
+  resume_from: 0.15
+  resume_until: 0.8
+  # App: an article counts as read at this part scrolled and this part of its reading time; time spent counts at
+  # most this many times its reading time.
+  done_at: 0.8
+  done_time: 0.35
+  max_time: 2
+  # App: reading speed, and the most minutes counted in a day.
+  words_per_minute: 230
+  max_minutes_per_day: 600
+
+# Mon compte › Compte et données.
+my_data:
+  # Saved and read articles kept per account.
+  saved_max: 500
+  read_max: 5000
+  # A copy brought back (import): what it may hold.
+  import_saved: 500
+  import_read: 5000
+  import_readings: 5000
+  import_article_size: 400KB
+  # Items in one list sent by the app, and the length of one text in it.
+  list_max: 300
+  string_max: 300
+
+# Mots masqués.
+muted_words:
+  max: 50
+  word_max_length: 60
+
+# Guards around the game (points and badges themselves are in gamification.yml).
+game:
+  # What one profile counts in a day at most: far beyond anyone's reading, so only a script reaches it.
+  daily_articles: 120
+  daily_videos: 120
+  daily_alerts: 40
+  daily_shares: 40
+  daily_reactions: 40
+  # How late a reading made offline may reach the server and still count on its own day.
+  late_sync: 7d
+  # The early-bird badge counts readings before this hour, the night-owl badge from this one.
+  early_hour: 7
+  late_hour: 23
+
+# Sharing an article with someone.
+shares:
+  # The word added to a share, in characters.
+  note_max_length: 140
+  # @username lookups a minute in Envoyer à…
+  lookups_per_minute: 60
+  # Reports of received shares one account sends in a day, and how long a handled report keeps that share from being
+  # reported again.
+  reports_per_day: 5
+  report_handled_kept_for: 30d
+
+# Teens and children: what a parent may choose.
+young:
+  # Daily time, in minutes: the bounds, the step, and the default.
+  daily_minutes_min: 5
+  daily_minutes_max: 240
+  daily_minutes_step: 5
+  daily_minutes_default: 90
+  # AI explanations a day: the most a parent allows, and the default.
+  explain_per_day_max: 20
+  explain_per_day_default: 5
+  # Requests (a source, more time) waiting at once.
+  pending_requests: 3
+  # Items in one list a parent sends.
+  ids_max: 300
+  # App: the warning shown before time runs out.
+  warning_before: 5m
+
+# ======================================================================================================================
+# 4. AI and notifications
+# ======================================================================================================================
+
+# The household's AI. Every call answers a click; nothing here makes one on its own.
+ai:
+  # Used when an account's key names no model.
+  default_model: claude-haiku-5-5
+  # The longest answer the AI may write for one click, in tokens.
+  max_tokens: 4000
+  # How long the provider may take to answer a click, and to say whether a key works.
+  request_timeout: 60s
+  key_check_timeout: 10s
+  # A runaway guard, per account: AI calls are never capped otherwise.
+  calls_per_minute: 30
+  key_checks_per_minute: 5
+  question_max_length: 300
+  # An article's summary: its key points at most, the web searches and pauses one question may take, and the
+  # related articles it suggests.
+  summary_points: 7
+  summary_searches: 3
+  summary_continuations: 2
+  summary_suggested: 6
+  # Summaries kept, and for how long.
+  summaries_cached: 200
+  summary_kept_for: 72h
+  # Résumé du jour: written once the day's stories are this old and this many, in at most this many characters.
+  daily_summary_min_age: 30m
+  daily_summary_min_stories: 12
+  daily_summary_max_length: 500
+
+# Suivis: notifications for followed subjects.
+alerts:
+  # How often new articles are looked for, the quiet time per subject, and the most a day.
+  check_every: 10m
+  subject_cooldown: 3h
+  per_day: 12
+  # Older articles are not notified.
+  article_max_age: 24h
+  # Devices notified per account.
+  devices: 10
+  # Articles remembered as already notified.
+  known_ids: 2000
+  # The notification's text, in characters.
+  preview_length: 160
+
+# Serveur's notifications to the admin.
+server_notices:
+  # Devices notified per admin.
+  devices: 10
+
+# The weekly report e-mail.
+weekly_report:
+  # Sent on Monday at this hour (server time); the server checks this often whether it is due.
+  send_hour: 8
+  check_every: 15m
+
+# ======================================================================================================================
+# 5. Serveur's own bounds
+# ======================================================================================================================
+
+# What Serveur › Contenu and Sauvegardes let the admin choose: the lowest, the highest and the default.
+server_settings:
+  # Days an article stays in the lists.
+  article_days_min: 1
+  article_days_max: 14
+  article_days_default: 3
+  # Days a video stays in Vidéos.
+  video_days_min: 7
+  video_days_max: 180
+  video_days_default: 60
+  # Days an article's text stays in the reader.
+  text_days_min: 1
+  text_days_max: 30
+  text_days_default: 7
+  # Backup copies kept.
+  backup_copies_min: 1
+  backup_copies_max: 30
+  backup_copies_default: 7
+  # Sources on the server.
+  max_sources_min: 10
+  max_sources_max: 1000
+  max_sources_default: 200
+
+# ======================================================================================================================
+# 6. Plugins
+# ======================================================================================================================
+
+# Installing and running plugins.
+plugins:
+  # The catalogue of plugins, and how long it is kept.
+  catalog_url: https://raw.githubusercontent.com/leclaudeur/hodi-plugin-registry/main/plugins.json
+  catalog_cache_for: 10m
+  # A .hodi-plugin package: its size, unpacked size and files.
+  package_max_size: 50MB
+  unpacked_max_size: 150MB
+  package_files: 2000
+  # A zip a plugin builds: its files and its size before compression.
+  zip_entries: 2000
+  zip_max_size: 256MB
+  # An upload waits this long for the admin's confirmation.
+  staged_for: 15m
+  # A removed plugin's data is kept this long, in case it comes back.
+  data_kept_for: 30d
+  # Log lines kept per plugin, and written a minute.
+  log_lines: 200
+  # Scheduled tasks: how often Hodi looks for a due one, and the shortest and longest interval a plugin may ask.
+  task_tick: 1m
+  task_every_min: 15m
+  task_every_max: 7d
+  # Requests a minute to a plugin's public routes, and to its dev routes.
+  public_requests_per_minute: 30
+  dev_requests_per_minute: 60
+  # Rows a plugin shows in the weekly report.
+  report_rows: 8
+  # App: a plugin's page waits this long for its code.
+  load_timeout: 5s
+
+# What a plugin's manifest may declare.
+plugin_manifest:
+  settings: 32
+  text_max_length: 2000
+  hosts: 20
+  feeds: 5
+  server_notices: 10
+  name_max_length: 60
+  description_max_length: 280
+  notice_label_max_length: 60
+  notice_hint_max_length: 80
+  # The memory a plugin gets inside its engine, by default and at most.
+  memory_default: 16MB
+  memory_max: 32MB
+
+# The sandbox each plugin runs in: its own thread, memory, time and queues.
+plugin_sandbox:
+  # A plugin's own database.
+  database_max_size: 256MB
+  # How long one call may run, and what it may answer.
+  timeout: 10s
+  result_max_size: 1MB
+  # The start (the engine, the plugin's module, its migrations) gets this on top of the timeout.
+  start_extra: 5s
+  # A thread unused this long stops; one past its time gets this grace before it is ended.
+  idle: 60s
+  grace: 500ms
+  # A plugin that crashes this many times within the window is stopped.
+  deaths: 3
+  deaths_window: 10m
+  # What one thread costs, measured: Node's own thread, the engine at start, its WebAssembly build, SQLite's heap.
+  thread_memory: 40MB
+  engine_start_memory: 16MB
+  engine_base_memory: 16MB
+  sqlite_heap: 32MB
+  # What all plugin threads together may use: Hodi runs in a 256MB container and needs the rest.
+  threads_memory: 128MB
+  # Node's limits on one thread: its heap, its young generation and its stack.
+  thread_heap: 32MB
+  thread_young_heap: 8MB
+  thread_stack: 4MB
+  # The stack a plugin's code may use inside the engine.
+  engine_stack: 512KB
+  # Calls waiting per plugin beyond the one running: routes, onArticle hooks, sign-ins, copies of someone's data.
+  waiting_calls: 8
+  waiting_hooks: 4
+  waiting_sign_ins: 8
+  waiting_exports: 2
+  # A sign-in waits this long at most for its turn.
+  sign_in_wait: 3s
+  # One database value read for a zip, a plugin's part of « Télécharger une copie », and a JSON request body.
+  read_max_size: 16MB
+  export_max_size: 512KB
+  http_body_max_size: 64KB
+  # A raw request body (a picture, a file), and how long it may take to arrive.
+  raw_max_size: 10MB
+  raw_read_timeout: 30s
+  # Raw bodies held for plugins at once, across the server, on their way into a sandbox.
+  io_budget: 32MB
+  # The longest Hodi-Proof header read: a password and a code.
+  proof_header_max_length: 2048
+  # One SQL statement, and one log line, in characters.
+  sql_max_length: 100000
+  log_line_max_length: 2000
+  # Zips sent at once, the slice written before waiting for the browser, and how long a browser that stops reading
+  # keeps its download.
+  zips_at_once: 2
+  zip_slice_size: 1MB
+  zip_idle: 30s
+
+# Feeds a plugin provides.
+plugin_feeds:
+  items: 100
+  title_max_length: 300
+  summary_max_length: 280
+
+# A plugin's AI button (AiButton): what one click may send and get back, and the clicks an hour.
+plugin_ai:
+  prompt_max_length: 8000
+  system_max_length: 2000
+  answer_max_length: 8000
+  input_max_size: 16KB
+  answer_tokens_default: 512
+  answer_tokens_max: 1024
+  per_hour: 10
+
+# E-mails a plugin sends: an hour, and the length of each part.
+plugin_mail:
+  per_hour: 50
+  address_max_length: 254
+  subject_max_length: 200
+  text_max_length: 20000
+  line_max_length: 120
+  note_max_length: 1000
+  url_max_length: 2000
+
+# Notifications a plugin sends: a day to one person and to the server's admins, and their length.
+plugin_notices:
+  per_day: 10
+  server_per_day: 50
+  title_max_length: 80
+  text_max_length: 240
+
+# ======================================================================================================================
+# 7. Web app (built into the page: changes need a new build)
+# ======================================================================================================================
+
+app:
+  # While the server is still preparing a list, the app asks again this often and this many times. A list is loaded
+  # again when the app comes back to it after its « stale after ».
+  front_page_poll_every: 3s
+  front_page_polls: 12
+  front_page_stale_after: 10m
+  day_feed_poll_every: 3s
+  day_feed_polls: 12
+  day_feed_stale_after: 5m
+  daily_summary_poll_every: 4s
+  daily_summary_polls: 12
+  followed_poll_every: 3s
+  followed_polls: 6
+  search_poll_every: 2500ms
+  search_polls: 8
+  user_state_refresh_after: 1m
+  listen_stale_after: 10m
+  # The day's summary is not asked again within this time.
+  daily_summary_fresh_for: 30s
+  # Suivis shows the videos of this many days.
+  followed_video_window: 3d
+  # Recherche waits this long after typing, and needs this many characters.
+  search_debounce: 300ms
+  search_min_length: 2
+  # Lecture hors ligne: articles kept, and the wait after opening before saving them.
+  offline_kept: 40
+  offline_start_delay: 5s
+  # Texts of saved articles and summaries this device keeps, and for how long a summary.
+  saved_texts: 100
+  summaries: 100
+  summaries_max_age: 3d
+  recent_searches: 5
+  # Stories seen, kept on this device and sent to the server after this pause.
+  seen_stories: 200
+  seen_stories_send_after: 1500ms
+  # A profile photo: resized to this side in pixels, at this JPEG quality, from a picked file of at most this size.
+  photo_side: 256
+  photo_quality: 0.85
+  photo_picked_max_size: 20MB
+  # The @username field checks availability after this pause.
+  handle_check_delay: 300ms
+  # Work that can wait starts this long after the page loaded.
+  warm_delay: 3s
+  # Chrome stops reading aloud after a while: Écouter nudges it this often.
+  speech_keep_alive: 10s
+  # How long the app waits for Hodi to come back after a plugin change restarts it.
+  restart_wait: 60s

@@ -2,12 +2,13 @@ import { type Language, isLanguage } from '../../shared/i18n.ts'
 import { type Database, transaction } from './database.ts'
 import type { PhotoType } from './profile-store.ts'
 import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // One household per install: its name, where it lives and its AI. Made in the first-run screens, changed by the
 // admin in Réglages > Foyer and Réglages > IA et crédits. The password columns of the household from before
 // personal accounts stay in the table, unread.
 
-export const MAX_HOUSEHOLD_NAME_LENGTH = 40
+export const MAX_HOUSEHOLD_NAME_LENGTH = CONFIG.household.nameMaxLength
 
 export interface HouseholdAi {
   provider: string

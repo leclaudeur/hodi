@@ -12,6 +12,7 @@ import {
 } from '../auth/session.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
 import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The account a request is signed in with, from its session cookie; null without one.
 export type AccountOf = (request: express.Request) => UserAccount | null
@@ -27,7 +28,7 @@ export interface Session {
 }
 
 // A household has five profiles at most: no more accounts sign in on one device.
-const MAX_SESSIONS = 5
+const MAX_SESSIONS = CONFIG.signIn.accountsPerDevice
 
 // « Qui lit ? » shows the accounts signed in on this device, like a TV's streaming app: the session cookie holds one
 // token per account, apart by « ~ », all of one household.

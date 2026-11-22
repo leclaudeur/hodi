@@ -1,11 +1,12 @@
 import type { AiCall, AiCallKind } from '../db/ai-queries.ts'
 import type { NewsStore } from '../db/news-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const MINUTE_MS = 60 * 1000
 
 // No cap on a day, but a runaway guard: far more than a person clicks in a minute, far less than a loop would.
-export const AI_CALLS_PER_MINUTE = 30
+export const AI_CALLS_PER_MINUTE = CONFIG.ai.callsPerMinute
 
 export const AI_KINDS = ['summary', 'question', 'dailySummary', 'sources', 'plugin'] as const
 

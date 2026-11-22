@@ -1,5 +1,6 @@
 import type { Database } from './database.ts'
 import { cleanEmail } from './user-account-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Serveur › E-mail: the mail server Hodi sends its e-mails through. Until it is filled in, Hodi sends none.
 
@@ -8,9 +9,9 @@ import { cleanEmail } from './user-account-store.ts'
 export const MAIL_SECURITY = ['tls', 'starttls', 'none'] as const
 export type MailSecurity = (typeof MAIL_SECURITY)[number]
 
-export const MAX_HOST_LENGTH = 253
-export const MAX_USER_LENGTH = 254
-export const MAX_MAIL_PASSWORD_LENGTH = 256
+export const MAX_HOST_LENGTH = CONFIG.mail.hostMaxLength
+export const MAX_USER_LENGTH = CONFIG.mail.userMaxLength
+export const MAX_MAIL_PASSWORD_LENGTH = CONFIG.mail.passwordMaxLength
 
 export interface MailSettings {
   host: string

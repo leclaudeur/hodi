@@ -1,7 +1,8 @@
 import { type Database, transaction } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A young account has two parents at most: the one who made it, and another adult it invites by its @identifier.
-export const MAX_PARENTS = 2
+export const MAX_PARENTS = CONFIG.children.parents
 
 // An invitation to be a young one's parent, as its invited adult sees it.
 export interface ParentInvitation {

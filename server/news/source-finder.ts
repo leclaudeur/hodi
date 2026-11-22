@@ -5,6 +5,7 @@ import { type FetchText, YOUTUBE_PAGE, YOUTUBE_PAGE_BYTES, createFetchText } fro
 import { type FeedEntry, parseFeedEntries } from './feed-parser.ts'
 import { siteDescriptionOf, siteNameOf, tidyDescription, tidySourceName } from './source-name.ts'
 import { decodeEntities } from './text.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // "Ajouter une source": from a link a profile pastes (a site, a feed or a YouTube channel),
 // the feed to follow, what it lists, and whether its articles open in the reader.
@@ -33,7 +34,7 @@ export type FindResult =
   // unavailable: its site's domain was blocked by the server's admin.
   | { status: 'invalid' | 'blocked' | 'none' | 'empty' | 'failed' | 'reddit' | 'unavailable' }
 
-const READER_SAMPLE = 3
+const READER_SAMPLE = CONFIG.sources.readerSample
 const YOUTUBE_FEED = 'https://www.youtube.com/feeds/videos.xml?channel_id='
 const CHANNEL_ID = /^UC[\w-]{22}$/
 const FEED_TYPES = /application\/(rss|atom)\+xml|application\/xml|text\/xml/i
@@ -110,9 +111,9 @@ const hostOf = (link: string) => new URL(link).hostname.toLowerCase().replace(/^
 
 // A channel page, past the cookie wall YouTube shows in Europe (as for the videos' lengths), through the same address
 // guard, size cap and timeout as every other request.
-const fetchYouTubeText = createFetchText({ timeoutMs: 8000, maxBytes: YOUTUBE_PAGE_BYTES })
+const fetchYouTubeText = createFetchText({ timeoutMs: CONFIG.fetch.findTimeout, maxBytes: YOUTUBE_PAGE_BYTES })
 const fetchYouTubePage = async (url: string) =>
-  (await fetchYouTubeText(url, YOUTUBE_PAGE)).text.slice(0, 4 * 1024 * 1024)
+  (await fetchYouTubeText(url, YOUTUBE_PAGE)).text.slice(0, CONFIG.fetch.videoPageMaxSize)
 
 // What the finder may reach: only public addresses, the page's and the one it was redirected to.
 const pageFetchers = (fetchText: FetchText, isPublic: IsPublicUrl) => {

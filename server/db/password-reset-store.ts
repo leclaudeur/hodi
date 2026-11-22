@@ -1,14 +1,15 @@
 import { createHmac } from 'node:crypto'
 import type { Database } from './database.ts'
 import { drawCode } from './sign-in-code-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // « Mot de passe oublié »: the code sent by e-mail, eight characters as « J'ai un code »'s, valid an hour and once. An
 // account has one at a time: a new one replaces the one before. The table keeps a hash keyed with the server's secret,
 // so a copy of the database alone cannot be turned back into codes.
 
-export const RESET_CODE_LIFETIME = 60 * 60 * 1000
+export const RESET_CODE_LIFETIME = CONFIG.codes.resetLifetime
 // One e-mail a minute at most for an account, so the form cannot fill someone's mailbox.
-export const RESET_CODE_INTERVAL = 60 * 1000
+export const RESET_CODE_INTERVAL = CONFIG.codes.resetInterval
 
 export class PasswordResetStore {
   readonly #db: Database

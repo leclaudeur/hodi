@@ -1,7 +1,9 @@
+import { CONFIG } from '../fixed-config.ts'
+
 // The bytes Hodi's main thread holds for plugins at once: raw request bodies on their way into a sandbox. A body
 // reserves its room before it is read; when there is none, the request is refused at once (503) rather than held in
 // memory. Tests change the size.
-export const ioBudget = { bytes: 32 * 1024 * 1024 }
+export const ioBudget = { bytes: CONFIG.pluginSandbox.ioBudget }
 
 let used = 0
 

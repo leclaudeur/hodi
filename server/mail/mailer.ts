@@ -1,5 +1,6 @@
 import { createTransport } from 'nodemailer'
 import type { MailSettings } from '../db/mail-settings-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Sends one e-mail through the mail server of Serveur › E-mail. Tests give a fake instead.
 
@@ -27,7 +28,7 @@ export class MailError extends Error {
 export type SendMail = (settings: MailSettings, message: MailMessage) => Promise<void>
 
 // A slow server does not keep the admin's request waiting long.
-const TIMEOUT_MS = 15_000
+const TIMEOUT_MS = CONFIG.mail.timeout
 
 const failureOf = (error: unknown): MailFailure => {
   const code = (error as { code?: unknown })?.code

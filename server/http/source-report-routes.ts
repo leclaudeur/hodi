@@ -3,6 +3,7 @@ import type { SourceReportStore } from '../db/source-report-store.ts'
 import { isReportReason } from '../db/source-report-store.ts'
 import type { SourceReviewStore } from '../db/source-review-store.ts'
 import type { NewsService } from '../news/news-service.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 interface ReportRoutesOptions {
   reports: SourceReportStore
@@ -17,7 +18,7 @@ interface ReportRoutesOptions {
 }
 
 // Far above what a person reports, far below one account reporting the whole catalogue, a notice each.
-export const REPORTS_PER_HOUR = 10
+export const REPORTS_PER_HOUR = CONFIG.sources.reportsPerHour
 const HOUR_MS = 60 * 60 * 1000
 
 // Each account's reports of the last hour.

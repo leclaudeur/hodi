@@ -1,11 +1,12 @@
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The devices signed in with an account (Réglages > Compte et données > Appareils): what the browser said it was,
 // and when it was last used. A device whose row is deleted signs in again.
 
-export const MAX_USER_AGENT_LENGTH = 300
+export const MAX_USER_AGENT_LENGTH = CONFIG.accounts.userAgentMaxLength
 // A device's "Utilisé hier" moves at most this often: not one write per request.
-export const LAST_SEEN_STEP = 60 * 60 * 1000
+export const LAST_SEEN_STEP = CONFIG.accounts.deviceSeenStep
 
 export interface UserDevice {
   id: number

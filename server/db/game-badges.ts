@@ -1,11 +1,12 @@
 import type { BadgeId } from '../game/rules.ts'
 import type { Database } from './database.ts'
 import { ownerOf } from './stats-owner.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The topic the globetrotter badge counts.
 const WORLD_TOPIC = 'world'
-const EARLY_HOUR = 7
-const LATE_HOUR = 23
+const EARLY_HOUR = CONFIG.game.earlyHour
+const LATE_HOUR = CONFIG.game.lateHour
 
 // How far a profile went towards each badge, from what earned it points. topicIds: the themes the all-rounder badge
 // asks for, each of them.

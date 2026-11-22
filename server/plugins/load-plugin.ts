@@ -9,9 +9,10 @@ import { message, requestsOf } from './sandbox-requests.ts'
 import { manifestTranslations } from './manifest-texts.ts'
 import { textsOnly, webParts } from './web-parts.ts'
 import type { LoadedPlugin } from './registry.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // How long a plugin's data stays without the plugin (removed with its data kept, or set aside for another maker).
-export const KEPT_DATA_MS = 30 * 24 * 60 * 60 * 1000
+export const KEPT_DATA_MS = CONFIG.plugins.dataKeptFor
 
 // What every plugin's sandbox may be handed, as its manifest allows (sandbox-requests.ts).
 export type RequestDeps = Omit<Parameters<typeof requestsOf>[1], 'signed'>

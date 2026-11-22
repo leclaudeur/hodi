@@ -1,6 +1,6 @@
 import express from 'express'
 import { rateLimit } from 'express-rate-limit'
-import { cleanHandle } from '../../shared/handle.ts'
+import { cleanHandle } from '../handle.ts'
 import { hashPassword } from '../auth/password.ts'
 import {
   PROFILE_AVATARS,
@@ -16,6 +16,7 @@ import { isPassword } from './household-input.ts'
 import { mountParentRoutes } from './parent-routes.ts'
 import { profileIdOf } from './profile-routes.ts'
 import type { CheckProof } from './proof.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Mon compte › Mes enfants: a parent makes a teen's or a child's account, gives it a new password, and deletes it.
 // Only an adult whose own profile is open here, and only for its own children.
@@ -37,8 +38,8 @@ export interface YoungAccountRoutesOptions {
 const YOUNG_KINDS: readonly YoungKind[] = ['teen', 'child']
 
 // Each account takes a @username for good and a row: an adult cannot fill the server with them.
-export const MAX_CHILDREN = 10
-export const CREATES_PER_MINUTE = 5
+export const MAX_CHILDREN = CONFIG.children.max
+export const CREATES_PER_MINUTE = CONFIG.children.createsPerMinute
 
 const isAvatar = (value: unknown): value is ProfileAvatar => PROFILE_AVATARS.includes(value as ProfileAvatar)
 

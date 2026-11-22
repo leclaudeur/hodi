@@ -60,6 +60,11 @@ small hooks under `lib/`.
 - **Outgoing requests**: through `news/fetch-text.ts`, and the SSRF guard for any URL a user gives
 - **AI**: through `news/ai-providers.ts`, only from a click, counted in each account's usage
 - **Households**: `db/household-scope.ts` keeps the request's household, so a route never sees another's
+- **Fixed settings**: every limit, duration, rate and size Serveur does not let an admin change is in
+  [`config.yml`](../config.yml), read once at start by `fixed-config.ts` (`CONFIG`). Its keys and their kinds are in
+  `shared/config-schema.ts`, checked by `shared/config-file.ts`: a missing, unknown or wrong value stops the server at
+  start. The web app gets its values at build time, through the `virtual:hodi-config` module (`web/config-plugin.ts`).
+  A new limit goes there, never as a number in the code
 
 A feed is one row of `sources` for the whole server, fetched once whoever follows it. Which household follows it, and
 in which topics, is that household's row of `household_sources`. Which of them each person reads is their rows of

@@ -1,12 +1,13 @@
 import { dayOf, dayRange } from '../news/days.ts'
 import type { Database } from './database.ts'
 import { DAY_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The whole server's totals for a list of days, counted from what the database still holds: readings (a year),
 // visits (a month), shares, profiles and accounts. Totals only, never what one profile read.
 
 // An account is active when one of its devices opened Hodi in the last 30 days.
-export const ACTIVE_DAYS = 30
+export const ACTIVE_DAYS = CONFIG.retention.activeDays
 
 export interface ServerDay {
   day: string

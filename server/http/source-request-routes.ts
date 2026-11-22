@@ -6,8 +6,9 @@ import type { NewsService } from '../news/news-service.ts'
 import type { YouthSources } from '../news/youth-sources.ts'
 import { isAdminOf, isParentOf, kindOf, profileIdOf } from './profile-routes.ts'
 import { MAX_PENDING_REQUESTS, idList } from './youth-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const MAX_LINK_LENGTH = 500
+const MAX_LINK_LENGTH = CONFIG.sources.linkMaxLength
 
 // "Demander une source": a teen pastes a link, the source is looked for (through the SSRF guard), and waits for a
 // parent. A child asks for nothing.

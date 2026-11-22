@@ -8,12 +8,13 @@ import type { FollowedAlerts } from '../news/followed-alerts.ts'
 import type { NewsService } from '../news/news-service.ts'
 import { profileIdOf } from './profile-routes.ts'
 import { type SharePeople, type SharePeopleOptions, sharePeople } from './share-people.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // How many @usernames a profile may look up in a minute: enough to type a few, too few to list the server's people.
-const LOOKUPS_PER_MINUTE = 60
+const LOOKUPS_PER_MINUTE = CONFIG.shares.lookupsPerMinute
 
 // The word sent with a share.
-const MAX_SHARE_NOTE_LENGTH = 140
+const MAX_SHARE_NOTE_LENGTH = CONFIG.shares.noteMaxLength
 // What the reader of a shared article can send back.
 const REACTIONS = ['👍', '❤️', '😂', '😮']
 

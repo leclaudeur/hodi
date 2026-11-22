@@ -1,11 +1,15 @@
 import type { SandboxShape } from './sandbox/protocol.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A route's key in a plugin's table: its method and its path, with :name for a part of the path.
 export const ROUTE_KEY = /^(GET|POST|PUT|PATCH|DELETE) (\/(?:[A-Za-z0-9._~-]+|:[A-Za-z][A-Za-z0-9]*)?)+$/
 
 // A task's name, and how far apart it may run: every quarter of an hour at most, once a week at least.
 const TASK_NAME = /^[a-z][a-z0-9-]{0,31}$/
-export const TASK_MINUTES = { min: 15, max: 7 * 24 * 60 }
+export const TASK_MINUTES = {
+  min: CONFIG.plugins.taskEveryMin / 60_000,
+  max: CONFIG.plugins.taskEveryMax / 60_000
+}
 
 const checkTasks = (tasks: SandboxShape['tasks']) => {
   for (const [name, every] of Object.entries(tasks)) {

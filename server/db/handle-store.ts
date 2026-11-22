@@ -1,7 +1,8 @@
-import { HANDLE_CHANGE_DAYS, handleBase } from '../../shared/handle.ts'
+import { CONFIG } from '../fixed-config.ts'
+import { handleBase } from '../handle.ts'
 import type { Database } from './database.ts'
 
-const CHANGE_MS = HANDLE_CHANGE_DAYS * 24 * 60 * 60 * 1000
+const CHANGE_MS = CONFIG.accounts.handleChangeDays * 24 * 60 * 60 * 1000
 
 export type HandleChange = 'changed' | 'unchanged' | 'taken' | 'too_soon'
 
@@ -28,7 +29,7 @@ export class HandleStore {
     const base = handleBase(text)
     if (this.isFree(base, now, userId)) return base
     for (let count = 2; ; count++) {
-      const candidate = `${base.slice(0, 20 - String(count).length)}${count}`
+      const candidate = `${base.slice(0, CONFIG.accounts.handleMaxLength - String(count).length)}${count}`
       if (this.isFree(candidate, now, userId)) return candidate
     }
   }

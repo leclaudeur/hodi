@@ -2,16 +2,17 @@ import express from 'express'
 import type { UserStore } from '../db/user-store.ts'
 import type { NewsService } from '../news/news-service.ts'
 import { profileIdOf } from './profile-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const HISTORY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
-const MAX_HISTORY = 500
+const HISTORY_WINDOW_MS = CONFIG.reading.historyWindow
+const MAX_HISTORY = CONFIG.reading.historyMax
 // "Reprendre" offers what was started in the last 3 days, once some of it scrolled by.
-const RESUME_WINDOW_MS = 3 * 24 * 60 * 60 * 1000
+const RESUME_WINDOW_MS = CONFIG.reading.resumeWindow
 const SECONDS_PER_MINUTE = 60
-const RESUME_MIN_PROGRESS = 0.15
+const RESUME_MIN_PROGRESS = CONFIG.reading.resumeFrom
 // From there an article not read for good was skimmed to its end: the reader's own threshold for read (DONE_PROGRESS).
-const RESUME_MAX_PROGRESS = 0.8
-const MAX_RESUME = 20
+const RESUME_MAX_PROGRESS = CONFIG.reading.resumeUntil
+const MAX_RESUME = CONFIG.reading.resumeMax
 
 export const readingRoutes = ({
   users,

@@ -3,6 +3,7 @@ import type { PluginTranslations } from '../plugins/plugin-texts.ts'
 import { RequestError, UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
 import type { Profile, ProfileColor } from './profiles.ts'
+import { CONFIG } from '../lib/config.ts'
 
 // The household: first-run screens, accounts, codes, Réglages > Foyer and the AI's key. Mirrors server/http/household-routes.ts.
 
@@ -11,10 +12,10 @@ export const SOURCE_URL = 'https://github.com/leclaudeur/hodi'
 // Where whoever likes Hodi can give to its work: Hodi has no ads and nothing to pay.
 export const SUPPORT_URL = 'https://www.patreon.com/cw/LeClaudeur'
 
-export const MIN_PASSWORD_LENGTH = 8
+export const MIN_PASSWORD_LENGTH = CONFIG.passwords.minLength
 // The setup code printed in the server's log, asked away from the server.
 export const SETUP_CODE_LENGTH = 8
-export const MAX_HOUSEHOLD_NAME_LENGTH = 40
+export const MAX_HOUSEHOLD_NAME_LENGTH = CONFIG.household.nameMaxLength
 
 export interface AiProviderInfo {
   id: string

@@ -5,8 +5,9 @@ import { MAX_TOPIC_LIMIT, type NewsService, TOPIC_PAGE_SIZE } from '../news/news
 import { profileIdOf } from './profile-routes.ts'
 import type { ReaderContext } from './reader-context.ts'
 import { DAY_PATTERN, isString, isTimeZone } from './validate.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const MAX_QUERY_LENGTH = 100
+const MAX_QUERY_LENGTH = CONFIG.search.queryMaxLength
 
 interface NewsRoutesOptions {
   news: NewsService

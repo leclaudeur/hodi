@@ -2,6 +2,7 @@ import express from 'express'
 import type { SourceReviewStore } from '../db/source-review-store.ts'
 import type { SourceStore } from '../db/source-store.ts'
 import type { NewsService } from '../news/news-service.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // À traiter's sources, for the server's admin: whether the server validates them (Serveur › Contenu), those that
 // wait, and the decision on each. The admin sees the source, never who added it.
@@ -17,7 +18,7 @@ interface SourceReviewRoutesOptions {
   now: () => number
 }
 
-const MAX_TOPICS = 8
+const MAX_TOPICS = CONFIG.sources.topicsMax
 
 // The topics the admin chose: known topic ids, one at least.
 const topicIdsOf = (value: unknown, known: Set<string>) =>

@@ -14,9 +14,10 @@ import StatsClear from './StatsClear.tsx'
 import styles from '../Settings.module.css'
 import statStyles from './StatsSection.module.css'
 import { DAY_MS } from '../../../../../shared/time.ts'
+import { CONFIG } from '../../../lib/config.ts'
 
 // Left past this share, a skimmed article or video is still under way: it is in "Reprendre".
-const STARTED = 0.15
+const STARTED = CONFIG.reading.resumeFrom
 
 // What a card counts: its words are under stats.*.article or stats.*.video.
 type Kind = 'article' | 'video'
