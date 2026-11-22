@@ -176,6 +176,8 @@ const mountLoginRoute = (
     const hash = account && account.passwordHash !== NO_PASSWORD ? account.passwordHash : await decoyHash
     const valid = (await verifyPassword(password, hash)) && account?.passwordHash !== NO_PASSWORD
     if (!account && isBlocked(accounts, typedEmail)) {
+      // Counted as a wrong password: nobody tries addresses at full speed to learn who was blocked.
+      throttle.recordFailure(now(), client)
       response.status(403).json({ error: 'blocked' })
       return
     }

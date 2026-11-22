@@ -14,6 +14,11 @@ export class BlockedEmailStore {
     this.#db.prepare('INSERT OR IGNORE INTO blocked_emails (hash, at) VALUES (?, ?)').run(hashOf(email), now)
   }
 
+  // false: it was not blocked.
+  unblock(email: string) {
+    return this.#db.prepare('DELETE FROM blocked_emails WHERE hash = ?').run(hashOf(email)).changes > 0
+  }
+
   has(email: string) {
     return this.#db.prepare('SELECT 1 FROM blocked_emails WHERE hash = ?').get(hashOf(email)) !== undefined
   }

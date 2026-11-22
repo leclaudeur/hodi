@@ -107,6 +107,10 @@ export class UserAccountStore {
     this.#blocked.block(email, now)
   }
 
+  unblockEmail(email: string) {
+    return this.#blocked.unblock(email)
+  }
+
   byHandle(handle: string): UserAccount | null {
     const row = this.#db.prepare(`SELECT ${COLUMNS} FROM users WHERE handle = ?`).get(handle) as
       UserAccountRow | undefined

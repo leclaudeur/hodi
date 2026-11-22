@@ -1,6 +1,7 @@
 import type express from 'express'
 import { deletionPlan } from '../db/account-data.ts'
 import { inHousehold } from '../db/household-scope.ts'
+import { cleanEmail } from '../db/user-account-store.ts'
 import type { ServerHelpers, ServerRoutesOptions } from './server-routes.ts'
 
 // Serveur › Comptes and Foyers: what goes for good, each after the server admin's own password.
@@ -48,6 +49,17 @@ export const mountDeletionRoutes = (
   }
   router.delete('/accounts/:id', remove(false))
   router.post('/accounts/:id/block', remove(true))
+
+  // « Débloquer une adresse »: a block made by mistake. The address is typed, as the server no longer has it.
+  router.post('/accounts/unblock', async (request, response) => {
+    const email = cleanEmail(request.body?.email)
+    if (!email) {
+      response.status(400).json({ error: 'bad_request' })
+      return
+    }
+    if (!(await proven(request, response))) return
+    response.status(accounts.unblockEmail(email) ? 204 : 404).end()
+  })
 
   // « Supprimer » a household: its profiles and all they read and kept, and the accounts that read nowhere else.
   router.delete('/households/:id', async (request, response) => {

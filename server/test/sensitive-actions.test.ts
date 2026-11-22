@@ -260,6 +260,35 @@ describe('Serveur › Comptes › « Bloquer »', () => {
       assert.equal(accounts.create('sam@example.com', 'unused-hash', 1), null)
       const changed = await call('/account/email', admin, 'PUT', { email: 'sam@example.com', password: ADMIN_PASSWORD })
       assert.deepEqual([changed.status, await changed.json()], [409, { error: 'email_taken' }])
+
+      // « Débloquer une adresse », with the password: it may make an account again.
+      const unblock = '/server/accounts/unblock'
+      assert.equal((await call(unblock, admin, 'POST', { email: 'sam@example.com' })).status, 403)
+      assert.equal(
+        (await call(unblock, admin, 'POST', { email: 'nope@example.com', password: ADMIN_PASSWORD })).status,
+        404
+      )
+      assert.equal(
+        (await call(unblock, admin, 'POST', { email: 'Sam@example.com', password: ADMIN_PASSWORD })).status,
+        204
+      )
+      assert.notEqual(accounts.create('sam@example.com', 'unused-hash', 1), null)
+    } finally {
+      close()
+    }
+  })
+})
+
+describe('a blocked e-mail at Connexion', () => {
+  it('counts as a failed sign-in, so nobody tries addresses at full speed', async () => {
+    const { call, admin, samAccount, close } = await start()
+    try {
+      await call(`/server/accounts/${samAccount.id}/block`, admin, 'POST', { password: ADMIN_PASSWORD })
+      const tries = []
+      for (let count = 0; count < 6; count++)
+        tries.push((await call('/login', '', 'POST', { email: 'sam@example.com', password: 'x' })).status)
+      // The throttle in these tests allows 5 failures.
+      assert.deepEqual(tries, [403, 403, 403, 403, 403, 429])
     } finally {
       close()
     }
