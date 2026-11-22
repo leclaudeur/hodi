@@ -20,6 +20,9 @@ to the app.
 - **Delete**, at the end of both pages, asks for the server admin's password and app code. An account goes with its
   profile, and its household's admin role passes to the oldest other adult with an account. A household goes with its
   profiles and the accounts that read nowhere else. The server admin's own account goes from _My account_.
+- **Block**, beside _Delete_ on an account's page, deletes it the same way and keeps its e-mail from making an account
+  again, by any way in (a code, a plugin's sign-up, _Change e-mail_). Only a hash of the address is kept. At sign-in
+  the person reads _This account was blocked on this server_. There is no blocking by IP address.
 - **General**: the server's addresses. **Hodi's address** is the one the e-mails' links open; it starts as the
   address the page is open at, and the e-mailed codes of _Forgot password_ need it. The **public home page** is a site's address, such as
   Hodi's presentation page. A browser that never signed in on this server, opening its bare address, goes there instead

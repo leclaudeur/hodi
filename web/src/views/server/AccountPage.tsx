@@ -1,8 +1,8 @@
-import { KeyRound, Trash2 } from 'lucide-react'
+import { Ban, KeyRound, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { type ServerAccount, createAccountCode, deleteServerAccount } from '../../api.ts'
+import { type ServerAccount, blockServerAccount, createAccountCode, deleteServerAccount } from '../../api.ts'
 import { askToConfirm } from '../../lib/confirm.ts'
 import { contentDays } from '../../lib/content-days.ts'
 import { clockTime } from '../../lib/format.ts'
@@ -42,22 +42,23 @@ const AccountFacts = ({ account, role }: { account: ServerAccount; role: string 
   )
 }
 
-const confirmDelete = (account: ServerAccount, t: TFunction) =>
+// « Supprimer », or « Bloquer », which also keeps its e-mail from coming back: both with the admin's own password.
+const confirmRemove = (account: ServerAccount, t: TFunction, blocks: boolean) =>
   askToConfirm({
-    title: t('server.people.account.confirmDelete.title'),
+    title: t(blocks ? 'server.people.account.confirmBlock.title' : 'server.people.account.confirmDelete.title'),
     message: (
       <RichText
-        i18nKey="server.people.account.confirmDelete.message"
+        i18nKey={blocks ? 'server.people.account.confirmBlock.message' : 'server.people.account.confirmDelete.message'}
         values={{
           email: account.email,
           days: t('count.day', { count: contentDays().backupCopies })
         }}
       />
     ),
-    label: t('server.people.account.deleteButton'),
+    label: t(blocks ? 'server.people.account.blockButton' : 'server.people.account.deleteButton'),
     proof: {},
     onConfirm: async proof => {
-      await deleteServerAccount(account.id, proof)
+      await (blocks ? blockServerAccount : deleteServerAccount)(account.id, proof)
       window.location.replace(serverHref('accounts'))
       window.location.reload()
     }
@@ -144,7 +145,17 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
                 label: t('server.people.account.deleteButton'),
                 look: 'danger',
                 icon: Trash2,
-                onClick: () => confirmDelete(account, t)
+                onClick: () => confirmRemove(account, t, false)
+              }}
+            />
+            <SettingRow
+              label={t('server.people.account.block')}
+              hint={t('server.people.account.blockHint')}
+              action={{
+                label: t('server.people.account.blockButton'),
+                look: 'danger',
+                icon: Ban,
+                onClick: () => confirmRemove(account, t, true)
               }}
             />
           </div>

@@ -252,7 +252,8 @@ const mountCredentialRoutes = (
     }
     if (!(await checkProof(session.account, request, response))) return
     const owner = accounts.byEmail(email)
-    if (owner && owner.id !== session.account.id) {
+    // A blocked address is as taken as another account's: nobody gets it back by changing theirs.
+    if ((owner && owner.id !== session.account.id) || accounts.isBlocked(email)) {
       response.status(409).json({ error: 'email_taken' })
       return
     }

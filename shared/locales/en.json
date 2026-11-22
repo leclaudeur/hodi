@@ -43,7 +43,8 @@
     "enter": "Enter",
     "haveCode": "I have a code",
     "forgot": "Forgot password",
-    "refused": "Your sign-in was refused. If it keeps happening, ask whoever runs the server."
+    "refused": "Your sign-in was refused. If it keeps happening, ask whoever runs the server.",
+    "blocked": "This account was blocked on this server."
   },
   "join": {
     "code": {
@@ -2172,7 +2173,7 @@
         "resetLabel": "Make a code",
         "resetOnRequest": "Only once the person asks for one.",
         "own": "Yours changes in Settings › My account",
-        "deleteSection": "Delete",
+        "deleteSection": "Delete or block",
         "delete": "Delete this account",
         "deleteHint": "Its profile and all it holds go with it",
         "deleteButton": "Delete",
@@ -2182,7 +2183,14 @@
         },
         "codeAsked": "Code asked",
         "codeAskedTitle": "Code asked on {{date}} at {{time}}",
-        "codeAskedText": "{{name}} forgot their password and this server sends no e-mail. Make them a code, then pass it on in person or by message."
+        "codeAskedText": "{{name}} forgot their password and this server sends no e-mail. Make them a code, then pass it on in person or by message.",
+        "block": "Block this account",
+        "blockHint": "Deleted, and its e-mail can never come back",
+        "blockButton": "Block",
+        "confirmBlock": {
+          "title": "Block this account?",
+          "message": "<b>{{email}}</b> is erased at once, as with <i>Delete</i>, and this address can never make an account on this server again. At sign-in, the person reads <i>This account was blocked on this server</i>. <b>There is no going back.</b>"
+        }
       },
       "emptyTitle": "No household",
       "emptyText": "Create your household to read in it, or a household for someone else, who will be its admin.",

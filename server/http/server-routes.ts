@@ -1,6 +1,5 @@
 import express from 'express'
-import { type AccountDataStore, deletionPlan } from '../db/account-data.ts'
-import { inHousehold } from '../db/household-scope.ts'
+import type { AccountDataStore } from '../db/account-data.ts'
 import { type HouseholdStore, cleanHouseholdName } from '../db/household-store.ts'
 import { MAX_PROFILES, type ProfileStore, cleanName } from '../db/profile-store.ts'
 import { type Language, isLanguage } from '../../shared/i18n.ts'
@@ -24,6 +23,7 @@ import { type CheckProof, accountAsking, askingWithProof } from './proof.ts'
 import { type Backups, mountBackupRoutes } from './server-backup-routes.ts'
 import { mountAccountCodeRoute } from './server-account-code-route.ts'
 import { mountGeneralRoutes } from './server-general-routes.ts'
+import { mountDeletionRoutes } from './server-deletion-routes.ts'
 
 // The server's own space (#/server), for its admin only: requireServerAdmin stands in front of these.
 
@@ -42,7 +42,7 @@ const periodOf = (query: express.Request['query']): Period | null => {
   return PERIODS.has(length) ? { days: length } : null
 }
 
-interface ServerRoutesOptions {
+export interface ServerRoutesOptions {
   stats: ServerStatsStore
   presence: Presence
   people?: ServerPeopleStore
@@ -111,7 +111,7 @@ const serverHelpers = ({ accounts, checkProof, twoFactorOn }: ServerRoutesOption
   return { createdByOf, proven, twoFactorReady }
 }
 
-type ServerHelpers = ReturnType<typeof serverHelpers>
+export type ServerHelpers = ReturnType<typeof serverHelpers>
 
 const mountOverviewRoute = (
   router: express.Router,
@@ -244,61 +244,6 @@ const mountInviteRoutes = (
     }
     const code = codes.create({ profileId: admin.id, createdBy: createdByOf(response), householdId: id }, now())
     response.status(201).json({ profile: { id: admin.id, name: admin.name }, ...code })
-  })
-}
-
-const mountDeletionRoutes = (
-  router: express.Router,
-  { people, accounts, profiles, household, deletions, now }: ServerRoutesOptions,
-  { proven }: ServerHelpers
-) => {
-  if (!people || !accounts || !profiles || !household || !deletions) return
-  const { data, onProfileDeleted, onAccountDeleted, onHouseholdGone } = deletions
-  const householdNames = () => new Map(people.households().map(entry => [entry.id, entry.name]))
-
-  // « Supprimer » an account: its profile in each household it reads in, or the whole household with its last adult
-  // who has an account, then the account and its devices. Never the server's admin's own: Compte et données.
-  router.delete('/accounts/:id', async (request, response) => {
-    const account = accounts.get(Number(request.params.id))
-    if (!account) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    if (account.serverAdmin) {
-      response.status(403).json({ error: 'server_admin' })
-      return
-    }
-    if (!(await proven(request, response))) return
-    // After the password, which takes a moment: what goes is read as it is now.
-    const names = householdNames()
-    const plans = data.householdsOf(account.id).map(householdId => ({
-      householdId,
-      plan: inHousehold(householdId, () =>
-        deletionPlan(account, accounts, profiles, names.get(householdId) ?? '', householdId)
-      )
-    }))
-    for (const { householdId, plan } of plans)
-      inHousehold(householdId, () =>
-        [...plan.profiles, ...plan.children].forEach(profile => onProfileDeleted(profile.id))
-      )
-    const { accounts: gone, households } = data.deleteFromServer(account, plans, now())
-    gone.forEach(onAccountDeleted)
-    households.forEach(onHouseholdGone)
-    response.status(204).end()
-  })
-
-  // « Supprimer » a household: its profiles and all they read and kept, and the accounts that read nowhere else.
-  router.delete('/households/:id', async (request, response) => {
-    const id = Number(request.params.id)
-    if (!people.households().some(entry => entry.id === id)) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    if (!(await proven(request, response))) return
-    inHousehold(id, () => profiles.list().forEach(profile => onProfileDeleted(profile.id)))
-    data.deleteHousehold(id, now()).forEach(onAccountDeleted)
-    onHouseholdGone(id)
-    response.status(204).end()
   })
 }
 

@@ -1,3 +1,4 @@
+import { BlockedEmailStore } from './blocked-email-store.ts'
 import { type Database, transaction } from './database.ts'
 import { HandleStore } from './handle-store.ts'
 import { currentHouseholdId } from './household-scope.ts'
@@ -79,9 +80,11 @@ const COLUMNS =
 
 export class UserAccountStore {
   readonly #db: Database
+  readonly #blocked: BlockedEmailStore
 
   constructor(db: Database) {
     this.#db = db
+    this.#blocked = new BlockedEmailStore(db)
   }
 
   get(id: number): UserAccount | null {
@@ -93,6 +96,15 @@ export class UserAccountStore {
     const row = this.#db.prepare(`SELECT ${COLUMNS} FROM users WHERE email = ?`).get(email) as
       UserAccountRow | undefined
     return row ? toAccount(row) : null
+  }
+
+  // An e-mail the server's admin blocked with its account (« Bloquer » in Serveur › Comptes).
+  isBlocked(email: string) {
+    return this.#blocked.has(email)
+  }
+
+  blockEmail(email: string, now: number) {
+    this.#blocked.block(email, now)
   }
 
   byHandle(handle: string): UserAccount | null {
@@ -157,7 +169,7 @@ export class UserAccountStore {
     now: number,
     { hasPassword = true, handle = null }: { hasPassword?: boolean; handle?: string | null } = {}
   ): UserAccount | null {
-    if (this.byEmail(email)) return null
+    if (this.byEmail(email) || this.isBlocked(email)) return null
     const { lastInsertRowid } = this.#db
       .prepare(
         'INSERT INTO users (email, password_hash, password_changed_at, has_password, created_at) VALUES (?, ?, ?, ?, ?)'

@@ -75,6 +75,9 @@ export interface AdminProof {
 // profiles; a household with its profiles and the accounts that read nowhere else.
 export const deleteServerAccount = (id: number, proof: AdminProof) =>
   sendJson<null>('DELETE', `/server/accounts/${id}`, proof)
+// « Bloquer »: the same as « Supprimer », and its e-mail makes no account again.
+export const blockServerAccount = (id: number, proof: AdminProof) =>
+  sendJson<null>('POST', `/server/accounts/${id}/block`, proof)
 export const deleteServerHousehold = (id: number, proof: AdminProof) =>
   sendJson<null>('DELETE', `/server/households/${id}`, proof)
 

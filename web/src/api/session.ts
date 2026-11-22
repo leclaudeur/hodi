@@ -8,7 +8,7 @@ import type { AdminProof } from './plugins.ts'
 
 export type LoginResult =
   | { ok: true }
-  | { ok: false; reason: 'invalid_password' | 'error' | 'two_factor' | 'invalid_code' }
+  | { ok: false; reason: 'invalid_password' | 'error' | 'two_factor' | 'invalid_code' | 'blocked' }
   | { ok: false; reason: 'too_many_attempts'; retryAfterSeconds: number }
   | { ok: false; reason: 'refused'; refusal: SignInRefusal }
   // An account of another household than the one this device serves: both their names.
@@ -101,6 +101,8 @@ export const login = async (email: string, password: string, code?: string): Pro
     // The password is right: the app's code comes next, or the one typed was wrong.
     if (body?.error === 'two_factor_required') return { ok: false, reason: 'two_factor' }
     if (body?.error === 'invalid_code') return { ok: false, reason: 'invalid_code' }
+    // Its account was blocked by the server's admin.
+    if (body?.error === 'blocked') return { ok: false, reason: 'blocked' }
     const refusal = refusalOf(body)
     if (refusal) return { ok: false, reason: 'refused', refusal }
   }
