@@ -1,9 +1,10 @@
-import { ArrowRight, Check, CircleSlash, MapPin } from 'lucide-react'
+import { ArrowRight, CircleSlash, MapPin } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AiProviderInfo, KeyCheck } from '../../api.ts'
 import { countryName } from '../../lib/regions.ts'
 import Button from '../../ui/Button.tsx'
+import RadioCards, { type RadioCard } from '../../ui/RadioCards.tsx'
 import SparkleIcon from '../../ui/SparkleIcon.tsx'
 import AiKeyField from '../../views/household/AiKeyField.tsx'
 import { CountryPicker } from '../../views/household/RegionPickers.tsx'
@@ -33,56 +34,20 @@ interface AiStepProps {
   onBack: () => void
 }
 
-// The chosen card's mark, as the worn badge in the profile sheet: a filled round over its top-right corner.
-const ChoiceCheck = ({ checked }: { checked: boolean }) =>
-  checked && (
-    <span className={styles.choiceCheck} aria-hidden="true">
-      <Check size={12} strokeWidth={3} />
-    </span>
-  )
-
 // The providers the server knows, then none.
 const AiChoices = ({ providers, ai, onAi }: Pick<AiStepProps, 'providers' | 'ai' | 'onAi'>) => {
   const { t } = useTranslation()
-  return (
-    <div className={styles.choices} role="radiogroup" aria-label={t('setup.ai.label')}>
-      {providers.map(option => (
-        <button
-          key={option.id}
-          type="button"
-          role="radio"
-          aria-checked={ai === option.id}
-          className={`${styles.choice} ${styles.aiChoice}`}
-          onClick={() => onAi(option.id)}
-        >
-          <span className={styles.choiceMark}>
-            <SparkleIcon size={18} />
-          </span>
-          <span className={styles.choiceText}>
-            <span className={styles.choiceLabel}>{option.name}</span>
-            <span className={styles.choiceHint}>{t('setup.ai.providerHint')}</span>
-          </span>
-          <ChoiceCheck checked={ai === option.id} />
-        </button>
-      ))}
-      <button
-        type="button"
-        role="radio"
-        aria-checked={ai === NO_AI}
-        className={styles.choice}
-        onClick={() => onAi(NO_AI)}
-      >
-        <span className={styles.choiceMark}>
-          <CircleSlash size={18} aria-hidden="true" />
-        </span>
-        <span className={styles.choiceText}>
-          <span className={styles.choiceLabel}>{t('setup.ai.none')}</span>
-          <span className={styles.choiceHint}>{t('setup.ai.noneHint')}</span>
-        </span>
-        <ChoiceCheck checked={ai === NO_AI} />
-      </button>
-    </div>
-  )
+  const cards: RadioCard[] = [
+    ...providers.map(option => ({
+      id: option.id,
+      label: option.name,
+      hint: t('setup.ai.providerHint'),
+      icon: <SparkleIcon size={18} />,
+      ai: true
+    })),
+    { id: NO_AI, label: t('setup.ai.none'), hint: t('setup.ai.noneHint'), icon: <CircleSlash size={18} /> }
+  ]
+  return <RadioCards label={t('setup.ai.label')} cards={cards} value={ai} onChange={onAi} />
 }
 
 // The household's AI, or none; with a provider, its key and the country its web searches use.

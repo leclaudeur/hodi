@@ -12,6 +12,7 @@ import type { ServerPeopleStore } from './db/server-people-store.ts'
 import type { ServerSettingsStore } from './db/server-settings-store.ts'
 import type { ServerStatsStore } from './db/server-stats-store.ts'
 import type { SignInCodeStore } from './db/sign-in-code-store.ts'
+import type { SourceReportStore } from './db/source-report-store.ts'
 import type { SourceReviewStore } from './db/source-review-store.ts'
 import type { SourceStore } from './db/source-store.ts'
 import type { TwoFactorStore } from './db/two-factor-store.ts'
@@ -61,6 +62,8 @@ export interface AppOptions {
     find: (link: string) => Promise<FindResult>
     file: Catalog
     reviews?: SourceReviewStore
+    // « Signaler »: the reports À traiter shows.
+    reports?: SourceReportStore
   }
   // The household game's points (gamification.yml); absent in tests that do not need it.
   game?: GameStore

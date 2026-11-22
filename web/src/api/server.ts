@@ -1,6 +1,7 @@
 import { type Language as InterfaceLanguage } from '../lib/i18n.ts'
 import { RequestError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
+import type { ReportReason } from './sources.ts'
 
 // Serveur › Vue d'ensemble: every household and profile together, totals only, day by day (YYYY-MM-DD).
 export interface ServerDay {
@@ -230,3 +231,22 @@ export const decideSource = (
   id: string,
   decision: { decision: 'accept' | 'refuse'; topicIds?: string[]; teen: boolean; child: boolean }
 ) => sendJson<null>('POST', `/server/reviews/sources/${encodeURIComponent(id)}`, decision)
+
+// À traiter's reports: a source, how many reported it and why, never who.
+export interface SourceReportView {
+  id: string
+  name: string
+  site: string
+  kind: 'article' | 'video' | 'podcast'
+  lang: 'fr' | 'en'
+  description: string | null
+  count: number
+  reasons: Record<ReportReason, number>
+  lastAt: number
+}
+
+export const getSourceReports = () => getJson<{ reports: SourceReportView[] }>('/server/reports')
+
+// Ignorer keeps the source; Retirer du catalogue takes it out for those who do not read it yet.
+export const decideReport = (id: string, decision: 'ignore' | 'unlist') =>
+  sendJson<null>('POST', `/server/reports/${encodeURIComponent(id)}`, { decision })

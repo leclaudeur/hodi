@@ -147,3 +147,11 @@ export const getShareSenders = async () => (await getJson<{ people: SharePerson[
 
 export const shareArticle = (articleId: string, to: number[], note: string) =>
   sendJson<{ ok: true }>('POST', '/me/shares', { articleId, to, note })
+
+// « Signaler »: why a source should not be on the server. The admin never learns who said it.
+export type ReportReason = 'illegal' | 'hateful' | 'misleading' | 'other'
+
+export const REPORT_REASONS: ReportReason[] = ['illegal', 'hateful', 'misleading', 'other']
+
+export const reportSource = (id: string, reason: ReportReason) =>
+  sendJson<null>('POST', `/sources/${encodeURIComponent(id)}/report`, { reason })

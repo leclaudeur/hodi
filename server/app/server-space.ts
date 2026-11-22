@@ -1,5 +1,7 @@
 import { serverInboxRoutes } from '../http/server-inbox-routes.ts'
+import { reportDecisionRoutes } from '../http/source-report-routes.ts'
 import { sourceReviewRoutes } from '../http/source-review-routes.ts'
+import { sourceReportKey } from '../notices/source-report.ts'
 import { sourceReviewKey } from '../notices/source-review.ts'
 import { codeRequestKey, freshRequest } from '../notices/code-request.ts'
 import type express from 'express'
@@ -72,7 +74,7 @@ const mountNotices = (api: express.Router, { options }: Wiring) => {
     serverNoticeRoutes({
       store: serverNotices.store,
       accountOf: response => accountAsking(response, accounts)?.id ?? null,
-      coreKinds: ['code-request', 'source-review', 'weekly-report'],
+      coreKinds: ['code-request', 'source-review', 'source-report', 'weekly-report'],
       plugins: noticePlugins(plugins),
       mailReady: () => serverMail?.store.get() != null,
       publicKey: serverNotices.publicKey || null,
@@ -94,6 +96,24 @@ const mountReviews = (api: express.Router, { options }: Wiring) => {
       sources: sources.store,
       onAccepted: () => profiles?.list().forEach(profile => users?.(profile.id).sources.catalogueChanged(now())),
       onDecided: sourceId => serverInbox?.notifier.handled?.(sourceReviewKey(sourceId)),
+      now
+    })
+  )
+}
+
+// À traiter's reports: Ignorer, or Retirer du catalogue.
+const mountReportDecisions = (api: express.Router, { options }: Wiring) => {
+  const { sources, news, users, profiles, serverInbox, now } = options
+  if (!sources?.reports || !sources.reviews) return
+  api.use(
+    '/server/reports',
+    requireServerAdmin,
+    reportDecisionRoutes({
+      reports: sources.reports,
+      reviews: sources.reviews,
+      news,
+      onUnlisted: () => profiles?.list().forEach(profile => users?.(profile.id).sources.catalogueChanged(now())),
+      onDecided: sourceId => serverInbox?.notifier.handled?.(sourceReportKey(sourceId)),
       now
     })
   )
@@ -122,6 +142,7 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
   const inbox = options.serverInbox?.store
   if (inbox) api.use('/server/inbox', requireServerAdmin, serverInboxRoutes(inbox, now))
   mountReviews(api, wiring)
+  mountReportDecisions(api, wiring)
   if (!serverStats) return
   api.use(
     '/server',

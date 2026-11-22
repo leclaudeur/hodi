@@ -1357,6 +1357,20 @@ const MIGRATIONS: string[] = [
     asked_at INTEGER NOT NULL,
     decided_at INTEGER
   );
+  `,
+  // « Signaler »: one report per account and source, its reason only. reporter (« a<account id> ») keeps one account
+  // from reporting a source twice; the admin never sees it. Gone with the account, or once the admin decides.
+  `
+  CREATE TABLE source_reports (
+    source_id TEXT NOT NULL REFERENCES sources (id) ON DELETE CASCADE,
+    reporter TEXT NOT NULL,
+    reason TEXT NOT NULL CHECK (reason IN ('illegal', 'hateful', 'misleading', 'other')),
+    at INTEGER NOT NULL,
+    PRIMARY KEY (source_id, reporter)
+  );
+  CREATE TRIGGER users_forget_reports AFTER DELETE ON users BEGIN
+    DELETE FROM source_reports WHERE reporter = 'a' || OLD.id;
+  END;
   `
 ]
 

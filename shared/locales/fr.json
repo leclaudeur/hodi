@@ -2367,6 +2367,10 @@
       "sourceReview": {
         "label": "Sources à valider",
         "hint": "Quand une source ajoutée attend une décision"
+      },
+      "sourceReport": {
+        "label": "Sources signalées",
+        "hint": "Quand un compte signale une source"
       }
     },
     "inbox": {
@@ -2384,7 +2388,8 @@
         "source": "Sources",
         "code": "Mots de passe",
         "plugin": "Plugins",
-        "handled": "Traité"
+        "handled": "Traité",
+        "report": "Signalements"
       },
       "failed": "Impossible de charger À traiter",
       "back": "Retour à À traiter",
@@ -2412,6 +2417,19 @@
         "what": "La source",
         "topicsLabel": "Ses thèmes",
         "young": "Pour les jeunes"
+      },
+      "report": {
+        "what": "La source",
+        "why": "Les motifs",
+        "count_one": "{{count}} signalement",
+        "count_other": "{{count}} signalements",
+        "ignore": "Ignorer",
+        "unlist": "Retirer du catalogue",
+        "unlistTitle": "Retirer {{name}} du catalogue ?",
+        "unlistText": "<b>{{name}}</b> n’est plus proposée. Ceux qui la lisent la gardent dans <i>Mes sources</i>.",
+        "ignored": "Signalement ignoré",
+        "unlisted": "{{name}} est retirée du catalogue",
+        "failed": "Ce choix n’a pas pu être enregistré"
       }
     }
   },
@@ -2468,6 +2486,11 @@
       "eyebrow": "Serveur",
       "title": "Source à valider : {{name}}",
       "text": "{{name}} vient d’être ajoutée. Elle reste hors du catalogue tant qu’elle n’est pas acceptée dans À traiter."
+    },
+    "sourceReport": {
+      "eyebrow": "Serveur",
+      "title": "Source signalée : {{name}}",
+      "text": "Quelqu’un a signalé {{name}}. Garde-la ou retire-la du catalogue dans À traiter."
     }
   },
   "forgot": {
@@ -2725,5 +2748,33 @@
     "ask": "Demander",
     "askTitle": "Demander une source",
     "askText": "Les parents la valident avant qu’elle arrive."
+  },
+  "report": {
+    "button": "Signaler",
+    "label": "Signaler {{name}}",
+    "title": "Signaler {{name}}",
+    "intro": "Dis à l’admin du serveur pourquoi <b>{{name}}</b> n’a pas sa place ici. Il ne saura pas que ça vient de toi.",
+    "reasons": {
+      "illegal": {
+        "label": "Illégale",
+        "hint": "Contenu interdit par la loi"
+      },
+      "hateful": {
+        "label": "Haineuse",
+        "hint": "Haine, harcèlement, violence"
+      },
+      "misleading": {
+        "label": "Trompeuse",
+        "hint": "Fausses infos, arnaques"
+      },
+      "other": {
+        "label": "Autre chose",
+        "hint": "Elle ne convient pas à ce serveur"
+      }
+    },
+    "reasonsLabel": "Pourquoi ?",
+    "send": "Envoyer",
+    "sent": "Signalement envoyé",
+    "failed": "Le signalement n’a pas pu partir"
   }
 }

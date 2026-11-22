@@ -3,15 +3,16 @@ import type { InboxItem } from '../api.ts'
 // À traiter: the requests the server asks its admins to act on, by kind for the list's capsules. Once done, a request
 // leaves them for « Traité », the last capsule, where the server keeps it a week.
 
-export type InboxKind = 'source' | 'code' | 'plugin'
+export type InboxKind = 'source' | 'report' | 'code' | 'plugin'
 
-export const INBOX_KINDS: InboxKind[] = ['source', 'code', 'plugin']
+export const INBOX_KINDS: InboxKind[] = ['source', 'report', 'code', 'plugin']
 
 // Tout (null), one kind, or what is handled.
 export type InboxFilter = InboxKind | 'handled' | null
 
 const CORE_KINDS: Record<string, InboxKind> = {
   'core:source-review': 'source',
+  'core:source-report': 'report',
   'core:code-request': 'code'
 }
 
@@ -47,6 +48,10 @@ export const inboxItemOf = <T extends Pick<InboxItem, 'id' | 'url'>>(items: T[],
 export const reviewedSourceOf = (item: Pick<InboxItem, 'url'>) =>
   item.url.startsWith(`${INBOX_PREFIX}source-`) ? item.url.slice(`${INBOX_PREFIX}source-`.length) : null
 
+// The source a report item is about.
+export const reportedSourceOf = (item: Pick<InboxItem, 'url'>) =>
+  item.url.startsWith(`${INBOX_PREFIX}report-`) ? item.url.slice(`${INBOX_PREFIX}report-`.length) : null
+
 // Where a waiting request opens: a source to judge in À traiter itself, anything else on the page where it is done
 // (the account that asked a code, a plugin's page), never a page that only leads there.
 export const inboxHrefOf = (item: Pick<InboxItem, 'id' | 'url'>) =>
@@ -54,6 +59,7 @@ export const inboxHrefOf = (item: Pick<InboxItem, 'id' | 'url'>) =>
     ? item.url
     : `${INBOX_PREFIX}${item.id}`
 
-// On a computer with none chosen, À traiter opens the first source still to judge, as Comptes opens its first account.
+// On a computer with none chosen, À traiter opens the first source still to judge or reported, as Comptes opens its
+// first account.
 export const firstOpen = <T extends Pick<InboxItem, 'type' | 'important' | 'handledAt' | 'url'>>(items: T[]) =>
-  items.find(item => isWaiting(item) && reviewedSourceOf(item) !== null) ?? null
+  items.find(item => isWaiting(item) && (reviewedSourceOf(item) ?? reportedSourceOf(item)) !== null) ?? null
