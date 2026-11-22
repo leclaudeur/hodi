@@ -72,6 +72,43 @@
   color: var(--ai-text-3);
 }
 
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.check {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  /* A ring of the page colour cuts the round out of the card's border. */
+  box-shadow: 0 0 0 3px var(--bg);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.ai .check {
+  background: var(--ai-button-border);
+  color: var(--ai-on-border);
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.hint {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
 /* In a dialog, the ring is the dialog's colour. */
 :global(dialog) .check {
   box-shadow: 0 0 0 3px var(--dialog-surface, var(--card));
