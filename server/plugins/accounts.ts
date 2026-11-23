@@ -96,14 +96,16 @@ const madeAccounts = ({
   const view = (account: UserAccount | null, pluginId: string): PluginAccount | null => {
     if (!account || account.email === null) return null
     const marks = made.of(account.id)
+    const mine = marks?.madeByPlugin === pluginId
     return {
       id: account.id,
       email: account.email,
-      name: accounts.identityOf(account.id)?.name ?? null,
-      createdAt: account.createdAt,
+      // Only of its own accounts: the plugin learns no more of anyone else than it did.
+      name: mine ? (accounts.identityOf(account.id)?.name ?? null) : null,
+      createdAt: mine ? account.createdAt : null,
       loginOnly: !account.hasPassword,
       serverAdmin: account.serverAdmin,
-      mine: marks?.madeByPlugin === pluginId,
+      mine,
       suspended: marks?.suspendedAt != null
     }
   }
@@ -112,7 +114,7 @@ const madeAccounts = ({
   const ownOrRefuse = (value: unknown, pluginId: string) => {
     const id = idOf(value)
     const account = id === null ? null : accounts.get(id)
-    if (!account || account.serverAdmin || made.of(account.id)?.madeByPlugin !== pluginId)
+    if (!account || account.email === null || account.serverAdmin || made.of(account.id)?.madeByPlugin !== pluginId)
       throw new Error('not_allowed')
     return account
   }

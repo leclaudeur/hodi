@@ -43,7 +43,7 @@ describe('accounts as a plugin sees them', () => {
   it('show an id, an e-mail and whether it is the server admin, never a secret', () => {
     assert.deepEqual(
       accounts.get(1, 'p'),
-      seen(1, 'admin@example.test', { createdAt: 0, serverAdmin: true, mine: false })
+      seen(1, 'admin@example.test', { createdAt: null, serverAdmin: true, mine: false })
     )
     assert.deepEqual(accounts.findByEmail(' Admin@Example.test ', 'p'), accounts.get(1, 'p'))
     for (const odd of [0, -1, 1.5, '1', null, 2]) assert.equal(accounts.get(odd, 'p'), null, String(odd))

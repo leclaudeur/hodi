@@ -16,9 +16,10 @@ and never touch `version`; a small release pull request raises `version` and mov
   made (`ctx.accounts.create`), newest first, and suspends, resumes or removes one of them; any other account is
   refused with `not_allowed`, the server's admin always. A suspended account is signed out of every device and
   refused at each sign-in with the plugin's `signIn.suspended` text, until resumed. `remove()` deletes it as
-  Serveur › Comptes does, and every plugin's `onAccountDeleted` hears of it. Each `PluginAccount` now also has `name`,
-  `createdAt`, `mine` and `suspended`. The people of a household a plugin made become that plugin's accounts, and
-  suspended ones stay suspended.
+  Serveur › Comptes does, and every plugin's `onAccountDeleted` hears of it. Each `PluginAccount` now also has `mine`
+  and `suspended`, and for the plugin's own accounts `name` and `createdAt` (null for anyone else's). The admin of each
+  household a plugin made becomes that plugin's account, suspended if the household was; its other members, who came
+  in by Hodi's invitations, stay their own.
 
 ### Deprecated
 

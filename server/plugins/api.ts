@@ -166,9 +166,9 @@ export interface PluginHousehold {
 export interface PluginAccount {
   id: number
   email: string
-  // Its first name as its person set it in Mon compte, or null before that.
+  // Only for an account this plugin made (else null): its first name as set in Mon compte, and when it was made.
   name: string | null
-  createdAt: number
+  createdAt: number | null
   // true for an account made with a login alone: no password of its own until its person sets one.
   loginOnly: boolean
   serverAdmin: boolean

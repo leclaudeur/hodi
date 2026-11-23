@@ -18,10 +18,10 @@ describe('an account a plugin suspended', async () => {
 
   const signIn = () => call('/login', '', 'POST', { email: 'sam@example.com', password: SAM_PASSWORD })
 
-  it('is refused at sign-in with the plugin that suspended it', async () => {
+  it('is out on every request, and refused at sign-in with the plugin that suspended it', async () => {
     assert.equal((await call('/account', sam)).status, 200)
     made.setSuspended(samAccount.id, 'village', 1)
-    accounts.revokeSessions(samAccount.id)
+    // Its session is refused at once, even before its sessions are revoked.
     assert.equal((await call('/account', sam)).status, 401)
     const refused = await signIn()
     assert.equal(refused.status, 403)
@@ -39,10 +39,17 @@ describe('an account a plugin suspended', async () => {
     assert.equal(made.setSuspended(admin, 'village', 1), false)
     assert.equal(accounts.get(admin)?.suspendedBy, null)
   })
+
+  it('lets in an account made the server admin after it was suspended', async () => {
+    made.setSuspended(samAccount.id, 'village', 1)
+    db.prepare('UPDATE users SET server_admin = 1 WHERE id = ?').run(samAccount.id)
+    assert.equal((await signIn()).status, 204)
+    db.prepare('UPDATE users SET server_admin = 0, suspended_at = NULL WHERE id = ?').run(samAccount.id)
+  })
 })
 
 describe('the plugin accounts migration', () => {
-  it('gives each person of a household a plugin made to that plugin, suspended with it', () => {
+  it('gives the admin of each household a plugin made to that plugin, suspended with it, and no one else', () => {
     const db = new DatabaseSync(':memory:')
     migrate(db, versionBefore('ALTER TABLE users ADD COLUMN made_by_plugin'))
     const insert = db.prepare(
@@ -51,7 +58,8 @@ describe('the plugin accounts migration', () => {
     for (const [id, email] of [
       [7, 'a@b.c'],
       [8, 'd@e.f'],
-      [9, 'g@h.i']
+      [9, 'g@h.i'],
+      [10, 'j@k.l']
     ] as const)
       insert.run(id, email, 'x')
     db.exec(
@@ -59,11 +67,13 @@ describe('the plugin accounts migration', () => {
     )
     db.exec("INSERT INTO accounts (id, name, created_at, made_by_plugin) VALUES (6, 'Les Martin', 0, 'village')")
     const profile = db.prepare(
-      "INSERT INTO profiles (account_id, name, color, position, created_at, user_id) VALUES (?, 'A', 'tech', 0, 0, ?)"
+      "INSERT INTO profiles (account_id, name, color, position, created_at, user_id, role) VALUES (?, 'A', 'tech', 0, 0, ?, ?)"
     )
-    profile.run(5, 7)
-    profile.run(6, 8)
-    profile.run(1, 9)
+    profile.run(5, 7, 'admin')
+    profile.run(6, 8, 'admin')
+    // A member who came in by an invitation of Hodi's stays their own, as do the core household's people.
+    profile.run(5, 10, 'member')
+    profile.run(1, 9, 'admin')
     migrate(db)
     const accounts = new UserAccountStore(db as never)
     const made = new PluginAccountStore(db as never)
@@ -71,6 +81,7 @@ describe('the plugin accounts migration', () => {
     assert.equal(accounts.get(7)?.suspendedBy, 'village')
     assert.deepEqual(made.of(8), { madeByPlugin: 'village', suspendedAt: null })
     assert.deepEqual(made.of(9), { madeByPlugin: null, suspendedAt: null })
+    assert.deepEqual(made.of(10), { madeByPlugin: null, suspendedAt: null })
     assert.deepEqual(made.madeBy('village'), [8, 7])
   })
 })
