@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 import {
   type AiUsage,
-  type Household,
   type SourceStatus,
   type StorageUsage,
   UnauthorizedError,
   getAiUsage,
-  getHousehold,
   getSourceEngagement,
   getSources,
   getStorage
@@ -56,8 +54,6 @@ export const useSourceEngagement = (onUnauthorized?: () => void) =>
 export const useAiUsage = (onUnauthorized?: () => void) => useCached<AiUsage>('ai', getAiUsage, onUnauthorized)
 
 // The admin's: the household's name, region and AI.
-export const useHousehold = (onUnauthorized?: () => void) =>
-  useCached<Household>('household', getHousehold, onUnauthorized)
 
 export const useStorage = (onUnauthorized?: () => void) =>
   useCached<StorageUsage>('storage', getStorage, onUnauthorized)

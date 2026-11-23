@@ -95,5 +95,3 @@ export const wearBadge = (badge: BadgeId | null) =>
 
 // One's own sheet showed what was new.
 export const markGameSeen = () => sendJson('POST', '/me/game/seen')
-
-export const setGameEnabled = (enabled: boolean) => sendJson('PUT', '/game/enabled', { enabled })

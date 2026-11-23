@@ -9,7 +9,3 @@ export const ownerOf = (db: Database, profileId: number) => {
 }
 
 export const accountOwner = (accountId: number) => `a${accountId}`
-
-// The same, in SQL, for a profiles row under this alias.
-export const ownerSql = (alias: string) =>
-  `(CASE WHEN ${alias}.user_id IS NULL THEN 'p' || ${alias}.id ELSE 'a' || ${alias}.user_id END)`
