@@ -4,7 +4,7 @@ import { after, describe, it } from 'node:test'
 import { migrate, versionBefore } from '../db/migrations.ts'
 import { PluginAccountStore } from '../db/plugin-account-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
-import { SAM_PASSWORD, startHousehold } from './helpers/household-env.ts'
+import { SAM_PASSWORD, cookiesFrom, startHousehold } from './helpers/household-env.ts'
 
 // An account its plugin suspended (ctx.accounts.suspend) is signed out on every device and signs in nowhere, with the
 // plugin's own words, until the plugin resumes it.
@@ -43,7 +43,9 @@ describe('an account a plugin suspended', async () => {
   it('lets in an account made the server admin after it was suspended', async () => {
     made.setSuspended(samAccount.id, 'village', 1)
     db.prepare('UPDATE users SET server_admin = 1 WHERE id = ?').run(samAccount.id)
-    assert.equal((await signIn()).status, 204)
+    const signedIn = await signIn()
+    assert.equal(signedIn.status, 204)
+    assert.equal((await call('/account', cookiesFrom(signedIn))).status, 200)
     db.prepare('UPDATE users SET server_admin = 0, suspended_at = NULL WHERE id = ?').run(samAccount.id)
   })
 })

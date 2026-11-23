@@ -34,7 +34,8 @@ export interface UserAccount {
   // Where the person lives; null: the household's (Réglages › Mon compte › Région).
   timeZone: string | null
   country: string | null
-  // The plugin that made it and suspended it: it signs in nowhere until that plugin resumes it. null: not suspended.
+  // The plugin that made it and suspended it: it signs in nowhere until that plugin resumes it. null: not suspended,
+  // and always for the server's admin, whom no plugin locks out.
   suspendedBy: string | null
 }
 
@@ -82,7 +83,7 @@ export const cleanEmail = (value: unknown) => {
 
 const COLUMNS =
   'id, email, handle, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, parental_code_hash, created_at, time_zone, country, ' +
-  'CASE WHEN suspended_at IS NOT NULL THEN made_by_plugin END AS suspended_by'
+  'CASE WHEN suspended_at IS NOT NULL AND server_admin = 0 THEN made_by_plugin END AS suspended_by'
 
 export class UserAccountStore {
   readonly #db: Database
