@@ -1105,6 +1105,35 @@ const MIGRATIONS: string[] = [
     UPDATE OR IGNORE seen_stories SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
     DELETE FROM seen_stories WHERE owner = 'p' || NEW.id;
   END;
+  `,
+  // A person's name, colour and photo are their account's: kept when their profile goes, and worn again by the
+  // profile it gets in any household. The profile keeps its own copy, which every screen reads; the triggers keep
+  // the two the same. An account with none yet takes its profile's.
+  `
+  ALTER TABLE users ADD COLUMN name TEXT;
+  ALTER TABLE users ADD COLUMN color TEXT;
+  ALTER TABLE users ADD COLUMN photo BLOB;
+  ALTER TABLE users ADD COLUMN photo_type TEXT;
+  ALTER TABLE users ADD COLUMN photo_version INTEGER;
+  UPDATE users SET (name, color, photo, photo_type, photo_version) = (
+    SELECT name, color, photo, photo_type, photo_version FROM profiles WHERE user_id = users.id ORDER BY id DESC LIMIT 1
+  );
+  CREATE TRIGGER profiles_identity_to_account AFTER UPDATE OF name, color, photo, photo_type, photo_version ON profiles
+  WHEN NEW.user_id IS NOT NULL BEGIN
+    UPDATE users SET name = NEW.name, color = NEW.color, photo = NEW.photo, photo_type = NEW.photo_type,
+      photo_version = NEW.photo_version
+    WHERE id = NEW.user_id;
+  END;
+  CREATE TRIGGER profiles_identity_on_link AFTER UPDATE OF user_id ON profiles
+  WHEN NEW.user_id IS NOT NULL AND OLD.user_id IS NOT NEW.user_id BEGIN
+    UPDATE users SET name = NEW.name, color = NEW.color, photo = NEW.photo, photo_type = NEW.photo_type,
+      photo_version = NEW.photo_version
+    WHERE id = NEW.user_id AND name IS NULL;
+    UPDATE profiles SET (name, color, photo, photo_type, photo_version) = (
+      SELECT name, color, photo, photo_type, photo_version FROM users WHERE id = NEW.user_id
+    )
+    WHERE id = NEW.id;
+  END;
   `
 ]
 

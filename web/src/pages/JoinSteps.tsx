@@ -254,7 +254,7 @@ export const AccountStep = ({ join, use }: { join: Join; use: AccountUse }) => {
   const submit = (event: FormEvent) => {
     event.preventDefault()
     if (!accountReady) return
-    if (use.kind === 'invite') {
+    if (use.kind === 'invite' && !existing) {
       join.setError(null)
       join.setStep('who')
     } else void join.join()

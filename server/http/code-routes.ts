@@ -73,6 +73,18 @@ const completeJoin = (
   response.json({ profileId })
 }
 
+// The new profile's name and colour: the account's own once it has been in a household, else what the person typed.
+const identityFor = (
+  { accounts }: ResolvedJoinOptions,
+  draft: { name?: unknown; color?: unknown },
+  known: UserAccount | null
+) => {
+  const own = known ? accounts.identityOf(known.id) : null
+  const name = cleanName(own?.name ?? draft.name)
+  const color = profileColorOf(own?.color ?? draft.color)
+  return name && color ? { name, color } : null
+}
+
 // "Rejoins <foyer>" or "Ton profil t'attend": the account, its profile, and this device signed in with both.
 // existing: « J'ai déjà un compte », its e-mail and password instead of a new account (the server's admin, or with
 // a plugin someone from another household).
@@ -91,9 +103,8 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
       response.status(400).json({ error: 'bad_request' })
       return
     }
-    const name = cleanName(asked.draft.name)
-    const color = profileColorOf(asked.draft.color)
-    if (valid.found.profileId === null && (!name || !color)) {
+    // An account that has been in a household joins with its own name and colour: it may send none.
+    if (valid.found.profileId === null && !asked.existing && !identityFor(options, asked.draft, null)) {
       response.status(400).json({ error: 'bad_request' })
       return
     }
@@ -103,6 +114,11 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
     if (asked.existing) {
       known = await existingAccountOf(options, decoyHash, asked, request, response)
       if (!known) return
+      // Never in a household yet: the person says who they are first.
+      if (valid.found.profileId === null && !identityFor(options, asked.draft, known)) {
+        response.status(400).json({ error: 'profile_needed' })
+        return
+      }
     } else {
       if (options.accounts.byEmail(asked.email)) {
         response.status(409).json({ error: 'email_taken' })
@@ -110,7 +126,11 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
       }
       passwordHash = await hashPassword(asked.password)
     }
-    const checked = { valid, existing: asked.existing, email: asked.email, known, passwordHash, name, color }
+    const identity = identityFor(options, asked.draft, known)
+    const checked = {
+      ...{ valid, existing: asked.existing, email: asked.email, known, passwordHash },
+      ...{ name: identity?.name ?? null, color: identity?.color ?? null }
+    }
     completeJoin(options, checked, request, response)
   })
 }
