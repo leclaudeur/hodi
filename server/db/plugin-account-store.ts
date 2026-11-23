@@ -34,6 +34,12 @@ export class PluginAccountStore {
     this.#db.prepare('UPDATE users SET made_by_plugin = ? WHERE id = ? AND server_admin = 0').run(plugin, id)
   }
 
+  // The first name its person gave the plugin, worn as Hodi's own (Mon compte) with the first colour until they change
+  // it there.
+  name(id: number, name: string) {
+    this.#db.prepare("UPDATE users SET name = ?, color = COALESCE(color, 'world') WHERE id = ?").run(name, id)
+  }
+
   // false when the account is not one this plugin made.
   setSuspended(id: number, plugin: string, at: number | null) {
     return (

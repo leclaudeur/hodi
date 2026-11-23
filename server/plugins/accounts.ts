@@ -5,6 +5,7 @@ import { type AccountLoginStore, isLogin } from '../db/account-login-store.ts'
 import type { PluginAccountStore } from '../db/plugin-account-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import { MAX_PASSWORD_LENGTH, isPassword } from '../http/household-input.ts'
+import { cleanName } from '../db/profile-store.ts'
 import type { PluginAccount } from './api.ts'
 
 // ctx.accounts: the people's accounts, as a plugin may see and make them. It never hands over anything that could
@@ -64,16 +65,17 @@ const idOf = (value: unknown) => (typeof value === 'number' && Number.isSafeInte
 // A new account as a plugin asks for it: an e-mail and a password, a login of its own, or both. Throws on anything
 // else.
 const newAccountOf = (value: unknown) => {
-  const { email, password, login, ...rest } = (typeof value === 'object' && value !== null ? value : {}) as Record<
-    string,
-    unknown
-  >
+  const { email, password, login, name, ...rest } = (
+    typeof value === 'object' && value !== null ? value : {}
+  ) as Record<string, unknown>
   if (Object.keys(rest).length > 0) throw new Error('invalid_account')
   const clean = cleanEmail(email)
   if (!clean || (password === undefined && login === undefined)) throw new Error('invalid_account')
   if (password !== undefined && !isPassword(password)) throw new Error('invalid_account')
   if (login !== undefined && !isLogin(login)) throw new Error('invalid_login')
-  return { clean, password: password as string | undefined, login: login as string | undefined }
+  const cleanFirstName = name === undefined ? null : cleanName(name)
+  if (name !== undefined && cleanFirstName === null) throw new Error('invalid_account')
+  return { clean, password: password as string | undefined, login: login as string | undefined, name: cleanFirstName }
 }
 
 interface AccountDeps {
@@ -172,7 +174,7 @@ export const pluginAccounts = ({
       return clean ? view(accounts.byEmail(clean), pluginId) : null
     },
     create: async (value, pluginId) => {
-      const { clean, password, login } = newAccountOf(value)
+      const { clean, password, login, name } = newAccountOf(value)
       if (login !== undefined && logins.accountOf(pluginId, login) !== null) throw new Error('login_taken')
       if (accounts.byEmail(clean)) return null
       // Without a password, a hash of bytes nobody knows: no password can sign in until the person sets one.
@@ -180,6 +182,7 @@ export const pluginAccounts = ({
       const account = accounts.create(clean, hash, now(), { hasPassword: password !== undefined })
       if (!account) return null
       made.markMade(account.id, pluginId)
+      if (name !== null) made.name(account.id, name)
       if (login !== undefined) logins.add(pluginId, login, account.id, now())
       return view(account, pluginId)
     },

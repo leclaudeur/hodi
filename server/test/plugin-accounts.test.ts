@@ -139,4 +139,18 @@ describe('accounts as a plugin sees them', () => {
     assert.equal(store.get(2)!.suspendedBy, null)
     assert.deepEqual(accounts.list('p'), [])
   })
+
+  it('give an account the first name its person typed', async () => {
+    // As Mon compte shows it, and only to the plugin that made the account.
+    const named = await accounts.create(
+      { email: 'lou@example.test', password: 'une phrase solide', name: ' Lou ' },
+      'q'
+    )
+    assert.equal(named?.name, 'Lou')
+    assert.equal(accounts.get(named!.id, 'p')?.name, null)
+    await assert.rejects(
+      accounts.create({ email: 'eve@example.test', password: 'une phrase solide', name: '  ' }, 'q'),
+      /invalid_account/
+    )
+  })
 })

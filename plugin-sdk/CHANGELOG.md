@@ -21,6 +21,9 @@ and never touch `version`; a small release pull request raises `version` and mov
   household a plugin made becomes that plugin's account, suspended if the household was; its other members, who came
   in by Hodi's invitations, stay their own.
 
+- **`ctx.accounts.create({ name })`.** The person's first name, as _Mon compte_ shows it: a sign-up form no longer
+  needs a household to keep it.
+
 ### Deprecated
 
 - **`ctx.households`.** Households are leaving Hodi: one account is one person's space. Use `ctx.accounts` instead;
