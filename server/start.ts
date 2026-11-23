@@ -9,6 +9,7 @@ import { smtpSend } from './mail/mailer.ts'
 import { PluginInstaller } from './plugins/installer.ts'
 import { pluginArticle } from './plugins/articles.ts'
 import { householdHooks } from './plugins/households.ts'
+import { accountHooks } from './plugins/accounts.ts'
 import type { PluginRegistry } from './plugins/registry.ts'
 import type { PluginAi } from './plugins/ai.ts'
 import { LoginThrottle } from './auth/login-throttle.ts'
@@ -43,6 +44,7 @@ interface Running {
   pluginBackup: PluginBackup
   pendingRestore: string
   hooks: ReturnType<typeof householdHooks>
+  accountHooks: ReturnType<typeof accountHooks>
   throttle: LoginThrottle
   restart: (reason: string) => void
 }
@@ -61,6 +63,7 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
   const { store } = stores
   return createApp(config, {
     householdHooks: running.hooks,
+    accountHooks: running.accountHooks,
     news,
     accounts: stores.accounts,
     accountAi: stores.accountAi,
@@ -156,6 +159,8 @@ export const startHodi = async (config: Config, outside: Outside) => {
   const throttle = new LoginThrottle()
   // What a plugin's new household needs from the app (its base sources, its profiles' set-up), filled in by createApp.
   const hooks = householdHooks()
+  // What removing an account a plugin made takes (its profiles, the plugins told), filled in by createApp too.
+  const removals = accountHooks()
   const { plugins, pluginAiCalls } = await startPlugins({
     ...stores,
     db,
@@ -166,6 +171,7 @@ export const startHodi = async (config: Config, outside: Outside) => {
     alerts,
     serverNotices,
     hooks,
+    accountHooks: removals,
     throttle
   })
   loadedPlugins = plugins
@@ -199,6 +205,7 @@ export const startHodi = async (config: Config, outside: Outside) => {
     pluginBackup,
     pendingRestore,
     hooks,
+    accountHooks: removals,
     throttle,
     restart: shutdown
   })

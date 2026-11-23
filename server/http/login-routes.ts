@@ -64,10 +64,13 @@ const signInHelpers = ({
   now
 }: LoginRoutesOptions) => {
   // The plugins' checkSignIn, at every sign-in of an existing account but the server admin's.
-  const checkSignIn: CheckSignIn = async account =>
-    account.serverAdmin || !plugins || !accounts
+  // An account its plugin suspended is refused first, with that plugin's own words when it has them.
+  const checkSignIn: CheckSignIn = async account => {
+    if (account.suspendedBy) return { plugin: account.suspendedBy, message: 'signIn.suspended' }
+    return account.serverAdmin || !plugins || !accounts
       ? null
       : plugins.checkSignIn({ accountId: account.id, householdId: accounts.householdOf(account.id) })
+  }
 
   // With « Validation en deux étapes » on, a sign-in also takes the app's code or a recovery code: 403
   // two_factor_required when none came (not a failure, the password was right), invalid_code counted as a wrong

@@ -131,11 +131,16 @@ const addNetwork = (
 }
 
 const addAccounts = (requests: Requests, manifest: Manifest, { accounts }: RequestDeps) => {
-  requests['accounts.get'] = async ([id]) => accounts.get(id)
-  requests['accounts.findByEmail'] = async ([email]) => accounts.findByEmail(email)
+  const plugin = manifest.id
+  requests['accounts.get'] = async ([id]) => accounts.get(id, plugin)
+  requests['accounts.findByEmail'] = async ([email]) => accounts.findByEmail(email, plugin)
+  requests['accounts.list'] = async () => accounts.list(plugin)
+  requests['accounts.suspend'] = async ([id]) => accounts.suspend(id, plugin)
+  requests['accounts.resume'] = async ([id]) => accounts.resume(id, plugin)
+  requests['accounts.remove'] = async ([id]) => accounts.remove(id, plugin)
   requests['accounts.create'] = async ([value], context) => vouch(context, await accounts.create(value, manifest.id))
   requests['accounts.checkPassword'] = async ([email, password], context) =>
-    vouch(context, await accounts.checkPassword(email, password, clientOf(context, manifest.id)))
+    vouch(context, await accounts.checkPassword(email, password, clientOf(context, plugin), plugin))
   // The plugin vouches for whom its own login names: the person proved it to the plugin (a Google sign-in).
   requests['accounts.findByLogin'] = async ([login], context) =>
     vouch(context, accounts.findByLogin(login, manifest.id))

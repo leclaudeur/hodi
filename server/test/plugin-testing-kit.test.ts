@@ -37,7 +37,12 @@ const pluginFolder = (permissions: Record<string, unknown> = {}) => {
         'POST /mail': async (request, ctx) => { await ctx.mail.send({ to: request.body.to, subject: 'Hi', text: 'Hello' }); return { body: null } },
         'DELETE /notes': { proof: true, handler: async () => ({ status: 204 }) }
       },
-      serverRoutes: { 'GET /count': async (_request, ctx) => ({ body: ctx.db.get('SELECT count(*) AS n FROM notes') }) },
+      serverRoutes: {
+        'GET /count': async (_request, ctx) => ({ body: ctx.db.get('SELECT count(*) AS n FROM notes') }),
+        'GET /accounts': async (_request, ctx) => ({ body: await ctx.accounts.list() }),
+        'POST /accounts/:id/suspend': async (request, ctx) => { await ctx.accounts.suspend(Number(request.params.id)); return { status: 204 } },
+        'DELETE /accounts/:id': async (request, ctx) => { await ctx.accounts.remove(Number(request.params.id)); return { status: 204 } }
+      },
       publicRoutes: {
         'POST /signup': async (request, ctx) => {
           const account = await ctx.accounts.create({ email: request.body.email, password: request.body.password })
@@ -111,6 +116,17 @@ describe('the plugin test kit', () => {
     })
     assert.equal(signUp.status, 201, JSON.stringify([signUp.body, kit.log]))
     assert.equal(kit.signedIn.length, 1)
+    // The accounts it made: only those, to suspend or remove.
+    const made = (await kit.serverRoute('GET /accounts')).body as { id: number; email: string; suspended: boolean }[]
+    assert.deepEqual(
+      made.map(account => [account.email, account.suspended]),
+      [['new@example.test', false]]
+    )
+    assert.equal((await kit.serverRoute(`POST /accounts/${made[0]!.id}/suspend`)).status, 204)
+    assert.equal(((await kit.serverRoute('GET /accounts')).body as { suspended: boolean }[])[0]?.suspended, true)
+    assert.equal((await kit.serverRoute(`POST /accounts/${lea.accountId}/suspend`)).status, 500)
+    assert.equal((await kit.serverRoute(`DELETE /accounts/${made[0]!.id}`)).status, 204)
+    assert.deepEqual((await kit.serverRoute('GET /accounts')).body, [])
 
     // A click on its AiButton, by an adult; a child cannot.
     const clicked = await kit.click('summarize', { text: 'Un long article.' }, lea)

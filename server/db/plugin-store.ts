@@ -131,6 +131,8 @@ export class PluginStore {
       // Its ways in to accounts (« Se connecter avec Google »): another plugin given the same id later must not
       // inherit them.
       this.#db.prepare('DELETE FROM account_logins WHERE plugin_id = ?').run(id)
+      // The accounts it made stay, as anyone's, and none stays suspended with no one left to resume it.
+      this.#db.prepare('UPDATE users SET made_by_plugin = NULL, suspended_at = NULL WHERE made_by_plugin = ?').run(id)
       this.#db.prepare('DELETE FROM plugin_ai_off WHERE plugin_id = ?').run(id)
       // Its data is gone with it: nothing is left for it to forget.
       this.#db.prepare('DELETE FROM plugin_erasures WHERE plugin_id = ?').run(id)

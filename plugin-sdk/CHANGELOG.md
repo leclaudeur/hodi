@@ -10,6 +10,21 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Added
+
+- **`ctx.accounts.list`, `suspend`, `resume` and `remove`.** A plugin with `permissions.accounts` lists the accounts it
+  made (`ctx.accounts.create`), newest first, and suspends, resumes or removes one of them; any other account is
+  refused with `not_allowed`, the server's admin always. A suspended account is signed out of every device and
+  refused at each sign-in with the plugin's `signIn.suspended` text, until resumed. `remove()` deletes it as
+  Serveur › Comptes does, and every plugin's `onAccountDeleted` hears of it. Each `PluginAccount` now also has `name`,
+  `createdAt`, `mine` and `suspended`. The people of a household a plugin made become that plugin's accounts, and
+  suspended ones stay suspended.
+
+### Deprecated
+
+- **`ctx.households`.** Households are leaving Hodi: one account is one person's space. Use `ctx.accounts` instead;
+  `ctx.households`, `who.householdId`, `noHousehold` and the `noHouseholdActions` slot go in a later beta.
+
 ### Changed
 
 - **Hodi's limits built in.** The SDK carries the limits of the Hodi it was built with (Hodi's `config.yml`): the test

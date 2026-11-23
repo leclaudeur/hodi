@@ -69,7 +69,7 @@ export interface PluginContext {
     appUrl: () => Promise<string | null>
     send: (message: PluginMailMessage) => Promise<void>
   }
-  // With permissions.households: the server's households. create() sets one up with its admin: an existing account
+  // Deprecated: households are going away, use ctx.accounts. With permissions.households: the server's households. create() sets one up with its admin: an existing account
   // in no household yet (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
   // once, through « J'ai un code »). suspend(), resume() and remove() only take a household this plugin made, else
   // refuse with 'not_allowed'; remove() deletes it and all it holds, its people's accounts stay.
@@ -130,7 +130,14 @@ export interface PluginContext {
   // 'throttled' past their limit. findByLogin() answers the account this plugin's login leads to. addLogin() gives
   // one to an account this same call made, checked or found (never the server's admin): false when the login leads
   // to another account. Each plugin only reads its own logins, and they go when the plugin is removed.
+  // list() answers the accounts this plugin made, newest first. suspend(), resume() and remove() only take one of
+  // them, else refuse with 'not_allowed': a suspended account is signed out everywhere and signs in nowhere (the
+  // page shows the plugin's signIn.suspended text) until resumed; remove() deletes it as Serveur › Comptes does.
   accounts: {
+    list: () => Promise<PluginAccount[]>
+    suspend: (id: number) => Promise<void>
+    resume: (id: number) => Promise<void>
+    remove: (id: number) => Promise<void>
     get: (id: number) => Promise<PluginAccount | null>
     findByEmail: (email: string) => Promise<PluginAccount | null>
     create: (account: { email: string; password?: string; login?: string }) => Promise<PluginAccount | null>
@@ -159,9 +166,16 @@ export interface PluginHousehold {
 export interface PluginAccount {
   id: number
   email: string
+  // Its first name as its person set it in Mon compte, or null before that.
+  name: string | null
+  createdAt: number
   // true for an account made with a login alone: no password of its own until its person sets one.
   loginOnly: boolean
   serverAdmin: boolean
+  // Made by this plugin: the only accounts it may suspend, resume or remove.
+  mine: boolean
+  // Suspended by the plugin that made it: signed out and refused at every sign-in.
+  suspended: boolean
 }
 
 // Who asks, as Hodi checked it. No cookie, header or session reaches the plugin.

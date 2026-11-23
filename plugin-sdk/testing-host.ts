@@ -10,7 +10,9 @@ import { ProfileStore } from '../server/db/profile-store.ts'
 import { SignInCodeStore } from '../server/db/sign-in-code-store.ts'
 import { UserAccountStore } from '../server/db/user-account-store.ts'
 import type { HttpAnswer } from '../server/news/fetch-text.ts'
-import { pluginAccounts } from '../server/plugins/accounts.ts'
+import { accountHooks, pluginAccounts } from '../server/plugins/accounts.ts'
+import { PluginAccountStore } from '../server/db/plugin-account-store.ts'
+import { AccountDataStore } from '../server/db/account-data.ts'
 import { pluginAi } from '../server/plugins/ai.ts'
 import type { PluginArticle } from '../server/plugins/articles.ts'
 import { householdHooks, pluginHouseholds } from '../server/plugins/households.ts'
@@ -109,6 +111,30 @@ const openHousehold = (options: TestPluginOptions, now: () => number) => {
   }
 }
 
+// What the server's admin would be told, as Hodi builds it, without choosing how.
+const smallServerNotifier = (serverNotices: Recorded['serverNotices'], log: string[]) => {
+  // The important notices still under « À traiter », by key.
+  const waiting = new Map<string, { waiting?: boolean }>()
+  return pluginServerNotifier({
+    notifier: {
+      tell: async (type, notice, { important } = {}) => {
+        // As in Hodi: the same request still waiting is not told again.
+        if (important && waiting.has(important)) return { emails: 0, pushes: 0 }
+        const told = { type, ...(typeof notice === 'function' ? notice('fr') : notice) }
+        if (important) waiting.set(important, Object.assign(told, { waiting: true }))
+        serverNotices.push(told)
+        return { emails: 0, pushes: 0 }
+      },
+      handled: key => {
+        const told = waiting.get(key)
+        if (told) told.waiting = false
+        waiting.delete(key)
+      }
+    },
+    log: line => log.push(line)
+  })
+}
+
 export const startSmallHodi = async (
   { dir, dataDir, trustedKey }: { dir: string; dataDir: string; trustedKey: string },
   options: TestPluginOptions,
@@ -118,8 +144,6 @@ export const startSmallHodi = async (
   const { db, householdId, accounts, store, profiles } = openHousehold(options, now)
   const { mails, notifications, serverNotices, questions, log } = recorded
   const answer = options.ai
-  // The important notices still under « À traiter », by key.
-  const waiting = new Map<string, { waiting?: boolean }>()
   // One for the AiButton's route and ctx.ai, as in Hodi: the hourly count is theirs together.
   const ai = pluginAi({
     isOff: () => false,
@@ -131,6 +155,7 @@ export const startSmallHodi = async (
     }
   })
 
+  const removals = accountHooks()
   const registry = await loadPlugins({
     dir,
     dataDir,
@@ -138,7 +163,13 @@ export const startSmallHodi = async (
     trustedKeys: [trustedKey],
     isPublicUrl: async () => true,
     ...fakeReach(options),
-    accounts: pluginAccounts({ accounts, logins: new AccountLoginStore(db), throttle: new LoginThrottle() }),
+    accounts: pluginAccounts({
+      accounts,
+      logins: new AccountLoginStore(db),
+      made: new PluginAccountStore(db),
+      hooks: removals,
+      throttle: new LoginThrottle()
+    }),
     households: pluginHouseholds({
       store: new PluginHouseholdStore(db),
       accounts,
@@ -161,25 +192,7 @@ export const startSmallHodi = async (
       },
       log: line => log.push(line)
     }),
-    // What the server's admin would be told, as Hodi builds it, without choosing how.
-    serverNotifier: pluginServerNotifier({
-      notifier: {
-        tell: async (type, notice, { important } = {}) => {
-          // As in Hodi: the same request still waiting is not told again.
-          if (important && waiting.has(important)) return { emails: 0, pushes: 0 }
-          const told = { type, ...(typeof notice === 'function' ? notice('fr') : notice) }
-          if (important) waiting.set(important, Object.assign(told, { waiting: true }))
-          serverNotices.push(told)
-          return { emails: 0, pushes: 0 }
-        },
-        handled: key => {
-          const told = waiting.get(key)
-          if (told) told.waiting = false
-          waiting.delete(key)
-        }
-      },
-      log: line => log.push(line)
-    }),
+    serverNotifier: smallServerNotifier(serverNotices, log),
     ai,
     serverSettings: () => ({
       articleDays: 3,
@@ -191,5 +204,10 @@ export const startSmallHodi = async (
     }),
     log: line => log.push(line)
   })
+  // ctx.accounts.remove: the account goes and the plugins hear of it, as in Hodi.
+  removals.remove = account => {
+    new AccountDataStore(db).deleteFromServer(account, [], now())
+    registry.accountDeleted(account.id)
+  }
   return { db, householdId, accounts, store, profiles, ai, registry }
 }

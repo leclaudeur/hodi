@@ -15,7 +15,8 @@ import type { LoginThrottle } from '../auth/login-throttle.ts'
 import type { FollowedAlerts } from '../news/followed-alerts.ts'
 import type { NewsService } from '../news/news-service.ts'
 import { pluginArticles } from '../plugins/articles.ts'
-import { pluginAccounts } from '../plugins/accounts.ts'
+import { type AccountHooks, pluginAccounts } from '../plugins/accounts.ts'
+import { PluginAccountStore } from '../db/plugin-account-store.ts'
 import { type HouseholdHooks, pluginHouseholds } from '../plugins/households.ts'
 import { pluginMailer } from '../plugins/mail.ts'
 import { pluginNotifier } from '../plugins/notify.ts'
@@ -39,6 +40,7 @@ interface PluginWiring {
   alerts: FollowedAlerts
   serverNotices: ServerNotifier
   hooks: HouseholdHooks
+  accountHooks: AccountHooks
   throttle: LoginThrottle
   mailSettings: MailSettingsStore
   serverSettings: ServerSettingsStore
@@ -73,7 +75,13 @@ export const startPlugins = async (wiring: PluginWiring) => {
     ai: pluginAiCalls,
     scheduleTasks: true,
     articles: pluginArticles(news),
-    accounts: pluginAccounts({ accounts, logins: new AccountLoginStore(db), throttle: wiring.throttle }),
+    accounts: pluginAccounts({
+      accounts,
+      logins: new AccountLoginStore(db),
+      made: new PluginAccountStore(db),
+      hooks: wiring.accountHooks,
+      throttle: wiring.throttle
+    }),
     // A plugin's notification, on the devices of a profile that want it (Réglages › Notifications › Plugins).
     notifier: pluginNotifier({
       householdOf: profileId => profiles.householdOf(profileId),

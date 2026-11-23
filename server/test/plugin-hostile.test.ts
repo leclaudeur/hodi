@@ -33,7 +33,8 @@ import { OUTDATED_API } from '../plugins/manifest.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 import { MAX_WAITING_CALLS, threadCostMb } from '../plugins/sandbox/sandbox.ts'
 import { pluginMailer } from '../plugins/mail.ts'
-import { pluginAccounts } from '../plugins/accounts.ts'
+import { accountHooks, pluginAccounts } from '../plugins/accounts.ts'
+import { PluginAccountStore } from '../db/plugin-account-store.ts'
 import { householdHooks, pluginHouseholds } from '../plugins/households.ts'
 import { PluginHouseholdStore } from '../db/plugin-household-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
@@ -336,7 +337,13 @@ describe('hostile plugins', () => {
       isPublicUrl: async url =>
         (url.hostname.endsWith('.test') && url.hostname !== 'rebind.test') || isPublicAddressUrl(url),
       timeoutMs: TIMEOUT_MS,
-      accounts: pluginAccounts({ accounts: new UserAccountStore(db), logins: new AccountLoginStore(db), throttle }),
+      accounts: pluginAccounts({
+        accounts: new UserAccountStore(db),
+        logins: new AccountLoginStore(db),
+        made: new PluginAccountStore(db),
+        hooks: accountHooks(),
+        throttle
+      }),
       households: pluginHouseholds({
         store: new PluginHouseholdStore(db),
         accounts: new UserAccountStore(db),
