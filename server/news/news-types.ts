@@ -154,6 +154,8 @@ export interface NewsServiceOptions {
   // Each household's AI and time zone, read as the catalogue is; setAi and setTimeZone change the request's.
   aiOf?: () => AiTools | null
   timeZoneOf?: () => string
+  // A reader's own time zone (its account's), or null to use the household's.
+  readerTimeZoneOf?: (profileId: number) => string | null
   // Absent when no API key is configured: the app then offers no summaries.
   summarize?: Summarize
   writeDailySummary?: WriteDailySummary

@@ -262,7 +262,7 @@ interface NewsAiWiring {
   caps: AiCaps
   languageOf: (profileId: number) => Language
   householdLanguage: () => Language
-  timeZone: () => string
+  timeZone: (profileId: number) => string
   now: () => number
   log: (message: string) => void
 }

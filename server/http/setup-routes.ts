@@ -281,6 +281,8 @@ const mountSetupHouseholdRoute = (
       return
     }
     householdLater?.set(false)
+    // The admin's own region too: its days and its AI's searches follow it from now on.
+    accounts?.setRegion(admin.id, { timeZone: timeZone ?? undefined, country: country ?? null })
     // The install's first profile becomes the one set up here, its admin, and the server admin's own.
     const first = profiles.list().find(candidate => candidate.role === 'admin')
     if (first) {

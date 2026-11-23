@@ -105,9 +105,10 @@ const hourOf = (at: number, timeZone: string) =>
 export class GameStore {
   readonly #db: Database
   readonly #rules: GameRules
-  readonly #timeZone: () => string
+  readonly #timeZone: (profileId?: number) => string
 
-  constructor(db: Database, rules: GameRules, timeZone: () => string) {
+  // timeZone: a reader's own days, or the household's with none.
+  constructor(db: Database, rules: GameRules, timeZone: (profileId?: number) => string) {
     this.#db = db
     this.#rules = rules
     this.#timeZone = timeZone
@@ -117,9 +118,10 @@ export class GameStore {
     return this.#rules
   }
 
-  // Whether it was new: what already earned does not earn again.
+  // Whether it was new: what already earned does not earn again. Days are the reader's: changing its time zone
+  // during a day may start a new one early, once.
   #earn(profileId: number, earning: Earning, now: number): boolean {
-    const timeZone = this.#timeZone()
+    const timeZone = this.#timeZone(profileId)
     const day = dayOf(now, timeZone)
     const limit = DAILY_COUNT_LIMITS[earning.kind]
     const owner = ownerOf(this.#db, profileId)
@@ -181,7 +183,7 @@ export class GameStore {
     ) {
       return
     }
-    const day = dayOf(when, this.#timeZone())
+    const day = dayOf(when, this.#timeZone(profileId))
     if (row.topic_id) {
       this.#earn(
         profileId,
@@ -346,7 +348,7 @@ export class GameStore {
 
   // The grades named in the reader's language.
   summary(profileId: number, now: number, language: Language = 'fr'): GameSummary {
-    const monday = mondayOf(dayOf(now, this.#timeZone()))
+    const monday = mondayOf(dayOf(now, this.#timeZone(profileId)))
     const row = this.#db
       .prepare(
         `SELECT COALESCE(SUM(points), 0) AS total, COALESCE(SUM(CASE WHEN day >= ? THEN points END), 0) AS week

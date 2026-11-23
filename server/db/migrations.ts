@@ -1134,6 +1134,16 @@ const MIGRATIONS: string[] = [
     )
     WHERE id = NEW.id;
   END;
+  `,
+  // The time zone and country belong to the person: their days (a young reader's hours, the game's points) and their
+  // AI's searches follow where they live. Each account starts with its household's.
+  `
+  ALTER TABLE users ADD COLUMN time_zone TEXT;
+  ALTER TABLE users ADD COLUMN country TEXT;
+  UPDATE users SET (time_zone, country) = (
+    SELECT accounts.time_zone, accounts.country FROM profiles JOIN accounts ON accounts.id = profiles.account_id
+    WHERE profiles.user_id = users.id ORDER BY profiles.id DESC LIMIT 1
+  );
   `
 ]
 
