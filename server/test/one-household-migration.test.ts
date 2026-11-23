@@ -54,7 +54,7 @@ describe('the households merged into one', () => {
     )
   })
 
-  it('keeps one profile per account, its first household’s, and leaves the other with no account', () => {
+  it('keeps one profile per account, its first household’s, and deletes the other with what was sent to it', () => {
     const db = new DatabaseSync(':memory:')
     db.exec('PRAGMA foreign_keys = ON')
     migrate(db, versionBefore('CREATE TEMP TABLE merged_positions'))
@@ -64,7 +64,9 @@ describe('the households merged into one', () => {
       DELETE FROM profiles;
       INSERT INTO profiles (id, account_id, name, color, position, created_at, role, user_id) VALUES
         (1, 1, 'Marc', 'tech', 0, 0, 'admin', 7),
-        (2, 2, 'Marc', 'world', 0, 0, 'admin', 7);
+        (2, 2, 'Marc', 'world', 0, 0, 'admin', 7),
+        (3, 2, 'Lina', 'music', 1, 0, 'member', NULL);
+      INSERT INTO shares (profile_id, article_id, from_profile, item, shared_at) VALUES (2, 'a', 3, '{}', 0);
     `)
 
     migrate(db)
@@ -76,8 +78,10 @@ describe('the households merged into one', () => {
         .map(row => Object.values(row)),
       [
         [1, 1, 7],
-        [2, 1, null]
+        [3, 1, null]
       ]
     )
+    // Nothing of the profile that went stays for anyone to open: no account-less profile holds the person's shares.
+    assert.equal((db.prepare('SELECT COUNT(*) AS n FROM shares').get() as { n: number }).n, 0)
   })
 })
