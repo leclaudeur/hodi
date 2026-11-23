@@ -124,7 +124,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   update your plugins together with Hodi.
 - **Household photos.** Nothing showed them any more: the server deletes the ones it still kept.
 - **The household admin role.** What it allowed (other adults' profiles, the game switch, stored texts, other people's
-  sources, the plugins' AI use) is now the server admin's alone, and Pass the admin role is gone.
+  sources, the plugins' AI use and the plugins for the admin only) is now the server admin's alone, and Pass the admin
+  role is gone. On a household where the admin was another adult than the server's admin, that adult loses them.
 - **Devices linked to a young profile by a code.** A teen or a child now signs in with the account a parent made in
   My account › My children. A device still linked by a code is signed out: sign it in with that account.
 
