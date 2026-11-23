@@ -1087,9 +1087,8 @@ describe('profiles', () => {
     })
     assert.equal(photo.status, 409)
 
-    // Deleting stays the admin's.
-    assert.equal((await call('DELETE', `/profiles/${max.id}`, { cookie: asParent })).status, 403)
-    assert.equal((await call('DELETE', `/profiles/${max.id}`)).status, 204)
+    // Deleting is a parent's, as everything else about a young profile: here, with no accounts, any adult's.
+    assert.equal((await call('DELETE', `/profiles/${max.id}`, { cookie: asParent })).status, 204)
     assert.equal((await call('DELETE', `/profiles/${parent.id}`, { body: { password: PASSWORD } })).status, 204)
   })
 

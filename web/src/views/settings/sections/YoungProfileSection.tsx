@@ -11,13 +11,14 @@ import Button from '../../../ui/Button.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
 import StatusLine from '../../../ui/StatusLine.tsx'
 import CodeDialog from '../../profiles/CodeDialog.tsx'
+import ChildPasswordRow from '../../profiles/ChildPasswordRow.tsx'
 import YoungDevices from '../../profiles/YoungDevices.tsx'
 import RichText from '../../../ui/RichText.tsx'
 import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
-import { AiRows, ReadingRows, TimeRows, WeekRows, YoungHead } from './young/YoungRows.tsx'
+import { ReadingRows, TimeRows, WeekRows, YoungHead } from './young/YoungRows.tsx'
 import { dialogsOf } from './young/young-dialogs.tsx'
 import { type Opened, useYoungLoad } from './young/young-load.ts'
 
@@ -67,8 +68,8 @@ const confirmRemove = (id: number, name: string, close: () => void, t: TFunction
     }
   })
 
-// Réglages > Profils > Gérer: a young profile's page, for its parents. What it reads (sources, themes), when and how
-// long (time per day, hours, quiet hours), its AI explanations, and its week. Every change happens in a dialog.
+// Mon compte › Mes enfants › Gérer: a young one's page, for its parents. What it reads (sources, themes), when and how
+// long (time per day, hours, quiet hours), its week, its password and devices. Every change happens in a dialog.
 const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => {
   const { t } = useTranslation()
   const value = useProfiles({ fresh: true })
@@ -102,9 +103,6 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
       <h2 className={styles.label}>{t('young.time')}</h2>
       <TimeRows {...rows} />
 
-      <h2 className={styles.label}>{t('young.ai')}</h2>
-      <AiRows {...rows} />
-
       <h2 className={styles.label}>{t('young.followUp')}</h2>
       <WeekRows {...rows} />
 
@@ -113,6 +111,7 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
         <>
           <h2 className={styles.label}>{t('young.devices')}</h2>
           <div className={styles.card}>
+            <ChildPasswordRow profileId={profile.id} />
             <YoungDevices profile={profile} />
             <SettingRow
               label={t('young.ownDevice')}
@@ -123,8 +122,8 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
         </>
       )}
 
-      {/* Only the admin deletes a profile. */}
-      {admin && (
+      {/* Its parents delete it, with its account. */}
+      {own?.kind === 'adult' && (
         <>
           <h2 className={styles.label}>{t('young.profile')}</h2>
           <div className={styles.card}>

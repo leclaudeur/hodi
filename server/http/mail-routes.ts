@@ -77,7 +77,8 @@ export const mailRoutes = ({
     // The account signed in, even when it has no profile: a server's admin outside any household tests too.
     const accountId = response.locals.accountId as number | undefined
     const account = accountId === undefined ? accounts.ofProfile(profileIdOf(response)) : accounts.get(accountId)
-    if (!settings || !account) {
+    const email = account?.email
+    if (!settings || !email) {
       response.status(409).json({ error: 'not_configured' })
       return
     }
@@ -94,8 +95,8 @@ export const mailRoutes = ({
         hodiFrame(language, { appUrl: settings.appUrl, home: home() }),
         language
       )
-      await send(settings, { to: account.email, subject: t('mail.test.subject'), text, html })
-      response.json({ to: account.email })
+      await send(settings, { to: email, subject: t('mail.test.subject'), text, html })
+      response.json({ to: email })
     } catch (error) {
       response.status(502).json({ error: error instanceof MailError ? `mail_${error.reason}` : 'mail_unreachable' })
     }

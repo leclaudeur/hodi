@@ -86,6 +86,8 @@ const sendMail = async (
     hodiFrame(language, { appUrl: settings.appUrl, home: deps.mail.home?.() ?? null }),
     language
   )
+  // A young account has no e-mail; only the server's admins get these, and they all have one.
+  if (!account.email) return
   await deps.mail.send(settings, { to: account.email, subject: `${notice.from} · ${notice.title}`, text, html })
 }
 

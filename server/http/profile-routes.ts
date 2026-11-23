@@ -17,6 +17,7 @@ import {
   isHere,
   mountCurrentRoutes
 } from './profile-current-routes.ts'
+import { isParentOfYoung } from './parent-check.ts'
 import { isAccountGuard, lockOf } from './profile-guard.ts'
 import { type CheckProof, askingWithProof } from './proof.ts'
 import { mountPhotoRoutes } from './profile-photos.ts'
@@ -30,15 +31,9 @@ const isAvatar = (value: unknown): value is ProfileAvatar => PROFILE_AVATARS.inc
 export const PIN_MAX_FAILURES = 5
 export const PIN_GLOBAL_MAX_FAILURES = 50
 
-// The profile a request is for, set by the app's middleware.
-export const profileIdOf = (response: express.Response) => response.locals.profileId as number
+import { isAdminOf, isParentOf, kindOf, profileIdOf } from './request-locals.ts'
 
-// Whether that profile is the household's admin (always, in an app without profiles).
-export const isAdminOf = (response: express.Response) => response.locals.admin === true
-
-// The kind of the profile a request is for: an adult is a parent of the household's young profiles.
-export const kindOf = (response: express.Response) => (response.locals.kind as ProfileKind | undefined) ?? 'adult'
-export const isParentOf = (response: express.Response) => kindOf(response) === 'adult'
+export { isAdminOf, isParentOf, kindOf, profileIdOf }
 
 // The household's shared things (its profiles, its stored texts) are the admin's to change.
 export const requireAdmin: express.RequestHandler = (_request, response, next) => {
@@ -84,10 +79,17 @@ const profileHelpers = ({ profiles, accounts, checkProof }: ProfileRoutesOptions
 
   // A member changes its own name, colour and photo; the admin every profile's; a parent the young profiles'.
   const mayManage = (target: Profile, response: express.Response) =>
-    isAdminOf(response) || (isParentOf(response) && isYoung(target))
+    isYoung(target) ? isParentOfYoung(response, accounts, target) : isAdminOf(response)
   const mayChange = (id: number, response: express.Response) => {
     if (id === profileIdOf(response) || mayManage(profiles.get(id)!, response)) return true
     response.status(403).json({ error: 'admin_only' })
+    return false
+  }
+
+  // An adult's, the admin's to delete; a teen's or a child's, its parents'.
+  const mayDelete = (target: Profile, response: express.Response) => {
+    if (isYoung(target) ? isParentOfYoung(response, accounts, target) : isAdminOf(response)) return true
+    response.status(403).json({ error: isYoung(target) ? 'parents_only' : 'admin_only' })
     return false
   }
 
@@ -98,7 +100,7 @@ const profileHelpers = ({ profiles, accounts, checkProof }: ProfileRoutesOptions
     return (await askingWithProof(checkProof, accounts, request, response)) !== null
   }
 
-  return { idOf, mayManage, mayChange, withProof }
+  return { idOf, mayManage, mayChange, mayDelete, withProof }
 }
 
 type ProfileHelpers = ReturnType<typeof profileHelpers>
@@ -152,6 +154,9 @@ const mountListRoutes = (router: express.Router, options: ProfileRoutesOptions) 
       response.status(409).json({ error: 'limit' })
       return
     }
+    // Every teen and child has an account, run by the parent who made it; it gets a password from its card.
+    const parent = accounts?.ofProfile(profileIdOf(response))
+    if (kind !== 'adult' && accounts) accounts.young.adopt(profile.id, parent ? [parent.id] : [], now())
     onCreate?.(profile.id)
     response.status(201).json(profile)
   })
@@ -194,6 +199,12 @@ const mountEditRoutes = (
       response.status(403).json({ error: 'parents_only' })
       return
     }
+    // An adult's account and a young one's are not the same kind of account: the way from one to the other is still to
+    // come.
+    if (kindChange && target.hasAccount && isYoung(target) !== (kind !== 'adult')) {
+      response.status(409).json({ error: 'kind_fixed' })
+      return
+    }
     const updated = profiles.update(id, {
       name,
       color,
@@ -222,9 +233,10 @@ const mountEditRoutes = (
 const mountAdminRoutes = (
   router: express.Router,
   { profiles, accounts, checkProof, onDelete }: ProfileRoutesOptions,
-  { idOf, withProof }: ProfileHelpers
+  { idOf, mayDelete, withProof }: ProfileHelpers
 ) => {
-  router.delete('/:id', requireAdmin, async (request, response) => {
+  // An adult's, the admin's; a teen's or a child's, its parents'.
+  router.delete('/:id', async (request, response) => {
     const id = idOf(request)
     if (id === null) {
       response.status(404).json({ error: 'not_found' })
@@ -232,12 +244,16 @@ const mountAdminRoutes = (
     }
     // The admin's profile stays, whatever is typed.
     const target = profiles.get(id)!
+    if (!mayDelete(target, response)) return
     if (target.role === 'admin') {
       response.status(409).json({ error: 'admin_profile' })
       return
     }
     if (!(await withProof(target, request, response))) return
-    if (!profiles.delete(id)) {
+    // A teen's or a child's account goes with its profile.
+    const young = isYoung(target) ? accounts?.ofProfile(id) : null
+    if (young) accounts!.young.delete(profiles, { accountId: young.id, profileId: id })
+    else if (!profiles.delete(id)) {
       response.status(409).json({ error: 'admin_profile' })
       return
     }

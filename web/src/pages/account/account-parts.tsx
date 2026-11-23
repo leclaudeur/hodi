@@ -1,4 +1,4 @@
-import { ChartColumn, Database, Globe, KeyRound, type LucideIcon, Sparkles, UserRound } from 'lucide-react'
+import { ChartColumn, Database, Globe, KeyRound, type LucideIcon, Sparkles, UserRound, Users } from 'lucide-react'
 import { type ReactNode, Suspense, lazy, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AccountView } from '../../api.ts'
@@ -15,12 +15,14 @@ import RegionCard from '../../views/settings/sections/RegionCard.tsx'
 import StatsSkeleton from '../../views/settings/sections/StatsSkeleton.tsx'
 import { useTopics } from '../use-home.ts'
 import AiPart from './AiPart.tsx'
+import ChildrenPart from './ChildrenPart.tsx'
 
 // The chart library loads with the stats only.
 const StatsSection = lazy(() => import('../../views/settings/sections/StatsSection.tsx'))
 
 export const PART_ICONS: Record<AccountPart, LucideIcon> = {
   profile: UserRound,
+  children: Users,
   'sign-in': KeyRound,
   region: Globe,
   ai: Sparkles,
@@ -28,12 +30,13 @@ export const PART_ICONS: Record<AccountPart, LucideIcon> = {
   data: Database
 }
 
-// The sections this account has. A young profile has no account: this device and its stats. An account in no
-// household has no profile to show.
+// The sections this account has. A young profile open on another's device: this device and its stats. A teen's or a
+// child's own account: its parents run it, so only its stats. An account in no household has no profile to show.
 export const partsOf = (account: AccountView | null, inHousehold: boolean): AccountPart[] => {
   if (account === null) return ['sign-in', 'stats']
+  if (account.young) return ['stats']
   return inHousehold
-    ? ['profile', 'sign-in', 'region', 'ai', 'stats', 'data']
+    ? ['profile', 'children', 'sign-in', 'region', 'ai', 'stats', 'data']
     : ['sign-in', 'region', 'ai', 'stats', 'data']
 }
 
@@ -78,6 +81,8 @@ export const PartBody = ({
   }
   if (account === null) return <DevicePart />
   switch (part) {
+    case 'children':
+      return <ChildrenPart />
     case 'profile':
       return <AccountProfile account={account} onAccount={onAccount} />
     case 'sign-in':

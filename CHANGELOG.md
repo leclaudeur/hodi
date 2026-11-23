@@ -14,8 +14,16 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   from the first name when the account is made (first-run screens, an invitation's code), says at once whether it is
   free, and changes once every 30 days in My account. Existing accounts get one from their profile's name. Sign in
   with the e-mail or the username.
+- **Teens' and children's accounts.** A parent creates them in My account › My children: teen or child, first name,
+  @username and the password the parent chooses. The young one signs in with that username and password; the parent
+  changes the password from their card. Existing teen and child profiles become accounts linked to the household's
+  adults, with no password until a parent chooses one.
 
 ### Changed
+
+- **Only a young one's parents manage them.** Their card, rules, devices and deletion are their parents' only: the
+  server's admin no longer has a say over other people's children. The Parental code moves to My account › My
+  children, and teens and children no longer have AI settings of their own.
 
 - **Stats and points belong to the account.** An adult's readings, stats, points and badges are their account's,
   not their profile's: they stay the same in any household, after leaving one or being removed from it, and My

@@ -63,6 +63,7 @@ export class ServerPeopleStore {
          FROM users u
          LEFT JOIN profiles p ON p.user_id = u.id
          LEFT JOIN accounts a ON a.id = p.account_id
+         WHERE u.email IS NOT NULL
          ORDER BY u.id`
       )
       .all() as {

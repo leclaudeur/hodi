@@ -308,8 +308,6 @@
     "switch": "Changer de profil",
     "switchFrom": "{{name}}, changer de profil",
     "create": "Créer un profil",
-    "new": "Nouveau profil",
-    "added": "{{name}} ajouté",
     "yours": "{{name}}, mon profil",
     "of": "Profil de {{name}}",
     "loadFailed": "Impossible de charger les profils. Recharge la page dans un instant.",
@@ -1394,11 +1392,10 @@
       "tourHintTeen": "Le fil et comment demander une source, pas à pas"
     },
     "profiles": {
-      "intro": "Les ados et les enfants, chacun avec ses sources, ses horaires et son temps par jour. Chaque adulte les ajoute et les gère ; les adultes, eux, ont chacun leur compte.",
+      "intro": "Les ados et les enfants, chacun avec ses sources, ses horaires et son temps par jour. Chacun a son compte, géré par ses parents dans <i>Mon compte › Mes enfants</i>.",
       "deleteTitle": "Supprimer {{name}} ?",
       "deleteMessage": "Ses enregistrés, ses lectures et ses réglages sont supprimés aussi. Impossible d’annuler.",
       "active": "Actif",
-      "add": "Ajouter un profil",
       "groups": {
         "teens": "Ados",
         "children": "Enfants"
@@ -2620,15 +2617,45 @@
       "region": "Région",
       "ai": "IA et crédits",
       "stats": "Statistiques",
-      "data": "Données"
+      "data": "Données",
+      "children": "Mes enfants"
     },
     "intros": {
       "profile": "Le prénom, la photo et la couleur que les autres voient, et la langue de Hodi.",
       "sign-in": "Comment tu te connectes, et les appareils où le compte est ouvert.",
       "region": "Le fuseau horaire dit quand commence une journée : celle des statistiques, du <i>Résumé du jour</i> et des badges.",
       "data": "Une copie de tout ce que Hodi garde du compte, ou sa suppression.",
-      "ai": "Chaque bouton violet est un appel à l’IA, payé avec la clé d’API de ce compte : rien ne part sans un clic. Les appels se comptent sur 24 heures glissantes ; plafond atteint, les boutons violets se désactivent."
+      "ai": "Chaque bouton violet est un appel à l’IA, payé avec la clé d’API de ce compte : rien ne part sans un clic. Les appels se comptent sur 24 heures glissantes ; plafond atteint, les boutons violets se désactivent.",
+      "children": "Les comptes des ados et des enfants que tu gères : chacun se connecte avec son identifiant et le mot de passe que tu choisis."
     },
     "noStats": "Rien de lu pour l’instant."
+  },
+  "children": {
+    "create": {
+      "title": "Créer un compte",
+      "passwordTitle": "Le mot de passe de {{name}}",
+      "button": "Créer",
+      "done": "Compte de {{name}} créé",
+      "handleTaken": "Cet identifiant est déjà pris : reviens en arrière pour en choisir un autre.",
+      "failed": "Le compte n’a pas pu être créé. Réessaie."
+    },
+    "empty": {
+      "title": "Aucun compte pour l’instant",
+      "text": "Crée le compte d’un ado ou d’un enfant : il se connecte avec son identifiant."
+    },
+    "password": {
+      "label": "Mot de passe",
+      "hint": "Se connecte avec @{{handle}}",
+      "none": "Pas encore de mot de passe pour @{{handle}}",
+      "change": "Changer",
+      "choose": "Choisir",
+      "title": "Le mot de passe de {{name}}",
+      "intro": "Ses appareils se connectent avec <b>@{{handle}}</b> et ce mot de passe. Ceux qui utilisaient l’ancien devront se reconnecter.",
+      "confirmTitle": "Changer le mot de passe de {{name}} ?",
+      "confirmText": "Tape ton propre mot de passe pour confirmer.",
+      "saved": "Mot de passe de {{name}} enregistré",
+      "actionLabel": "Mot de passe de {{name}}"
+    },
+    "loadFailed": "Impossible de charger tes enfants."
   }
 }

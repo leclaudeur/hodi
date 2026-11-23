@@ -90,9 +90,6 @@ export interface ProfileChanges {
   avatar?: ProfileAvatarName
 }
 
-export const createProfile = (name: string, color: ProfileColor, { kind, avatar }: ProfileChanges = {}) =>
-  sendJson<Profile>('POST', '/profiles', { name, color, kind, avatar })
-
 export const updateProfile = (id: number, changes: ProfileChanges) =>
   sendJson<Profile>('PATCH', `/profiles/${id}`, changes)
 

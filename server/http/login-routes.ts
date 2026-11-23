@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { cleanHandle } from '../../shared/handle.ts'
 import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
-import { hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
+import { NO_PASSWORD, hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
 import { SecondStepTickets } from '../auth/second-step-tickets.ts'
 import { clearedProfileCookie, clearedSessionCookie, profileCookie, profileToken } from '../auth/session.ts'
 import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
@@ -166,7 +166,9 @@ const mountLoginRoute = (
       return
     }
     decoyHash ??= hashPassword(randomBytes(16).toString('hex'))
-    const valid = await verifyPassword(password, account?.passwordHash ?? (await decoyHash))
+    // An account with no password yet takes as long as any other.
+    const hash = account && account.passwordHash !== NO_PASSWORD ? account.passwordHash : await decoyHash
+    const valid = (await verifyPassword(password, hash)) && account?.passwordHash !== NO_PASSWORD
     if (!account || !valid) {
       throttle.recordFailure(now(), client)
       response.status(401).json({ error: 'invalid_credentials' })
