@@ -8,7 +8,7 @@ import {
   getDailySummary,
   writeDailySummary
 } from '../api.ts'
-import { aiLeft, refreshAiUsage } from './ai-left.ts'
+import { refreshAiUsage } from './ai-left.ts'
 import { type Preferences, orderTopics } from './preferences.ts'
 import { showError } from './toast.ts'
 
@@ -76,11 +76,6 @@ const pollDailySummary = async (): Promise<DailySummaryResult> => {
 // Writes a new daily summary: the bubble or the story's violet buttons, once at a time. Throws UnauthorizedError only.
 export const requestDailySummary = async () => {
   if (writing) return
-  // The day's cap reached: said at once, no call is made.
-  if (aiLeft('dailySummary') === 0) {
-    reportFailure('limited')
-    return
-  }
   setWriting(true)
   try {
     const result = await pollDailySummary()

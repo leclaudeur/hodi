@@ -95,10 +95,10 @@ describe('a reader’s days', () => {
 describe('a reader’s Résumé du jour', () => {
   it('lasts until midnight in its own time zone', async () => {
     const { DailySummaries } = await import('../news/daily-summaries.ts')
-    const { AiLedger, AI_CAPS } = await import('../news/ai-ledger.ts')
+    const { AiLedger } = await import('../news/ai-ledger.ts')
     let now = Date.UTC(2026, 10, 20, 9, 0)
     const zones: Record<number, string> = { 1: 'UTC', 2: 'Pacific/Kiritimati' }
-    const ledger = new AiLedger({ profiles: () => [], caps: AI_CAPS, now })
+    const ledger = new AiLedger({ now })
     const summaries = new DailySummaries({
       ledger,
       languageOf: () => 'fr',

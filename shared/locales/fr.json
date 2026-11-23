@@ -832,36 +832,34 @@
   },
   "summary": {
     "summarizeArticle": "Résumer l’article",
-    "capped": "Plus de résumés aujourd’hui : la limite du jour est atteinte.",
     "offer": "L’essentiel de l’article.",
     "summarize": "Résumer",
     "title": "L’essentiel",
     "writing": "Résumé en cours…",
     "note": "Écrit par l’IA · peut contenir des erreurs",
     "errors": {
-      "limited": "La limite de résumés du jour est atteinte. Réessaie demain.",
       "refused": "L’IA n’a pas pu résumer cet article.",
       "unreadable": "Cet article ne peut pas être résumé.",
       "unknown": "Cet article n’est plus dans les flux.",
       "unavailable": "Les résumés IA ne sont pas activés sur le serveur.",
-      "failed": "Le résumé n’a pas pu être généré."
+      "failed": "Le résumé n’a pas pu être généré.",
+      "limited": "Trop de demandes à l’IA en une minute. Réessaie dans un instant."
     }
   },
   "questions": {
     "ask": "Poser une question",
     "sources": "Sources",
     "answering": "Réponse en cours…",
-    "capped": "Plus de questions aujourd’hui : limite atteinte",
     "placeholder": "Une question sur cet article ?",
     "yours": "Question",
     "send": "Envoyer la question",
     "errors": {
-      "limited": "La limite de questions du jour est atteinte. Réessaie demain.",
       "refused": "L’IA n’a pas pu répondre à cette question.",
       "unreadable": "Cet article ne peut pas être analysé.",
       "unknown": "Cet article n’est plus dans les flux.",
       "unavailable": "Les questions IA ne sont pas activées sur le serveur.",
-      "noAnswer": "Pas de réponse pour le moment. Réessaie."
+      "noAnswer": "Pas de réponse pour le moment. Réessaie.",
+      "limited": "Trop de demandes à l’IA en une minute. Réessaie dans un instant."
     }
   },
   "shareMenu": {
@@ -920,13 +918,12 @@
     "errors": {
       "failed": "Le Résumé du jour n’a pas pu être écrit.",
       "refused": "L’IA a refusé d’écrire le Résumé du jour.",
-      "limited": "Assez de Résumés du jour pour aujourd’hui : réessaie demain."
+      "limited": "Trop de demandes à l’IA en une minute. Réessaie dans un instant."
     },
     "yesterdayAt": "HIER {{time}}",
     "writingShort": "Écriture…",
     "regenerate": "Régénérer",
     "writeNew": "Écrire un nouveau résumé (1 appel)",
-    "capped": "Plus de Résumé du jour aujourd’hui : la limite du jour est atteinte",
     "upToDate": "Déjà à jour : un nouveau résumé est possible dès {{time}}",
     "listen": "Écouter tout le résumé",
     "writing": "L’IA écrit le Résumé du jour…",
@@ -1205,8 +1202,8 @@
       "stats": "Lectures et vidéos",
       "on": "Activé",
       "off": "Désactivé",
-      "callsLeft_one": "{{count}} appel restant aujourd’hui",
-      "callsLeft_other": "{{count}} appels restants aujourd’hui",
+      "callsUsed_one": "{{count}} appel sur 24 heures",
+      "callsUsed_other": "{{count}} appels sur 24 heures",
       "aiOff": "Non activée",
       "ai": "Appels du jour",
       "onPlural": "Activées",
@@ -1584,7 +1581,6 @@
       "followed": "Déjà suivie.",
       "failed": "La source n’a pas pu être ajoutée. Réessaie dans un instant."
     },
-    "capped": "Plus de suggestions aujourd’hui : la limite du jour est atteinte.",
     "offer": "Des sources pour {{topic}}, trouvées par l’IA.",
     "pickTopic": "Choisis un thème, l’IA te propose des sources.",
     "button": "Suggérer",
@@ -1592,9 +1588,9 @@
     "errors": {
       "unavailable": "L’IA n’est pas activée sur ce serveur.",
       "not_found": "Ce thème n’existe plus.",
-      "limited": "Plus de suggestions pour aujourd’hui : la limite du jour est atteinte. Reviens demain.",
       "refused": "L’IA n’a pas pu proposer de sources pour ce thème.",
-      "failed": "Les suggestions n’ont pas pu être faites. Réessaie dans un instant."
+      "failed": "Les suggestions n’ont pas pu être faites. Réessaie dans un instant.",
+      "limited": "Trop de demandes à l’IA en une minute. Réessaie dans un instant."
     },
     "noFeed": "Aucun site proposé n’a de flux lisible. Réessaie plus tard.",
     "last": "Dernier article : {{title}}"
@@ -1672,7 +1668,6 @@
       "sources": "Suggestions de sources",
       "plugin": "Plugins"
     },
-    "resetKindLabel": "Réinitialiser : {{kind}}",
     "replaceKey": "Remplacer la clé",
     "turnOn": "Activer l’IA",
     "keyFailed": "La clé n’a pas pu être enregistrée. Réessaie dans un instant.",
@@ -1688,8 +1683,6 @@
     "off": "IA non activée",
     "offAdmin": "Ajoute une clé d’API pour les résumés, les questions et le Résumé du jour.",
     "addKey": "Ajouter une clé",
-    "resetDone": "Réinitialisé",
-    "resetFailed": "La réinitialisation a échoué. Réessaie dans un instant.",
     "yours": "Appels · 24 heures",
     "plugins": {
       "title": "Plugins",
@@ -1697,7 +1690,9 @@
       "calls_other": "{{count}} appels sur 24 heures",
       "toggle": "IA pour {{name}}",
       "failed": "Le changement n’a pas été enregistré. Réessaie dans un instant."
-    }
+    },
+    "calls_one": "appel",
+    "calls_other": "appels"
   },
   "push": {
     "someone": "Quelqu’un",
@@ -1767,13 +1762,6 @@
       "message": "Les boutons violets disparaissent <b>pour ce compte</b>, jusqu’à ce qu’une nouvelle clé soit ajoutée. Les résumés et les réponses déjà écrits restent.",
       "button": "Retirer la clé"
     },
-    "kinds": {
-      "summary": "les résumés",
-      "question": "les questions",
-      "dailySummary": "les Résumés du jour",
-      "sources": "les suggestions de sources",
-      "plugin": "les demandes des plugins"
-    },
     "deleteAccount": {
       "title": "Supprimer le compte ?",
       "message": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
@@ -1827,12 +1815,6 @@
       "messageLast_one": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quitte aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte pourra le reconnecter quand il veut.",
       "messageLast_other": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quittent aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte pourra le reconnecter quand il veut.",
       "button": "Se déconnecter"
-    },
-    "resetMine": {
-      "title": "Recharger l’IA ?",
-      "message": "Les appels à l’IA des dernières 24 heures ne comptent plus : tous les crédits du jour reviennent.",
-      "kindMessage": "Les appels pour <b>{{kind}}</b> des dernières 24 heures ne comptent plus : ces crédits du jour reviennent.",
-      "button": "Recharger"
     }
   },
   "dialogIntro": {
@@ -2010,7 +1992,7 @@
     "aiButton": {
       "unavailable": "L’IA n’est pas activée pour ce foyer.",
       "off": "L’admin du foyer a coupé l’IA de ce plugin.",
-      "limited": "Plafond du jour atteint pour les plugins.",
+      "limited": "Trop de demandes à l’IA pour l’instant. Réessaie plus tard.",
       "refused": "L’IA n’a pas voulu répondre à cette demande.",
       "failed": "La demande n’a pas abouti. Réessaie dans un instant."
     },
@@ -2607,7 +2589,7 @@
       "sign-in": "Comment tu te connectes, et les appareils où le compte est ouvert.",
       "region": "Le fuseau horaire dit quand commence une journée : celle des statistiques, du <i>Résumé du jour</i> et des badges.",
       "data": "Une copie de tout ce que Hodi garde du compte, ou sa suppression.",
-      "ai": "Chaque bouton violet est un appel à l’IA, payé avec la clé d’API de ce compte : rien ne part sans un clic. Les appels se comptent sur 24 heures glissantes ; plafond atteint, les boutons violets se désactivent.",
+      "ai": "Chaque bouton violet est un appel à l’IA, payé avec la clé d’API de ce compte : rien ne part sans un clic. Les appels se comptent sur 24 heures glissantes, sans plafond : la clé est à toi.",
       "children": "Les comptes des ados et des enfants que tu gères : chacun se connecte avec son identifiant et le mot de passe que tu choisis."
     },
     "noStats": "Rien de lu pour l’instant."

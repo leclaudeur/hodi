@@ -1,9 +1,8 @@
 import type { Catalog, Language } from './catalog.ts'
 import { type PluginQuestion, SummaryRefusedError } from './summarizer.ts'
-import type { AiCallKind } from '../db/ai-queries.ts'
 import type { NewsStore } from '../db/news-store.ts'
 import { labelIn } from '../labels.ts'
-import { type AiCaps, AiLedger, type AiUsage } from './ai-ledger.ts'
+import { AiLedger, type AiUsage } from './ai-ledger.ts'
 import { DailySummaries } from './daily-summaries.ts'
 import { NO_FILTER, type ReaderFilter } from './reader-filter.ts'
 import type {
@@ -64,13 +63,9 @@ export class NewsAi {
     return this.toolsOf(profileId)?.summarize !== undefined
   }
 
-  // Calls to the API in the last 24 hours, against each daily cap: the reader's "IA et crédits".
+  // Calls to the API in the last 24 hours: the reader's "IA et crédits".
   usage(profileId: number): AiUsage {
     return this.#options.ledger.usage(profileId, this.#options.now(), this.canSummarize(profileId))
-  }
-
-  reset(kind: AiCallKind | null, profileId: number) {
-    this.#options.ledger.reset(kind, profileId, this.#options.now())
   }
 
   // "Suggérer des sources" for a topic: one call to the API, within its daily cap. The sites still need
@@ -114,12 +109,9 @@ export class NewsAi {
     }
   }
 
-  // Whether the 'plugin' caps still leave this profile a call today.
+  // Whether this person has an AI a plugin may ask.
   pluginAiLeft(profileId: number) {
-    return (
-      this.toolsOf(profileId)?.askForPlugin !== undefined &&
-      this.#options.ledger.hasLeft('plugin', profileId, this.#options.now())
-    )
+    return this.toolsOf(profileId)?.askForPlugin !== undefined
   }
 
   // The reader's calls of each plugin in the last 24 hours, for its IA et crédits.
@@ -257,7 +249,6 @@ interface NewsAiWiring {
   tools: Partial<AiTools>
   aiOf: ((profileId: number) => AiTools | null) | undefined
   store: NewsStore | undefined
-  caps: AiCaps
   languageOf: (profileId: number) => Language
   householdLanguage: () => Language
   timeZone: (profileId: number) => string
@@ -266,9 +257,9 @@ interface NewsAiWiring {
 }
 
 // The ledger and the Résumé du jour the AI's buttons share, for the news service.
-export const createNewsAi = ({ store, caps, timeZone, ...wiring }: NewsAiWiring, news: NewsReader) => {
+export const createNewsAi = ({ store, timeZone, ...wiring }: NewsAiWiring, news: NewsReader) => {
   const { languageOf, now, log } = wiring
-  const ledger = new AiLedger({ store, caps, now: now() })
+  const ledger = new AiLedger({ store, now: now() })
   const dailySummaries = new DailySummaries({ store, ledger, languageOf, timeZone, now, log })
   return new NewsAi({
     ...wiring,

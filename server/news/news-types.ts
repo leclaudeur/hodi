@@ -8,7 +8,6 @@ import type { WriteDailySummary, WrittenPoint } from './daily-summary.ts'
 import type { AnswerQuestion, PluginQuestion, SuggestSources, Summarize } from './summarizer.ts'
 import type { FetchVideoDuration } from './video-durations.ts'
 import type { NewsStore } from '../db/news-store.ts'
-import type { AiCaps } from './ai-ledger.ts'
 
 // What NewsService answers, and what it is built with.
 export interface SourceStatus {
@@ -115,7 +114,8 @@ export type ArticleResult =
   | { status: 'unreadable'; item: FeedItem }
   | { status: 'ok'; item: FeedItem; article: ExtractedArticle }
 
-// unavailable: no API key configured. limited: the daily cap is reached.
+// unavailable: no API key configured.
+// limited: AI_CALLS_PER_MINUTE reached, nothing sent.
 export type SummaryResult =
   | { status: 'ok'; points: string[] }
   | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' | 'limited' }
@@ -174,8 +174,6 @@ export interface NewsServiceOptions {
   store?: NewsStore
   // Sources nobody reads (every profile turned them off): their feeds are not fetched.
   isPaused?: (sourceId: string) => boolean
-  // Daily caps on each reader's API calls, AI_CAPS by default.
-  aiCaps?: AiCaps
   // Where "today" is for the Résumé du jour: the server's own time zone by default.
   timeZone?: string
   // The language the AI writes in for a profile: its own, else the household's. French in tests by default.

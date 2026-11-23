@@ -1051,12 +1051,13 @@ describe('profiles', () => {
     assert.equal((await call('GET', '/storage', { cookie: asZoe })).status, 403)
     assert.equal((await call('DELETE', '/storage/texts', { cookie: asZoe })).status, 403)
     assert.equal((await call('DELETE', '/storage/texts')).status, 200)
-    // Each reader sees and puts back to 0 its own AI calls only, on its own key.
-    const usage = (await (await call('GET', '/ai-usage', { cookie: asZoe })).json()) as Record<string, unknown>
+    // Each reader sees its own AI calls only, on its own key: no cap, so nothing to put back to 0.
+    const usage = (await (await call('GET', '/ai-usage', { cookie: asZoe })).json()) as {
+      kinds: Record<string, unknown>[]
+    }
     assert.deepEqual(Object.keys(usage).sort(), ['available', 'kinds'])
-    assert.equal((await call('POST', '/ai-usage/reset', { body: {}, cookie: asZoe })).status, 200)
-    assert.equal((await call('POST', '/ai-usage/reset', { body: { kind: 'nope' } })).status, 400)
-    assert.equal((await call('POST', '/ai-usage/reset', { body: { kind: 'summary' } })).status, 200)
+    assert.ok(usage.kinds.every(kind => !('limit' in kind)))
+    assert.equal((await call('POST', '/ai-usage/reset', { body: {}, cookie: asZoe })).status, 404)
 
     // Zoé has an account of her own: deleting her profile takes the admin's password.
     assert.equal((await call('DELETE', `/profiles/${zoe.id}`)).status, 403)

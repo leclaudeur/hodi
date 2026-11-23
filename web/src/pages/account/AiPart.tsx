@@ -1,22 +1,13 @@
-import { KeyRound, MapPin, RotateCcw, Trash2 } from 'lucide-react'
+import { KeyRound, MapPin, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  type AccountView,
-  type AiKind,
-  type AiUsage,
-  UnauthorizedError,
-  changeAccountRegion,
-  removeAccountAi,
-  resetAiUsage
-} from '../../api.ts'
+import { type AccountView, UnauthorizedError, changeAccountRegion, removeAccountAi } from '../../api.ts'
 import { refreshAiUsage } from '../../lib/ai-left.ts'
 import { askToConfirm } from '../../lib/confirm.ts'
 import { useProfiles } from '../../lib/profiles.ts'
 import { countryName } from '../../lib/regions.ts'
 import { useAiUsage } from '../../lib/settings-data.ts'
 import { showError, showSaved } from '../../lib/toast.ts'
-import Button from '../../ui/Button.tsx'
 import RichText from '../../ui/RichText.tsx'
 import SparkleIcon from '../../ui/SparkleIcon.tsx'
 import { usePlugins } from '../../plugins/registry.ts'
@@ -111,48 +102,19 @@ const KeyCard = ({ account, onAccount, onUnauthorized }: KeyCardProps) => {
   )
 }
 
-// « Recharger », asked first: the calls of the last 24 hours, one kind or all, count no more.
-const useReset = (replace: (next: AiUsage) => void, onUnauthorized: () => void) => {
-  const { t } = useTranslation()
-  return (kind?: AiKind) =>
-    askToConfirm({
-      title: t('confirm.resetMine.title'),
-      message: kind ? (
-        <RichText i18nKey="confirm.resetMine.kindMessage" values={{ kind: t(`confirm.kinds.${kind}`) }} />
-      ) : (
-        <RichText i18nKey="confirm.resetMine.message" />
-      ),
-      label: t('confirm.resetMine.button'),
-      onConfirm: () =>
-        void resetAiUsage({ kind })
-          .then(next => {
-            replace(next)
-            void refreshAiUsage()
-            showSaved(t('ai.resetDone'))
-          })
-          .catch(failed(onUnauthorized, t('ai.resetFailed')))
-    })
-}
-
-// The account's calls of the day, each kind against its cap, then the household's plugins (the admin's).
+// The account's calls of the last 24 hours, kind by kind, then the household's plugins (the admin's).
 const Usage = ({ onUnauthorized }: { onUnauthorized: () => void }) => {
   const { t } = useTranslation()
-  const { value: usage, replace } = useAiUsage(onUnauthorized)
+  const { value: usage } = useAiUsage(onUnauthorized)
   const household = useProfiles({ onError: () => {} })
   const admin = household?.profiles.find(profile => profile.id === household.current)?.role === 'admin'
   // The plugins' kind only once a plugin of the household has a violet button.
   const pluginsAsk = usePlugins().plugins.some(plugin => plugin.enabled && !plugin.error && plugin.usesAi)
-  const reset = useReset(replace, onUnauthorized)
   if (!usage?.available) return null
   return (
     <>
-      <div className={aiStyles.labelRow}>
-        <h2 className={styles.label}>{t('ai.yours')}</h2>
-        <Button icon={RotateCcw} disabled={usage.kinds.every(kind => kind.used === 0)} onClick={() => reset()}>
-          {t('settings.me.resetAction')}
-        </Button>
-      </div>
-      <UsageRows rows={usage.kinds.filter(row => pluginsAsk || row.kind !== 'plugin')} onReset={reset} />
+      <h2 className={styles.label}>{t('ai.yours')}</h2>
+      <UsageRows rows={usage.kinds.filter(row => pluginsAsk || row.kind !== 'plugin')} />
       {admin && pluginsAsk && <PluginRows onUnauthorized={onUnauthorized} />}
     </>
   )
@@ -163,7 +125,7 @@ interface AiPartProps extends KeyCardProps {
   inHousehold: boolean
 }
 
-// Mon compte › IA et crédits: the account's own key, then its calls of the day against each daily cap.
+// Mon compte › IA et crédits: the account's own key, then its calls of the last 24 hours.
 const AiPart = ({ account, onAccount, onUnauthorized, inHousehold }: AiPartProps) => (
   <>
     <KeyCard account={account} onAccount={onAccount} onUnauthorized={onUnauthorized} />
