@@ -1,19 +1,32 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { type SharePerson, getShareSenders } from '../../../api.ts'
 import { updatePreferences, usePreferences } from '../../../lib/preferences.ts'
-import { useProfiles } from '../../../lib/profiles.ts'
 import ProfileAvatar from '../../../ui/ProfileAvatar.tsx'
 import Toggle from '../../../ui/Toggle.tsx'
 import SectionPage from '../SectionPage.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 
-// "Partages": sending articles to the household's other profiles, and receiving theirs. Off, the feature is gone
-// from the whole app for this profile; on, each other profile's shares can be turned off.
+// The people this profile shares with (its family, this device, lately) and those it turned off; asked again once
+// sharing is back on.
+const useSenders = (on: boolean) => {
+  const [senders, setSenders] = useState<SharePerson[]>([])
+  useEffect(() => {
+    if (on)
+      getShareSenders()
+        .then(setSenders)
+        .catch(() => {})
+  }, [on])
+  return senders
+}
+
+// "Partages": sending articles to other people, and receiving theirs. Off, the feature is gone from the whole app for
+// this profile; on, each person's shares can be turned off.
 const SharingSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
   const preferences = usePreferences()
-  const household = useProfiles({ onError: () => {} })
-  const others = household?.profiles.filter(profile => profile.id !== household.current) ?? []
+  const others = useSenders(preferences.sharing)
 
   return (
     <SectionPage title={t('settings.nav.sharing')} intro={t('settings.sharing.intro')} layout={layout}>

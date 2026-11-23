@@ -106,6 +106,14 @@ describe('two households on one server', () => {
     martinTeen = martins.create('Léo', 'sport', now, { kind: 'teen' })!.id
     const user = accounts.create(MARTIN, await hashPassword(PASSWORD), now)!
     accounts.linkProfile(user.id, marc.id)
+    // Every teen has an account of their own, made by a parent.
+    const leo = accounts.create('leo@example.com', 'hash', now)!
+    accounts.linkProfile(leo.id, martinTeen)
+    db.prepare('INSERT INTO account_parents (child_id, parent_id, created_at) VALUES (?, ?, ?)').run(
+      leo.id,
+      user.id,
+      now
+    )
 
     const login = await call('/login', '', 'POST', { email: MARTIN, password: PASSWORD })
     assert.equal(login.status, 204)
@@ -147,9 +155,10 @@ describe('two households on one server', () => {
   })
 
   it('shares within the household only', async () => {
-    const targets = await json<{ profiles: number[] }>('/me/share-targets', martin)
-    assert.deepEqual(targets.profiles, [martinTeen])
-    assert.deepEqual((await json<{ profiles: number[] }>('/me/share-targets', dupont)).profiles, [])
+    const targets = async (cookie: string) =>
+      (await json<{ people: { id: number }[] }>('/me/share-targets', cookie)).people.map(person => person.id)
+    assert.deepEqual(await targets(martin), [martinTeen])
+    assert.deepEqual(await targets(dupont), [])
   })
 
   it("makes a household's codes for that household", async () => {

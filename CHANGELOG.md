@@ -33,6 +33,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   on the adult's own devices; a forgotten code is replaced by the adult's password. The household's single code goes,
   and becomes the code of each of its adults. A teen can now add their account to Who's reading? on a shared device
   with their username.
+- **Sharing by @username.** _Send to…_ offers the family, the accounts signed in on the device and whoever you
+  shared with lately; any other adult on the server is found by typing their @username. A teen or a child shares only
+  with their parents, brothers and sisters, and nobody outside the family can send them anything.
 
 - **Stats and points belong to the account.** An adult's readings, stats, points and badges are their account's,
   not their profile's: they stay the same in any household, after leaving one or being removed from it, and My
