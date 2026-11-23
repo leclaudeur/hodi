@@ -1350,7 +1350,7 @@
       "choosePasswordTitle": "Choose a password",
       "choosePasswordIntro": "You will be able to sign in with your e-mail and this password, besides your other way.",
       "signInAgain": "To confirm it is you, sign in again just before (less than 5 minutes ago), then come back here.",
-      "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use “Forgot password” or ask the server’s admin for a code.",
+      "noWayIn": "To confirm it is you, you must have signed in less than 5 minutes ago, but your way to sign in is gone. Use <i>Forgot password</i> or ask the server’s admin for a code.",
       "sessionHintNoPassword": "Signed in for 90 days, then you sign in again",
       "moreDevices_one": "See the other one",
       "moreDevices_other": "See the {{count}} others",
@@ -1958,7 +1958,7 @@
       "aiHint": "A click on its violet button asks the AI one question, paid from the household’s credits. Only if it is Verified.",
       "feeds_one": "Offer {{count}} source",
       "feeds_other": "Offer {{count}} sources",
-      "feedsHint": "In « Add a source »: {{names}}"
+      "feedsHint": "In “Add a source”: {{names}}"
     },
     "aiButton": {
       "unavailable": "AI isn’t turned on for this household.",
