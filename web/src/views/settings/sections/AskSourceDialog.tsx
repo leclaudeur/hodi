@@ -20,6 +20,7 @@ const ERRORS = [
   'empty',
   'failed',
   'reddit',
+  'unavailable',
   'channel',
   'following',
   'pending',

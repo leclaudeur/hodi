@@ -1,6 +1,5 @@
-import { Camera, Crown, Smartphone, Trash2 } from 'lucide-react'
-import RichText from '../../ui/RichText.tsx'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { Camera, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   PROFILE_AVATARS,
@@ -18,8 +17,6 @@ import ColorSwatches from '../../ui/ColorSwatches.tsx'
 import ProfileAvatar from '../../ui/ProfileAvatar.tsx'
 import Segmented from '../../ui/Segmented.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
-import SettingRow from '../settings/SettingRow.tsx'
-import settingsStyles from '../settings/Settings.module.css'
 import styles from './ProfileForm.module.css'
 
 // The photo picked (undefined: unchanged; null: removed), what the avatar shows, and the ways to change it.
@@ -129,12 +126,11 @@ interface KindProps {
   kind: ProfileKind
   color: ProfileColor
   soon: boolean
-  invite: boolean
   onKind: (kind: ProfileKind) => void
 }
 
 // The profile's type, with what it means; a new child waits for the Enfant interface.
-export const KindField = ({ kinds, kind, color, soon, invite, onKind }: KindProps) => {
+export const KindField = ({ kinds, kind, color, soon, onKind }: KindProps) => {
   const { t } = useTranslation()
   return (
     <div className={styles.field}>
@@ -157,9 +153,7 @@ export const KindField = ({ kinds, kind, color, soon, invite, onKind }: KindProp
           </span>
         </div>
       ) : (
-        <StatusLine tone="info">
-          {invite ? <RichText i18nKey="profileForm.inviteHint" /> : t(`profileForm.kindHints.${kind}`)}
-        </StatusLine>
+        <StatusLine tone="info">{t(`profileForm.kindHints.${kind}`)}</StatusLine>
       )}
     </div>
   )
@@ -213,45 +207,5 @@ export const ColorField = ({ color, onColor }: { color: ProfileColor; onColor: (
         onChange={onColor}
       />
     </fieldset>
-  )
-}
-
-interface AccountProps {
-  onConnect?: () => void
-  onMakeAdmin?: () => void
-}
-
-const AccountRow = ({ label, hint, children }: { label: string; hint: string; children: ReactNode }) => (
-  <SettingRow label={label} hint={hint} className={settingsStyles.stackedRow}>
-    {children}
-  </SettingRow>
-)
-
-// An adult's account, for the admin: a code to connect it, and the admin role. Its password is the person's alone.
-// Nothing on a profile that is not an adult's, or for one who is not the admin.
-export const AccountRows = ({ onConnect, onMakeAdmin }: AccountProps) => {
-  const { t } = useTranslation()
-  if (!onConnect && !onMakeAdmin) return null
-  return (
-    <div className={styles.field}>
-      <span className={styles.label}>{t('profileForm.account')}</span>
-      <div className={settingsStyles.card}>
-        {/* Under its text, full width: beside it, the button leaves the hint two words a line. */}
-        {onConnect && (
-          <AccountRow label={t('profileForm.noAccount')} hint={t('profileForm.noAccountHint')}>
-            <Button icon={Smartphone} wide onClick={onConnect}>
-              {t('profileForm.connect')}
-            </Button>
-          </AccountRow>
-        )}
-        {onMakeAdmin && (
-          <AccountRow label={t('profileForm.makeAdmin')} hint={t('profileForm.makeAdminHint')}>
-            <Button icon={Crown} wide onClick={onMakeAdmin}>
-              {t('profileForm.makeAdminButton')}
-            </Button>
-          </AccountRow>
-        )}
-      </div>
-    </div>
   )
 }

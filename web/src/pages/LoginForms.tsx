@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, KeyRound, LifeBuoy, LockKeyhole, Mail } from 'lucide-react'
+import { ArrowLeft, ArrowRight, AtSign, KeyRound, LifeBuoy, LockKeyhole } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PluginSlots, useScreenLayout } from '../plugins/Slots.tsx'
@@ -128,7 +128,6 @@ const Status = ({ error, notice }: { error: ReactNode; notice: string | null }) 
 
 interface SignInFormProps {
   login: Login
-  name: string | null
   notice: string | null
   onJoin: () => void
   onForgot: () => void
@@ -136,7 +135,7 @@ interface SignInFormProps {
 }
 
 // The e-mail and password, and the other ways in under them.
-export const SignInForm = ({ login, name, notice, onJoin, onForgot, onLoggedIn }: SignInFormProps) => {
+export const SignInForm = ({ login, notice, onJoin, onForgot, onLoggedIn }: SignInFormProps) => {
   const { t } = useTranslation()
   const layout = useScreenLayout()
   const { error, submitting } = login
@@ -145,19 +144,21 @@ export const SignInForm = ({ login, name, notice, onJoin, onForgot, onLoggedIn }
       <h1 className={styles.title}>
         <Logo size={72} centred />
       </h1>
-      <p className={styles.subtitle}>{name ?? t('login.tagline')}</p>
+      <p className={styles.subtitle}>{t('login.tagline')}</p>
 
       <div className={styles.field}>
         <TextField
-          icon={Mail}
-          type="email"
+          icon={AtSign}
+          type="text"
+          autoCapitalize="none"
+          spellCheck={false}
           autoComplete="username"
           autoFocus
           required
           value={login.email}
           onChange={event => login.setEmail(event.target.value)}
-          aria-label={t('login.email')}
-          placeholder={t('login.email')}
+          aria-label={t('login.emailOrHandle')}
+          placeholder={t('login.emailOrHandle')}
           aria-invalid={error !== null}
         />
       </div>

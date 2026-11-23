@@ -2,6 +2,7 @@ import type express from 'express'
 import { Zip, ZipDeflate, ZipPassThrough } from 'fflate'
 import { reserveIo } from './io-budget.ts'
 import { MAX_READ_BYTES } from './sandbox/protocol.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A zip a plugin's route answers with: the plugin lists its files, and Hodi builds the archive and sends it. A file is
 // text the plugin gives, or a value Hodi reads from the plugin's database (a SELECT whose first column is the file), so
@@ -17,10 +18,14 @@ export interface PluginZip {
   entries: ZipEntry[]
 }
 
-export const MAX_ZIP_ENTRIES = 2_000
+export const MAX_ZIP_ENTRIES = CONFIG.plugins.zipEntries
 // Zips being sent at once across the server, the slice written before waiting for the client, and how long a client
 // that stops reading keeps its download (tests change these).
-export const zipLimits = { running: 2, sliceBytes: 1024 * 1024, idleMs: 30_000 }
+export const zipLimits = {
+  running: CONFIG.pluginSandbox.zipsAtOnce,
+  sliceBytes: CONFIG.pluginSandbox.zipSliceSize,
+  idleMs: CONFIG.pluginSandbox.zipIdle
+}
 let sending = 0
 
 // Takes a place to send a zip, and room in the plugins' I/O budget for its biggest file and a slice; null when there
@@ -39,7 +44,7 @@ export const takeZipRoom = (): (() => void) | null => {
   }
 }
 // What a whole archive may hold, its files counted before compression.
-export const MAX_ZIP_BYTES = 256 * 1024 * 1024
+export const MAX_ZIP_BYTES = CONFIG.plugins.zipMaxSize
 // A path inside the archive: up to five folders, plain names, nothing that climbs out or starts at the root.
 const ZIP_PATH = /^(?:[A-Za-z0-9_-][A-Za-z0-9._-]{0,99}\/){0,4}[A-Za-z0-9_-][A-Za-z0-9._-]{0,99}$/
 

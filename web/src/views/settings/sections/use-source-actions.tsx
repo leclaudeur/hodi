@@ -2,21 +2,20 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type SourceStatus, TOPICS_CHANGED, UnauthorizedError, getSources, removeSource } from '../../../api.ts'
 import { askToConfirm } from '../../../lib/confirm.ts'
-import { updatePreferences } from '../../../lib/preferences.ts'
+import { setMySources } from '../../../lib/preferences.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
 import RichText from '../../../ui/RichText.tsx'
 import type { AddSourceRequest } from './AddSourceDialog.tsx'
 
 interface SourceActionsInput {
   replace: (sources: SourceStatus[]) => void
-  hiddenSources: string[]
   adding: AddSourceRequest | null
   setAdding: (request: AddSourceRequest | null) => void
   onUnauthorized: () => void
 }
 
 // Removing a source, hiding the little-read ones and taking in a new one, each reloading the list after.
-export const useSourceActions = ({ replace, hiddenSources, adding, setAdding, onUnauthorized }: SourceActionsInput) => {
+export const useSourceActions = ({ replace, adding, setAdding, onUnauthorized }: SourceActionsInput) => {
   const { t } = useTranslation()
   const [removing, setRemoving] = useState<string | null>(null)
 
@@ -63,9 +62,11 @@ export const useSourceActions = ({ replace, hiddenSources, adding, setAdding, on
             label: t('confirm.hideSource.button')
           }),
       onConfirm: () => {
-        updatePreferences({
-          hiddenSources: [...new Set([...hiddenSources, ...list.map(source => source.id)])]
-        })
+        setMySources(
+          list.map(source => source.id),
+          false,
+          { quiet: true }
+        )
         showSaved(t('sources.hidden', { count: list.length }))
       }
     })
@@ -73,7 +74,7 @@ export const useSourceActions = ({ replace, hiddenSources, adding, setAdding, on
   const added = () => {
     // A replacement: the little-read source steps aside for the new one.
     if (adding?.replacing) {
-      updatePreferences({ hiddenSources: [...hiddenSources, adding.replacing.id] }, { quiet: true })
+      setMySources([adding.replacing.id], false, { quiet: true })
       showSaved(t('sources.replaced', { name: adding.replacing.name }))
       setAdding(null)
     } else {

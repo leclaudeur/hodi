@@ -12,7 +12,7 @@ import type { accountSession } from './account-session.ts'
 import type { Presence } from './presence.ts'
 import type { profileDeviceSession } from './profile-device-session.ts'
 import { isHere } from './profile-current-routes.ts'
-import { guardOf } from './profile-guard.ts'
+import { guardOf, youngHereOf } from './profile-guard.ts'
 
 export interface SessionGuardOptions {
   accounts?: UserAccountStore
@@ -219,11 +219,11 @@ const noHouseholdLocals = (response: express.Response) => {
 const profileOfRequest = (
   {
     accounts,
+    devices,
     profiles,
-    household,
     sessionsOf,
     secret
-  }: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'household' | 'sessionsOf' | 'secret'>,
+  }: Pick<SessionGuardOptions, 'accounts' | 'devices' | 'profiles' | 'sessionsOf' | 'secret'>,
   request: express.Request,
   linkedId: number | undefined
 ) => {
@@ -233,12 +233,13 @@ const profileOfRequest = (
     id => profiles?.lock(id)?.version ?? 0
   )
   const known = profiles?.list() ?? []
-  const parentalCode = household.parentalCode() !== null
-  const signedIn = sessionsOf ? sessionsOf(request).map(session => session.account.id) : []
+  const sessions = sessionsOf ? sessionsOf(request) : []
+  const signedIn = sessions.map(session => session.account.id)
+  const youngHere = youngHereOf(sessions, accounts, devices)
   const here = (candidate: Profile) =>
     isHere({ accounts, signedInHere: sessionsOf && (() => signedIn) }, candidate, request)
   // An adult whose account is not signed in here never opens on this device.
-  const isGuarded = (candidate: Profile) => !here(candidate) || guardOf(candidate, accounts, parentalCode) !== null
+  const isGuarded = (candidate: Profile) => !here(candidate) || guardOf(candidate, accounts, youngHere) !== null
   // Linked by a parent's code: the device is that profile's.
   const chosen =
     linkedId !== undefined
@@ -273,15 +274,17 @@ const chooseProfileOf = (options: SessionGuardOptions): RequestHandler => {
     const linkedId = response.locals.linkedProfileId as number | undefined
     const { chosen, profile, locked } = profileOfRequest(options, request, linkedId)
     response.locals.profileId = profile?.id ?? 1
-    response.locals.admin = locked ? false : profile ? profile.role === 'admin' : true
-    // The server's admin is an account, not a role in the household: the profile opened here must be that account's,
-    // so another adult opening their own profile on the same device never gets it. Without accounts (older tests),
-    // the household's admin stands for it.
+    const householdAdmin = locked ? false : profile ? profile.role === 'admin' : true
+    // The server's admin is an account: the profile opened here must be that account's, so another adult opening
+    // their own profile on the same device never gets it. Without accounts (older tests), the first admin stands for it.
     response.locals.serverAdmin = locked
       ? false
       : accounts
         ? profile !== undefined && accounts.ofProfile(profile.id)?.serverAdmin === true
-        : response.locals.admin
+        : householdAdmin
+    // The household is no longer shown: what its admin did (profiles, the game, other people's sources) is the server
+    // admin's too.
+    response.locals.admin = householdAdmin || response.locals.serverAdmin === true
     response.locals.kind = profile?.kind ?? 'adult'
     // false: this device has not chosen yet, the app asks "Qui lit ?".
     response.locals.profileChosen = chosen !== undefined

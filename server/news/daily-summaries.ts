@@ -5,11 +5,12 @@ import type { DailySummaryStory, WriteDailySummary, WrittenPoint } from './daily
 import { dayOf } from './days.ts'
 import type { DailySummaryPoint, DailySummaryResult, FrontPageSection } from './news-types.ts'
 import { SummaryRefusedError } from './summarizer.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A request this soon after the last one gets that one back.
-const MIN_AGE_MS = 30 * 60 * 1000
+const MIN_AGE_MS = CONFIG.ai.dailySummaryMinAge
 // The front page must have this many stories before the daily summary is written, unless every topic is checked.
-const MIN_STORIES = 12
+const MIN_STORIES = CONFIG.ai.dailySummaryMinStories
 
 interface Written {
   createdAt: number
@@ -21,7 +22,8 @@ interface DailySummariesOptions {
   store: NewsStore | undefined
   ledger: AiLedger
   languageOf: (profileId: number) => Language
-  timeZone: () => string
+  // The reader's own time zone: its Résumé du jour lasts until its midnight.
+  timeZone: (profileId: number) => string
   now: () => number
   log: (message: string) => void
 }
@@ -132,11 +134,11 @@ export class DailySummaries {
     return { status: 'ok', ...dailySummary }
   }
 
-  // The profile's daily summary of today, in its current language: shown until midnight in the server's time zone.
+  // The profile's daily summary of today, in its current language: shown until midnight in its own time zone.
   #todays(profileId: number, now: number) {
     const { languageOf, timeZone } = this.#options
     const last = this.#written.get(profileId)
-    const today = last && dayOf(last.createdAt, timeZone()) === dayOf(now, timeZone())
+    const today = last && dayOf(last.createdAt, timeZone(profileId)) === dayOf(now, timeZone(profileId))
     return last && today && last.language === languageOf(profileId) ? last : null
   }
 }

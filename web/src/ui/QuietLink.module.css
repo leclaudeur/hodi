@@ -1,0 +1,21 @@
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  transition: color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--link-hover);
+  }
+}

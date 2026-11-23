@@ -21,7 +21,6 @@ copied every night:
 - which profiles opened Hodi each day of the last month, shown in _Overview_ as a number per day;
 - the whole server's totals of each day, kept for good for _Overview_: visits, reads, videos, time, shares, profiles,
   accounts, and the reads of each topic and source, never one profile's;
-- the AI output already paid for, shown again for free, and the API calls of the last day, so the caps hold across
-  restarts.
+- the AI output already paid for, shown again for free, and the API calls of the last day, for _AI and credits_.
 
 [← Back to the features](../features.md)

@@ -26,8 +26,10 @@ export const labelOf = (agent: string, current: boolean) =>
 
 export const confirmDelete = (account: AccountView, t: TFunction) => {
   const deletion = account.deletion
+  const children = deletion?.children ?? []
+  const alone = children.length ? 'confirm.deleteAccount.messageChildren' : 'confirm.deleteAccount.message'
   const key = !deletion?.householdGoes
-    ? 'confirm.deleteAccount.message'
+    ? alone
     : deletion.others.length
       ? 'confirm.deleteAccount.messageHouseholdWith'
       : 'confirm.deleteAccount.messageHousehold'
@@ -37,11 +39,12 @@ export const confirmDelete = (account: AccountView, t: TFunction) => {
       <RichText
         i18nKey={key}
         values={{
-          email: account.email,
+          email: account.email ?? '',
           // As many days as the server keeps copies (Serveur › Sauvegardes).
           days: t('count.day', { count: contentDays().backupCopies }),
           name: deletion?.household ?? '',
-          profiles: new Intl.ListFormat(undefined, { type: 'conjunction' }).format(deletion?.others ?? [])
+          profiles: new Intl.ListFormat(undefined, { type: 'conjunction' }).format(deletion?.others ?? []),
+          children: new Intl.ListFormat(undefined, { type: 'conjunction' }).format(children)
         }}
       />
     ),

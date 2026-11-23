@@ -8,6 +8,115 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Report a source.** A flag on every source card, in My sources and the catalogue, tells the server's admin why a
+  source does not belong (illegal, hateful, misleading, something else). The admin sees how many reported it and why,
+  never who, in Server › To do, and ignores it or takes it out of the catalogue. A new kind in Server › Alerts.
+- **Report a share.** Under a share received, Report tells the server's admin why it should not have come
+  (harassment, hateful, spam, something else), once per share and at most 5 a day; Stop receiving their shares mutes
+  its sender at once. The admin sees the share and its sender, never shown who reported it, in Server › To do, and ignores it
+  or blocks the account. A new kind in Server › Alerts.
+- **Block a site.** For illegal content, Server › To do › a source › Block this site blocks its whole domain: every
+  source on it is erased with everything read of it, leaves every list, and can't be added again; the account that
+  added it is blocked too, without the admin learning which. Server › Blocks lists the blocked domains, to unblock one,
+  and unblocks an e-mail address.
+- **Block an account.** Server › Accounts › an account › Block deletes it, as Delete does, and its e-mail can never
+  make an account on the server again. The person is told so at sign-in.
+- **Username.** Every account has an @username, unique on the server, for friends and mentions to come. It is suggested
+  from the first name when the account is made (first-run screens, an invitation's code), says at once whether it is
+  free, and changes once every 30 days in My account. Existing accounts get one from their profile's name. Sign in
+  with the e-mail or the username.
+- **Teens' and children's accounts.** A parent creates them in My account › My children: teen or child, first name,
+  @username and the password the parent chooses. The young one signs in with that username and password; the parent
+  changes the password from their card. Existing teen and child profiles become accounts linked to the household's
+  adults, with no password until a parent chooses one.
+- **AI without caps.** Each account pays with its own key, so no daily cap stops its purple buttons any more: My
+  account › AI shows its calls of the last 24 hours, with nothing to reset. Only a runaway guard stays: past 30 AI
+  calls in a minute, a person's next ones wait for the minute to pass. A plugin keeps its own hourly limit.
+- **Sources as cards.** Settings › Sources shows two grids of cards, the base sources then the account's own, the
+  first card adding one. The catalogue shows the same cards by topic, in the topics' colours, searched and sorted
+  apart (alphabetical or by readers, either way); a source already in My sources stays in place, ticked. The
+  Official tab is gone: everything in the catalogue is approved.
+- **Sources to review.** With Server › Content › Review sources on, a source someone adds from a link stays out of
+  everyone else's catalogue until a server admin accepts it in Server › To do, with its topics and whether it suits
+  teens and children. Its adder keeps reading it meanwhile. Server › Notifications becomes To do: the requests
+  waiting, filtered by kind, each opening where it is done (a password code on the account that asked it); a
+  request done moves to Handled for 7 days. The weekly report only goes out by e-mail or push.
+- **Board review.** Source cards end on a footer line, Retirer a red round on the left and each other action its
+  own round on the right, with the readers count in the corner and a red or grey mark on the logo for a feed that
+  fails or a source little read. My sources come before the base sources, catalogue topics are in alphabetical
+  order, and Cyber and Manga/Anime get their colours. Every button that asks a confirmation first is red. Add a
+  source keeps only the AI's suggestions (the catalogue has the rest), and the guided tour adds its first source
+  from the catalogue. Offline reading has its own section in My account.
+- **Your own time format, game and language.** The time format, Levels and badges and the language are each
+  person's, in My account › Profile (a teen's in Settings › General); the language follows the browser until
+  someone picks one. Server › General no longer sets them for everyone. A young one's card lives in My account ›
+  My children (Settings › Teens and children is gone), and Invite someone sits at the foot of Server › Accounts.
+- **My children, after review.** A parent's requests and children are two lists, a request answered in its row
+  (Accept, Refuse); the parents' list shows names and since when; a teen's devices signed in with its username are
+  on its card for its parents to sign out; Link a device is gone. Statistics no longer show the household challenge.
+- **A second parent.** On a teen's or a child's card, Parents invites another adult by their @username; they answer
+  in My account › My children, and both parents then have the same rights. A parent can stop being one, never the
+  last one, and neither can take the other off. Deleting your account takes the young ones you are the only parent of
+  with it, and its confirmation says so.
+
+### Changed
+
+- **One file for the fixed settings.** Every limit, duration, rate and size that Server does not let the admin
+  change is now in `config.yml`, with a comment for each: change a value and restart Hodi (the web app's values need a
+  new build). A missing or wrong value stops Hodi at start, saying which.
+- **My sources.** Each person's sources are now their own list, kept with their account: a source someone adds goes
+  into their list only, and the others add it from the server's sources when they want it. A new adult starts with the
+  base sources. A source read by 10 people or more shows how many. Each person keeps the sources they read before.
+- **Catalogue.** A page of its own, from My sources › Browse the catalogue: the official sources, then each theme in its
+  sidebar, in your language first, with a search. Each card shows the site's logo, name, what it says it is (read
+  when the source is added), its readers and its site; + puts it in My sources, − takes it out. My sources has no
+  switches anymore: a source is in the list or taken out of it.
+- **Only a young one's parents manage them.** Their card, rules, devices and deletion are their parents' only: the
+  server's admin no longer has a say over other people's children. The Parental code moves to My account › My
+  children, and teens and children no longer have AI settings of their own.
+- **A Parental code for each adult.** Each adult chooses their own in My account › My children, advised to parents.
+  It is asked to open that adult's profile only on a device where a teen or a child is signed in, or once was, never
+  on the adult's own devices; a forgotten code is replaced by the adult's password. The household's single code goes,
+  and becomes the code of each of its adults. A teen can now add their account to Who's reading? on a shared device
+  with their username.
+- **Sharing by @username.** _Send to…_ offers the family, the accounts signed in on the device and whoever you
+  shared with lately; any other adult on the server is found by typing their @username. A teen or a child shares only
+  with their parents, brothers and sisters, and nobody outside the family can send them anything.
+
+- **Stats and points belong to the account.** An adult's readings, stats, points and badges are their account's,
+  not their profile's: they stay the same in any household, after leaving one or being removed from it, and My
+  account shows them while the person is in no household. A young profile, which has no account, keeps its own.
+  Deleting the account deletes them.
+- **Your settings, saved articles and history belong to the account.** An adult's preferences (sources and topics
+  turned off, followed and hidden topics, reading settings), Saved, History, what Hide put away and the stories seen
+  in Top news are their account's: they come back as they were after leaving a household and joining another. A
+  young profile keeps its own; deleting the account deletes them.
+- **Your name, colour and photo belong to the account.** They come back with the profile you get on joining a
+  household again, and joining with _I already have an account_ no longer asks who you are when the account has been in
+  a household before.
+- **Your time zone belongs to the account.** _Settings › My account_ gets a _Region_ card where each person picks
+  their own; it moves out of _Settings › Household_. Their screen time, quiet hours, game points and Daily summary follow its days.
+  Every account starts with its household's.
+- **My account is a page of its own.** Laid out as the legal pages, with its sections in a sidebar (a _Sections_ menu
+  on a tablet or a phone): _Profile_, _Sign-in_, _Region_, _Statistics_ and _Data_. _Settings › My account_ and
+  _Settings › Statistics_ open it, and Settings lines that open another page end with an external-link icon.
+- **Each account has its own AI key.** _My account › AI and credits_ holds the key, the country used by the AI's web
+  searches and the account's own calls of the day, against its own caps: 100 summaries, 100 questions, 8 Daily summaries,
+  10 source suggestions and 20 plugin requests. Each account keeps the summaries it paid for. The key of the first-run
+  screens is the admin's; every account that read in the household starts with the household's key. A young profile
+  has no AI.
+- **No household in the app any more: a server and its accounts.** _Settings › Household_ and _Leave the household_
+  are gone. The default language, the time format and the game move to _Server › General_, with the server's data.
+  _Settings › Profiles_ becomes _Teens and children_, with the parental code, and _AI and credits_ moves under _You_.
+  The server's admin invites someone from _Server › Accounts_ with _Invite someone_, which replaces _Invite an adult_
+  and _Server › Households_, and keeps what the household's admin could do. The first-run screens no longer ask for a
+  household name.
+- **A new password only when asked.** _Server › Accounts_ makes a new-password code for an account only while its
+  person waits for one after _Forgot password_: _Make a code_ is in their request, and the account page has no button
+  otherwise; a request waits a week. The server's admin can no longer make one for an account that did not ask.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My

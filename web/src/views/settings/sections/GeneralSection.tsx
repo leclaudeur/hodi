@@ -18,7 +18,7 @@ import RowsSkeleton from '../SettingsSkeleton.tsx'
 import SettingRow, { RowButton } from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import ClearStatsRow from './ClearStatsRow.tsx'
-import LanguageRow from './LanguageRow.tsx'
+import PersonalRows from './PersonalRows.tsx'
 import { formatMinutes } from './young/format.ts'
 
 // "00:34:52": the time left, every second.
@@ -37,11 +37,7 @@ const OwnRow = ({ own, onEdit }: { own: Profile; onEdit: () => void }) => {
         <span className={styles.rowText}>
           <span className={styles.rowLabel}>{own.name}</span>
           {/* A young profile's kind is its badge, as on its parents' page. */}
-          {!isYoung(own) && (
-            <span className={styles.rowHint}>
-              {own.role === 'admin' ? t('settings.roles.admin') : t(`profileForm.kinds.${own.kind}`)}
-            </span>
-          )}
+          {!isYoung(own) && <span className={styles.rowHint}>{t(`profileForm.kinds.${own.kind}`)}</span>}
         </span>
         {isYoung(own) && <Chip size="row">{t(`profileForm.kinds.${own.kind}`)}</Chip>}
         <RowButton
@@ -114,7 +110,7 @@ const GeneralSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
         <>
           <OwnRow own={own} onEdit={() => setEditing(true)} />
           <div className={styles.card}>
-            <LanguageRow />
+            <PersonalRows />
           </div>
         </>
       )}

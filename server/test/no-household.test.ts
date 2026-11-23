@@ -92,7 +92,7 @@ describe('an account whose profile was deleted from its household', () => {
   })
 
   it('sees nothing of the household it left, nor opens any of its profiles', async () => {
-    for (const route of ['/profiles', '/feed?tz=UTC', '/topics', '/household', `/profiles/${maxId}/photo`]) {
+    for (const route of ['/profiles', '/feed?tz=UTC', '/topics', `/profiles/${maxId}/photo`]) {
       const refused = await call('GET', route, sophieDevice)
       assert.deepEqual([route, refused.status, await refused.json()], [route, 423, { error: 'no_household' }])
     }
@@ -136,6 +136,6 @@ describe('the deletion plan of an account with no profile in the household', () 
     const profiles = new ProfileStore(db)
     const leftAlone = accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!
     const plan = deletionPlan(leftAlone, accounts, profiles, 'Martin')
-    assert.deepEqual(plan, { householdGoes: false, household: 'Martin', profiles: [], heir: null })
+    assert.deepEqual(plan, { householdGoes: false, household: 'Martin', profiles: [], heir: null, children: [] })
   })
 })

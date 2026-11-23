@@ -4,6 +4,7 @@ import { shortAgo } from '../../lib/format.ts'
 import { useProfiles } from '../../lib/profiles.ts'
 import { reactTo, useShareOf } from '../../lib/shares.ts'
 import ProfileAvatar from '../../ui/ProfileAvatar.tsx'
+import ShareSafety from './ShareSafety.tsx'
 import styles from './ShareNote.module.css'
 
 const useShare = (articleId: string) => {
@@ -40,7 +41,8 @@ export const ShareNote = ({ articleId, className }: { articleId: string; classNa
   )
 }
 
-// After the article, as a comment: an emoji back to whoever sent it. Touched again, it is taken back.
+// After the article, as a comment: an emoji back to whoever sent it (touched again, it is taken back), and what to do
+// when the share should not have come.
 export const ShareReply = ({ articleId, className }: { articleId: string; className?: string }) => {
   const { t } = useTranslation()
   const share = useShare(articleId)
@@ -67,6 +69,7 @@ export const ShareReply = ({ articleId, className }: { articleId: string; classN
           </button>
         ))}
       </div>
+      <ShareSafety share={{ articleId, from: entry.from, name: from.name }} />
     </section>
   )
 }

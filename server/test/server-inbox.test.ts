@@ -12,7 +12,7 @@ import { HouseholdStore } from '../db/household-store.ts'
 import { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { PasswordResetStore } from '../db/password-reset-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
-import { ServerInboxStore } from '../db/server-inbox-store.ts'
+import { HANDLED_KEPT, ServerInboxStore } from '../db/server-inbox-store.ts'
 import { ServerNoticeStore } from '../db/server-notice-store.ts'
 import { ServerPeopleStore } from '../db/server-people-store.ts'
 import { ServerStatsStore } from '../db/server-stats-store.ts'
@@ -28,7 +28,7 @@ import { fakeFetch } from './helpers/news.ts'
 const PASSWORD = 'une phrase de passe assez longue'
 
 describe('Serveur › Notifications’ list', () => {
-  it('keeps every notice in each language, and a request once while it waits', async () => {
+  it('keeps each request in each language, once while it waits, and not a notice that asks nothing', async () => {
     const db = openDatabase(':memory:')
     const accounts = new UserAccountStore(db)
     accounts.createServerAdmin('admin@example.test', 'hash', 0)
@@ -49,24 +49,33 @@ describe('Serveur › Notifications’ list', () => {
     clock = 20
     // The same request, asked again while it waits: nothing more.
     await notifier.tell('core:code-request', notice, { important: 'code-request:2' })
-    const items = inbox.list()
-    assert.equal(items.length, 2)
+    const items = inbox.list(clock)
+    assert.equal(items.length, 1)
     assert.equal(items[0]?.texts.en?.title, 'Titre en')
     assert.equal(items[0]?.texts.fr?.title, 'Titre fr')
     assert.deepEqual(
       items.map(item => [item.type, item.important, item.handledAt]),
-      [
-        ['core:code-request', true, null],
-        ['core:weekly-report', false, null]
-      ]
+      [['core:code-request', true, null]]
     )
     assert.equal(inbox.waiting('code-request:2'), 10)
     inbox.handle('code-request:2', 30)
     assert.equal(inbox.waiting('code-request:2'), null)
-    assert.equal(inbox.list()[0]?.handledAt, 30)
+    assert.equal(inbox.list(30)[0]?.handledAt, 30)
     // Handled, a new request is told again.
     await notifier.tell('core:code-request', notice, { important: 'code-request:2' })
-    assert.equal(inbox.list().length, 3)
+    assert.equal(inbox.list(30).length, 2)
+    // A week after it was handled, the first one goes; the one waiting stays, however old.
+    assert.deepEqual(
+      inbox.list(30 + HANDLED_KEPT + 1).map(item => item.handledAt),
+      [null]
+    )
+    // The next request takes it away for good.
+    clock = 30 + HANDLED_KEPT + 1
+    await notifier.tell('core:code-request', notice, { important: 'code-request:3' })
+    assert.deepEqual(
+      inbox.list(0).map(item => item.handledAt),
+      [null, null]
+    )
   })
 })
 
@@ -155,6 +164,11 @@ describe('« Demander un code »', () => {
   after(() => close())
 
   it('tells the server’s admin once, and shows it on the account until a code is made', async () => {
+    // Before Sam asks, the server's admin cannot make one: nobody takes an account over on their own.
+    const samCode = `/server/accounts/${samId}/code`
+    const before = await call(samCode, admin, 'POST', { password: PASSWORD })
+    assert.equal(before.status, 409)
+    assert.deepEqual(await before.json(), { error: 'not_asked' })
     assert.equal((await call('/password/ask', '', 'POST', { email: 'pas une adresse' })).status, 400)
     assert.equal((await call('/password/ask', '', 'POST', { email: 'Sam@Example.com' })).status, 202)
     // An address without an account gets the same answer, and nobody is told.
@@ -186,6 +200,26 @@ describe('« Demander un code »', () => {
     })
     assert.equal(silenced.status, 400)
     assert.equal((await call('/server/inbox', '')).status, 401)
+
+    // Asked: one code, and the request is handled, so a second one waits for Sam to ask again.
+    assert.equal((await call(samCode, admin, 'POST', { password: PASSWORD })).status, 201)
+    assert.equal((await call(samCode, admin, 'POST', { password: PASSWORD })).status, 409)
+  })
+
+  it('makes no code from a request older than a week, and counts a new one from when it is made', async () => {
+    const samCode = `/server/accounts/${samId}/code`
+    const eightDays = 8 * 24 * 60 * 60 * 1000
+    inbox.add({ type: 'core:code-request', texts: {}, url: '', key: `code-request:${samId}` }, Date.now() - eightDays)
+    assert.equal((await call(samCode, admin, 'POST', { password: PASSWORD })).status, 409)
+    const listed = (await (await call('/server/accounts', admin)).json()) as {
+      accounts: { id: number; codeAskedAt: number | null }[]
+    }
+    assert.equal(listed.accounts.find(account => account.id === samId)?.codeAskedAt, null)
+
+    // Sam asks again: the old request closes, the new one counts.
+    await call('/password/ask', '', 'POST', { email: 'sam@example.com' })
+    await settle()
+    assert.equal((await call(samCode, admin, 'POST', { password: PASSWORD })).status, 201)
   })
 
   it('is « Mot de passe oublié »’s e-mail instead, once Serveur › E-mail is set', async () => {

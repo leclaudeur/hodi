@@ -8,7 +8,6 @@ import type { WriteDailySummary, WrittenPoint } from './daily-summary.ts'
 import type { AnswerQuestion, PluginQuestion, SuggestSources, Summarize } from './summarizer.ts'
 import type { FetchVideoDuration } from './video-durations.ts'
 import type { NewsStore } from '../db/news-store.ts'
-import type { AiCaps, CapProfile } from './ai-ledger.ts'
 
 // What NewsService answers, and what it is built with.
 export interface SourceStatus {
@@ -24,6 +23,12 @@ export interface SourceStatus {
   error: string | null
   // Added from a link by this profile; missing for the starting list's.
   addedBy?: number
+  // What the site says it is, for the catalogue.
+  description?: string
+  // From sources.yml: the catalogue's Officielles.
+  official?: true
+  // How many people read it, once there are enough of them (source-view-routes.ts).
+  readers?: number
 }
 
 // reader: opens in the reader. link: summary only, read on the site (source with reader: false).
@@ -109,7 +114,8 @@ export type ArticleResult =
   | { status: 'unreadable'; item: FeedItem }
   | { status: 'ok'; item: FeedItem; article: ExtractedArticle }
 
-// unavailable: no API key configured. limited: the daily cap is reached.
+// unavailable: no API key configured.
+// limited: AI_CALLS_PER_MINUTE reached, nothing sent.
 export type SummaryResult =
   | { status: 'ok'; points: string[] }
   | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' | 'limited' }
@@ -151,9 +157,12 @@ export interface NewsServiceOptions {
   // the catalogue given to the constructor), and every household, for the background pass.
   catalogOf?: () => Catalog
   households?: () => number[]
-  // Each household's AI and time zone, read as the catalogue is; setAi and setTimeZone change the request's.
-  aiOf?: () => AiTools | null
+  // Each reader's own AI, its account's key: none for a profile without one. Without it, the tools below are everyone's.
+  aiOf?: (profileId: number) => AiTools | null
+  // Each household's time zone, read as the catalogue is; setTimeZone changes the request's.
   timeZoneOf?: () => string
+  // A reader's own time zone (its account's), or null to use the household's.
+  readerTimeZoneOf?: (profileId: number) => string | null
   // Absent when no API key is configured: the app then offers no summaries.
   summarize?: Summarize
   writeDailySummary?: WriteDailySummary
@@ -165,10 +174,6 @@ export interface NewsServiceOptions {
   store?: NewsStore
   // Sources nobody reads (every profile turned them off): their feeds are not fetched.
   isPaused?: (sourceId: string) => boolean
-  // The household's profiles, between which the AI caps are shared. Absent in tests: one profile has it all.
-  profiles?: () => CapProfile[]
-  // Daily caps on API calls for the household, AI_CAPS by default.
-  aiCaps?: AiCaps
   // Where "today" is for the Résumé du jour: the server's own time zone by default.
   timeZone?: string
   // The language the AI writes in for a profile: its own, else the household's. French in tests by default.

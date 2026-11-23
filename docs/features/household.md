@@ -4,6 +4,14 @@ One install is one household, set up in the browser on the first visit (see [Dep
 It has up to **5 profiles** and no password of its own: everyone signs in with their own account, an e-mail and a
 password.
 
+## Username
+
+Every account has an @username, unique on the server: lower-case letters, digits, a dot or an underscore, 3 to 20 of
+them. The form that makes an account (the first-run screens, an invitation's code) suggests one from the first name and
+says at once whether it is free, or else offers a free one like it. _Settings › My account › Edit_ changes it once every
+30 days; the one left stays the account's for 30 days, so nobody else takes it at once. The sign-in screen takes the
+e-mail or the username.
+
 ## Setting up
 
 The setup starts with the account of the server's admin. Plugins put in `data/plugins/` before the first start come
@@ -30,7 +38,8 @@ Codes are eight letters and digits with a QR, valid once for 24 hours, typed aft
 - **An adult profile with no account yet**: the admin gives it to its person with **Connect a device**, in its form.
 - **A teen's or child's own device**: a parent makes the code in _Settings › Profiles › Manage › Devices_. That device
   opens this profile only, with no _Who's in?_, until it goes unused for 90 days or a parent removes it.
-- **A forgotten password**: only the server's admin makes this code, in _Server › Accounts_, never a household's admin.
+- **A forgotten password**: only the server's admin makes this code, in _Server › Accounts_, and only once its person asked for it from
+  _Forgot password_.
   Its person types it, then a new password.
 
 Until it is used, the invitation waits under _Invited people_, below the profiles' groups (_Adults_, _Teens_,
@@ -51,7 +60,7 @@ No one in the household can give another adult a new password.
 
 ## Leaving the household
 
-An account belongs to one household. _Settings › My account_ shows it with your role, and **Leave**, in red, asks for
+An account belongs to one household. _My account › Data_ shows it with your role, and **Leave**, in red, asks for
 your password: your profile goes with what you read, saved and followed there, and your account stays. When you are
 the admin, the dialog names the adult who takes the role over. The last adult with an account cannot leave, as no one
 could open the household any more: deleting the account is then the only way out.
@@ -59,19 +68,7 @@ could open the household any more: deleting the account is then the only way out
 An account with no household, after leaving or once its profile was deleted, signs in to a card that says so, with
 **Sign out** and _My account_ on a page of its own (`#/account`: e-mail, password, two-step verification, devices, a
 copy, deleting the account). A new code from another household's adult, with **I already have an account**, makes it
-join again. `#/account` opens _Settings › My account_ for an account in a household.
-
-## Leaving the household
-
-An account belongs to one household. _Settings › My account_ shows it with your role, and **Leave**, in red, asks for
-your password: your profile goes with what you read, saved and followed there, and your account stays. When you are
-the admin, the dialog names the adult who takes the role over. The last adult with an account cannot leave, as no one
-could open the household any more: deleting the account is then the only way out.
-
-An account with no household, after leaving or once its profile was deleted, signs in to a card that says so, with
-**Sign out** and _My account_ on a page of its own (`#/account`: e-mail, password, two-step verification, devices, a
-copy, deleting the account). A new code from another household's adult, with **I already have an account**, makes it
-join again. `#/account` opens _Settings › My account_ for an account in a household.
+join again. `#/account` opens the same page for an account in a household, and _Settings › My account_ links to it.
 
 ## Opening a profile
 
@@ -104,7 +101,7 @@ device that opens the profile shares them, a phone as well as a computer.
 
 ## Two-step verification
 
-In _Settings › My account_, an adult adds a code from an authenticator app to their password. Turning the switch on
+In _My account › Sign-in_, an adult adds a code from an authenticator app to their password. Turning the switch on
 asks for the password, shows a QR and the key to type, and takes the app's first code. It then shows 10 recovery codes
 once, to download or copy, and a _Recovery codes_ row tells how many are left.
 
@@ -115,6 +112,12 @@ for the password and a code.
 > [!IMPORTANT]
 > Two-step verification is required for the server's account. The setup turns it on right after that account, and the
 > Server space asks for it at its next opening when it is off.
+
+## Time zone
+
+Each account has its own time zone, in _My account › Region_. A young reader's hours and screen time, the
+points of the game and the _Daily summary_ follow the days of that time zone. An account starts with the household's, chosen in the
+first-run screens, and the server's own figures in _Server › Overview_ keep that one.
 
 ## About
 

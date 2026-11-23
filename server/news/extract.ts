@@ -59,6 +59,7 @@ import {
 import { arcStoryHtml, fullerText } from './extract/arc-story.ts'
 import { hasSubscriberNotice, isSubscriberOnly, isTeaser } from './extract/paywall.ts'
 import { simplifyTags } from './extract/simplify.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 export interface ExtractedArticle {
   title: string | null
@@ -217,7 +218,7 @@ const cleanArticle = (html: string) => {
 export const cleanArticleHtml = (html: string) => cleanArticle(html).html
 
 // Below this, the page is most likely a paywall teaser, a video page or a cookie wall.
-export const MIN_TEXT_LENGTH = 600
+export const MIN_TEXT_LENGTH = CONFIG.reader.textMinLength
 
 // Reader-mode extraction. The HTML is sanitized again in the browser before display.
 export const extractArticle = (html: string, url: string): ExtractedArticle | null => {
@@ -263,11 +264,11 @@ export const extractFeedContent = (contentHtml: string, url: string) =>
   extractArticle(`<html><head></head><body><article>${contentHtml}</article></body></html>`, url)
 
 // About 230 words a minute, some 1,380 characters: shown on the article's card.
-export const CHARACTERS_PER_MINUTE = 1380
+export const CHARACTERS_PER_MINUTE = CONFIG.reader.charactersPerMinute
 export const readingMinutes = (article: ExtractedArticle) =>
   Math.max(1, Math.round(article.textLength / CHARACTERS_PER_MINUTE))
 
-const MAX_AUTHOR_LENGTH = 80
+const MAX_AUTHOR_LENGTH = CONFIG.reader.authorMaxLength
 
 // The byline as a name for the card: "Par Marie Dupont" gives "Marie Dupont"; a long byline is page text, not a name.
 export const articleAuthor = (article: ExtractedArticle) => {

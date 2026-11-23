@@ -9,7 +9,7 @@ import {
   addSource,
   suggestSources
 } from '../../../api.ts'
-import { refreshAiUsage, useAiCapped } from '../../../lib/ai-left.ts'
+import { refreshAiUsage } from '../../../lib/ai-left.ts'
 import { readingLine } from '../../../lib/found-source.ts'
 import { getHouseholdLanguage, getLanguage } from '../../../lib/i18n.ts'
 import DaySeparator from '../../../ui/DaySeparator.tsx'
@@ -50,7 +50,6 @@ interface SourceSuggestionsProps {
 // The AI's suggestions for a topic, and adding one of them.
 const useSuggestions = ({ topic, replacing = null, onAdded, onUnauthorized }: SourceSuggestionsProps) => {
   const { t } = useTranslation()
-  const capped = useAiCapped('sources')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<Suggestions | null>(null)
   const [adding, setAdding] = useState<string | null>(null)
@@ -58,7 +57,7 @@ const useSuggestions = ({ topic, replacing = null, onAdded, onUnauthorized }: So
   const [addError, setAddError] = useState<string | null>(null)
 
   const suggest = async () => {
-    if (!topic || capped) return
+    if (!topic) return
     setLoading(true)
     setResult(null)
     setAddError(null)
@@ -95,7 +94,7 @@ const useSuggestions = ({ topic, replacing = null, onAdded, onUnauthorized }: So
     }
   }
 
-  return { capped, loading, result, adding, added, addError, suggest, add }
+  return { loading, result, adding, added, addError, suggest, add }
 }
 
 interface SuggestionGroupsProps {
@@ -142,28 +141,24 @@ const SuggestionGroups = ({ suggestions, added, adding, onAdd }: SuggestionGroup
   ))
 }
 
-const offerKey = (capped: boolean, topic: TopicSummary | null) => {
-  if (capped) return 'suggest.capped'
-  return topic ? 'suggest.offer' : 'suggest.pickTopic'
-}
+const offerKey = (topic: TopicSummary | null) => (topic ? 'suggest.offer' : 'suggest.pickTopic')
 
 // "Suggérer des sources": a violet button, one AI call, a few sites for a topic. Each comes with what it
 // brings, a link to look at it, and its feed already found and tried, ready to add.
 const SourceSuggestions = (props: SourceSuggestionsProps) => {
   const { t } = useTranslation()
   const { topic } = props
-  const { capped, loading, result, adding, added, addError, suggest, add } = useSuggestions(props)
+  const { loading, result, adding, added, addError, suggest, add } = useSuggestions(props)
 
   return (
-    // The tour's last step, when the topic has no proposal left.
-    <div className={suggestStyles.box} data-tour="add-sites">
+    <div className={suggestStyles.box}>
       {/* One line, as the reader's AI offers: mark, what it does, the violet button. */}
       <div className={aiStyles.offer}>
         <span className={`${aiStyles.mark} ${aiStyles.offerMark}`}>
           <SparkleIcon size={16} />
         </span>
-        <span className={aiStyles.offerText}>{t(offerKey(capped, topic), { topic: topic?.label })}</span>
-        <Button look="ai" icon={SparkleIcon} busy={loading} disabled={!topic || capped} onClick={() => void suggest()}>
+        <span className={aiStyles.offerText}>{t(offerKey(topic), { topic: topic?.label })}</span>
+        <Button look="ai" icon={SparkleIcon} busy={loading} disabled={!topic} onClick={() => void suggest()}>
           {t('suggest.button')}
         </Button>
       </div>

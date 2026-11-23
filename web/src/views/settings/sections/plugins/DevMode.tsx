@@ -111,7 +111,7 @@ const DevMode = ({ onRestart }: { onRestart: (change: Promise<string | null>) =>
           <SettingRow
             label={t('plugins.devMode.newCode')}
             hint={t('plugins.devMode.newCodeHint')}
-            action={{ label: t('plugins.devMode.newCodeButton'), icon: RefreshCw, onClick: turnOn }}
+            action={{ label: t('plugins.devMode.newCodeButton'), icon: RefreshCw, look: 'danger', onClick: turnOn }}
           />
         )}
       </div>

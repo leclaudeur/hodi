@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   SERVER_HREF,
   SETTINGS_SECTIONS,
+  accountHref,
+  catalogueHref,
   articleHref,
   englishHash,
   parseRoute,
@@ -31,7 +33,7 @@ describe('hash routes', () => {
     expect(parseRoute(watchHref('v1'))).toEqual({ name: 'listen', itemId: 'v1' })
     expect(parseRoute(storyHref('world'))).toEqual({ name: 'story', topicId: 'world' })
     expect(parseRoute(requestHref(12))).toEqual({ name: 'settings', section: null, request: 12 })
-    expect(parseRoute(youngProfileHref(3))).toEqual({ name: 'settings', section: 'profiles', item: '3' })
+    expect(parseRoute(youngProfileHref(3))).toEqual({ name: 'account', part: 'children', item: '3' })
     expect(parseRoute(pluginPageHref('diagnostic'))).toEqual({
       name: 'settings',
       section: 'plugin',
@@ -83,18 +85,42 @@ describe('hash routes', () => {
   })
 
   it('opens each Réglages section from its English name', () => {
-    for (const section of SETTINGS_SECTIONS) {
+    // Mon compte and its Statistiques are a page of their own: Réglages only links to it.
+    const ownPage = new Set(['account', 'stats', 'ai'])
+    for (const section of SETTINGS_SECTIONS.filter(section => !ownPage.has(section))) {
       expect(parseRoute(settingsHref(section))).toEqual({ name: 'settings', section })
     }
     expect(parseRoute('#/settings/unknown')).toEqual({ name: 'settings', section: null })
   })
 
+  it('opens Mon compte on its section', () => {
+    expect(parseRoute('#/account')).toEqual({ name: 'account', part: null })
+    expect(parseRoute(accountHref('region'))).toEqual({ name: 'account', part: 'region' })
+    expect(parseRoute('#/account/unknown')).toEqual({ name: 'account', part: null })
+    expect(parseRoute('#/settings/account')).toEqual({ name: 'account', part: null })
+    expect(parseRoute('#/settings/account/sign-in')).toEqual({ name: 'account', part: 'sign-in' })
+    expect(parseRoute('#/settings/stats')).toEqual({ name: 'account', part: 'stats' })
+    expect(parseRoute('#/settings/ai')).toEqual({ name: 'account', part: 'ai' })
+  })
+
+  it('opens the catalogue on its Officielles or a topic', () => {
+    expect(parseRoute(catalogueHref())).toEqual({ name: 'catalogue', part: null })
+    expect(parseRoute(catalogueHref('official'))).toEqual({ name: 'catalogue', part: 'official' })
+    expect(parseRoute(catalogueHref('world'))).toEqual({ name: 'catalogue', part: 'world' })
+  })
+
   it('links to English addresses only', () => {
     expect(searchHref('liège')).toBe('#/search/li%C3%A8ge')
-    expect(settingsHref('household')).toBe('#/settings/household')
+    expect(youngProfileHref(3)).toBe('#/account/children/3')
     expect(settingsHref('themes')).toBe('#/settings/topics')
     expect(requestHref(4)).toBe('#/settings/requests/4')
     expect(storyHref('monde')).toBe('#/stories/monde')
+  })
+
+  it('sends Réglages › Ados et enfants, which went, to Mon compte › Mes enfants', () => {
+    expect(parseRoute('#/settings/profiles')).toEqual({ name: 'account', part: 'children' })
+    expect(parseRoute('#/settings/profiles/3')).toEqual({ name: 'account', part: 'children', item: '3' })
+    expect(parseRoute('#/reglages/profils/3')).toEqual({ name: 'account', part: 'children', item: '3' })
   })
 
   it('turns the French addresses of earlier versions into English ones', () => {
@@ -120,13 +146,15 @@ describe('hash routes', () => {
   })
 
   it('still opens the old addresses', () => {
-    expect(parseRoute('#/reglages/foyer')).toEqual({ name: 'settings', section: 'household' })
+    // Réglages › Foyer went: its settings for everyone are in Serveur › Général.
+    expect(parseRoute('#/reglages/foyer')).toEqual({ name: 'server', section: 'general' })
+    expect(parseRoute('#/settings/household')).toEqual({ name: 'server', section: 'general' })
     expect(parseRoute('#/reglages/demandes/12')).toEqual({ name: 'settings', section: null, request: 12 })
     expect(parseRoute('#/recherche/pluie')).toEqual({ name: 'search', query: 'pluie' })
     expect(parseRoute('#/plus-tard')).toEqual({ name: 'saved' })
     expect(parseRoute('#/ecouter')).toEqual({ name: 'listen', itemId: null })
     expect(parseRoute('#/sources')).toEqual({ name: 'settings', section: 'sources' })
-    expect(parseRoute('#/stats')).toEqual({ name: 'settings', section: 'stats' })
+    expect(parseRoute('#/stats')).toEqual({ name: 'account', part: 'stats' })
   })
 
   it("opens Réglages, or a plugin's own page, from the addresses of Réglages › Plugins", () => {

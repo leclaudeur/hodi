@@ -2,11 +2,12 @@ import path from 'node:path'
 import { loadCatalog } from '../news/catalog.ts'
 import { createFetchText } from '../news/fetch-text.ts'
 import { createSourceFinder } from '../news/source-finder.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Adds nothing: looks up every "Sources proposées" of sources.yml as its "Ajouter" button would (the feed
 // found from the site, then its latest articles tried in the reader) and reports what a profile would get.
 // Exits with 1 when at least one proposal would fail to add.
-const find = createSourceFinder({ fetchText: createFetchText({ timeoutMs: 8000 }) })
+const find = createSourceFinder({ fetchText: createFetchText({ timeoutMs: CONFIG.fetch.findTimeout }) })
 
 const STATUS_LABELS = {
   invalid: 'not a valid address',
@@ -14,7 +15,8 @@ const STATUS_LABELS = {
   none: 'no feed found on the site',
   empty: 'feed has no items',
   failed: 'site unreachable or refusing Hodi',
-  reddit: 'Reddit closed its feeds'
+  reddit: 'Reddit closed its feeds',
+  unavailable: 'domain blocked on this server'
 }
 
 const catalog = loadCatalog(path.resolve(process.env.SOURCES_FILE ?? 'sources.yml'))

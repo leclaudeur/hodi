@@ -1,8 +1,10 @@
+import { CONFIG } from '../../fixed-config.ts'
+
 // The messages between Hodi's main thread and a plugin's sandbox thread (worker.ts). Everything crosses as text, but
 // bytes: a request's raw body, and a BLOB the core reads for a zip.
 
 // The most one value read for a zip may hold.
-export const MAX_READ_BYTES = 16 * 1024 * 1024
+export const MAX_READ_BYTES = CONFIG.pluginSandbox.readMaxSize
 
 export interface SandboxData {
   id: string

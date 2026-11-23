@@ -3,21 +3,40 @@ import { currentHouseholdId } from '../db/household-scope.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
 import { accountRoutes } from '../http/account-routes.ts'
 import { codeRoutes } from '../http/code-routes.ts'
+import { accountHandleRoutes } from '../http/handle-routes.ts'
 import type { InvitationMail } from '../http/invitation-routes.ts'
-import { householdRoutes } from '../http/household-routes.ts'
 import { householdPhotoRoutes } from '../http/household-photo.ts'
 import { profileDeviceRoutes } from '../http/profile-device-routes.ts'
-import { profileRoutes, requireAdmin } from '../http/profile-routes.ts'
+import { profileRoutes } from '../http/profile-routes.ts'
 import { sessionRoutes } from '../http/session-routes.ts'
 import { sourceRequestMeRoutes, sourceRequestRoutes } from '../http/source-request-routes.ts'
+import { youngAccountRoutes } from '../http/young-account-routes.ts'
 import { youthGate, youthMeRoutes, youthProfileRoutes } from '../http/youth-routes.ts'
 import { textsIn } from '../i18n.ts'
+import { youngHereOf } from '../http/profile-guard.ts'
 import type { Wiring } from './wiring.ts'
 
 // Réglages › Compte et données.
-const mountAccount = (api: express.Router, { options, config, session, profileHooks }: Wiring) => {
-  const { accounts, devices, accountData, profiles, household, throttle, now, plugins, twoFactor } = options
+const mountAccount = (api: express.Router, wiring: Wiring) => {
+  const { options, config, session, profileHooks } = wiring
+  const { accounts, devices, accountData, profiles, household, throttle, now, plugins, twoFactor, handles } = options
   if (!accounts || !devices || !accountData) return
+  if (handles) api.use('/account/handle', accountHandleRoutes({ handles, sessionOf: session.sessionOf, now }))
+  if (profiles)
+    api.use(
+      '/account/children',
+      youngAccountRoutes({
+        accounts,
+        profiles,
+        young: accounts.young,
+        sessionOf: session.sessionOf,
+        checkProof: wiring.checkProof,
+        now,
+        onCreate: profileHooks.created,
+        onDeleteProfile: id => profileHooks.deleted(id),
+        onAccountDeleted: id => plugins?.accountDeleted(id)
+      })
+    )
   api.use(
     '/account',
     accountRoutes({
@@ -26,6 +45,9 @@ const mountAccount = (api: express.Router, { options, config, session, profileHo
       devices,
       profiles,
       household,
+      defaultTimeZone: config.timeZone,
+      accountAi: options.accountAi,
+      providers: options.aiProviders,
       sessionOf: session.sessionOf,
       cookieForDevice: session.cookieForDevice,
       cookieWithout: session.cookieWithout,
@@ -37,15 +59,20 @@ const mountAccount = (api: express.Router, { options, config, session, profileHo
       // Deleting the last adult's account empties the household: the plugins forget it as a removed one.
       onHouseholdGone: () => plugins?.householdRemoved(currentHouseholdId()),
       pluginCopies: plugins ? who => plugins.exportData(who) : undefined,
-      twoFactor
+      twoFactor,
+      handles
     })
   )
 }
 
 const mountProfiles = (api: express.Router, wiring: Wiring) => {
-  const { profiles, profileDevices, youth, users, accounts, pinThrottle, now } = wiring.options
+  const { profiles, profileDevices, devices, youth, users, accounts, pinThrottle, now } = wiring.options
   if (!profiles) return
-  if (profileDevices) api.use('/profiles', profileDeviceRoutes({ devices: profileDevices, profiles, now }))
+  if (profileDevices)
+    api.use(
+      '/profiles',
+      profileDeviceRoutes({ devices: profileDevices, profiles, accounts, accountDevices: devices, now })
+    )
   api.use(
     '/profiles',
     profileRoutes({
@@ -54,8 +81,8 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
       secret: wiring.config.sessionSecret,
       pinThrottle,
       accounts,
-      household: wiring.options.household,
       signedInHere: request => wiring.session.sessionsOf(request).map(session => session.account.id),
+      youngHere: request => youngHereOf(wiring.session.sessionsOf(request), accounts, wiring.options.devices),
       trust: wiring.trust ?? undefined,
       onCreate: wiring.profileHooks.created,
       onChange: profile => wiring.youthSources?.start(profile),
@@ -64,7 +91,10 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
     })
   )
   if (youth) {
-    api.use('/profiles', youthProfileRoutes({ youth, sources: wiring.youthSources ?? undefined, profiles, users, now }))
+    api.use(
+      '/profiles',
+      youthProfileRoutes({ youth, sources: wiring.youthSources ?? undefined, profiles, users, accounts, now })
+    )
   }
 }
 
@@ -76,7 +106,11 @@ const mountSourceRequests = (api: express.Router, { options, youthSources }: Wir
     '/me',
     sourceRequestMeRoutes({
       youth,
-      find: sources.find,
+      // A teen does not ask for a site the server's admin blocked.
+      find: async link => {
+        const result = await sources.find(link)
+        return result.status === 'ok' && sources.blocked?.covers(result.source) ? { status: 'unavailable' } : result
+      },
       news,
       now,
       // Every parent's devices hear of it.
@@ -145,6 +179,4 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
   mountProfiles(api, wiring)
   mountSourceRequests(api, wiring)
   api.use(householdPhotoRoutes({ household, profiles, accounts }))
-  if (wiring.householdOptions)
-    api.use('/household', requireAdmin, householdRoutes({ ...wiring.householdOptions, checkProof: wiring.checkProof }))
 }

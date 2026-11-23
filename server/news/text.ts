@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { decodeHTML } from 'entities'
+import { CONFIG } from '../fixed-config.ts'
 
 // Every HTML character reference, named or numeric, as a browser decodes it (including the legacy ones written
 // without a semicolon): feeds use far more than a short list, and names are case-sensitive (&Eacute; is É).
@@ -63,7 +64,7 @@ export const itemId = (canonical: string) => createHash('sha256').update(canonic
 
 // Every list asks again for the keys of the same titles: each is worked out once.
 const titleKeys = new Map<string, string>()
-const MAX_TITLE_KEYS = 20_000
+const MAX_TITLE_KEYS = CONFIG.stories.titleKeysKept
 
 // Lowercase, no accents or punctuation: catches the same story syndicated under two links.
 export const titleKey = (title: string) => {

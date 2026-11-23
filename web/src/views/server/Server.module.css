@@ -101,3 +101,14 @@
     border-radius: 16px;
   }
 }
+
+/* « Inviter quelqu'un », under the accounts as every list's add button. */
+.invite {
+  display: flex;
+}
+
+@media (max-width: 1023px) {
+  .invite {
+    padding: 12px var(--gutter) 16px;
+  }
+}

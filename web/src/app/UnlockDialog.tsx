@@ -1,3 +1,4 @@
+import { LockKeyhole } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type Profile, type ProfileSecret, RequestError } from '../api.ts'
@@ -9,6 +10,7 @@ import DialogActions from '../ui/DialogActions.tsx'
 import PasswordField from '../ui/PasswordField.tsx'
 import PinField from '../ui/PinField.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
+import QuietLink from '../ui/QuietLink.tsx'
 import RichText from '../ui/RichText.tsx'
 import StatusLine from '../ui/StatusLine.tsx'
 import styles from './ProfileSwitcher.module.css'
@@ -49,13 +51,21 @@ const useUnlock = (profile: Profile) => {
   return { wrong, error, opening, unlock, typing }
 }
 
-// A private profile: its person's password, and « Ne plus demander sur cet appareil » on a device of theirs.
-const PasswordForm = ({ profile, own, state }: { profile: Profile; own: number | null; state: Unlocking }) => {
+interface PasswordFormProps {
+  profile: Profile
+  state: Unlocking
+  // A private profile offers « Ne plus demander sur cet appareil »; a parent's forgotten code does not.
+  trustable: boolean
+}
+
+// A private profile: its person's password, and « Ne plus demander sur cet appareil » on a device of theirs. A parent
+// who forgot their code types their password the same way.
+const PasswordForm = ({ profile, state, trustable }: PasswordFormProps) => {
   const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [trust, setTrust] = useState(false)
-  const theirs = profile.hasAccount && profile.id !== own
-  const label = theirs ? t('profiles.passwordOf', { name: profile.name }) : t('profiles.yourPassword')
+  // The profile's name is right above the field: the field says only what to type.
+  const label = t('profiles.yourPassword')
   return (
     <form
       id="profile-unlock"
@@ -80,16 +90,18 @@ const PasswordForm = ({ profile, own, state }: { profile: Profile; own: number |
         }}
         invalid={state.wrong}
       />
-      <Checkbox checked={trust} onChange={setTrust} underField>
-        {t('profiles.trustDevice')}
-      </Checkbox>
+      {trustable && (
+        <Checkbox checked={trust} onChange={setTrust} underField>
+          {t('profiles.trustDevice')}
+        </Checkbox>
+      )}
       {state.error && <StatusLine tone="error">{state.error}</StatusLine>}
     </form>
   )
 }
 
-// The household's Code parental: the last digit opens the profile.
-const CodeForm = ({ profile, state }: { profile: Profile; state: Unlocking }) => {
+// The parent's Code parental: the last digit opens the profile. Forgotten, their password opens it instead.
+const CodeForm = ({ profile, state, onForgot }: { profile: Profile; state: Unlocking; onForgot: () => void }) => {
   const { t } = useTranslation()
   const [code, setCode] = useState('')
   return (
@@ -107,18 +119,28 @@ const CodeForm = ({ profile, state }: { profile: Profile; state: Unlocking }) =>
         }}
         onComplete={full => void state.unlock({ code: full }).then(opened => opened || setCode(''))}
       />
-      <StatusLine tone={state.error ? 'error' : 'info'}>{state.error ?? t('profiles.codeHint')}</StatusLine>
+      {state.error && <StatusLine tone="error">{state.error}</StatusLine>}
+      <QuietLink
+        icon={LockKeyhole}
+        onClick={() => {
+          state.typing()
+          onForgot()
+        }}
+      >
+        {t('profiles.forgotCode')}
+      </QuietLink>
     </div>
   )
 }
 
 type Unlocking = ReturnType<typeof useUnlock>
 
-// What an adult profile asks here before it opens: its own person's password, or the household's Code parental.
+// What an adult profile asks here before it opens: its own person's password, or its parent's Code parental.
 const UnlockDialog = ({ profile, own, onClose }: { profile: Profile; own: number | null; onClose: () => void }) => {
   const { t } = useTranslation()
   const state = useUnlock(profile)
-  const code = profile.lock === 'code'
+  const [forgot, setForgot] = useState(false)
+  const code = profile.lock === 'code' && !forgot
   const theirs = profile.hasAccount && profile.id !== own
   let intro: 'dialogIntro.passwordOpen' | 'dialogIntro.ownOpen' | 'dialogIntro.codeOpen' = theirs
     ? 'dialogIntro.passwordOpen'
@@ -131,7 +153,11 @@ const UnlockDialog = ({ profile, own, onClose }: { profile: Profile; own: number
       title={profile.name}
       intro={<RichText i18nKey={intro} values={{ name: profile.name }} />}
     >
-      {code ? <CodeForm profile={profile} state={state} /> : <PasswordForm profile={profile} own={own} state={state} />}
+      {code ? (
+        <CodeForm profile={profile} state={state} onForgot={() => setForgot(true)} />
+      ) : (
+        <PasswordForm profile={profile} state={state} trustable={profile.lock !== 'code'} />
+      )}
       <DialogActions>
         <Button onClick={onClose}>{t('common.cancel')}</Button>
         {!code && (

@@ -1,6 +1,7 @@
 import type { MailRow } from '../mail/template.ts'
 import { type Written, writtenIn, writtenOf } from './written.ts'
 import type { Language } from '../../shared/i18n.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A plugin's table in the weekly report (its weeklyReport hook): a few rows of plain text, each a label, a value and
 // maybe its change since the week before, which Hodi shows green when good and red otherwise. Each text is one, or
@@ -12,7 +13,7 @@ export interface ReportRow {
   change?: { text: Written; good: boolean }
 }
 
-const MAX_ROWS = 8
+const MAX_ROWS = CONFIG.plugins.reportRows
 // eslint-disable-next-line no-control-regex -- matching control characters is the point
 const CONTROL = /[\u0000-\u001f\u007f]/
 

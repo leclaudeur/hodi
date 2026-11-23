@@ -3,11 +3,12 @@ import { type Source, allSources, isAllowedHost, loadCatalog } from '../news/cat
 import { extractArticle, extractFeedContent } from '../news/extract.ts'
 import { createFetchText } from '../news/fetch-text.ts'
 import { type FeedEntry, parseFeedEntries } from '../news/feed-parser.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Fetches every feed of sources.yml once and reports what Hodi would get from it:
 // item count, newest item date and, for article sources, how many of the latest
 // articles open in the reader. Exits with 1 when at least one feed fails.
-const fetchText = createFetchText({ timeoutMs: 10_000 })
+const fetchText = createFetchText({ timeoutMs: CONFIG.fetch.textTimeout })
 
 interface Check {
   source: Source
@@ -38,7 +39,7 @@ const pageCheck = async (source: Source, link: string) => {
   }
 }
 
-const READER_SAMPLE = 3
+const READER_SAMPLE = CONFIG.sources.readerSample
 
 // Mirrors NewsService: the article page first, then the full text carried by the feed.
 const articleCheck = async (source: Source, { item, contentHtml }: FeedEntry) => {

@@ -1,7 +1,9 @@
+import { CONFIG } from '../fixed-config.ts'
+
 // The checks the routes share on what a client sends.
 
-export const MAX_WORDS = 50
-export const MAX_WORD_LENGTH = 60
+export const MAX_WORDS = CONFIG.mutedWords.max
+export const MAX_WORD_LENGTH = CONFIG.mutedWords.wordMaxLength
 export const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/
 export const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 

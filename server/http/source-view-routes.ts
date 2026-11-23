@@ -3,8 +3,38 @@ import type { UserStore } from '../db/user-store.ts'
 import type { YouthStore } from '../db/youth-store.ts'
 import { CHANNEL_LIMITS, ENGAGEMENT_WINDOW_MS, MIN_HISTORY_MS, sourceEngagement } from '../news/engagement.ts'
 import type { NewsService } from '../news/news-service.ts'
+import type { SourceStatus } from '../news/news-types.ts'
 import type { SourceIcons } from '../news/source-icons.ts'
 import { kindOf, profileIdOf } from './profile-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
+
+// A source's readers show from READERS_SHOWN on: below that, a count would point at the few people reading it.
+export const READERS_SHOWN = CONFIG.sources.readersShownFrom
+
+// Its readers, once there are enough of them, and whether it comes from sources.yml (the catalogue's Officielles).
+const withReaders = (sources: SourceStatus[], counts: Map<string, number> | undefined, official: Set<string>) =>
+  sources.map(source => {
+    const readers = counts?.get(source.id) ?? 0
+    return {
+      ...source,
+      ...(readers >= READERS_SHOWN ? { readers } : {}),
+      ...(official.has(source.id) ? { official: true } : {})
+    }
+  })
+
+// A source's readers show from READERS_SHOWN on: below that, a count would point at the few people reading it.
+export const READERS_SHOWN = 10
+
+// Its readers, once there are enough of them, and whether it comes from sources.yml (the catalogue's Officielles).
+const withReaders = (sources: SourceStatus[], counts: Map<string, number> | undefined, official: Set<string>) =>
+  sources.map(source => {
+    const readers = counts?.get(source.id) ?? 0
+    return {
+      ...source,
+      ...(readers >= READERS_SHOWN ? { readers } : {}),
+      ...(official.has(source.id) ? { official: true } : {})
+    }
+  })
 
 // The sources as a profile sees them: the list, how much each is opened, and their icons.
 export const sourceViewRoutes = ({
@@ -12,12 +42,20 @@ export const sourceViewRoutes = ({
   users,
   youth,
   icons,
+  readers,
+  official,
+  unlisted,
   now
 }: {
   news: NewsService
   users?: (profileId: number) => UserStore
   youth?: YouthStore
   icons?: SourceIcons
+  readers?: () => Map<string, number>
+  // The ids of sources.yml's sources.
+  official?: () => Set<string>
+  // Out of the catalogue (À traiter, refused): listed only for those who read them.
+  unlisted?: () => Set<string>
   now: () => number
 }) => {
   const router = express.Router()
@@ -49,9 +87,15 @@ export const sourceViewRoutes = ({
 
   // A young profile sees only the sources its parents gave it.
   router.get('/sources', (_request, response) => {
-    const all = news.getSourceStatuses()
+    const all = withReaders(news.getSourceStatuses(), readers?.(), official?.() ?? new Set())
     const allowed = kindOf(response) === 'adult' || !youth ? null : new Set(youth.allowedSources(profileIdOf(response)))
-    response.json({ sources: allowed ? all.filter(source => allowed.has(source.id)) : all })
+    if (allowed) {
+      response.json({ sources: all.filter(source => allowed.has(source.id)) })
+      return
+    }
+    const out = unlisted?.()
+    const mine = out?.size && users ? new Set(users(profileIdOf(response)).sources.mine()) : null
+    response.json({ sources: mine ? all.filter(source => !out?.has(source.id) || mine.has(source.id)) : all })
   })
 
   // Nor does it add, change or remove one: a teen asks its parents ("Demander une source"), a child asks nothing.

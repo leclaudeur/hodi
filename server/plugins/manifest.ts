@@ -1,4 +1,5 @@
 import { type ServerNoticeSpec, parseServerNotices } from './manifest-notices.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // What a plugin tells Hodi about itself, in the plugin.json at the root of its folder.
 // The version of the plugin API this Hodi speaks. A plugin written for another major version is not loaded.
@@ -92,11 +93,11 @@ const ID = /^[a-z][a-z0-9-]{1,31}$/
 const RESERVED_IDS = ['packages', 'dev-mode']
 const KEY = /^[a-zA-Z][a-zA-Z0-9]{0,31}$/
 export const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/
-const MAX_SETTINGS = 32
-const MAX_TEXT = 2000
+const MAX_SETTINGS = CONFIG.pluginManifest.settings
+const MAX_TEXT = CONFIG.pluginManifest.textMaxLength
 const HOST = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/
-const MAX_HOSTS = 20
-const MAX_FEEDS = 5
+const MAX_HOSTS = CONFIG.pluginManifest.hosts
+const MAX_FEEDS = CONFIG.pluginManifest.feeds
 // A topic's id in sources.yml (belgium, world, tech…).
 const TOPIC = /^[a-z][a-z0-9-]{0,31}$/
 // The memory a plugin's code gets unless its manifest asks for more, and the most it may ask: plugins share one
@@ -111,8 +112,8 @@ export type SignedOnly = (typeof SIGNED_ONLY)[number]
 export const signedOnlyAsked = (manifest: Manifest): SignedOnly[] =>
   SIGNED_ONLY.filter(permission => manifest.permissions[permission])
 
-export const DEFAULT_MEMORY_MB = 16
-export const MAX_MEMORY_MB = 32
+export const DEFAULT_MEMORY_MB = CONFIG.pluginManifest.memoryDefault / (1024 * 1024)
+export const MAX_MEMORY_MB = CONFIG.pluginManifest.memoryMax / (1024 * 1024)
 
 export class ManifestError extends Error {}
 

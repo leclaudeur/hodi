@@ -121,6 +121,8 @@ interface MenuItemProps {
   tone?: 'danger' | 'quiet'
   disabled?: boolean
   label?: string
+  // The guided tour's mark on it.
+  tour?: string
 }
 
 export const MenuItem = ({
@@ -134,7 +136,8 @@ export const MenuItem = ({
   end,
   tone,
   disabled,
-  label
+  label,
+  tour
 }: MenuItemProps) => {
   const content = (
     <>
@@ -166,6 +169,7 @@ export const MenuItem = ({
       aria-disabled={disabled || undefined}
       aria-label={label}
       className={className}
+      data-tour={tour}
       onClick={disabled ? undefined : onClick}
     >
       {content}

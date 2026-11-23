@@ -16,6 +16,7 @@ import { HouseholdStore } from '../db/household-store.ts'
 import { MailSettingsStore, mailDraftOf } from '../db/mail-settings-store.ts'
 import { copyTimeOf, isDatabaseFile, readRestoreTime } from '../db/maintenance.ts'
 import { ProfileStore } from '../db/profile-store.ts'
+import { ServerInboxStore } from '../db/server-inbox-store.ts'
 import { ServerPeopleStore } from '../db/server-people-store.ts'
 import { ServerSettingsStore } from '../db/server-settings-store.ts'
 import { ServerStatsStore } from '../db/server-stats-store.ts'
@@ -26,6 +27,8 @@ import { deviceKindOf } from '../http/presence.ts'
 import { MailError, type MailMessage, smtpSend } from '../mail/mailer.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
+import { codeRequestKey } from '../notices/code-request.ts'
+import type { ServerNotifier } from '../notices/server-notifier.ts'
 import { fakeFetch } from './helpers/news.ts'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -37,8 +40,8 @@ describe('server stats', () => {
     const db = openDatabase(':memory:')
     const stats = new ServerStatsStore(db, () => 'Europe/Brussels')
     const insert = db.prepare(
-      `INSERT INTO readings (profile_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done)
-       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO readings (owner, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done)
+       VALUES ('p1', ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     insert.run('a', 'rtl', 'RTL info', 'belgium', 4, NOW - 60_000, 'article', 1)
     insert.run('b', 'rtl', 'RTL info', 'belgium', 3, NOW - DAY, 'article', null)
@@ -119,6 +122,7 @@ describe('server overview route', () => {
   let baseUrl: string
   let close: () => void
   let adminCookie = ''
+  let inbox: ServerInboxStore
   let memberCookie = ''
   let backupDir = ''
   let pendingRestore = ''
@@ -165,7 +169,9 @@ describe('server overview route', () => {
     const catalog = parseCatalog('topics:\n  - id: monde\n    label: Monde\n    sources: []\n')
     const household = new HouseholdStore(db)
     const accounts = new UserAccountStore(db)
+    inbox = new ServerInboxStore(db)
     const server = createApp(config, {
+      serverInbox: { store: inbox, notifier: {} as ServerNotifier },
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles: new ProfileStore(db),
       household,
@@ -299,6 +305,15 @@ describe('server overview route', () => {
     assert.equal(((await checked.json()) as { kind: string }).kind, 'invite')
 
     const samCode = `/server/accounts/${byEmail['sam@example.com']!.id}/code`
+    // Only once Sam asked for one.
+    assert.equal(
+      (await call(samCode, adminCookie, 'POST', { password: 'une phrase de passe assez longue' })).status,
+      409
+    )
+    inbox.add(
+      { type: 'core:code-request', texts: {}, url: '', key: codeRequestKey(byEmail['sam@example.com']!.id) },
+      Date.now()
+    )
     // It opens Sam's account: the server admin's own password first.
     assert.equal((await call(samCode, adminCookie, 'POST')).status, 403)
     const reset = await call(samCode, adminCookie, 'POST', { password: 'une phrase de passe assez longue' })
@@ -315,34 +330,15 @@ describe('server overview route', () => {
     assert.equal((await call('/server/accounts/999/code', adminCookie, 'POST')).status, 404)
   })
 
-  it('keeps the household’s photo, set by its admin, shown to its people and to the server’s admin', async () => {
+  it('shows the household’s photo to its people and to the server’s admin', async () => {
     const png = await sharp({ create: { width: 8, height: 8, channels: 3, background: '#c06040' } })
       .png()
       .toBuffer()
-    const put = (cookie: string, body: Uint8Array, type = 'image/png') =>
-      fetch(`${baseUrl}/api/household/photo`, {
-        method: 'PUT',
-        headers: { cookie, 'Content-Type': type },
-        body: new Uint8Array(body)
-      })
-
-    assert.equal(((await (await call('/household', adminCookie)).json()) as { photo: unknown }).photo, null)
-    // Réglages › Foyer is its admin's: Sam reads in the household, but does not run it.
-    assert.equal((await put(memberCookie, png)).status, 403)
-    // What the bytes are, not what the request says.
-    assert.equal((await put(adminCookie, Buffer.from('not a picture'))).status, 400)
-    assert.equal((await put(adminCookie, png, 'image/jpeg')).status, 400)
-    // A picture far larger than the app ever makes: a few kilobytes that would unpack into gigabytes.
-    const huge = await sharp({ create: { width: 1100, height: 8, channels: 3, background: '#000' } })
-      .png()
-      .toBuffer()
-    assert.equal((await put(adminCookie, huge)).status, 400)
-
-    const saved = await put(adminCookie, png)
-    assert.equal(saved.status, 200)
-    const { photo } = (await saved.json()) as { photo: string }
-    assert.match(photo, /^\/api\/households\/\d+\/photo\?v=\d+$/)
-    const id = Number(/households\/(\d+)/.exec(photo)![1])
+    // A plugin sets it now: the core has no screen for it.
+    const household = new HouseholdStore(db)
+    household.setPhoto({ data: png, type: 'image/png' }, NOW)
+    const id = household.ids()[0]!
+    const photo = `/api/households/${id}/photo?v=${NOW}`
 
     // Its people see it, as a plugin's household picker would.
     const seen = await fetch(`${baseUrl}${photo}`, { headers: { cookie: memberCookie } })
@@ -357,12 +353,11 @@ describe('server overview route', () => {
     const listed = (await (await call('/server/households', adminCookie)).json()) as {
       households: { id: number; photoVersion: number | null }[]
     }
-    assert.notEqual(listed.households.find(household => household.id === id)?.photoVersion, null)
+    assert.notEqual(listed.households.find(entry => entry.id === id)?.photoVersion, null)
     assert.equal((await call(`/server/households/${id}/photo`, adminCookie)).status, 200)
     assert.equal((await call(`/server/households/${id}/photo`, memberCookie)).status, 403)
 
-    const removed = await call('/household/photo', adminCookie, 'DELETE')
-    assert.equal(((await removed.json()) as { photo: unknown }).photo, null)
+    household.setPhoto(null, NOW + 1)
     assert.equal((await fetch(`${baseUrl}${photo}`, { headers: { cookie: memberCookie } })).status, 404)
   })
 

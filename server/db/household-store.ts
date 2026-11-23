@@ -2,12 +2,13 @@ import { type Language, isLanguage } from '../../shared/i18n.ts'
 import { type Database, transaction } from './database.ts'
 import type { PhotoType } from './profile-store.ts'
 import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // One household per install: its name, where it lives and its AI. Made in the first-run screens, changed by the
 // admin in Réglages > Foyer and Réglages > IA et crédits. The password columns of the household from before
 // personal accounts stay in the table, unread.
 
-export const MAX_HOUSEHOLD_NAME_LENGTH = 40
+export const MAX_HOUSEHOLD_NAME_LENGTH = CONFIG.household.nameMaxLength
 
 export interface HouseholdAi {
   provider: string
@@ -33,8 +34,6 @@ export interface Household {
 }
 
 export type HourCycle = 12 | 24
-
-export const isHourCycle = (value: unknown): value is HourCycle => value === 12 || value === 24
 
 interface HouseholdRow {
   name: string
@@ -148,51 +147,5 @@ export class HouseholdStore {
         )
       return true
     })
-  }
-
-  setHourCycle(hourCycle: HourCycle) {
-    this.#db.prepare('UPDATE accounts SET hour_cycle = ? WHERE id = ?').run(hourCycle, this.#account)
-  }
-
-  setLanguage(language: Language) {
-    this.#db.prepare('UPDATE accounts SET language = ? WHERE id = ?').run(language, this.#account)
-  }
-
-  rename(name: string) {
-    this.#db.prepare('UPDATE accounts SET name = ? WHERE id = ?').run(name, this.#account)
-  }
-
-  setRegion(region: { timeZone?: string | null; country?: string | null }) {
-    const current = this.get()
-    this.#db
-      .prepare('UPDATE accounts SET time_zone = ?, country = ? WHERE id = ?')
-      .run(
-        region.timeZone === undefined ? current.timeZone : region.timeZone,
-        region.country === undefined ? current.country : region.country,
-        this.#account
-      )
-  }
-
-  // The Code parental's hash, asked to open an adult's profile that is not private; null: none, they open freely.
-  parentalCode(): string | null {
-    const row = this.#db.prepare('SELECT parental_pin_hash AS hash FROM accounts WHERE id = ?').get(this.#account) as
-      { hash: string | null } | undefined
-    return row?.hash ?? null
-  }
-
-  // Every device's choice of an adult profile is signed again: a new code, or none, is asked from the next opening.
-  setParentalCode(hash: string | null) {
-    this.#db
-      .prepare(
-        'UPDATE accounts SET parental_pin_hash = ?, parental_pin_version = parental_pin_version + 1 WHERE id = ?'
-      )
-      .run(hash, this.#account)
-  }
-
-  // null: no AI, its buttons are hidden.
-  setAi(ai: HouseholdAi | null) {
-    this.#db
-      .prepare('UPDATE accounts SET ai_provider = ?, ai_key = ?, ai_model = ? WHERE id = ?')
-      .run(ai?.provider ?? null, ai?.key ?? null, ai?.model ?? null, this.#account)
   }
 }

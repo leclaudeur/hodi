@@ -3,19 +3,21 @@ import type { ExtractedArticle } from '../news/extract.ts'
 import type { FeedEntry, FeedItem } from '../news/feed-parser.ts'
 import { foldText, romanNumeral } from '../../shared/word-match.ts'
 import { type Database, transaction } from './database.ts'
+import { ownerOf } from './stats-owner.ts'
 import {
   type AiCall,
-  type AiCallKind,
-  type AiCleared,
   type StoredDailySummary,
   aiCalls,
-  clearAiCalls,
+  getSummary,
   latestDailySummaries,
   recordAiCall,
-  saveDailySummary
+  saveDailySummary,
+  saveSummary
 } from './ai-queries.ts'
 
 import { type StoredIcon, getIcon, getVideoDurations, saveIcon, saveVideoDuration } from './media-queries.ts'
+import { CONFIG } from '../fixed-config.ts'
+import { CONTENT_SETTINGS } from './server-settings-store.ts'
 
 // Readability verdict of an article, as NewsService keeps it, with what its card shows once it is read.
 export interface StoredVerdict {
@@ -31,10 +33,10 @@ export interface StoredItem {
 }
 
 // The reader mode text and the feed's full HTML are dropped after this; the article row stays.
-export const CONTENT_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
-const AI_CALL_RETENTION_MS = 2 * 24 * 60 * 60 * 1000
-const VIDEO_DURATION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000
-const DAILY_SUMMARY_RETENTION = 30
+export const CONTENT_RETENTION_MS = CONTENT_SETTINGS.textDays.byDefault * 24 * 60 * 60 * 1000
+const AI_CALL_RETENTION_MS = CONFIG.retention.aiCalls
+const VIDEO_DURATION_RETENTION_MS = CONFIG.retention.videoDurations
+const DAILY_SUMMARY_RETENTION = CONFIG.retention.dailySummaries
 
 interface ArticleRow {
   id: string
@@ -253,22 +255,18 @@ export class NewsStore {
       .run(article.title, article.byline, article.contentHtml, article.textLength, article.image, now, id)
   }
 
-  // An article's summary in the given language, if one was written.
-  getSummary(id: string, language: Language): string[] | null {
-    const row = this.#db
-      .prepare('SELECT points FROM ai_summaries WHERE article_id = ? AND language = ?')
-      .get(id, language) as { points: string } | undefined
-
-    return row ? (JSON.parse(row.points) as string[]) : null
+  // Whose a summary is: the reader's account pays for it, and only that account reads it (stats-owner.ts).
+  ownerOf(profileId: number) {
+    return ownerOf(this.#db, profileId)
   }
 
-  saveSummary(id: string, language: Language, points: string[], now: number) {
-    this.#db
-      .prepare(
-        `INSERT OR REPLACE INTO ai_summaries (article_id, language, points, created_at)
-         SELECT id, ?, ?, ? FROM articles WHERE id = ?`
-      )
-      .run(language, JSON.stringify(points), now, id)
+  // An article's summary in the given language, if the owner's AI wrote one.
+  getSummary(id: string, language: Language, owner: string) {
+    return getSummary(this.#db, id, language, owner)
+  }
+
+  saveSummary(id: string, language: Language, points: string[], now: number, owner: string) {
+    saveSummary(this.#db, { id, language, points, now, owner })
   }
 
   // Each profile's last Résumé du jour.
@@ -287,12 +285,6 @@ export class NewsStore {
   // The calls made since the given time, oldest first.
   aiCalls(since: number) {
     return aiCalls(this.#db, since)
-  }
-
-  // "Remettre à 0": the calls since then, of one kind or all, of one profile or all, cleared to that level (never
-  // lowered).
-  clearAiCalls(since: number, level: AiCleared, kind: AiCallKind | null, profileId: number | null) {
-    clearAiCalls(this.#db, since, level, kind, profileId)
   }
 
   getIcon(sourceId: string) {

@@ -1,4 +1,7 @@
 import { titleKey } from './text.ts'
+import { CONFIG } from '../fixed-config.ts'
+
+const STORY = CONFIG.stories
 
 // Words that say nothing about the story itself (French and English).
 const STOP_WORDS = new Set(
@@ -36,7 +39,7 @@ const properNames = (title: string) => {
 
 // Two articles on the same story share most of their title's significant words,
 // and come out close in time.
-const MAX_GAP_MS = 36 * 60 * 60 * 1000
+const MAX_GAP_MS = CONFIG.stories.gap
 
 export interface StoryCandidate {
   title: string
@@ -53,7 +56,7 @@ interface TitleAnalysis {
 // A topic compares every pair of its titles, on each request: analyse each title and read each date once.
 const analyses = new Map<string, TitleAnalysis>()
 const times = new Map<string, number>()
-const MAX_ANALYSES = 5000
+const MAX_ANALYSES = CONFIG.stories.analysesKept
 
 const analyse = (title: string) => {
   let analysis = analyses.get(title)
@@ -108,5 +111,5 @@ export const sameStory = (a: StoryCandidate, b: StoryCandidate) => {
   const overlap = shared / Math.min(wordsA.size, wordsB.size)
 
   // Many words in common, or nearly the same few words.
-  return (shared >= 4 && overlap >= 0.6) || shared / union >= 0.75
+  return (shared >= STORY.sharedWords && overlap >= STORY.sharedRatio) || shared / union >= STORY.sameWordsRatio
 }

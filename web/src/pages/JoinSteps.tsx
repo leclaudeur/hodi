@@ -262,7 +262,7 @@ export const AccountStep = ({ join, use }: { join: Join; use: AccountUse }) => {
   const submit = (event: FormEvent) => {
     event.preventDefault()
     if (!accountReady) return
-    if (use.kind === 'invite') {
+    if (use.kind === 'invite' && !existing) {
       join.setError(null)
       join.setStep('who')
     } else void join.join()
@@ -297,6 +297,7 @@ export const WhoStep = ({ join }: { join: Join }) => {
       <StepHeader step={2} total={2} title={t('setup.profile.title')} intro={t('join.who.intro')} />
       <ProfileForm
         className={styles.profileForm}
+        withHandle={join.fields.existing ? undefined : { code: join.code }}
         submitLabel={
           <>
             {t('join.create')}

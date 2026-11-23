@@ -48,11 +48,36 @@
   }
 }
 
-.name {
+.who {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
+}
+
+.name {
   font-size: 14px;
   font-weight: 500;
+}
+
+/* The @username, a caption in the mono font. */
+.handle {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* An @username and its button side by side, the same height; a refusal under the field. */
+.handleRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.handleRow > p {
+  grid-column: 1;
+  padding-left: 17px;
 }
 
 /* The app's check (ui/Checkbox): a square with rounded corners, so it never reads as a radio button. */

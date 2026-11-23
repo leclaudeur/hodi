@@ -1,3 +1,4 @@
+import { handleCheckRoutes } from '../http/handle-routes.ts'
 import type express from 'express'
 import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
 import { publicServerSettings } from '../db/server-settings-store.ts'
@@ -6,14 +7,14 @@ import { setupRoutes } from '../http/setup-routes.ts'
 import { loginRoutes } from '../http/login-routes.ts'
 import { passwordRoutes } from '../http/password-routes.ts'
 import type { UserAccount } from '../db/user-account-store.ts'
-import { CODE_REQUEST, codeRequestKey, codeRequestNotice } from '../notices/code-request.ts'
+import { CODE_REQUEST, codeRequestKey, codeRequestNotice, freshRequest } from '../notices/code-request.ts'
 import { pluginDevRoutes, pluginPublicRoutes } from '../http/plugin-routes.ts'
 import type { Wiring } from './wiring.ts'
 
 type Login = ReturnType<typeof loginRoutes>
 
 // « Demander un code »: the server's admins hear of it, for an account with a profile in a household.
-const askAdmin = ({ serverInbox, accounts, profiles }: Wiring['options'], account: UserAccount) => {
+const askAdmin = ({ serverInbox, accounts, profiles, now }: Wiring['options'], account: UserAccount) => {
   const householdId = accounts?.householdOf(account.id) ?? null
   if (!serverInbox || !profiles || householdId === null) return
   const name = inHousehold(householdId, () => {
@@ -21,9 +22,13 @@ const askAdmin = ({ serverInbox, accounts, profiles }: Wiring['options'], accoun
     return profileId == null ? null : (profiles.get(profileId)?.name ?? null)
   })
   if (name === null) return
+  // A request past its time is closed, so this one is told and counted from now.
+  const key = codeRequestKey(account.id)
+  const asked = serverInbox.store.waiting(key)
+  if (asked !== null && freshRequest(asked, now()) === null) serverInbox.store.handle(key, now())
   serverInbox.notifier
     .tell(CODE_REQUEST, language => codeRequestNotice(account, name, language), {
-      important: codeRequestKey(account.id)
+      important: key
     })
     .catch((error: unknown) => console.error(`Code request not told: ${String(error)}`))
 }
@@ -116,6 +121,9 @@ export const mountSignedOut = (api: express.Router, wiring: Wiring) => {
   const { options, config, householdOptions } = wiring
   const { accounts, devices, profiles, profileDevices, plugins, pluginInstaller, twoFactor, throttle, now } = options
   if (householdOptions) api.use('/setup', setupRoutes(householdOptions))
+  const { handles } = options
+  if (handles)
+    api.use('/handles', handleCheckRoutes({ handles, sessionOf: wiring.session.sessionOf, codes: options.codes, now }))
 
   const login = loginRoutes({
     accounts,

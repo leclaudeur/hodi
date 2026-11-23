@@ -1,0 +1,212 @@
+/* Sources as cards: three across on a computer, two on a tablet, one on a phone; four in a wide catalogue. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@container catalogue (min-width: 860px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1279px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A column, centred: logo, name, theme, buttons. */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 20px 16px 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--column);
+  text-align: center;
+  transition:
+    border-color var(--duration) var(--ease),
+    background-color var(--duration) var(--ease);
+}
+
+/* Already in Mes sources, in the catalogue: only the accent's border; its footer says the rest. */
+.picked {
+  border-color: var(--rust-border);
+}
+
+/* What is wrong with it, on its logo's edge: red for a feed that fails, grey for a source little read. */
+.badge {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--column);
+  border-radius: 50%;
+  background: var(--text-3);
+  color: var(--column);
+}
+
+.badgeError {
+  background: var(--destructive-border);
+  color: var(--on-topic);
+}
+
+.badge svg {
+  display: block;
+}
+
+.corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-3);
+  font: 400 12px/1 var(--font-mono);
+}
+
+.corner > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.name {
+  width: 100%;
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topics {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+/* The theme in its colours, as the sidebar's squares. */
+.topic {
+  overflow: hidden;
+  padding: 3px 10px;
+  border: 1px solid var(--topic-border);
+  border-radius: var(--radius-pill);
+  background: var(--topic-surface);
+  color: var(--topic);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* « +2 »: its other themes, in a round. */
+.more {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-2);
+  font: 400 11px/1 var(--font-mono);
+}
+
+/* As a dialog's footer: a line across the card, the main action on the left, the others on the right. */
+.footer {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: auto -16px 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Room between the content and the footer, which sits at the card's foot. */
+.card > :nth-last-child(2) {
+  margin-bottom: 8px;
+}
+
+.footerNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  color: var(--text-3);
+  font: 400 12px/1 var(--font-mono);
+}
+
+.footerSide {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The logo in a round: the avatar's square corners rounded off. */
+.logo {
+  position: relative;
+  display: flex;
+}
+
+.logo > :first-child {
+  border-radius: 50%;
+}
+
+/* The card still to fill: dashed, its round empty. */
+.empty {
+  border-style: dashed;
+  background: transparent;
+}
+
+.empty .footer {
+  border-top-style: dashed;
+}
+
+.emptyAvatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1.5px dashed var(--border);
+  border-radius: 50%;
+  color: var(--text-3);
+}
+
+/* The card still to fill has one button: in the middle. */
+.centred {
+  justify-content: center;
+}
+
+.emptyLine {
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.4;
+}

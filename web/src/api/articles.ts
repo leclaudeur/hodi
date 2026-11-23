@@ -1,41 +1,21 @@
 import type { PluginTranslations } from '../plugins/plugin-texts.ts'
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { ArticleResult, FeedItem, SourceStatus } from './news.ts'
+import { CONFIG } from '../lib/config.ts'
 
-// Calls to the API in the last 24 hours, against each daily cap.
+// The reader's calls to the API in the last 24 hours, on its own key. No cap: the key is theirs.
 export interface AiUsage {
+  // False without a key: no AI at all.
   available: boolean
-  // used and limit: this profile's; householdUsed and householdLimit: every profile's together.
-  kinds: {
-    kind: 'summary' | 'question' | 'dailySummary' | 'sources' | 'plugin'
-    used: number
-    limit: number
-    householdUsed: number
-    householdLimit: number
-  }[]
-  // The admin's view: each profile's calls of the last 24 hours, every kind together, then kind by kind against
-  // its own caps. Empty for a member.
-  profiles: { profileId: number; calls: number; kinds: { kind: AiKind; used: number; limit: number }[] }[]
+  kinds: { kind: 'summary' | 'question' | 'dailySummary' | 'sources' | 'plugin'; used: number }[]
 }
 
 export type AiKind = AiUsage['kinds'][number]['kind']
 
 export const getAiUsage = () => getJson<AiUsage>('/ai-usage')
 
-// "Remettre à 0", the admin's: one kind or all (no kind), for one profile or the whole household (no profile).
-export const resetAiUsage = async (reset: { kind?: AiKind; profileId?: number }): Promise<AiUsage> => {
-  const response = await fetch('/api/ai-usage/reset', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(reset)
-  })
-  if (response.status === 401) throw new UnauthorizedError('Session expired')
-  if (!response.ok) throw new Error(`POST /ai-usage/reset failed with status ${response.status}`)
-  return (await response.json()) as AiUsage
-}
-
-// Réglages › IA et crédits › Plugins: the active plugins whose AiButton may ask the household's AI, each with its
-// calls of the last 24 hours and whether the household lets it.
+// The admin's « Plugins »: the active plugins whose AiButton may ask a reader's AI, each with the admin's calls of the
+// last 24 hours and whether the household lets it.
 export interface AiPlugin {
   id: string
   name: string
@@ -105,7 +85,7 @@ export type AnswerResult =
   | { status: 'ok'; answer: string; sources: AnswerSource[] }
   | { status: 'unavailable' | 'unknown' | 'unreadable' | 'failed' | 'refused' | 'limited' }
 
-export const MAX_QUESTION_LENGTH = 300
+export const MAX_QUESTION_LENGTH = CONFIG.ai.questionMaxLength
 
 // Asks the AI a question about an article: each question is a new API call, with web searches when needed.
 export const askQuestion = async (id: string, question: string): Promise<AnswerResult> => {

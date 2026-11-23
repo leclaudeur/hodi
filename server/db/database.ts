@@ -1,7 +1,9 @@
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
+import { HandleStore } from './handle-store.ts'
 import { migrate } from './migrations.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 export type Database = DatabaseSync
 
@@ -17,9 +19,11 @@ export const openDatabase = (file: string): Database => {
   if (!inMemory) db.exec('PRAGMA journal_mode = WAL')
   db.exec('PRAGMA synchronous = NORMAL')
   db.exec('PRAGMA foreign_keys = ON')
-  db.exec('PRAGMA busy_timeout = 5000')
+  db.exec(`PRAGMA busy_timeout = ${CONFIG.database.busyTimeout}`)
 
   migrate(db)
+  // The accounts made before identifiers existed get theirs.
+  new HandleStore(db).fillMissing(Date.now())
   return db
 }
 

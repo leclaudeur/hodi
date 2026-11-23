@@ -49,7 +49,7 @@ describe('a plugin’s important server notice', () => {
     })
     await notifier.send(VILLAGE, 'waitlist', SIGNUP)
     await notifier.send(VILLAGE, 'waitlist', SIGNUP)
-    assert.equal(inbox.list().length, 1)
+    assert.equal(inbox.list(0).length, 1)
     assert.equal(inbox.waiting('plugin:village:waitlist:3'), 10)
     // Another plugin's key of the same name, or the core's, is not this one.
     notifier.handled({ id: 'club' }, 'waitlist:3')
@@ -57,7 +57,7 @@ describe('a plugin’s important server notice', () => {
     assert.throws(() => notifier.handled(VILLAGE, '../code-request:1'), /invalid_key/)
     notifier.handled(VILLAGE, 'waitlist:3')
     assert.equal(inbox.waiting('plugin:village:waitlist:3'), null)
-    assert.equal(inbox.list()[0]?.handledAt, 10)
+    assert.equal(inbox.list(10)[0]?.handledAt, 10)
   })
 
   it('reaches the plugin as ctx.serverNoticeHandled, and the testing kit shows it waiting', async () => {

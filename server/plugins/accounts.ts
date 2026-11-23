@@ -10,12 +10,11 @@ import type { PluginAccount } from './api.ts'
 // sign someone in (a hash, a session generation, a code), and a password check costs a plugin what a wrong sign-in
 // costs anyone: the same throttle as « Connexion », for the same address.
 
-export const pluginAccount = (account: UserAccount): PluginAccount => ({
-  id: account.id,
-  email: account.email,
-  loginOnly: !account.hasPassword,
-  serverAdmin: account.serverAdmin
-})
+// A teen's or a child's account, which has no e-mail, is not one a plugin sees: its parents make and run it.
+export const pluginAccount = (account: UserAccount): PluginAccount | null =>
+  account.email === null
+    ? null
+    : { id: account.id, email: account.email, loginOnly: !account.hasPassword, serverAdmin: account.serverAdmin }
 
 export interface PluginAccounts {
   get: (id: unknown) => PluginAccount | null

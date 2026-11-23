@@ -1,11 +1,12 @@
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The devices signed in with an account (Réglages > Compte et données > Appareils): what the browser said it was,
 // and when it was last used. A device whose row is deleted signs in again.
 
-export const MAX_USER_AGENT_LENGTH = 300
+export const MAX_USER_AGENT_LENGTH = CONFIG.accounts.userAgentMaxLength
 // A device's "Utilisé hier" moves at most this often: not one write per request.
-export const LAST_SEEN_STEP = 60 * 60 * 1000
+export const LAST_SEEN_STEP = CONFIG.accounts.deviceSeenStep
 
 export interface UserDevice {
   id: number
@@ -14,6 +15,8 @@ export interface UserDevice {
   lastSeenAt: number
   // « Ne plus demander sur cet appareil »: its account's private profile opens here without the password.
   trusted: boolean
+  // A teen or a child signed in on this device once: the account's Code parental is asked here from then on.
+  youngHere: boolean
 }
 
 interface UserDeviceRow {
@@ -22,16 +25,18 @@ interface UserDeviceRow {
   created_at: number
   last_seen_at: number
   trusted: number
+  young_here: number
 }
 
-const COLUMNS = 'id, user_agent, created_at, last_seen_at, trusted'
+const COLUMNS = 'id, user_agent, created_at, last_seen_at, trusted, young_here'
 
 const toDevice = (row: UserDeviceRow): UserDevice => ({
   id: row.id,
   userAgent: row.user_agent,
   createdAt: row.created_at,
   lastSeenAt: row.last_seen_at,
-  trusted: row.trusted === 1
+  trusted: row.trusted === 1,
+  youngHere: row.young_here === 1
 })
 
 export class UserDeviceStore {
@@ -72,6 +77,10 @@ export class UserDeviceStore {
     this.#db
       .prepare('UPDATE user_devices SET trusted = ? WHERE id = ? AND user_id = ?')
       .run(trusted ? 1 : 0, id, userId)
+  }
+
+  markYoungHere(userId: number, id: number) {
+    this.#db.prepare('UPDATE user_devices SET young_here = 1 WHERE id = ? AND user_id = ?').run(id, userId)
   }
 
   // « Redemander »: the password again on every device of the account.

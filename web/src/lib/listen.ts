@@ -1,10 +1,11 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { type FeedItem, type ListenFeed, type TopicItem, UnauthorizedError, getListen } from '../api.ts'
 import { t } from './i18n.ts'
+import { CONFIG } from './config.ts'
 
 // "Vidéos": the videos and episodes of the last 60 days, loaded once for the visit and again
 // when the app comes back to them after a while.
-const STALE_AFTER_MS = 10 * 60 * 1000
+const STALE_AFTER_MS = CONFIG.app.listenStaleAfter
 
 interface ListenState {
   feed: ListenFeed | null

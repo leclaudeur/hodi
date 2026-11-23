@@ -1,15 +1,22 @@
+import { BlockedEmailStore } from './blocked-email-store.ts'
 import { type Database, transaction } from './database.ts'
+import { HandleStore } from './handle-store.ts'
 import { currentHouseholdId } from './household-scope.ts'
+import { YoungAccountStore } from './young-account-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Personal accounts: a person's own e-mail and password, which sign them in on any device. Not to be mixed up with
 // UserStore, which keeps a profile's reading state, nor with the accounts table, which holds the household.
 // The first account, made in the first-run screens, is the server's admin.
 
-export const MAX_EMAIL_LENGTH = 254
+export const MAX_EMAIL_LENGTH = CONFIG.accounts.emailMaxLength
 
 export interface UserAccount {
   id: number
-  email: string
+  // null for a teen's or a child's account, which signs in with its @identifier.
+  email: string | null
+  // @identifier, unique on the server; null only between a migration and the startup that gives it.
+  handle: string | null
   passwordHash: string
   passwordChangedAt: number
   // false for an account a plugin made with another way in (« Se connecter avec Google »), until a password is set.
@@ -19,33 +26,46 @@ export interface UserAccount {
   serverAdmin: boolean
   // « Profil privé »: its password opens its profile in « Qui lit ? », the Code parental never does.
   privateProfile: boolean
+  // Its « Code parental »'s hash: asked to open its profile on a device where a young one reads; null: none.
+  parentalCode: string | null
   // When the account was made: SQLite may give a deleted account's id to a new one, and a session made before this
   // time was not made for it.
   createdAt: number
+  // Where the person lives; null: the household's (Réglages › Mon compte › Région).
+  timeZone: string | null
+  country: string | null
 }
 
 interface UserAccountRow {
   id: number
-  email: string
+  email: string | null
+  handle: string | null
   password_hash: string
   password_changed_at: number
   has_password: number
   session_generation: number
   server_admin: number
   private_profile: number
+  parental_code_hash: string | null
   created_at: number
+  time_zone: string | null
+  country: string | null
 }
 
 const toAccount = (row: UserAccountRow): UserAccount => ({
   id: row.id,
   email: row.email,
+  handle: row.handle,
   passwordHash: row.password_hash,
   passwordChangedAt: row.password_changed_at,
   hasPassword: row.has_password === 1,
   sessionGeneration: row.session_generation,
   serverAdmin: row.server_admin === 1,
   privateProfile: row.private_profile === 1,
-  createdAt: row.created_at
+  parentalCode: row.parental_code_hash,
+  createdAt: row.created_at,
+  timeZone: row.time_zone,
+  country: row.country
 })
 
 // An address as typed, trimmed and in lower case, or null when it cannot be one. The check stays loose on purpose:
@@ -57,13 +77,15 @@ export const cleanEmail = (value: unknown) => {
 }
 
 const COLUMNS =
-  'id, email, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, created_at'
+  'id, email, handle, password_hash, password_changed_at, has_password, session_generation, server_admin, private_profile, parental_code_hash, created_at, time_zone, country'
 
 export class UserAccountStore {
   readonly #db: Database
+  readonly #blocked: BlockedEmailStore
 
   constructor(db: Database) {
     this.#db = db
+    this.#blocked = new BlockedEmailStore(db)
   }
 
   get(id: number): UserAccount | null {
@@ -75,6 +97,43 @@ export class UserAccountStore {
     const row = this.#db.prepare(`SELECT ${COLUMNS} FROM users WHERE email = ?`).get(email) as
       UserAccountRow | undefined
     return row ? toAccount(row) : null
+  }
+
+  // An e-mail the server's admin blocked with its account (« Bloquer » in Serveur › Comptes).
+  isBlocked(email: string) {
+    return this.#blocked.has(email)
+  }
+
+  blockEmail(email: string, now: number) {
+    this.#blocked.block(email, now)
+  }
+
+  unblockEmail(email: string) {
+    return this.#blocked.unblock(email)
+  }
+
+  byHandle(handle: string): UserAccount | null {
+    const row = this.#db.prepare(`SELECT ${COLUMNS} FROM users WHERE handle = ?`).get(handle) as
+      UserAccountRow | undefined
+    return row ? toAccount(row) : null
+  }
+
+  // A new account's own identifier, typed in its first screens, before anyone else takes it.
+  isHandleFree(handle: string, now: number) {
+    return new HandleStore(this.#db).isFree(handle, now)
+  }
+
+  // The identifier the server's admin chose in the first-run screens; false when someone took it meanwhile.
+  chooseHandle(id: number, handle: string, now: number) {
+    const handles = new HandleStore(this.#db)
+    if (!handles.isFree(handle, now, id)) return false
+    handles.assign(id, '', now, handle)
+    return true
+  }
+
+  // The teens' and children's accounts, and who their parents are.
+  get young() {
+    return new YoungAccountStore(this.#db)
   }
 
   // Whether anyone has an account yet: before that, the install signs in with the household's password, if any.
@@ -102,18 +161,26 @@ export class UserAccountStore {
          VALUES (?, ?, ?, 1, ?)`
       )
       .run(email, passwordHash, now, now)
+    new HandleStore(this.#db).assign(Number(lastInsertRowid), email, now)
     return this.get(Number(lastInsertRowid))
   }
 
   // Any other person's account, from a code ("J'ai un code"); null when the address has one already.
   // hasPassword false: passwordHash is of random bytes nobody knows, and the person signs in another way.
-  create(email: string, passwordHash: string, now: number, { hasPassword = true } = {}): UserAccount | null {
-    if (this.byEmail(email)) return null
+  // handle: the identifier it chose, when still free; else one made from the e-mail.
+  create(
+    email: string,
+    passwordHash: string,
+    now: number,
+    { hasPassword = true, handle = null }: { hasPassword?: boolean; handle?: string | null } = {}
+  ): UserAccount | null {
+    if (this.byEmail(email) || this.isBlocked(email)) return null
     const { lastInsertRowid } = this.#db
       .prepare(
         'INSERT INTO users (email, password_hash, password_changed_at, has_password, created_at) VALUES (?, ?, ?, ?, ?)'
       )
       .run(email, passwordHash, now, hasPassword ? 1 : 0, now)
+    new HandleStore(this.#db).assign(Number(lastInsertRowid), email, now, handle)
     return this.get(Number(lastInsertRowid))
   }
 
@@ -178,10 +245,40 @@ export class UserAccountStore {
     return row?.user_id ? this.get(row.user_id) : null
   }
 
+  // undefined leaves it as it is.
+  setRegion(id: number, { timeZone, country }: { timeZone?: string; country?: string | null }) {
+    if (timeZone !== undefined) this.#db.prepare('UPDATE users SET time_zone = ? WHERE id = ?').run(timeZone, id)
+    if (country !== undefined) this.#db.prepare('UPDATE users SET country = ? WHERE id = ?').run(country, id)
+  }
+
+  // The time zone of the account a profile belongs to, or null (a profile with no account, or none chosen).
+  timeZoneOfProfile(profileId: number): string | null {
+    const row = this.#db
+      .prepare('SELECT users.time_zone FROM profiles JOIN users ON users.id = profiles.user_id WHERE profiles.id = ?')
+      .get(profileId) as { time_zone: string | null } | undefined
+    return row?.time_zone ?? null
+  }
+
   // Turned on, its profiles' choice on every device is signed again: one open elsewhere asks for the password.
+  // A new code, or none: every device that opened the profile without it asks again.
+  setParentalCode(id: number, hash: string | null) {
+    this.#db
+      .prepare(
+        'UPDATE users SET parental_code_hash = ?, parental_code_version = parental_code_version + 1 WHERE id = ?'
+      )
+      .run(hash, id)
+  }
+
   setPrivateProfile(id: number, on: boolean) {
     this.#db.prepare('UPDATE users SET private_profile = ? WHERE id = ?').run(on ? 1 : 0, id)
     if (on) this.#db.prepare('UPDATE profiles SET pin_version = pin_version + 1 WHERE user_id = ?').run(id)
+  }
+
+  // The name and colour the account wears, for the profile it gets on joining; null before it ever had one.
+  identityOf(id: number): { name: string; color: string } | null {
+    const row = this.#db.prepare('SELECT name, color FROM users WHERE id = ?').get(id) as
+      { name: string | null; color: string | null } | undefined
+    return row?.name && row.color ? { name: row.name, color: row.color } : null
   }
 
   linkProfile(id: number, profileId: number) {

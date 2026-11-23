@@ -1,4 +1,5 @@
 import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
+import { CONFIG } from '../fixed-config.ts'
 
 // Stored format: scrypt:<N>:<r>:<p>:<salt>:<hash>, salt and hash in base64url.
 // No "$" separators, so the value survives Docker Compose variable interpolation.
@@ -19,7 +20,7 @@ export interface ScryptParams {
 export const DEFAULT_PARAMS: ScryptParams = { N: 2 ** 15, r: 8, p: 3 }
 // Checks running at once, whoever asks: more wait their turn, so that a flood of sign-ins (the decoy for an unknown
 // e-mail hashes too) never takes more than 64 MiB of the server's memory.
-export const MAX_RUNNING = 2
+export const MAX_RUNNING = CONFIG.signIn.hashingAtOnce
 
 interface ParsedHash {
   params: ScryptParams
@@ -67,6 +68,9 @@ export const hashPassword = async (password: string, params: ScryptParams = DEFA
   return [PREFIX, params.N, params.r, params.p, salt.toString('base64url'), hash.toString('base64url')].join(':')
 }
 
+// What a young account holds until a parent gives it a password.
+export const NO_PASSWORD = ''
+
 export const parsePasswordHash = (encoded: string): ParsedHash => {
   const parts = encoded.split(':')
   const [prefix, n, r, p, salt, hash] = parts
@@ -96,6 +100,8 @@ export const parsePasswordHash = (encoded: string): ParsedHash => {
 }
 
 export const verifyPassword = async (password: string, encoded: string) => {
+  // A young account its parent has not given a password yet: nothing opens it.
+  if (encoded === NO_PASSWORD) return false
   const { params, salt, hash } = parsePasswordHash(encoded)
   const candidate = await derive(password, salt, params)
 

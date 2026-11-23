@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, LockKeyhole } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Profile } from '../api.ts'
@@ -9,6 +9,7 @@ import Checkbox from '../ui/Checkbox.tsx'
 import PasswordField from '../ui/PasswordField.tsx'
 import PinField from '../ui/PinField.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
+import QuietLink from '../ui/QuietLink.tsx'
 import StatusLine from '../ui/StatusLine.tsx'
 import type { Opening } from './ProfilePickerParts.tsx'
 import styles from './ProfilePicker.module.css'
@@ -49,20 +50,21 @@ const LoginOnly = ({ opening, profile }: { opening: Opening; profile: Profile })
   )
 }
 
-// A private profile: its account's password, « Ne plus demander sur cet appareil », then "Ouvrir".
+// A private profile: its account's password, « Ne plus demander sur cet appareil », then "Ouvrir". A parent who
+// forgot their code types their password the same way, with nothing to trust: their code stays asked here.
 const PasswordForm = ({ opening, profile }: { opening: Opening; profile: Profile }) => {
+  const trustable = profile.lock !== 'code'
   const { t } = useTranslation()
   const { password, error } = opening
-  const label =
-    profile.hasAccount && profile.id !== opening.value?.own
-      ? t('profiles.passwordOf', { name: profile.name })
-      : t('profiles.yourPassword')
+  // The profile's name is right above the field: the field says only what to type.
+  const label = t('profiles.yourPassword')
   return (
     <form
       className={styles.pinBox}
       onSubmit={event => {
         event.preventDefault()
-        if (password && opening.opening === null) void opening.open(profile.id, { password, trust: opening.trust })
+        if (password && opening.opening === null)
+          void opening.open(profile.id, { password, trust: trustable && opening.trust })
       }}
     >
       <ProfileAvatar profile={profile} size={72} plain />
@@ -82,9 +84,11 @@ const PasswordForm = ({ opening, profile }: { opening: Opening; profile: Profile
         invalid={opening.wrong}
       />
       {/* On a shared device its person leaves it unticked: the next reader meets the password again. */}
-      <Checkbox checked={opening.trust} onChange={opening.setTrust} underField>
-        {t('profiles.trustDevice')}
-      </Checkbox>
+      {trustable && (
+        <Checkbox checked={opening.trust} onChange={opening.setTrust} underField>
+          {t('profiles.trustDevice')}
+        </Checkbox>
+      )}
       {error && <StatusLine tone="error">{error}</StatusLine>}
       <div className={styles.unlockActions}>
         <BackButton opening={opening} />
@@ -97,8 +101,9 @@ const PasswordForm = ({ opening, profile }: { opening: Opening; profile: Profile
   )
 }
 
-// An adult profile that is not private, while the household has a parental code: its six digits open it at once.
-const CodeForm = ({ opening, profile }: { opening: Opening; profile: Profile }) => {
+// A parent's profile that is not private, on a device where a young account is signed in: their own code's six digits
+// open it at once. Forgotten, their password opens it instead.
+const CodeForm = ({ opening, profile, onForgot }: { opening: Opening; profile: Profile; onForgot: () => void }) => {
   const { t } = useTranslation()
   const [code, setCode] = useState('')
   return (
@@ -117,7 +122,16 @@ const CodeForm = ({ opening, profile }: { opening: Opening; profile: Profile }) 
         }}
         onComplete={full => void opening.open(profile.id, { code: full }).then(() => setCode(''))}
       />
-      <StatusLine tone={opening.error ? 'error' : 'info'}>{opening.error ?? t('profiles.codeHint')}</StatusLine>
+      {opening.error && <StatusLine tone="error">{opening.error}</StatusLine>}
+      <QuietLink
+        icon={LockKeyhole}
+        onClick={() => {
+          opening.setError(null)
+          onForgot()
+        }}
+      >
+        {t('profiles.forgotCode')}
+      </QuietLink>
       <div className={`${styles.unlockActions} ${styles.single}`}>
         <BackButton opening={opening} />
       </div>
@@ -125,11 +139,13 @@ const CodeForm = ({ opening, profile }: { opening: Opening; profile: Profile }) 
   )
 }
 
-// The profile being opened: by its password, the parental code, or through a plugin.
+// The profile being opened: by its password, the parent's code, or through a plugin.
 export const Unlock = ({ opening, profile }: { opening: Opening; profile: Profile }) => {
+  const [forgot, setForgot] = useState(false)
   let form = <PasswordForm opening={opening} profile={profile} />
   if (profile.loginOnly) form = <LoginOnly opening={opening} profile={profile} />
-  else if (profile.lock === 'code') form = <CodeForm opening={opening} profile={profile} />
+  else if (profile.lock === 'code' && !forgot)
+    form = <CodeForm opening={opening} profile={profile} onForgot={() => setForgot(true)} />
   return (
     <>
       <h1 className={styles.title}>{profile.name}</h1>

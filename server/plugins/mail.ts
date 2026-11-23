@@ -5,6 +5,7 @@ import { type MailBlock, renderMail } from '../mail/template.ts'
 import { type PluginMailMessage, pluginMailMessage } from './mail-message.ts'
 import type { Language } from '../../shared/i18n.ts'
 import { HOUR_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // ctx.mail: a plugin's e-mails, sent through Serveur › E-mail. The core builds every message itself, in its own
 // template, from a few checked fields, so nothing the plugin adds (a second recipient, a sender, HTML, an attachment
@@ -24,7 +25,7 @@ const blocksOf = (message: PluginMailMessage): MailBlock[] => [
 ]
 
 // How many e-mails one plugin may send in an hour.
-export const PLUGIN_MAILS_PER_HOUR = 50
+export const PLUGIN_MAILS_PER_HOUR = CONFIG.pluginMail.perHour
 
 export interface PluginMailer {
   available: () => boolean

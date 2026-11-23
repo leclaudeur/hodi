@@ -1,44 +1,24 @@
 import express from 'express'
 import { currentHouseholdId } from '../db/household-scope.ts'
-import type { AiCallKind } from '../db/ai-queries.ts'
 import { type NewsService } from '../news/news-service.ts'
-import { AI_KINDS } from '../news/ai-ledger.ts'
 import type { PluginRegistry } from '../plugins/registry.ts'
-import { isAdminOf, profileIdOf, requireAdmin } from './profile-routes.ts'
+import { profileIdOf, requireAdmin } from './profile-routes.ts'
 
-// Réglages › IA et crédits.
+// Mon compte › IA et crédits, and the household's plugins that may use AI (the admin's).
 export const aiUsageRoutes = ({ news, plugins }: { news: NewsService; plugins?: PluginRegistry }) => {
   const router = express.Router()
 
+  // Mon compte › IA et crédits: the reader's own calls of the last 24 hours, on its own key.
   router.get('/ai-usage', (_request, response) => {
-    const usage = news.aiUsage(profileIdOf(response))
-    // Each profile's calls are the admin's to see; a member sees its own and the household's.
-    response.json(isAdminOf(response) ? usage : { ...usage, profiles: [] })
-  })
-
-  // "Remettre à 0", the admin's: one kind or all, for one profile or the whole household.
-  router.post('/ai-usage/reset', requireAdmin, (request, response) => {
-    const { kind, profileId } = (request.body ?? {}) as { kind?: unknown; profileId?: unknown }
-    if (
-      !(kind === undefined || AI_KINDS.includes(kind as AiCallKind)) ||
-      !(profileId === undefined || (Number.isInteger(profileId) && (profileId as number) > 0))
-    ) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    news.resetAiUsage({
-      kind: (kind as AiCallKind | undefined) ?? null,
-      profileId: (profileId as number | undefined) ?? null
-    })
     response.json(news.aiUsage(profileIdOf(response)))
   })
 
   if (plugins) {
-    // Réglages › IA et crédits › Plugins: each active plugin whose AiButton may ask the household's AI, its calls of
-    // the last 24 hours, and the switch that turns its AI off for the household.
-    const aiPlugins = () => {
+    // Each active plugin whose AiButton may ask a reader's AI, the admin's own calls of it in the last 24 hours, and
+    // the switch that turns its AI off for the household.
+    const aiPlugins = (profileId: number) => {
       const off = plugins.store.aiOff(currentHouseholdId())
-      const calls = news.pluginAiCalls()
+      const calls = news.pluginAiCalls(profileId)
       return plugins
         .list()
         .filter(
@@ -57,7 +37,7 @@ export const aiUsageRoutes = ({ news, plugins }: { news: NewsService; plugins?: 
         }))
     }
     router.get('/ai-usage/plugins', requireAdmin, (_request, response) => {
-      response.json({ plugins: aiPlugins() })
+      response.json({ plugins: aiPlugins(profileIdOf(response)) })
     })
     router.put('/ai-usage/plugins/:id', requireAdmin, (request: express.Request<{ id: string }>, response) => {
       const { on } = (request.body ?? {}) as { on?: unknown }
@@ -69,7 +49,7 @@ export const aiUsageRoutes = ({ news, plugins }: { news: NewsService; plugins?: 
         return
       }
       plugins.store.setAiOff(currentHouseholdId(), plugin.id, !on)
-      response.json({ plugins: aiPlugins() })
+      response.json({ plugins: aiPlugins(profileIdOf(response)) })
     })
   }
 

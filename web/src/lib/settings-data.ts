@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 import {
   type AiUsage,
-  type Household,
   type SourceStatus,
   type StorageUsage,
   UnauthorizedError,
   getAiUsage,
-  getHousehold,
   getSourceEngagement,
   getSources,
   getStorage
@@ -56,8 +54,6 @@ export const useSourceEngagement = (onUnauthorized?: () => void) =>
 export const useAiUsage = (onUnauthorized?: () => void) => useCached<AiUsage>('ai', getAiUsage, onUnauthorized)
 
 // The admin's: the household's name, region and AI.
-export const useHousehold = (onUnauthorized?: () => void) =>
-  useCached<Household>('household', getHousehold, onUnauthorized)
 
 export const useStorage = (onUnauthorized?: () => void) =>
   useCached<StorageUsage>('storage', getStorage, onUnauthorized)
@@ -66,9 +62,5 @@ export const useStorage = (onUnauthorized?: () => void) =>
 export const sourceState = (source: SourceStatus) =>
   source.fetchedAt === null && source.error === null ? 'idle' : source.ok ? 'ok' : 'error'
 
-// What this profile may still ask: its own cap, unless the household's runs out first.
-export const callsLeft = (usage: AiUsage) =>
-  usage.kinds.reduce(
-    (total, kind) => total + Math.max(0, Math.min(kind.limit - kind.used, kind.householdLimit - kind.householdUsed)),
-    0
-  )
+// The reader's calls of the last 24 hours, every kind together, on its own key.
+export const callsUsed = (usage: AiUsage) => usage.kinds.reduce((total, kind) => total + kind.used, 0)

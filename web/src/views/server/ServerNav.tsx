@@ -1,5 +1,6 @@
 import {
   ArchiveRestore,
+  Ban,
   Bell,
   ChartColumn,
   ChevronRight,
@@ -11,8 +12,7 @@ import {
   House,
   LogOut,
   Puzzle,
-  UserRound,
-  UsersRound
+  UserRound
 } from 'lucide-react'
 import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 import type { TFunction } from 'i18next'
@@ -80,13 +80,8 @@ const serverGroup = (t: TFunction, waiting: number): CoreGroup => ({
       icon: Inbox,
       count: waiting
     },
-    {
-      id: 'households',
-      label: t('server.titles.households'),
-      hint: t('server.hints.households'),
-      icon: UsersRound
-    },
-    { id: 'accounts', label: t('server.titles.accounts'), hint: t('server.hints.accounts'), icon: UserRound }
+    { id: 'accounts', label: t('server.titles.accounts'), hint: t('server.hints.accounts'), icon: UserRound },
+    { id: 'blocks', label: t('server.titles.blocks'), hint: t('server.hints.blocks'), icon: Ban }
   ]
 })
 

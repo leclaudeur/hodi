@@ -12,6 +12,7 @@ import type { Manifest } from './manifest.ts'
 import type { SandboxRequest } from './sandbox/sandbox.ts'
 import { type CallContext, clientOf, householdOf, vouch, vouchedFor } from './call-context.ts'
 import type { PluginServerNotifier } from './server-notify.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 export const message = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
@@ -33,7 +34,7 @@ const allowedHeaders = (value: unknown) => {
 // What ctx.http may send: the methods, the headers a plugin may set (Hodi writes the others), and the body's size.
 const HTTP_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 const HTTP_HEADERS = new Set([...FETCH_HEADERS, 'content-type', 'authorization'])
-export const MAX_HTTP_BODY = 64 * 1024
+export const MAX_HTTP_BODY = CONFIG.pluginSandbox.httpBodyMaxSize
 
 // The body of a ctx.http request as text, at most one of the three. Hodi names the type of the JSON or the form it
 // writes, in sent.

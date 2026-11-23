@@ -20,6 +20,8 @@ export interface Source {
   reader: boolean
   // Paths whose pages are not articles (France 24's /fr/vidéo/): left out of the lists, never fetched.
   skip: string[]
+  // What the site says it is (its og:description), read when it was added; the catalogue shows it.
+  description?: string
   // The profile that added it ("Ajouter une source"); missing for the base sources every new profile starts with.
   addedBy?: number
   // sources.yml: the household languages it is a base source for, seeded for the whole household when it is set

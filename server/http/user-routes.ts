@@ -11,16 +11,17 @@ import {
   type SavedItem,
   type UserStore
 } from '../db/user-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A profile's state, shared by every device it is open on: preferences, "Enregistrés", read articles and stats.
 
 const ITEM_ID_PATTERN = /^[\w-]{16}$/
-const MAX_LIST = 300
-const MAX_STRING = 300
-const MAX_IMPORT_SAVED = 500
-const MAX_IMPORT_READ = 5000
-const MAX_IMPORT_READINGS = 5000
-const MAX_ARTICLE_HTML = 400_000
+const MAX_LIST = CONFIG.myData.listMax
+const MAX_STRING = CONFIG.myData.stringMax
+const MAX_IMPORT_SAVED = CONFIG.myData.importSaved
+const MAX_IMPORT_READ = CONFIG.myData.importRead
+const MAX_IMPORT_READINGS = CONFIG.myData.importReadings
+const MAX_ARTICLE_HTML = CONFIG.myData.importArticleSize
 // Poudré was named poudre before every id was English: devices that have not updated yet still send it.
 const THEMES = ['system', 'light', 'dark', 'powder', 'poudre'] as const
 // The accent colour: the theme's own, or one of the profile colours. The names before them (and before the topics'
@@ -77,8 +78,14 @@ const preferencesSchema = z.object({
   // "Partages": on unless turned off; the profiles whose shares are not wanted, by id.
   sharing: z.boolean().optional(),
   mutedSharers: z.array(z.int().positive()).max(MAX_LIST).optional(),
-  // The interface's language for this profile; null, the household's.
+  // The interface's language for this person; null, the browser's (the server's for e-mails and notifications).
   language: z.enum(LANGUAGES).nullable().optional(),
+  // How the time of day is written, and whether levels and badges show; null, the server's.
+  hourCycle: z
+    .union([z.literal(12), z.literal(24)])
+    .nullable()
+    .optional(),
+  game: z.boolean().nullable().optional(),
   textSize: z
     .int()
     .min(0)
@@ -157,7 +164,7 @@ interface UserRoutesOptions {
   // device says each happened, which is earlier than now for one made offline.
   onRead?: (response: express.Response, ids: string[], readAt: (id: string) => number | undefined) => void
   // What stays hidden whatever the profile sends: a young profile's sources and themes its parents did not turn on.
-  lock?: (response: express.Response) => { hiddenSources: string[]; hiddenTopics: string[] } | null
+  lock?: (response: express.Response) => { hiddenTopics: string[] } | null
 }
 
 type ResolvedOptions = Required<UserRoutesOptions>
@@ -174,15 +181,14 @@ export const userRoutes = ({ onRead = () => {}, lock = () => null, ...options }:
 
 // The whole state, the preferences, and a device's state from before the database.
 const mountStateRoutes = (router: express.Router, { users, now, lock }: ResolvedOptions) => {
-  // The lists sent, with what the parents keep off added back.
+  // The themes sent, with what the parents keep off added back. Sources are « Mes sources », never these preferences.
   const locked = (response: express.Response, preferences: Record<string, unknown>) => {
     const kept = lock(response)
-    if (!kept) return preferences
-    const merged = { ...preferences }
-    for (const key of ['hiddenSources', 'hiddenTopics'] as const) {
-      if (merged[key] !== undefined) merged[key] = [...new Set([...(merged[key] as string[]), ...kept[key]])]
+    if (!kept || preferences.hiddenTopics === undefined) return preferences
+    return {
+      ...preferences,
+      hiddenTopics: [...new Set([...(preferences.hiddenTopics as string[]), ...kept.hiddenTopics])]
     }
-    return merged
   }
 
   // ?since=<revision>: 204 when nothing changed, so an app coming back to the foreground fetches nothing.

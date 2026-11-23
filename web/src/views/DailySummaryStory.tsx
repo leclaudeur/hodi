@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type DailySummaryResult, UnauthorizedError } from '../api.ts'
-import { useAiCapped } from '../lib/ai-left.ts'
 import {
   dailySummaryStoryId,
   writtenAt,
@@ -29,9 +28,10 @@ import {
 import { isSectionSeen } from './StoriesRow.tsx'
 import { useArrowKeys, useLockedPage } from './StoryFrames.tsx'
 import styles from './DailySummaryStory.module.css'
+import { CONFIG } from '../lib/config.ts'
 
 // The server hands back the same daily summary when asked again sooner than this: no new one offered before.
-const MIN_AGE_MS = 30 * 60 * 1000
+const MIN_AGE_MS = CONFIG.ai.dailySummaryMinAge
 
 interface SummaryStoryProps {
   layout: 'desktop' | 'phone'
@@ -119,26 +119,17 @@ const DailySummaryStory = ({ layout, onUnauthorized }: SummaryStoryProps) => {
     void requestDailySummary().catch((error: unknown) => {
       if (error instanceof UnauthorizedError) onUnauthorized()
     })
-  const capped = useAiCapped('dailySummary')
   const shown = points !== null
   const frame = {
     groups,
     index,
     shown,
-    regenerate: (
-      <RegenerateButton
-        writing={writing}
-        canRegenerate={ready && !capped}
-        capped={capped}
-        nextAt={nextAt}
-        onWrite={write}
-      />
-    ),
+    regenerate: <RegenerateButton writing={writing} canRegenerate={ready} nextAt={nextAt} onWrite={write} />,
     // From the page shown, not from the first topic.
     listen: shown && speech.supported && (
       <ListenButton state={speech.state} onToggle={() => speech.toggle(sectionOf(index))} />
     ),
-    waiting: summaryWaiting({ dailySummary, writing, shown, capped, onWrite: write, t }),
+    waiting: summaryWaiting({ dailySummary, writing, shown, onWrite: write, t }),
     topic: group && <SummaryTopic group={group} />,
     paragraphs: group && <SummaryParagraphs group={group} />,
     meta: generatedAt && (

@@ -1,13 +1,14 @@
-import { Plus, Search } from 'lucide-react'
+import { EyeOff, LibraryBig, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { SourceStatus, TopicInfo } from '../../../api.ts'
-import { updatePreferences, usePreferences } from '../../../lib/preferences.ts'
+import { setMySources, usePreferences } from '../../../lib/preferences.ts'
+import { showSaved } from '../../../lib/toast.ts'
+import { catalogueHref } from '../../../lib/use-hash-route.ts'
 import { useMyRequests } from '../../../lib/my-requests.ts'
 import { isYoung, useProfiles } from '../../../lib/profiles.ts'
 import { useSourceEngagement, useSourceStatuses } from '../../../lib/settings-data.ts'
-import { useIsPhone } from '../../../lib/use-media.ts'
-import { AccordionGroup } from '../../../ui/Accordion.tsx'
+import AddSourceCard from '../../../ui/AddSourceCard.tsx'
 import Button from '../../../ui/Button.tsx'
 import StatusLine from '../../../ui/StatusLine.tsx'
 import TextField from '../../../ui/TextField.tsx'
@@ -17,11 +18,10 @@ import AddSourceDialog, { type AddSourceRequest } from './AddSourceDialog.tsx'
 import AskSourceDialog from './AskSourceDialog.tsx'
 import sourceStyles from './SourcesSection.module.css'
 import { type SourceFilter, StatusSelect, TopicFilter } from './SourceFilters.tsx'
-import { GroupAccordion, RequestsAccordion } from './SourceGroups.tsx'
-import SourceRow from './SourceRow.tsx'
+import MySourceCard from './MySourceCard.tsx'
+import { GridSection, RequestCards } from './SourceGrids.tsx'
 import SourceTopicsDialog, { type TopicsEdit } from './SourceTopicsDialog.tsx'
-import { filterSources, groupsOf, sectionsOf } from './sources-model.ts'
-import { useGroupOpening, useOpenedGroups } from './use-opened-groups.ts'
+import { filterSources, gridsOf } from './sources-model.ts'
 import { useSourceActions } from './use-source-actions.tsx'
 
 interface SourcesSectionProps {
@@ -38,11 +38,10 @@ const useReader = () => {
   const me = household?.profiles.find(profile => profile.id === current)
   const young = me ? isYoung(me) : false
   const teen = me?.kind === 'teen'
-  const nameOf = (id: number) => household?.profiles.find(profile => profile.id === id)?.name
-  return { current, admin: me?.role === 'admin', young, teen, nameOf }
+  return { current, admin: me?.role === 'admin', young, teen }
 }
 
-// The page's state: the sources, the profile reading them, the filters, the open groups and the dialogs.
+// The page's state: the sources, the profile reading them, the filters and the dialogs.
 const useSourcesPage = (topics: TopicInfo[], onUnauthorized: () => void) => {
   const { t } = useTranslation()
   const { value: sources, failed, replace } = useSourceStatuses(onUnauthorized)
@@ -50,158 +49,143 @@ const useSourcesPage = (topics: TopicInfo[], onUnauthorized: () => void) => {
   const preferences = usePreferences()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<SourceFilter>('all')
-  // Some topics' sources only, in every group (Mes sources, Mes chaînes…): a long list is easier to go through.
+  // Some topics' sources only: a long list is easier to go through.
   const [topicFilter, setTopicFilter] = useState<string[]>([])
-  const phone = useIsPhone()
-  // The source whose "⋯" menu is open, on a phone.
-  const [moreOf, setMoreOf] = useState<string | null>(null)
   const [adding, setAdding] = useState<AddSourceRequest | null>(null)
   const reader = useReader()
   const requests = useMyRequests(reader.teen)
   const [asking, setAsking] = useState(false)
   const hiddenSources = preferences.hiddenSources
-  const actions = useSourceActions({ replace, hiddenSources, adding, setAdding, onUnauthorized })
+  const actions = useSourceActions({ replace, adding, setAdding, onUnauthorized })
   const [editing, setEditing] = useState<TopicsEdit | null>(null)
-  const opening = useOpenedGroups()
 
-  const list = filterSources({ sources, topics, hiddenSources, engagement, search, filter, topicFilter })
-  const groups = groupsOf(list.shown, reader.current, reader.young, t)
-  // Browsing everything, each group opens on demand. A filter or a search opens every group it finds.
+  // « Mes sources » only: the others are in the catalogue.
+  const mine = sources?.filter(source => !hiddenSources.includes(source.id))
+  const list = filterSources({ sources: mine, topics, hiddenSources, engagement, search, filter, topicFilter })
+  const grids = gridsOf(list.shown)
   const browsing = list.chosen === 'all' && list.chosenTopics.length === 0 && !list.wanted
-  const query = browsing ? '' : `${list.chosen}\n${list.chosenTopics.join(' ')}\n${list.wanted}`
-  useGroupOpening({
-    ...opening,
-    loaded: Boolean(sources),
-    requestsFirst: reader.teen && Boolean(requests?.length),
-    groups,
-    query
-  })
 
-  const show = (source: SourceStatus, visible: boolean) => {
-    const off = list.hidden(source.id)
-    opening.setHeld(states => (source.id in states ? states : { ...states, [source.id]: off }))
-    updatePreferences({
-      hiddenSources: visible ? hiddenSources.filter(other => other !== source.id) : [...hiddenSources, source.id]
-    })
+  const takeOut = (source: SourceStatus) => {
+    setMySources([source.id], false, { quiet: true })
+    showSaved(t('catalogue.removed', { name: source.name }))
   }
+  const add = () => setAdding({ topicId: list.chosenTopics[0] ?? null, replacing: null })
 
   return {
-    ...{ sources, failed, search, setSearch, setFilter, setTopicFilter, phone, moreOf, setMoreOf, adding, setAdding },
-    ...{ reader, requests, asking, setAsking, actions, editing, setEditing, opening, list, groups, browsing, show }
+    ...{ sources, failed, search, setSearch, setFilter, setTopicFilter, adding, setAdding, add },
+    ...{ reader, requests, asking, setAsking, actions, editing, setEditing, list, grids, browsing, takeOut }
   }
 }
 
 type SourcesPage = ReturnType<typeof useSourcesPage>
 
-// One row per source; on a phone its buttons go in a "⋯" menu.
-const rowOf = (page: SourcesPage, topics: TopicInfo[], deletedProfile: string) => (source: SourceStatus) => {
+// One card per source, its other actions as rounds: none for a young profile, which only takes one out.
+const cardOf = (page: SourcesPage) => (source: SourceStatus) => {
   const { reader, list, actions } = page
   const sourceTopics = list.topicsOf(source.id)
   const mine = reader.admin || (source.addedBy !== undefined && source.addedBy === reader.current)
-  const off = list.hidden(source.id)
-  const addedBy =
-    source.addedBy === undefined || source.addedBy === reader.current
-      ? null
-      : (reader.nameOf(source.addedBy) ?? deletedProfile)
+  const low = list.lowOf(source.id) !== null
   const replace =
-    list.lowOf(source.id) && !reader.young
+    low && !reader.young
       ? () => page.setAdding({ topicId: sourceTopics[0]?.id ?? null, replacing: { id: source.id, name: source.name } })
       : null
   const retopic =
-    mine && source.kind === 'article' && sourceTopics.length > 0
+    mine && !reader.young && source.kind === 'article' && sourceTopics.length > 0
       ? () => page.setEditing({ id: source.id, name: source.name, topicIds: sourceTopics.map(topic => topic.id) })
       : null
   return (
-    <SourceRow
+    <MySourceCard
       key={source.id}
       source={source}
-      phone={page.phone}
-      off={off}
-      addedBy={addedBy}
+      topics={sourceTopics}
+      chosenTopics={list.chosenTopics}
+      low={low}
       replace={replace}
       retopic={retopic}
-      deletable={mine && source.addedBy !== undefined}
+      deletable={mine && !reader.young && source.addedBy !== undefined}
       removing={actions.removing === source.id}
       onRemove={() => actions.remove(source)}
-      open={page.moreOf === source.id}
-      onMore={open => page.setMoreOf(open ? source.id : null)}
-      onShow={visible => page.show(source, visible)}
+      onTakeOut={() => page.takeOut(source)}
     />
   )
 }
 
-// The list itself, or why there is none: still loading, failed, or nothing matches.
-const SourceList = ({ page, topics }: { page: SourcesPage; topics: TopicInfo[] }) => {
+// The dashed card that adds a source, first in Mes sources; a teen's asks its parents for one, a child's is none.
+const AddCard = ({ page }: { page: SourcesPage }) => {
   const { t } = useTranslation()
-  const { list, opening, reader } = page
+  const { reader } = page
+  if (reader.young && !reader.teen) return null
+  if (reader.teen)
+    return (
+      <AddSourceCard
+        title={t('sourceCard.askTitle')}
+        text={t('sourceCard.askText')}
+        label={t('sourceCard.ask')}
+        tour="ask-source"
+        onAdd={() => page.setAsking(true)}
+      />
+    )
+  return (
+    <AddSourceCard
+      title={t('sourceCard.addTitle')}
+      text={t('sourceCard.addText')}
+      label={t('sourceCard.add')}
+      tour="add-source"
+      onAdd={page.add}
+    />
+  )
+}
+
+// The grids, or why there are none: still loading, failed, or nothing matches.
+const SourceGrids = ({ page }: { page: SourcesPage }) => {
+  const { t } = useTranslation()
+  const { list, grids, reader } = page
   if (page.failed) return <StatusLine tone="error">{t('sources.loadFailed')}</StatusLine>
   if (!page.sources) return <RowsSkeleton rows={4} lead="none" hint={false} end="round" />
   if (list.shown.length === 0 && !page.browsing) return <StatusLine tone="info">{t('sources.noMatch')}</StatusLine>
-  const placedOff = (id: string) => opening.held[id] ?? list.hidden(id)
-  const row = rowOf(page, topics, t('sources.deletedProfile'))
-  return (
-    <AccordionGroup>
-      {reader.teen && page.browsing && (
-        <RequestsAccordion
-          requests={page.requests}
-          open={opening.opened.includes('requests')}
-          onToggle={() => opening.toggle('requests')}
-        />
-      )}
-      {page.groups.map(
-        group =>
-          group.sources.length > 0 && (
-            <GroupAccordion
-              key={group.id}
-              group={group}
-              young={reader.young}
-              sections={sectionsOf(group.sources, { topics, chosenTopics: list.chosenTopics, placedOff, t })}
-              open={opening.opened.includes(group.id)}
-              onToggle={() => opening.toggle(group.id)}
-              onHideLow={list.chosen === 'low' ? () => page.actions.hideLow(group.sources) : null}
-              row={row}
-            />
-          )
-      )}
-    </AccordionGroup>
-  )
-}
-
-// Under the list, as Profils and Plugins add theirs: beside the search it read as "add what I typed".
-const AddButton = ({ page }: { page: SourcesPage }) => {
-  const { t } = useTranslation()
-  if (page.reader.young) {
-    if (!page.reader.teen) return null
-    return (
-      <Button icon={Plus} onClick={() => page.setAsking(true)} data-tour="ask-source">
-        {t('requests.ask')}
+  const card = cardOf(page)
+  const hideLow = (sources: SourceStatus[]) =>
+    list.chosen === 'low' &&
+    sources.length > 0 && (
+      <Button compact look="danger" icon={EyeOff} onClick={() => page.actions.hideLow(sources)}>
+        {t('sources.hideAll')}
       </Button>
     )
-  }
   return (
-    <Button
-      icon={Plus}
-      data-tour="add-source"
-      onClick={() => page.setAdding({ topicId: page.list.chosenTopics[0] ?? null, replacing: null })}
-    >
-      {t('settings.addSource.title')}
-    </Button>
+    <>
+      {reader.teen && page.browsing && page.requests && page.requests.length > 0 && (
+        <RequestCards requests={page.requests} />
+      )}
+      <GridSection
+        title={reader.young ? t('requests.byParents') : t('sources.groups.mine')}
+        count={grids.mine.length}
+        action={hideLow(grids.mine)}
+      >
+        {page.browsing && <AddCard page={page} />}
+        {grids.mine.map(card)}
+      </GridSection>
+      {grids.base.length > 0 && (
+        <GridSection title={t('sources.groups.base')} count={grids.base.length} action={hideLow(grids.base)}>
+          {grids.base.map(card)}
+        </GridSection>
+      )}
+    </>
   )
 }
 
-// Every feed as a row, in folding groups: the profile's own sites and channels, the household's, the base ones. One
-// button under the list adds a source (by link or with the AI); beside the search, the filters find the little-read,
-// the failing and the hidden ones, and a topic's.
+// Every feed as a card, in two grids: the account's own, then the base sources (the first card adds one, by link or
+// with the AI). Beside the search, the filters find the little-read, the failing ones, and a topic's. The catalogue's
+// button goes under the grids, full width.
 const SourcesSection = ({ topics, layout, onUnauthorized }: SourcesSectionProps) => {
   const { t } = useTranslation()
   const page = useSourcesPage(topics, onUnauthorized)
   const { list, reader } = page
-
   return (
     <SectionPage
       title={t('settings.nav.sources')}
       intro={t(reader.young ? 'requests.intro' : 'sources.intro')}
       layout={layout}
+      wide
     >
       <div className={sourceStyles.toolbar}>
         <TextField
@@ -222,11 +206,13 @@ const SourcesSection = ({ topics, layout, onUnauthorized }: SourcesSectionProps)
         )}
       </div>
 
-      <SourceList page={page} topics={topics} />
+      <SourceGrids page={page} />
 
-      {(!reader.young || reader.teen) && (
+      {!reader.young && (
         <div className={sourceStyles.addLine}>
-          <AddButton page={page} />
+          <Button icon={LibraryBig} href={catalogueHref()} data-tour="catalogue">
+            {t('catalogue.browse')}
+          </Button>
         </div>
       )}
 

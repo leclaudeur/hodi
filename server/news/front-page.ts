@@ -1,8 +1,9 @@
 import type { TopicItem } from './news-types.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // "À la une": the stories a topic puts forward.
 
-const FRONT_PAGE_SIZE = 3
+const FRONT_PAGE_SIZE = CONFIG.lists.frontPageSize
 
 interface FrontOptions {
   hidden: (item: TopicItem) => boolean

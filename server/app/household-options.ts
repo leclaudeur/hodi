@@ -2,6 +2,7 @@ import type { Config } from '../config.ts'
 import type { accountSession } from '../http/account-session.ts'
 import type { HouseholdRoutesOptions } from '../http/setup-routes.ts'
 import type { Language } from '../news/catalog.ts'
+import { giveBaseSources } from './profile-hooks.ts'
 import type { Options } from './wiring.ts'
 
 // « Plugins trouvés »: the plugins put in data/plugins before the first start, and their switch.
@@ -23,18 +24,21 @@ const setupPluginsOf = ({ plugins }: Options) =>
     : undefined
 
 // The catalogue waited for the household's language: its base sources are listed from now on.
-const onSetUpOf =
-  ({ sources, news, now }: Options) =>
-  (language: Language) => {
-    if (!sources) return
-    const filled = sources.store.load(sources.file, now(), language)
-    for (const topic of filled.topics) {
-      const listed = news.catalog.topics.find(candidate => candidate.id === topic.id)?.sources ?? []
-      for (const source of topic.sources) {
-        if (!listed.some(candidate => candidate.id === source.id)) news.addSource(source, 'topic', [topic.id])
-      }
+export const onSetUpOf = (options: Options) => (language: Language) => {
+  const { sources, news, profiles, now } = options
+  if (!sources) return
+  const filled = sources.store.load(sources.file, now(), language)
+  for (const topic of filled.topics) {
+    const listed = news.catalog.topics.find(candidate => candidate.id === topic.id)?.sources ?? []
+    for (const source of topic.sources) {
+      if (!listed.some(candidate => candidate.id === source.id)) news.addSource(source, 'topic', [topic.id])
     }
   }
+  profiles
+    ?.list()
+    .filter(profile => profile.kind === 'adult')
+    .forEach(profile => giveBaseSources(options, profile.id))
+}
 
 // The setup and Réglages › Foyer routes' options; null in tests without profiles.
 export const householdOptionsOf = (
@@ -42,7 +46,7 @@ export const householdOptionsOf = (
   options: Options,
   { accountOf, cookieFor }: ReturnType<typeof accountSession>
 ): HouseholdRoutesOptions | null => {
-  const { profiles, household, aiProviders, now, setupCode, throttle, accounts } = options
+  const { profiles, household, aiProviders, now, setupCode, throttle, accounts, accountAi } = options
   const { passwordResets, serverMail, serverSettings, onHouseholdChange } = options
   if (!profiles) return null
   return {
@@ -55,6 +59,7 @@ export const householdOptionsOf = (
     setupCode,
     throttle,
     accounts,
+    accountAi,
     accountOf,
     cookieFor,
     onChange: onHouseholdChange,

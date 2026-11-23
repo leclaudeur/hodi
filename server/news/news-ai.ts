@@ -1,9 +1,8 @@
 import type { Catalog, Language } from './catalog.ts'
 import { type PluginQuestion, SummaryRefusedError } from './summarizer.ts'
-import type { AiCallKind } from '../db/ai-queries.ts'
 import type { NewsStore } from '../db/news-store.ts'
 import { labelIn } from '../labels.ts'
-import { type AiCaps, AiLedger, type AiUsage, type CapProfile } from './ai-ledger.ts'
+import { AiLedger, type AiUsage } from './ai-ledger.ts'
 import { DailySummaries } from './daily-summaries.ts'
 import { NO_FILTER, type ReaderFilter } from './reader-filter.ts'
 import type {
@@ -16,15 +15,15 @@ import type {
   SourceSuggestionResult,
   SummaryResult
 } from './news-types.ts'
-import { PerHousehold } from './per-household.ts'
 import { errorMessage } from './article-loader.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The news' AI buttons: a summary, a question, sources to suggest, the Résumé du jour and a plugin's question. Each
 // is one call to the API after a click, within its daily cap (ai-ledger.ts).
 
-const MAX_CACHED_SUMMARIES = 200
+const MAX_CACHED_SUMMARIES = CONFIG.ai.summariesCached
 // A summary is kept as long as its article is listed.
-const SUMMARY_TTL_MS = 72 * 60 * 60 * 1000
+const SUMMARY_TTL_MS = CONFIG.ai.summaryKeptFor
 const DEFAULT_PROFILE_ID = 1
 
 interface SummaryEntry {
@@ -33,9 +32,9 @@ interface SummaryEntry {
 }
 
 interface NewsAiOptions {
-  // The AI of the household the service was made for.
+  // Everyone's AI, in tests; aiOf, each reader's own: its account's key, none for a profile without one.
   tools: Partial<AiTools> | null
-  aiOf: (() => AiTools | null) | undefined
+  aiOf: ((profileId: number) => AiTools | null) | undefined
   ledger: AiLedger
   dailySummaries: DailySummaries
   store: NewsStore | undefined
@@ -50,37 +49,24 @@ interface NewsAiOptions {
 
 export class NewsAi {
   readonly #options: NewsAiOptions
-  // Each household's AI, none until its admin gives a key. Swapped by set when the admin changes it.
-  readonly #ai: PerHousehold<Partial<AiTools> | null>
   readonly #summaries = new Map<string, SummaryEntry>()
 
   constructor(options: NewsAiOptions) {
     this.#options = options
-    this.#ai = new PerHousehold(() => (options.aiOf ? options.aiOf() : null))
-    this.#ai.set(options.tools)
   }
 
-  // A new key, provider or region from Réglages, or none (the AI's buttons go away), for the household the request
-  // is for (household-scope.ts).
-  set(tools: AiTools | null) {
-    this.#ai.set(tools)
+  // The reader's AI: none until its account has a key.
+  toolsOf(profileId: number): Partial<AiTools> | null {
+    return this.#options.aiOf ? this.#options.aiOf(profileId) : this.#options.tools
   }
 
-  get tools(): Partial<AiTools> | null {
-    return this.#ai.get() ?? null
+  canSummarize(profileId: number) {
+    return this.toolsOf(profileId)?.summarize !== undefined
   }
 
-  get canSummarize() {
-    return this.tools?.summarize !== undefined
-  }
-
-  // Calls to the API in the last 24 hours, against each daily cap: the settings' "IA et crédits".
+  // Calls to the API in the last 24 hours: the reader's "IA et crédits".
   usage(profileId: number): AiUsage {
-    return this.#options.ledger.usage(profileId, this.#options.now(), this.canSummarize)
-  }
-
-  reset(kind: AiCallKind | null, profileId: number | null) {
-    this.#options.ledger.reset(kind, profileId, this.#options.now())
+    return this.#options.ledger.usage(profileId, this.#options.now(), this.canSummarize(profileId))
   }
 
   // "Suggérer des sources" for a topic: one call to the API, within its daily cap. The sites still need
@@ -90,7 +76,7 @@ export class NewsAi {
     profileId: number,
     { current, replacing }: { current: string[]; replacing: string | null }
   ): Promise<SourceSuggestionResult> {
-    const suggest = this.tools?.suggestSources
+    const suggest = this.toolsOf(profileId)?.suggestSources
     if (!suggest) return { status: 'unavailable' }
     const topic = this.#options.catalog().topics.find(candidate => candidate.id === topicId)
     if (!topic) return { status: 'not_found' }
@@ -112,7 +98,7 @@ export class NewsAi {
   // A plugin's question, from its AiButton: one call to the API within the 'plugin' daily caps, counted for the profile
   // that clicked and the plugin that asked. Answers whether the household's AI could take it.
   async askForPlugin(pluginId: string, profileId: number, question: PluginQuestion): Promise<PluginAskResult> {
-    const ask = this.tools?.askForPlugin
+    const ask = this.toolsOf(profileId)?.askForPlugin
     if (!ask) return { status: 'unavailable' }
     if (!this.#options.ledger.take('plugin', profileId, this.#options.now(), pluginId)) return { status: 'limited' }
     try {
@@ -124,21 +110,19 @@ export class NewsAi {
     }
   }
 
-  // Whether the 'plugin' caps still leave this profile a call today.
+  // Whether this person has an AI a plugin may ask.
   pluginAiLeft(profileId: number) {
-    return (
-      this.tools?.askForPlugin !== undefined && this.#options.ledger.hasLeft('plugin', profileId, this.#options.now())
-    )
+    return this.toolsOf(profileId)?.askForPlugin !== undefined
   }
 
-  // The household's calls of each plugin in the last 24 hours, for Réglages › IA et crédits.
-  pluginAiCalls(): Record<string, number> {
-    return this.#options.ledger.pluginCalls(this.#options.now())
+  // The reader's calls of each plugin in the last 24 hours, for its IA et crédits.
+  pluginAiCalls(profileId: number): Record<string, number> {
+    return this.#options.ledger.pluginCalls(profileId, this.#options.now())
   }
 
   // Questions are not cached: each one is asked of the API, within a daily cap.
   async answerQuestion(itemId: string, question: string, profileId: number): Promise<AnswerResult> {
-    const answer = this.tools?.answerQuestion
+    const answer = this.toolsOf(profileId)?.answerQuestion
     if (!answer) return { status: 'unavailable' }
 
     const loaded = await this.#options.getArticle(itemId)
@@ -167,13 +151,13 @@ export class NewsAi {
 
   // "Le Résumé du jour": the day's news in a paragraph per topic, shared by every device.
   getDailySummary(profileId: number): DailySummaryResult {
-    if (!this.tools?.writeDailySummary) return { status: 'unavailable' }
+    if (!this.toolsOf(profileId)?.writeDailySummary) return { status: 'unavailable' }
     return this.#options.dailySummaries.latest(profileId)
   }
 
   // Each profile's own, from its sources and topics, without its muted words.
   async writeDailySummary(profileId: number, filter: ReaderFilter = NO_FILTER): Promise<DailySummaryResult> {
-    const write = this.tools?.writeDailySummary
+    const write = this.toolsOf(profileId)?.writeDailySummary
     if (!write) return { status: 'unavailable' }
     return this.#options.dailySummaries.write(profileId, write, async language =>
       (await this.#options.frontPage(filter, language)).sections.filter(
@@ -182,14 +166,24 @@ export class NewsAi {
     )
   }
 
-  // The API is called once per article and language: later requests in that language share the same summary.
+  // A summary the reader's account already paid for, in its language: shown closed with the article, reading it calls
+  // nothing.
+  storedSummary(itemId: string, profileId: number): string[] | null {
+    if (!this.canSummarize(profileId)) return null
+    const owner = this.#options.store?.ownerOf(profileId)
+    return owner ? (this.#options.store?.getSummary(itemId, this.#options.languageOf(profileId), owner) ?? null) : null
+  }
+
+  // The API is called once per article, language and account: its later requests share the same summary, and no
+  // other account sees it or pays for it.
   async getSummary(itemId: string, profileId = DEFAULT_PROFILE_ID): Promise<SummaryResult> {
-    const summarize = this.tools?.summarize
+    const summarize = this.toolsOf(profileId)?.summarize
     if (!summarize) return { status: 'unavailable' }
 
     const now = this.#options.now()
     const language = this.#options.languageOf(profileId)
-    const key = `${itemId} ${language}`
+    const owner = this.#options.store?.ownerOf(profileId) ?? `p${profileId}`
+    const key = `${owner} ${itemId} ${language}`
 
     for (const [id, entry] of this.#summaries) {
       if (entry.expiresAt <= now) this.#summaries.delete(id)
@@ -199,7 +193,7 @@ export class NewsAi {
     if (cached) return cached.result
 
     // Paid for once already: shown again for free.
-    const storedPoints = this.#options.store?.getSummary(itemId, language)
+    const storedPoints = this.#options.store?.getSummary(itemId, language, owner)
     if (storedPoints) return { status: 'ok', points: storedPoints }
 
     const loaded = await this.#options.getArticle(itemId)
@@ -213,7 +207,7 @@ export class NewsAi {
 
     const { item, article } = loaded
     const input = { title: item.title, sourceName: item.sourceName, contentHtml: article.contentHtml, language }
-    const result = this.#summarize(summarize, input, key, itemId, item.link)
+    const result = this.#summarize(summarize, input, { key, owner, itemId, link: item.link })
 
     if (this.#summaries.size >= MAX_CACHED_SUMMARIES) {
       const oldest = this.#summaries.keys().next().value
@@ -228,13 +222,11 @@ export class NewsAi {
   #summarize(
     summarize: AiTools['summarize'],
     input: Parameters<AiTools['summarize']>[0],
-    key: string,
-    itemId: string,
-    link: string
+    { key, owner, itemId, link }: { key: string; owner: string; itemId: string; link: string }
   ) {
     return summarize(input).then(
       (points): SummaryResult => {
-        this.#options.store?.saveSummary(itemId, input.language, points, this.#options.now())
+        this.#options.store?.saveSummary(itemId, input.language, points, this.#options.now(), owner)
         return { status: 'ok', points }
       },
       (error: unknown): SummaryResult => {
@@ -256,21 +248,19 @@ interface NewsReader {
 
 interface NewsAiWiring {
   tools: Partial<AiTools>
-  aiOf: (() => AiTools | null) | undefined
+  aiOf: ((profileId: number) => AiTools | null) | undefined
   store: NewsStore | undefined
-  profiles: () => CapProfile[]
-  caps: AiCaps
   languageOf: (profileId: number) => Language
   householdLanguage: () => Language
-  timeZone: () => string
+  timeZone: (profileId: number) => string
   now: () => number
   log: (message: string) => void
 }
 
 // The ledger and the Résumé du jour the AI's buttons share, for the news service.
-export const createNewsAi = ({ store, profiles, caps, timeZone, ...wiring }: NewsAiWiring, news: NewsReader) => {
+export const createNewsAi = ({ store, timeZone, ...wiring }: NewsAiWiring, news: NewsReader) => {
   const { languageOf, now, log } = wiring
-  const ledger = new AiLedger({ store, profiles, caps, now: now() })
+  const ledger = new AiLedger({ store, now: now() })
   const dailySummaries = new DailySummaries({ store, ledger, languageOf, timeZone, now, log })
   return new NewsAi({
     ...wiring,

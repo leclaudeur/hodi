@@ -85,7 +85,6 @@ const useAddPlugin = (
         />
       ),
       label: t(plugin.signed ? 'plugins.confirmInstall.button' : 'plugins.confirmUnsigned.button'),
-      look: plugin.signed ? 'primary' : 'danger',
       proof: {},
       onConfirm: async proof => {
         setError(null)
@@ -221,11 +220,7 @@ const StagedPackage = ({ staged, state }: { staged: StagedPlugin; state: AddPlug
         </Button>
         {/* Unsigned and asking for accounts, households, sign-ins, mail or notifications: only Annuler is left. */}
         {!blocked && (
-          <Button
-            look={staged.signed ? 'primary' : 'danger'}
-            busy={state.busy}
-            onClick={() => state.confirmInstall(staged)}
-          >
+          <Button look="danger" busy={state.busy} onClick={() => state.confirmInstall(staged)}>
             {t(staged.signed ? 'plugins.add.install' : 'plugins.add.installAnyway')}
           </Button>
         )}

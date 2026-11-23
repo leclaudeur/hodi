@@ -4,9 +4,10 @@ import type { LoadedPlugin, PluginRegistry } from '../plugins/registry.ts'
 import { clientAddressOf } from './client-address.ts'
 import { WEB_FILE, sendWebFile } from './plugin-files.ts'
 import { type PluginSignIn, sandboxRoutes } from './plugin-sandbox-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // How many requests one address may send to one plugin's public routes in a minute.
-export const PUBLIC_REQUESTS_PER_MINUTE = 30
+export const PUBLIC_REQUESTS_PER_MINUTE = CONFIG.plugins.publicRequestsPerMinute
 
 // Each plugin's routes open to anyone, at /api/public/plugins/<id>/: a sign-up, a waiting list, the way back from a
 // sign-in with another site. Hodi checks before the plugin's code runs: the setup is over, the plugin is on and its

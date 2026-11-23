@@ -15,6 +15,7 @@ import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
 import { UserStore } from '../db/user-store.ts'
+import { YouthStore } from '../db/youth-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { fakeFetch } from './helpers/news.ts'
@@ -74,7 +75,8 @@ describe('two households on one server', () => {
       accounts,
       devices: new UserDeviceStore(db),
       codes: new SignInCodeStore(db, config.sessionSecret),
-      users: id => new UserStore(db, id)
+      users: id => new UserStore(db, id),
+      youth: new YouthStore(db, () => 'UTC')
     }).listen(0)
     await new Promise(resolve => server.once('listening', resolve))
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
@@ -104,6 +106,14 @@ describe('two households on one server', () => {
     martinTeen = martins.create('Léo', 'sport', now, { kind: 'teen' })!.id
     const user = accounts.create(MARTIN, await hashPassword(PASSWORD), now)!
     accounts.linkProfile(user.id, marc.id)
+    // Every teen has an account of their own, made by a parent.
+    const leo = accounts.create('leo@example.com', 'hash', now)!
+    accounts.linkProfile(leo.id, martinTeen)
+    db.prepare('INSERT INTO account_parents (child_id, parent_id, created_at) VALUES (?, ?, ?)').run(
+      leo.id,
+      user.id,
+      now
+    )
 
     const login = await call('/login', '', 'POST', { email: MARTIN, password: PASSWORD })
     assert.equal(login.status, 204)
@@ -112,13 +122,11 @@ describe('two households on one server', () => {
 
   after(() => close())
 
-  it('shows each household its own profiles and settings only', async () => {
+  it('shows each household its own profiles only', async () => {
     assert.deepEqual(await profileIds(martin), [martinAdmin, martinTeen])
     assert.ok(!(await profileIds(dupont)).includes(martinAdmin))
     const session = await json<{ profileChosen: boolean }>('/session', martin)
     assert.equal(session.profileChosen, true)
-    assert.equal((await json<{ name: string }>('/household', martin)).name, 'Famille Martin')
-    assert.equal((await json<{ name: string }>('/household', dupont)).name, 'Famille Dupont')
   })
 
   it('never opens or changes a profile of the other household', async () => {
@@ -131,10 +139,24 @@ describe('two households on one server', () => {
     assert.deepEqual(names, ['Claire'])
   })
 
+  // Claire made the server, so she is its admin: that gives her the Duponts' household admin's rights, never a way
+  // into the Martins' profiles or their teen's rules.
+  it("gives the server's admin no hold on another household's profiles or children", async () => {
+    assert.equal((await json<{ serverAdmin: boolean }>('/profiles', dupont)).serverAdmin, true)
+    assert.equal((await call(`/profiles/${martinTeen}`, dupont, 'DELETE')).status, 404)
+    assert.equal((await call(`/profiles/${martinAdmin}`, dupont, 'DELETE')).status, 404)
+    assert.equal((await call(`/profiles/${martinTeen}/rules`, dupont)).status, 404)
+    assert.equal((await call(`/profiles/${martinTeen}/rules`, dupont, 'PUT', { dailyMinutes: 10 })).status, 404)
+    assert.deepEqual(await profileIds(martin), [martinAdmin, martinTeen])
+    // Marc, their parent, still reaches them.
+    assert.equal((await call(`/profiles/${martinTeen}/rules`, martin)).status, 200)
+  })
+
   it('shares within the household only', async () => {
-    const targets = await json<{ profiles: number[] }>('/me/share-targets', martin)
-    assert.deepEqual(targets.profiles, [martinTeen])
-    assert.deepEqual((await json<{ profiles: number[] }>('/me/share-targets', dupont)).profiles, [])
+    const targets = async (cookie: string) =>
+      (await json<{ people: { id: number }[] }>('/me/share-targets', cookie)).people.map(person => person.id)
+    assert.deepEqual(await targets(martin), [martinTeen])
+    assert.deepEqual(await targets(dupont), [])
   })
 
   it("makes a household's codes for that household", async () => {

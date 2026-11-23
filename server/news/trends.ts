@@ -1,4 +1,5 @@
 import { titleKey } from './text.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // "Tendances · 48 h" in the search: the phrases most titles share, written as the sources write them.
 // No AI: word sequences counted across the titles, longest first when they are as common.
@@ -15,8 +16,8 @@ const STOP_WORDS = new Set(
   ).split(' ')
 )
 
-const MAX_WORDS = 3
-const MIN_ARTICLES = 3
+const MAX_WORDS = CONFIG.trends.maxWords
+const MIN_ARTICLES = CONFIG.trends.minArticles
 
 export interface TrendTitle {
   title: string

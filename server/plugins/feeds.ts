@@ -3,14 +3,15 @@ import type { FeedEntry } from '../news/feed-parser.ts'
 import { canonicalLink, itemId, truncate } from '../news/text.ts'
 import type { PluginFeed } from './manifest.ts'
 import type { PluginRegistry } from './registry.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A plugin's feed is a source like any other (one row of sources, followed by households), but its address names the
 // plugin and the feed instead of a site: Hodi asks the plugin for its articles in place of fetching a page.
 const SCHEME = 'plugin:'
-export const MAX_FEED_ITEMS = 100
-const MAX_TITLE = 300
+export const MAX_FEED_ITEMS = CONFIG.pluginFeeds.items
+const MAX_TITLE = CONFIG.pluginFeeds.titleMaxLength
 // As long as a feed's own summary (feed-parser.ts).
-const MAX_SUMMARY = 280
+const MAX_SUMMARY = CONFIG.pluginFeeds.summaryMaxLength
 
 export const isPluginFeed = (source: Pick<Source, 'url'>) => source.url.startsWith(SCHEME)
 

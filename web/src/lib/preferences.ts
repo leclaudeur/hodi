@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { type ProfileColor, type TopicItem, type TopicSummary } from '../api.ts'
+import type { HourCycle } from './format.ts'
 import { type Language, isLanguage } from './i18n.ts'
 import { isDismissed, isReadAndClosed } from './read-state.ts'
 import { currentTopicId } from './renamed-topics.ts'
@@ -62,8 +63,11 @@ export interface Preferences {
   // "Partages": off, this profile neither sends nor receives articles; and the profiles not to receive from.
   sharing: boolean
   mutedSharers: number[]
-  // The interface's language; null: the household's.
+  // The interface's language; null: the browser's.
   language: Language | null
+  // How the time of day is written, and whether levels and badges show; null: the server's.
+  hourCycle: HourCycle | null
+  game: boolean | null
   // A card already slid by itself once, on a touch screen, to show its swipe.
   swipeHinted: boolean
 }
@@ -83,6 +87,8 @@ const DEFAULTS: Preferences = {
   sharing: true,
   mutedSharers: [],
   language: null,
+  hourCycle: null,
+  game: null,
   swipeHinted: false
 }
 
@@ -117,6 +123,8 @@ export const parsePreferences = (stored: unknown): Preferences => {
       ? value.mutedSharers.filter((id): id is number => Number.isInteger(id))
       : [],
     language: isLanguage(value.language) ? value.language : null,
+    hourCycle: value.hourCycle === 12 || value.hourCycle === 24 ? value.hourCycle : null,
+    game: typeof value.game === 'boolean' ? value.game : null,
     swipeHinted: value.swipeHinted === true
   }
 }
@@ -142,6 +150,20 @@ export const updatePreferences = (change: Partial<Preferences>, { quiet = false 
     body: { preferences: change },
     setting: !quiet
   })
+}
+
+// « Mes sources »: sources in or out of this person's list. The server keeps the list itself and gives back the
+// rest of the catalogue as hiddenSources, which changes here at once.
+export const setMySources = (ids: string[], mine: boolean, { quiet = false } = {}) => {
+  const hidden = current().hiddenSources
+  const hiddenSources = mine ? hidden.filter(id => !ids.includes(id)) : [...new Set([...hidden, ...ids])]
+  ids.forEach((id, index) =>
+    changeUserState(state => ({ ...state, preferences: { ...current(), hiddenSources } }), {
+      method: mine ? 'PUT' : 'DELETE',
+      path: `/sources/${encodeURIComponent(id)}`,
+      setting: !quiet && index === ids.length - 1
+    })
+  )
 }
 
 // Quiet: its button says "Réglages réinitialisés" at once.

@@ -1,3 +1,4 @@
+import { cleanHandle } from '../handle.ts'
 import { timingSafeEqual } from 'node:crypto'
 import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
@@ -9,10 +10,14 @@ import { signInCodeOf } from '../db/sign-in-code-store.ts'
 import { type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import { type Language, isLanguage } from '../../shared/i18n.ts'
 import type { AiProvider } from '../news/ai-providers.ts'
+import type { AccountAiStore } from '../db/account-ai-store.ts'
 import type { ManifestTranslations } from '../plugins/manifest-texts.ts'
 import type { AccountOf, CookieFor } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
 import { aiOf, countryOf, isNearby, isPassword, providersList, timeZoneOf } from './household-input.ts'
+
+// The name of the space everyone reads in, kept where a plugin still shows households.
+export const SPACE_NAME = 'Hodi'
 
 // The first-run screens, in two parts: the server admin's own account, then the household. The same start with or
 // without plugins, which may add their steps between the two. Then Réglages > Foyer and > IA et crédits, the admin's.
@@ -31,6 +36,8 @@ export interface HouseholdRoutesOptions {
   throttle: LoginThrottle
   // The people's own accounts; absent on an install from before them, in tests.
   accounts?: UserAccountStore
+  // The admin's own AI key, from the AI step.
+  accountAi?: AccountAiStore
   accountOf: AccountOf
   // A session cookie for this account, signed as it is now.
   cookieFor: CookieFor
@@ -246,12 +253,15 @@ const mountSetupAccountRoutes = (
   })
 }
 
+// The identifier typed under the name: null when none was sent, false when it cannot be one.
+const chosenHandleOf = (value: unknown) => (value === undefined ? null : (cleanHandle(value) ?? false))
+
 const mountSetupHouseholdRoute = (
   router: express.Router,
-  { household, profiles, providers, now, secret, accounts, onChange, onSetUp, householdLater }: SetupOptions,
+  { household, profiles, providers, now, secret, accounts, accountAi, onChange, onSetUp, householdLater }: SetupOptions,
   { adminOf, notNeeded }: SetupChecks
 ) => {
-  // "Crée ton foyer" to "Tout est prêt": the household, with the server admin's profile as its admin.
+  // The profile to "Tout est prêt": the server's one space, with the server admin's profile as its admin.
   router.post('/', async (request, response) => {
     if (notNeeded(response)) return
     const admin = adminOf(request)
@@ -260,19 +270,35 @@ const mountSetupHouseholdRoute = (
       return
     }
     const body = (request.body ?? {}) as Record<string, unknown>
-    const profile = (body.profile ?? {}) as { name?: unknown; color?: unknown }
-    const name = cleanHouseholdName(body.name)
+    const profile = (body.profile ?? {}) as { name?: unknown; color?: unknown; handle?: unknown }
+    // The server's one space is not shown any more: it needs no name of its own, and an empty one from an old page
+    // gets the same.
+    const name = body.name === undefined || body.name === '' ? SPACE_NAME : cleanHouseholdName(body.name)
     const profileName = cleanName(profile.name)
     const color = profileColorOf(profile.color)
     const timeZone = timeZoneOf(body.timeZone)
     const country = countryOf(body.country)
     const language = body.language === undefined ? 'fr' : isLanguage(body.language) ? body.language : null
     const ai = body.ai === null || body.ai === undefined ? null : aiOf(providers, body.ai)
-    if (!name || !profileName || !color || timeZone === false || country === false || !language || (body.ai && !ai)) {
+    const handle = chosenHandleOf(profile.handle)
+    if (
+      handle === false ||
+      !name ||
+      !profileName ||
+      !color ||
+      timeZone === false ||
+      country === false ||
+      !language ||
+      (body.ai && !ai)
+    ) {
       response.status(400).json({ error: 'bad_request' })
       return
     }
 
+    if (handle && accounts && !accounts.chooseHandle(admin.id, handle, now())) {
+      response.status(409).json({ error: 'handle_taken' })
+      return
+    }
     const settings: HouseholdAi | null = ai ? { provider: ai.provider.id, key: ai.key, model: null } : null
     if (
       !household.setUp({ name, timeZone: timeZone ?? null, country: country ?? null, language, ai: settings }, now())
@@ -281,6 +307,10 @@ const mountSetupHouseholdRoute = (
       return
     }
     householdLater?.set(false)
+    // The admin's own region too: its days and its AI's searches follow it from now on.
+    accounts?.setRegion(admin.id, { timeZone: timeZone ?? undefined, country: country ?? null })
+    // The key given here is the admin's own: each account pays for its own AI.
+    if (settings) accountAi?.set(admin.id, settings)
     // The install's first profile becomes the one set up here, its admin, and the server admin's own.
     const first = profiles.list().find(candidate => candidate.role === 'admin')
     if (first) {

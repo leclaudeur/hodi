@@ -1,17 +1,15 @@
 import type { Catalog, Language, Source } from './catalog.ts'
 import { allSources } from './catalog.ts'
 import type { PluginQuestion } from './summarizer.ts'
-import type { AiCallKind } from '../db/ai-queries.ts'
 import type { NewsStore } from '../db/news-store.ts'
 import type { Trend } from './trends.ts'
 import { labelIn } from '../labels.ts'
 import { VideoLengths } from './video-lengths.ts'
 import { CheckQueue } from './check-queue.ts'
 import { CACHE_TTL_MS, FeedCache } from './feed-cache.ts'
-import { AI_CAPS, type AiUsage } from './ai-ledger.ts'
+import type { AiUsage } from './ai-ledger.ts'
 import { NO_FILTER, type ReaderFilter, filtered } from './reader-filter.ts'
 import type {
-  AiTools,
   ArticleResult,
   DayFeed,
   FrontPage,
@@ -29,18 +27,19 @@ import { PerHousehold } from './per-household.ts'
 import { NewsSearch } from './news-search.ts'
 import { addToCatalog, moveToTopics, removeFromCatalog } from './catalog-edits.ts'
 import { frontSection } from './front-page.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Feeds and checks are cached in memory for a short time; the store, when given, keeps articles,
 // verdicts, reader text and AI output beyond a restart.
 // Older articles are left out: the news would be outdated.
-const TOPIC_WINDOW_MS = 72 * 60 * 60 * 1000
+const TOPIC_WINDOW_MS = CONFIG.lists.topicWindow
 // Videos and episodes older than this are left out of "Écouter et regarder".
-const LISTEN_WINDOW_MS = 60 * 24 * 60 * 60 * 1000
+const LISTEN_WINDOW_MS = CONFIG.lists.listenWindow
 // Articles per page of a topic: the app asks for more with "Charger plus".
-export const TOPIC_PAGE_SIZE = 30
+export const TOPIC_PAGE_SIZE = CONFIG.lists.topicPageSize
 export { MAX_TOPIC_LIMIT }
 // "À la une": taken from the last day when a topic has enough stories there.
-const FRONT_PAGE_WINDOW_MS = 24 * 60 * 60 * 1000
+const FRONT_PAGE_WINDOW_MS = CONFIG.lists.frontPageWindow
 // The profile of a call made without one (tests, and the server before profiles).
 const DEFAULT_PROFILE_ID = 1
 const BACKGROUND_INTERVAL_MS = CACHE_TTL_MS
@@ -71,6 +70,7 @@ export class NewsService {
       catalogOf,
       aiOf,
       timeZoneOf,
+      readerTimeZoneOf,
       households = () => [currentHouseholdId()],
       fetchVideoDuration,
       summarize,
@@ -79,8 +79,6 @@ export class NewsService {
       suggestSources,
       store,
       isPaused = () => false,
-      profiles = () => [{ id: DEFAULT_PROFILE_ID, admin: true }],
-      aiCaps = AI_CAPS,
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
       languageOf = () => 'fr',
       householdLanguage = () => 'fr',
@@ -128,18 +126,14 @@ export class NewsService {
       now
     })
     const tools = { summarize, writeDailySummary, answerQuestion, suggestSources }
-    const timeZones = () => this.#timeZones.get()
-    const wiring = { tools, aiOf, store, profiles, caps: aiCaps, languageOf, householdLanguage, now, log }
+    const timeZones = (profileId: number) => readerTimeZoneOf?.(profileId) ?? this.#timeZones.get()
+    const wiring = { tools, aiOf, store, languageOf, householdLanguage, now, log }
     this.#newsAi = createNewsAi({ ...wiring, timeZone: timeZones }, this)
   }
 
   // Articles each source listed since then ("Peu ouvertes").
   articleCountsBySource(since: number): Map<string, number> {
     return this.#store?.articleCountsBySource(new Date(since).toISOString()) ?? new Map()
-  }
-
-  setAi(tools: AiTools | null) {
-    this.#newsAi.set(tools)
   }
 
   setTimeZone(timeZone: string) {
@@ -162,10 +156,6 @@ export class NewsService {
 
   aiUsage(profileId = DEFAULT_PROFILE_ID): AiUsage {
     return this.#newsAi.usage(profileId)
-  }
-
-  resetAiUsage({ kind = null, profileId = null }: { kind?: AiCallKind | null; profileId?: number | null }) {
-    this.#newsAi.reset(kind, profileId)
   }
 
   // The catalogue of the household the request is for (household-scope.ts).
@@ -202,8 +192,8 @@ export class NewsService {
     return this.#languageOf(profileId)
   }
 
-  get canSummarize() {
-    return this.#newsAi.canSummarize
+  canSummarize(profileId = DEFAULT_PROFILE_ID) {
+    return this.#newsAi.canSummarize(profileId)
   }
 
   // fresh: fetch the feeds again unless they were fetched less than a minute ago.
@@ -305,8 +295,8 @@ export class NewsService {
     return this.#newsAi.pluginAiLeft(profileId)
   }
 
-  pluginAiCalls() {
-    return this.#newsAi.pluginAiCalls()
+  pluginAiCalls(profileId: number) {
+    return this.#newsAi.pluginAiCalls(profileId)
   }
 
   answerQuestion(itemId: string, question: string, profileId = DEFAULT_PROFILE_ID) {
@@ -372,6 +362,11 @@ export class NewsService {
   }
 
   // The API is called once per article and language (news-ai.ts).
+  // A summary the reader's account already has, shown closed with the article without calling the AI (news-ai.ts).
+  storedSummary(itemId: string, profileId = DEFAULT_PROFILE_ID) {
+    return this.#newsAi.storedSummary(itemId, profileId)
+  }
+
   getSummary(itemId: string, profileId = DEFAULT_PROFILE_ID) {
     return this.#newsAi.getSummary(itemId, profileId)
   }

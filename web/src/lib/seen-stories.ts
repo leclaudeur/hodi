@@ -1,12 +1,13 @@
 import { useSyncExternalStore } from 'react'
 import { sendSeenStories } from '../api.ts'
+import { CONFIG } from './config.ts'
 
 // Stories of "À la une" already looked at. Seeing a story is not reading the article: it stays unread in
 // the lists, and only the story's ring turns grey. The server hears of it too, for the profile: on the next
 // front page, on any device, the story makes room for one not seen yet.
 export const SEEN_STORIES_KEY = 'hodi:seen-stories'
 // Three stories per topic and day: enough for a few days.
-const MAX_SEEN = 200
+const MAX_SEEN = CONFIG.app.seenStories
 
 const load = (): string[] => {
   try {
@@ -21,7 +22,7 @@ let seen = new Set(load())
 const listeners = new Set<() => void>()
 
 // Sent together a moment after the last one: a story viewer swiped through is one request.
-const SEND_AFTER_MS = 1500
+const SEND_AFTER_MS = CONFIG.app.seenStoriesSendAfter
 let unsent: string[] = []
 let timer: ReturnType<typeof setTimeout> | null = null
 

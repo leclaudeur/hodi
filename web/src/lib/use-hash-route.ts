@@ -6,7 +6,7 @@ import { RENAMED_TOPICS } from './renamed-topics.ts'
 // #/saved (saved articles), #/search/<words> (search), #/followed (followed subjects), #/shares (sent by the household),
 // #/settings/<section>[/<item>] (settings; #/settings/requests/<id>, a teen's request), #/summary (Résumé du jour),
 // #/stories/<topic> (À la une, as stories), #/history (the last 7 days' reading), #/profiles ("Qui lit ?"),
-// #/server/<section>[/<item>] (the server's admin space; #/server/plugin/<id>/<section>[/<path>], a plugin's section).
+// #/account/<part> (Mon compte), #/catalogue/<topic> (the server's sources), #/server/<section>[/<item>] (the server's admin space; #/server/plugin/<id>/<section>[/<path>], a plugin's section).
 // The French addresses of earlier versions still open: see LEGACY_PATHS and RENAMED_TOPICS.
 export type Route =
   | { name: 'frontPage' }
@@ -19,13 +19,18 @@ export type Route =
   | { name: 'followed' }
   | { name: 'shares' }
   // section null: the list of sections (phone), the first one (computer). item: one thing of the section
-  // (#/settings/profiles/<id>, a young profile's page for its parents). path: what follows it, a plugin's own
-  // screens under its page (#/settings/plugin/<id>/<path>).
+  // (#/settings/plugin/<id>, a plugin's page). path: what follows it, a plugin's own screens under its page
+  // (#/settings/plugin/<id>/<path>).
   | { name: 'settings'; section: SettingsSection | null; item?: string; path?: string; request?: number }
   | { name: 'dailySummary' }
   | { name: 'story'; topicId: string }
   | { name: 'history' }
   | { name: 'profiles' }
+  // Mon compte, a page of its own with its sections (#/account/<part>). part null: its first one. item: one thing
+  // of the part (#/account/children/<id>, a young one's card for its parents).
+  | { name: 'account'; part: AccountPart | null; item?: string }
+  // The catalogue, a page of its own: a topic's id. part null: the first one.
+  | { name: 'catalogue'; part: string | null }
   // The server's admin space. section null: the list of its sections (phone), the first one (computer). item: one
   // thing of the section (#/server/plugins/<id>, a plugin's page). plugin: one of a plugin's own sections of the space,
   // and its screens under it.
@@ -36,12 +41,20 @@ export type Route =
       plugin?: { id: string; section: string; path: string }
     }
 
+// Mon compte's sections, in their order in its sidebar.
+export const ACCOUNT_PARTS = ['profile', 'children', 'sign-in', 'region', 'ai', 'stats', 'data'] as const
+export type AccountPart = (typeof ACCOUNT_PARTS)[number]
+const accountPartOf = (value: string): AccountPart | null =>
+  ACCOUNT_PARTS.includes(value as AccountPart) ? (value as AccountPart) : null
+export const accountHref = (part: AccountPart, item?: string) => `#/account/${part}${item ? `/${item}` : ''}`
+
 // The server's sections, in their order in its sidebar. Each comes with its page.
 export const SERVER_SECTIONS = [
   'overview',
   'inbox',
   'households',
   'accounts',
+  'blocks',
   'general',
   'content',
   'backups',
@@ -62,8 +75,6 @@ export const SETTINGS_SECTIONS = [
   'general',
   'stats',
   'sharing',
-  'household',
-  'profiles',
   'ai',
   'plugin',
   'account',
@@ -84,8 +95,6 @@ const SECTION_SLUGS: Record<SettingsSection, string> = {
   stats: 'stats',
   ai: 'ai',
   plugin: 'plugin',
-  household: 'household',
-  profiles: 'profiles',
   sharing: 'sharing',
   account: 'account',
   shortcuts: 'shortcuts',
@@ -150,12 +159,11 @@ const SIMPLE_ROUTES = new Map<string, () => Route>([
   ['saved', () => ({ name: 'saved' })],
   ['followed', () => ({ name: 'followed' })],
   ['shares', () => ({ name: 'shares' })],
-  ['stats', () => ({ name: 'settings', section: 'stats' })],
+  // The statistics are Mon compte's now.
+  ['stats', () => ({ name: 'account', part: 'stats' })],
   ['summary', () => ({ name: 'dailySummary' })],
   ['history', () => ({ name: 'history' })],
-  ['profiles', () => ({ name: 'profiles' })],
-  // The site's « Mon compte » link (get-hodi.com/account), whether the account reads in a household or not.
-  ['account', () => ({ name: 'settings', section: 'account' })]
+  ['profiles', () => ({ name: 'profiles' })]
 ])
 
 const settingsRoute = (second: string, third: string, path: string): Route => {
@@ -164,6 +172,13 @@ const settingsRoute = (second: string, third: string, path: string): Route => {
   // Réglages › Plugins went: its list is Serveur › Plugins now, and a plugin's page for profiles is its own entry.
   if (second === 'plugins')
     return third ? { name: 'settings', section: 'plugin', item: third } : { name: 'settings', section: null }
+  // Réglages › Mon compte opens the account's own page.
+  if (second === 'account') return { name: 'account', part: accountPartOf(third) }
+  // Réglages › Ados et enfants went: the young ones are their parents' Mon compte › Mes enfants.
+  if (second === 'profiles') return { name: 'account', part: 'children', ...(third ? { item: third } : {}) }
+  if (second === 'stats' || second === 'ai') return { name: 'account', part: second }
+  // Réglages › Foyer went: what held for everyone is in Serveur › Général, its admin's.
+  if (second === 'household') return { name: 'server', section: 'general' }
   // Mon profil became Général: its name and photo moved to Mon compte.
   if (second === 'me') return { name: 'settings', section: 'general' }
   return {
@@ -176,6 +191,8 @@ const settingsRoute = (second: string, third: string, path: string): Route => {
 
 const serverRoute = (parts: string[]): Route => {
   const [, second = '', third = ''] = parts
+  // Serveur › Foyers went: the server has its accounts, in one space.
+  if (second === 'households') return { name: 'server', section: 'accounts' }
   if (second === 'plugin' && third && parts[3])
     return { name: 'server', section: null, plugin: { id: third, section: parts[3], path: parts.slice(4).join('/') } }
   return { name: 'server', section: serverSectionOf(second), ...(third ? { item: third } : {}) }
@@ -191,6 +208,9 @@ export const parseRoute = (hash: string): Route => {
   if (first === 'search') return { name: 'search', query: second }
   if (first === 'settings') return settingsRoute(second, third, parts.slice(3).join('/'))
   if (first === 'server') return serverRoute(parts)
+  // The site's « Mon compte » link (get-hodi.com/account) too, whether the account reads in a household or not.
+  if (first === 'account') return { name: 'account', part: accountPartOf(second), ...(third ? { item: third } : {}) }
+  if (first === 'catalogue') return { name: 'catalogue', part: second || null }
   const simple = SIMPLE_ROUTES.get(first)
   if (simple) return simple()
   if (first === 'stories' && second) return { name: 'story', topicId: second }
@@ -208,11 +228,12 @@ export const searchHref = (query = '') => `#/search/${encodeURIComponent(query)}
 export const SETTINGS_HREF = '#/settings'
 export const settingsHref = (section: SettingsSection) => `#/settings/${SECTION_SLUGS[section]}`
 export const requestHref = (id: number) => `#/settings/requests/${id}`
-// A young profile's page, for its parents.
-export const youngProfileHref = (id: number) => `${settingsHref('profiles')}/${id}`
+// A young one's card, for its parents: under Mon compte › Mes enfants.
+export const youngProfileHref = (id: number) => accountHref('children', String(id))
 // A plugin's own page, the entry its manifest places in Réglages, or one of its screens under it (path 'week/3').
 export const pluginPageHref = (id: string, path = '') =>
   `${settingsHref('plugin')}/${encodeURIComponent(id)}${path ? `/${path.split('/').map(encodeURIComponent).join('/')}` : ''}`
+export const catalogueHref = (part?: string) => (part ? `#/catalogue/${encodeURIComponent(part)}` : '#/catalogue')
 export const SERVER_HREF = '#/server'
 export const serverHref = (section: ServerSection) => `${SERVER_HREF}/${section}`
 // A plugin's page in Serveur › Plugins, where its admin turns it on and off, sets it and removes it.

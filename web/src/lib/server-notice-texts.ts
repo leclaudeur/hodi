@@ -10,6 +10,14 @@ const CORE_KINDS: Record<string, () => { label: string; hint: string }> = {
     label: t('server.notifications.codeRequest.label'),
     hint: t('server.notifications.codeRequest.hint')
   }),
+  'source-review': () => ({
+    label: t('server.notifications.sourceReview.label'),
+    hint: t('server.notifications.sourceReview.hint')
+  }),
+  'source-report': () => ({
+    label: t('server.notifications.sourceReport.label'),
+    hint: t('server.notifications.sourceReport.hint')
+  }),
   'weekly-report': () => ({
     label: t('server.notifications.weeklyReport.label'),
     hint: t('server.notifications.weeklyReport.hint')

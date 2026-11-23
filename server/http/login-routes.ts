@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto'
+import { cleanHandle } from '../handle.ts'
 import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
-import { hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
+import { NO_PASSWORD, hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
 import { SecondStepTickets } from '../auth/second-step-tickets.ts'
 import { clearedProfileCookie, clearedSessionCookie, profileCookie, profileToken } from '../auth/session.ts'
 import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
@@ -16,8 +17,9 @@ import type { CookieFor, accountSession } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
 import type { profileDeviceSession } from './profile-device-session.ts'
 import { type CheckSignIn, refuseSignIn } from './sign-in-check.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const MAX_PASSWORD_LENGTH = 256
+const MAX_PASSWORD_LENGTH = CONFIG.passwords.maxLength
 
 interface LoginRoutesOptions {
   accounts?: UserAccountStore
@@ -124,6 +126,20 @@ const signInHelpers = ({
 
 type SignInHelpers = ReturnType<typeof signInHelpers>
 
+// The account an e-mail or an @identifier names; null when none has it, undefined when it cannot be either.
+const accountOf = (accounts: UserAccountStore, typed: unknown) => {
+  const email = typeof typed === 'string' && /.@/.test(typed) ? cleanEmail(typed) : null
+  const handle = email ? null : cleanHandle(typed)
+  if (!email && !handle) return undefined
+  return email ? accounts.byEmail(email) : accounts.byHandle(handle!)
+}
+
+// An e-mail whose account the server's admin blocked: the person is told so, whatever password they typed.
+const isBlocked = (accounts: UserAccountStore | undefined, typed: unknown) => {
+  const email = cleanEmail(typed)
+  return email !== null && accounts !== undefined && accounts.isBlocked(email)
+}
+
 const mountLoginRoute = (
   router: express.Router,
   { accounts, throttle, cookieFor, now }: LoginRoutesOptions,
@@ -132,7 +148,7 @@ const mountLoginRoute = (
   // Compared with when no account has the e-mail typed, so that a wrong address takes as long as a wrong password.
   let decoyHash: Promise<string> | null = null
 
-  // Everyone signs in with their own account: an e-mail and its password.
+  // Everyone signs in with their own account: its e-mail or its @identifier, and its password.
   router.post('/login', async (request, response) => {
     const password: unknown = request.body?.password
     const typedEmail: unknown = request.body?.email
@@ -151,14 +167,21 @@ const mountLoginRoute = (
       return
     }
 
-    const email = cleanEmail(typedEmail)
-    if (!accounts || !email) {
+    const account = accounts ? accountOf(accounts, typedEmail) : undefined
+    if (account === undefined) {
       response.status(400).json({ error: 'invalid_request' })
       return
     }
-    const account = accounts.byEmail(email)
     decoyHash ??= hashPassword(randomBytes(16).toString('hex'))
-    const valid = await verifyPassword(password, account?.passwordHash ?? (await decoyHash))
+    // An account with no password yet takes as long as any other.
+    const hash = account && account.passwordHash !== NO_PASSWORD ? account.passwordHash : await decoyHash
+    const valid = (await verifyPassword(password, hash)) && account?.passwordHash !== NO_PASSWORD
+    if (!account && isBlocked(accounts, typedEmail)) {
+      // Counted as a wrong password: nobody tries addresses at full speed to learn who was blocked.
+      throttle.recordFailure(now(), client)
+      response.status(403).json({ error: 'blocked' })
+      return
+    }
     if (!account || !valid) {
       throttle.recordFailure(now(), client)
       response.status(401).json({ error: 'invalid_credentials' })
@@ -172,7 +195,7 @@ const mountLoginRoute = (
     // « Validation en deux étapes »: the password was right, the app's code (or a recovery code) comes next.
     if (!secondStepOk(account, request, response, client)) return
     if (!sameHousehold(account, request, response)) return
-    if (needsRehash(account.passwordHash)) accounts.upgradePassword(account.id, await hashPassword(password))
+    if (needsRehash(account.passwordHash)) accounts?.upgradePassword(account.id, await hashPassword(password))
     const cookies = [cookieFor(account, request)]
     // Its own profile opens at once: the password proved who reads, a PIN of its own included.
     const own = ownProfileCookie(account.id)

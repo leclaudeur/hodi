@@ -7,11 +7,12 @@ import { setTwoFactorOn } from '../../../lib/two-factor.ts'
 import Toggle from '../../../ui/Toggle.tsx'
 import type { TwoFactorSecret } from '../../account/TwoFactorSetup.tsx'
 import SettingRow from '../SettingRow.tsx'
+import { CONFIG } from '../../../lib/config.ts'
 
 type Setter<T> = (value: T) => void
 
 // What the server makes at once: the row reads « 10 restants sur 10 » right after.
-const RECOVERY_CODES = 10
+const RECOVERY_CODES = CONFIG.twoFactor.recoveryCodes
 
 interface TwoFactorRowsProps {
   account: AccountView
@@ -30,12 +31,12 @@ const RecoveryRow = ({ account, onAccount, onNewCodes }: Omit<TwoFactorRowsProps
       action={{
         label: t('twoFactor.account.newCodes'),
         icon: KeyRound,
+        look: 'danger',
         onClick: () =>
           askToConfirm({
             title: t('twoFactor.account.confirmCodes.title'),
             message: t('twoFactor.account.confirmCodes.message'),
             label: t('twoFactor.account.confirmCodes.button'),
-            look: 'primary',
             proof: account.loginOnly ? { noPassword: true } : {},
             onConfirm: async proof => {
               const { recoveryCodes } = await newRecoveryCodes(proof)

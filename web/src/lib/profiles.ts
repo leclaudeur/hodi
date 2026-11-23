@@ -3,11 +3,9 @@ import { isServerOnly } from './server-only.ts'
 import {
   type Profile,
   type ProfileChanges,
-  type ProfileColor,
   type ProfileSecret,
   chooseProfile,
   clearDataCache,
-  createProfile,
   type AdminProof,
   deleteProfile,
   getProfiles,
@@ -20,6 +18,7 @@ import { RECENT_SEARCHES_KEY } from './recent-searches.ts'
 import { dropRequestsOf } from './requests.ts'
 import { SEEN_STORIES_KEY } from './seen-stories.ts'
 import { clearUserState, sendPendingChanges } from './user-state.ts'
+import { CONFIG } from './config.ts'
 
 // The household's profiles ("Qui lit ?") and the one this device reads as.
 
@@ -107,11 +106,11 @@ export const takeTour = (profile: Profile) => {
 }
 
 // The photo, made square and small on the device before it is sent: the server only stores it.
-const PHOTO_SIZE = 256
-const PHOTO_QUALITY = 0.85
+const PHOTO_SIZE = CONFIG.app.photoSide
+const PHOTO_QUALITY = CONFIG.app.photoQuality
 // What a photo may be when picked: it is then cropped square and made small here, before it is sent.
 export const PHOTO_ACCEPT = 'image/jpeg,image/png,image/webp'
-export const MAX_PICKED_PHOTO_BYTES = 20_000_000
+export const MAX_PICKED_PHOTO_BYTES = CONFIG.app.photoPickedMaxSize
 
 export const makePhoto = async (file: File): Promise<Blob> => {
   const image = await createImageBitmap(file)
@@ -139,20 +138,6 @@ export const makePhoto = async (file: File): Promise<Blob> => {
   const photo = webp?.type === 'image/webp' ? webp : await encode('image/jpeg')
   if (!photo) throw new Error('Photo not made')
   return photo
-}
-
-// The server says which profiles ask for a password: the list is asked again.
-export const addProfile = async (
-  name: string,
-  color: ProfileColor,
-  photo: Blob | null,
-  { kind, avatar }: Omit<ProfileChanges, 'name' | 'color'> = {}
-) => {
-  let profile = await createProfile(name, color, { kind, avatar })
-  if (photo && profile.kind !== 'child') profile = await uploadProfilePhoto(profile.id, photo).catch(() => profile)
-  if (state) commit({ ...state, profiles: [...state.profiles, profile] })
-  void refreshProfiles().catch(() => {})
-  return profile
 }
 
 export const editProfile = async (

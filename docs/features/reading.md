@@ -6,8 +6,8 @@ What a profile reads, watches, follows and shares.
 
 - **Feed**: every visible topic's articles, one day at a time in the household's time zone, with **Load** for earlier
   days. Several sources on the same story within 36 hours share one card, marked **Also on…**.
-- **Topics**: some twenty, each with its own page. A profile reorders or hides them, hides sources and mutes words in
-  _Settings_. A topic without any source is hidden from every list and from the sidebar.
+- **Topics**: some twenty, each with its own page. A profile reorders or hides them, picks its sources (_My sources_, filled from the _Catalogue_ page) and mutes
+  words in _Settings_. A topic without any source is hidden from every list and from the sidebar.
 - **[Reader](../reader.md)**: articles open inside Hodi. The server checks each one in the background and lists only those that open in
   the reader, with no paywall bypass. Sources marked `reader: false` show their summary and a link to the site.
 - **Reading state**: an article counts as read once 80 % of it is scrolled and at least 35 % of its reading time has
@@ -36,7 +36,16 @@ followed subject. That is one per subject every three hours at most, 12 a day at
 
 ## Shared
 
-Once the household has two profiles, **Shared** sends an article or a video to another profile, with a short note. The
-receiver gets a notification and can react at the end of the article. Muting a profile hides what it sends.
+**Send to…** sends an article or a video to another person, with a short note. It offers at once the family (parents,
+children, brothers and sisters), the accounts signed in on the device and whoever the person shared with lately; any
+other adult on the server is added by typing their @username. A teen or a child shares only within its family, and
+nobody outside it can reach them. The receiver finds it in **Shared**, gets a notification and can react at the end of
+the article. Turning sharing off, or muting one person, stops what they send.
+
+Under a share received, at the end of the article, **Stop receiving their shares** mutes its sender at once (taken back
+in Settings › Sharing), and **Report** tells the server's admin, with one reason (harassment, hateful, spam, something
+else), that the share should not have come. Nothing happens to the sender on its own: the admin sees the share as it
+was received, its note and its sender, never shown who reported it, and ignores it or blocks the sender's account. An
+account reports a share once, and at most 5 a day.
 
 [← Back to the features](../features.md)

@@ -3,15 +3,16 @@ import { type Catalog, type Source, allSources } from './catalog.ts'
 import type { FetchBytes, FetchText } from './fetch-text.ts'
 import { siteNameOf } from './source-name.ts'
 import { decodeEntities } from './text.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Each source's icon for its avatar, fetched once from its site and kept: the app falls back to the
 // source's initials when there is none.
 
 // Found again after this long, in case the site changed it; a site with none is asked again sooner.
-const ICON_TTL_MS = 30 * 24 * 60 * 60 * 1000
-const MISSING_TTL_MS = 7 * 24 * 60 * 60 * 1000
-const MAX_ICON_BYTES = 256 * 1024
-const MAX_CANDIDATES = 4
+const ICON_TTL_MS = CONFIG.sourceIcons.keptFor
+const MISSING_TTL_MS = CONFIG.sourceIcons.missingKeptFor
+const MAX_ICON_BYTES = CONFIG.sourceIcons.maxSize
+const MAX_CANDIDATES = CONFIG.sourceIcons.candidates
 
 export interface Icon {
   contentType: string

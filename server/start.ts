@@ -63,9 +63,11 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
     householdHooks: running.hooks,
     news,
     accounts: stores.accounts,
+    accountAi: stores.accountAi,
     devices: stores.devices,
     profileDevices: stores.profileDevices,
     accountData: stores.accountData,
+    handles: stores.handles,
     codes: stores.codes,
     twoFactor: stores.twoFactor,
     alerts: running.alerts,
@@ -106,12 +108,16 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
       catalog: new PluginCatalog({ fetchText: outside.fetchText, fetchBytes: outside.fetchPackages })
     },
     household: stores.household,
+    shareReports: stores.shareReports,
     setupCode: drawSetupCode(stores),
     onHouseholdChange: running.applyHousehold,
     sources: {
       store: stores.sources,
       find: createSourceFinder({ fetchText: outside.findFetchText, isPublic: outside.isPublicLink }),
-      file: stores.file
+      file: stores.file,
+      reviews: stores.sourceReviews,
+      reports: stores.sourceReports,
+      blocked: stores.blockedDomains
     }
   }).listen(config.port, config.host, () => {
     console.log(`hodi listening on http://${config.host}:${config.port}`)

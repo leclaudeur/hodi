@@ -16,7 +16,7 @@ export interface SetupDraft {
   email: string
   name: string
   // The admin profile, its photo as a data URL (already resized to a small square).
-  profile: { name: string; color: ProfileColor; photo: string | null } | null
+  profile: { name: string; color: ProfileColor; handle?: string; photo: string | null } | null
   ai: string
   timeZone: string
   country: string | null

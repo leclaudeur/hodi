@@ -3,6 +3,7 @@ import type { PluginTranslations } from '../plugins/plugin-texts.ts'
 import { RequestError, UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
 import type { Profile, ProfileColor } from './profiles.ts'
+import { CONFIG } from '../lib/config.ts'
 
 // The household: first-run screens, accounts, codes, Réglages > Foyer and the AI's key. Mirrors server/http/household-routes.ts.
 
@@ -11,10 +12,10 @@ export const SOURCE_URL = 'https://github.com/leclaudeur/hodi'
 // Where whoever likes Hodi can give to its work: Hodi has no ads and nothing to pay.
 export const SUPPORT_URL = 'https://www.patreon.com/cw/LeClaudeur'
 
-export const MIN_PASSWORD_LENGTH = 8
+export const MIN_PASSWORD_LENGTH = CONFIG.passwords.minLength
 // The setup code printed in the server's log, asked away from the server.
 export const SETUP_CODE_LENGTH = 8
-export const MAX_HOUSEHOLD_NAME_LENGTH = 40
+export const MAX_HOUSEHOLD_NAME_LENGTH = CONFIG.household.nameMaxLength
 
 export interface AiProviderInfo {
   id: string
@@ -92,25 +93,50 @@ export interface AccountDevice {
 }
 
 export interface AccountView {
-  email: string
+  // A teen's or a child's has none: its e-mails go to its parents.
+  email: string | null
+  // A teen's or a child's own account, run by its parents.
+  young: boolean
   passwordChangedAt: number
   // No password of its own: a change needs a sign-in on this device in the last 5 minutes (recentSignIn).
   loginOnly: boolean
   recentSignIn: boolean
   // « Profil privé »: its profile asks for this password in « Qui lit ? », on every device it does not trust.
   privateProfile?: boolean
+  // Its own « Code parental » is set: asked to open its profile where one of its children is signed in.
+  parentalCode?: boolean
+  // « Identifiant », and when it can change again (null: now).
+  handle: string | null
+  handleChangeableFrom: number | null
+  // Where its days start: its own, else the household's. country: its own, or none.
+  timeZone: string
+  country: string | null
+  // Mon compte › IA et crédits: its own key, shown by its provider and its end only; null: no AI.
+  ai: AiKey | null
+  providers: AiProviderInfo[]
   devices: AccountDevice[]
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: {
     householdGoes: boolean
     household: string
     others: string[]
+    // The teens and children it is the only parent of: they go too.
+    children: string[]
     heir: string | null
     member: boolean
     admin: boolean
   } | null
   // « Validation en deux étapes »: on since then, or null. required: the server's admin cannot turn it off.
   twoFactor: { since: number | null; required: boolean; recoveryLeft: number }
+  // In no household: what it read and earned, its own wherever it reads; null when nothing yet.
+  stats?: AccountStats | null
+}
+
+export interface AccountStats {
+  articles: number
+  videos: number
+  minutes: number
+  points: number
 }
 
 // null: no account here (an install still on the household's password, or a young profile open on this device).
@@ -132,6 +158,35 @@ export const changeAccountPassword = (current: string, next: string) =>
 export const setPrivateProfile = (on: boolean, proof?: AdminProof) =>
   sendJson<AccountView>('PUT', '/account/private', { on, ...proof })
 
+// « Code parental »: six digits the server never sends back. With the parent's password, and the app's code as
+// appCode: the body's code is the new Code parental.
+export const setParentalCode = (code: string, proof: AdminProof) =>
+  sendJson<AccountView>('PUT', '/account/parental-code', { code, password: proof.password, appCode: proof.code })
+
+export const removeParentalCode = (proof: AdminProof) =>
+  sendJson<AccountView>('DELETE', '/account/parental-code', { password: proof.password, appCode: proof.code })
+
+// Réglages › Mon compte › Région.
+export interface AiKey {
+  provider: string
+  providerName: string
+  model: string
+  keyHint: string
+}
+
+// A key checked with a request that costs no credits.
+export const checkAccountAi = async (provider: string, key: string) =>
+  (await sendJson<{ result: KeyCheck }>('POST', '/account/ai/check', { provider, key })).result
+
+// Kept only once the provider took it.
+export const setAccountAi = (provider: string, key: string) =>
+  sendJson<AccountView>('PUT', '/account/ai', { provider, key })
+
+export const removeAccountAi = () => sendJson<AccountView>('DELETE', '/account/ai')
+
+export const changeAccountRegion = (region: { timeZone?: string; country?: string | null }) =>
+  sendJson<AccountView>('PUT', '/account/region', region)
+
 // « Redemander »: every device asks for the password again.
 export const forgetTrustedDevices = () => sendJson<AccountView>('DELETE', '/account/trusted')
 
@@ -141,9 +196,6 @@ export const signOutDevice = (id: number) => sendJson<AccountView>('DELETE', `/a
 export const ACCOUNT_COPY_URL = '/api/account/copy'
 
 export const deleteAccount = (proof?: AdminProof) => sendJson<null>('DELETE', '/account', proof)
-
-// Mon compte › Foyer › « Quitter »: the profile goes, the account stays in no household.
-export const leaveHousehold = (proof?: AdminProof) => sendJson<null>('POST', '/account/leave', proof)
 
 // "J'ai un code": eight letters and digits an adult gives, valid once and for a day. None of 0, O, 1, I or L, which
 // read alike (the server's sign-in-code-store.ts draws them).
@@ -179,7 +231,7 @@ export const joinWithCode = (join: {
   password: string
   ageConfirmed?: true
   existing?: true
-  profile?: { name: string; color: ProfileColor }
+  profile?: { name: string; color: ProfileColor; handle?: string }
   // signIn false: the account has « Validation en deux étapes », so this device signs in on Connexion with its code.
 }) => sendJson<{ profileId: number; signIn?: false }>('POST', '/codes/join', join)
 
@@ -206,6 +258,8 @@ export const resetWithMailedCode = (code: string, password: string) =>
 // A young profile's own devices, in its form (Réglages > Profils).
 export interface ProfileDevice {
   id: number
+  // account: signed in with its @identifier; linked: with a parent's code, before.
+  kind: 'account' | 'linked'
   userAgent: string
   lastSeenAt: number
 }
@@ -213,12 +267,16 @@ export interface ProfileDevice {
 export const getProfileDevices = async (profileId: number) =>
   (await getJson<{ devices: ProfileDevice[] }>(`/profiles/${profileId}/devices`)).devices
 
-export const removeProfileDevice = (profileId: number, deviceId: number) =>
-  sendJson<null>('DELETE', `/profiles/${profileId}/devices/${deviceId}`)
+export const removeProfileDevice = (profileId: number, device: Pick<ProfileDevice, 'id' | 'kind'>) =>
+  sendJson<null>(
+    'DELETE',
+    `/profiles/${profileId}/${device.kind === 'account' ? 'account-devices' : 'devices'}/${device.id}`
+  )
 
 export interface HouseholdSetup {
-  name: string
-  profile: { name: string; color: ProfileColor }
+  // The server's one space needs none: a plugin with several households names them.
+  name?: string
+  profile: { name: string; color: ProfileColor; handle?: string }
   timeZone: string
   country: string | null
   language: InterfaceLanguage
@@ -227,57 +285,3 @@ export interface HouseholdSetup {
 
 // Opens the admin's profile on this device, signed in with its account.
 export const setUpHousehold = (setup: HouseholdSetup) => sendJson<{ profileId: number | null }>('POST', '/setup', setup)
-
-export interface Household {
-  name: string
-  timeZone: string
-  country: string | null
-  language: InterfaceLanguage
-  hourCycle: 12 | 24
-  // Its photo's address; null: its initial shows.
-  photo: string | null
-  ai: { provider: string; providerName: string; model: string; keyHint: string } | null
-  providers: AiProviderInfo[]
-  // « Code parental »: six digits asked to open an adult profile that is not private.
-  parentalCode?: boolean
-}
-
-export const getHousehold = () => getJson<Household>('/household')
-
-export const updateHousehold = (changes: {
-  name?: string
-  timeZone?: string
-  country?: string | null
-  language?: InterfaceLanguage
-  hourCycle?: 12 | 24
-}) => sendJson<Household>('PATCH', '/household', changes)
-
-export const uploadHouseholdPhoto = async (photo: Blob) => {
-  const response = await fetch('/api/household/photo', {
-    method: 'PUT',
-    headers: { 'Content-Type': photo.type },
-    body: photo
-  })
-  if (response.status === 401) throw new UnauthorizedError('Session expired')
-  if (!response.ok) throw new Error(`PUT household photo failed with status ${response.status}`)
-  return (await response.json()) as Household
-}
-
-export const removeHouseholdPhoto = () => sendJson<Household>('DELETE', '/household/photo')
-
-export const checkAiKey = async (provider: string, key: string) =>
-  (await sendJson<{ result: KeyCheck }>('POST', '/household/ai/check', { provider, key })).result
-
-// Kept only once the provider took it.
-export const setHouseholdAi = (provider: string, key: string) =>
-  sendJson<Household>('PUT', '/household/ai', { provider, key })
-
-// « Code parental »: six digits; the server never sends them back.
-// With the admin's own password, and the app's code as appCode: the body's code is the new Code parental.
-export const setParentalCode = (code: string, proof: AdminProof) =>
-  sendJson<Household>('PUT', '/household/parental-code', { code, password: proof.password, appCode: proof.code })
-
-export const removeParentalCode = (proof: AdminProof) =>
-  sendJson<Household>('DELETE', '/household/parental-code', { password: proof.password, appCode: proof.code })
-
-export const removeHouseholdAi = () => sendJson<Household>('DELETE', '/household/ai')

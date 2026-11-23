@@ -8,6 +8,7 @@ import { type PluginSandbox, SandboxError } from '../plugins/sandbox/sandbox.ts'
 import { clientAddressOf } from './client-address.ts'
 import { refuseSignIn } from './sign-in-check.ts'
 import { isAdminOf, isServerAdminOf, kindOf, profileIdOf } from './profile-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The cookies that sign this device in with the account, the plugins' refusal, or, for an account with « Validation en
 // deux étapes » on, the ticket of the second step (Hodi's dialog asks for the app's code, then POST /api/login/
@@ -42,9 +43,9 @@ const ERROR_STATUS: Record<SandboxError['code'], number> = {
 
 // The raw bodies a plugin's route may take, and the most bytes any route may ask for, whatever its maxBody says.
 const RAW_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'application/octet-stream']
-export const MAX_RAW_BYTES = 10 * 1024 * 1024
+export const MAX_RAW_BYTES = CONFIG.pluginSandbox.rawMaxSize
 // How long a raw body may take to arrive.
-const RAW_READ_MS = 30_000
+const RAW_READ_MS = CONFIG.pluginSandbox.rawReadTimeout
 
 // Checks the password and code typed in Hodi's dialog against whoever asks (the profile's account, or the server's
 // admin in /server): false when the refusal was sent (403 invalid_password, invalid_code, sign_in_again, 429).
@@ -55,7 +56,7 @@ export type RouteProof = (
 ) => Promise<boolean>
 
 // The longest Hodi-Proof header Hodi reads: a password and a code, base64 of their JSON.
-const MAX_PROOF_HEADER = 2048
+const MAX_PROOF_HEADER = CONFIG.pluginSandbox.proofHeaderMaxLength
 
 // What Hodi's dialog typed, sent beside the plugin's own body: Hodi-Proof, base64 of { password, code } in JSON, so
 // any password fits in a header. null when it is missing or not that.

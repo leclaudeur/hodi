@@ -1,11 +1,12 @@
 // AI summaries already generated, kept in this browser: reopening an article costs nothing. One per article and
 // language: after a switch, the summary in the new language is asked of the server (free when it has one).
 import type { Language } from './i18n.ts'
+import { CONFIG } from './config.ts'
 
 const STORAGE_KEY = 'hodi:summaries'
-const MAX_SUMMARIES = 100
+const MAX_SUMMARIES = CONFIG.app.summaries
 // Articles leave the feeds after three days.
-const MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000
+const MAX_AGE_MS = CONFIG.app.summariesMaxAge
 
 interface StoredSummary {
   points: string[]

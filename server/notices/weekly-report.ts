@@ -5,6 +5,7 @@ import { type ReportRow, reportRowsIn } from '../plugins/report-rows.ts'
 import type { Language } from '../../shared/i18n.ts'
 import { DAY_MS } from '../../shared/time.ts'
 import type { ServerNotice, ServerNotifier } from './server-notifier.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // « Rapport de la semaine »: on Monday from 08:00, in the server's time zone, the past week's totals beside the week
 // before, from the same numbers as Serveur › Vue d'ensemble, then a table from each plugin that keeps a weeklyReport
@@ -12,8 +13,8 @@ import type { ServerNotice, ServerNotifier } from './server-notifier.ts'
 
 export const WEEKLY_REPORT = 'core:weekly-report'
 // Checked this often: the report leaves within a quarter of an hour of 08:00.
-const CHECK_MS = 15 * 60 * 1000
-const SEND_HOUR = 8
+const CHECK_MS = CONFIG.weeklyReport.checkEvery
+const SEND_HOUR = CONFIG.weeklyReport.sendHour
 
 export interface Week {
   // Monday and Sunday, YYYY-MM-DD.

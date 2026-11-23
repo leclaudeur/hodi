@@ -12,25 +12,10 @@
   color: var(--ai-text);
 }
 
-.track {
-  overflow: hidden;
-  height: 4px;
-  margin-top: 8px;
-  border-radius: var(--radius-pill);
-  background: var(--control);
-}
-
-.fill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--ai);
-}
-
-/* The same width on every row, so the bars end together and the figures line up on the right. */
+/* The same width on every row, so the figures line up on the right. */
 .count {
   flex-shrink: 0;
-  min-width: 72px;
+  min-width: 88px;
   font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--text-3);
@@ -41,28 +26,4 @@
 .count strong {
   color: var(--text);
   font-weight: 500;
-}
-
-/* "Tout le foyer" and its "Tout réinitialiser". */
-.labelRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.labelRow > h2 {
-  margin-top: 0;
-}
-
-/* A profile's limits, straight in its accordion: a line above each, the header's included. */
-.flat {
-  /* Out of the accordion body's padding: the rows go edge to edge, as the header. */
-  margin: -12px -16px -16px;
-  list-style: none;
-}
-
-.flat > li {
-  border-top: 1px solid var(--divider);
 }

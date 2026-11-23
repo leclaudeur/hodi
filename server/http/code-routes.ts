@@ -1,3 +1,4 @@
+import { cleanHandle } from '../handle.ts'
 import express from 'express'
 import { hashPassword } from '../auth/password.ts'
 import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
@@ -18,6 +19,7 @@ import {
 import { ANYONE_IN, refuseSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
 import { type InvitationMail, invitationRoutes, inviteOf, mailInvitation } from './invitation-routes.ts'
+import { isParentOfYoung } from './parent-check.ts'
 import { isAdminOf, isParentOf, profileIdOf } from './profile-routes.ts'
 
 // "J'ai un code": an adult of the household invites a new adult, or the admin gives an adult profile without an
@@ -33,13 +35,15 @@ interface JoinChecked {
   passwordHash: string
   name: ReturnType<typeof cleanName>
   color: ReturnType<typeof profileColorOf>
+  // The new account's identifier, as typed; null: one made from its e-mail.
+  handle: string | null
 }
 
 // The account, its profile, and this device signed in with both, once every check passed.
 // From here on nothing waits: no other request runs between the checks and the writes.
 const completeJoin = (
   options: ResolvedJoinOptions,
-  { valid, existing, email, known, passwordHash, name, color }: JoinChecked,
+  { valid, existing, email, known, passwordHash, name, color, handle }: JoinChecked,
   request: express.Request,
   response: express.Response
 ) => {
@@ -57,7 +61,7 @@ const completeJoin = (
     response.status(403).json({ error: 'invalid_code' })
     return
   }
-  const account = known ?? accounts.create(email, passwordHash, now())!
+  const account = known ?? accounts.create(email, passwordHash, now(), { handle })!
   let profileId = taken.profileId
   if (profileId === null) {
     const profile = profiles.create(name!, color!, now())!
@@ -71,6 +75,37 @@ const completeJoin = (
   }
   response.set('Set-Cookie', withProfileCookie(options, cookieFor(account, request), profileId))
   response.json({ profileId })
+}
+
+// A new account's e-mail and identifier, both still free.
+const newAccountRefusal = ({ accounts, now }: ResolvedJoinOptions, email: string, handle: string | null) => {
+  if (accounts.isBlocked(email)) return 'blocked'
+  if (accounts.byEmail(email)) return 'email_taken'
+  return handle && !accounts.isHandleFree(handle, now()) ? 'handle_taken' : null
+}
+
+// The new profile's name and colour: the account's own once it has been in a household, else what the person typed.
+const identityFor = (
+  { accounts }: ResolvedJoinOptions,
+  draft: { name?: unknown; color?: unknown },
+  known: UserAccount | null
+) => {
+  const own = known ? accounts.identityOf(known.id) : null
+  const name = cleanName(own?.name ?? draft.name)
+  const color = profileColorOf(own?.color ?? draft.color)
+  return name && color ? { name, color } : null
+}
+
+// An account that has been in a household joins with its own name and colour: it may send none. An identifier sent
+// must be a valid one.
+const draftIsWhole = (
+  options: ResolvedJoinOptions,
+  asked: { existing: boolean; draft: { name?: unknown; color?: unknown; handle?: unknown } },
+  profileId: number | null,
+  handle: string | null
+) => {
+  if (profileId === null && !asked.existing && !identityFor(options, asked.draft, null)) return false
+  return asked.draft.handle === undefined || handle !== null
 }
 
 // "Rejoins <foyer>" or "Ton profil t'attend": the account, its profile, and this device signed in with both.
@@ -91,9 +126,8 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
       response.status(400).json({ error: 'bad_request' })
       return
     }
-    const name = cleanName(asked.draft.name)
-    const color = profileColorOf(asked.draft.color)
-    if (valid.found.profileId === null && (!name || !color)) {
+    const handle = cleanHandle(asked.draft.handle)
+    if (!draftIsWhole(options, asked, valid.found.profileId, handle)) {
       response.status(400).json({ error: 'bad_request' })
       return
     }
@@ -103,14 +137,24 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
     if (asked.existing) {
       known = await existingAccountOf(options, decoyHash, asked, request, response)
       if (!known) return
+      // Never in a household yet: the person says who they are first.
+      if (valid.found.profileId === null && !identityFor(options, asked.draft, known)) {
+        response.status(400).json({ error: 'profile_needed' })
+        return
+      }
     } else {
-      if (options.accounts.byEmail(asked.email)) {
-        response.status(409).json({ error: 'email_taken' })
+      const refusal = newAccountRefusal(options, asked.email, handle)
+      if (refusal) {
+        response.status(409).json({ error: refusal })
         return
       }
       passwordHash = await hashPassword(asked.password)
     }
-    const checked = { valid, existing: asked.existing, email: asked.email, known, passwordHash, name, color }
+    const identity = identityFor(options, asked.draft, known)
+    const checked = {
+      ...{ valid, existing: asked.existing, email: asked.email, known, passwordHash, handle },
+      ...{ name: identity?.name ?? null, color: identity?.color ?? null }
+    }
     completeJoin(options, checked, request, response)
   })
 }
@@ -209,15 +253,19 @@ interface CodeRoutesOptions {
 }
 
 // "Connecter un appareil" for one profile: the code, or the refusal sent.
-const profileCode = ({ codes, profiles, now }: CodeRoutesOptions, profileId: unknown, response: express.Response) => {
+const profileCode = (
+  { codes, profiles, accounts, now }: CodeRoutesOptions,
+  profileId: unknown,
+  response: express.Response
+) => {
   const target = typeof profileId === 'number' ? profiles.get(profileId) : null
   // One's own password changes in Réglages › Compte et données, with the current one.
   if (!target || target.id === profileIdOf(response)) {
     response.status(400).json({ error: 'bad_request' })
     return
   }
-  if (!isYoung(target) && !isAdminOf(response)) {
-    response.status(403).json({ error: 'admin_only' })
+  if (isYoung(target) ? !isParentOfYoung(response, accounts, target) : !isAdminOf(response)) {
+    response.status(403).json({ error: isYoung(target) ? 'parents_only' : 'admin_only' })
     return
   }
   // An adult's password is theirs: no one in the household gives them a new one. A forgotten one goes through

@@ -1,11 +1,12 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { CONFIG } from '../fixed-config.ts'
 
 // Sessions are stateless signed tokens so nothing is stored on the server.
 // Token format: v1.<expiry in epoch seconds>.<HMAC-SHA256 signature in base64url>.
 const VERSION = 'v1'
 
 export const SESSION_COOKIE = 'hodi_session'
-export const SESSION_TTL_SECONDS = 90 * 24 * 60 * 60
+export const SESSION_TTL_SECONDS = CONFIG.signIn.sessionLifetime / 1000
 
 const sign = (payload: string, secret: Buffer) => createHmac('sha256', secret).update(payload).digest('base64url')
 

@@ -18,6 +18,7 @@ const refusalOf = (result: Refused, t: TFunction, email: string): ReactNode => {
     })
   if (result.reason === 'invalid_code') return t('twoFactor.login.wrong')
   if (result.reason === 'invalid_password') return t('login.wrongCredentials')
+  if (result.reason === 'blocked') return t('login.blocked')
   if (result.reason === 'too_many_attempts')
     return t('common.tooManyAttempts', { minutes: Math.ceil(result.retryAfterSeconds / 60) })
   if (result.reason === 'refused') return refusalText(result.refusal)
@@ -28,8 +29,6 @@ const refusalOf = (result: Refused, t: TFunction, email: string): ReactNode => {
 // can send a new password's link. Not ready until it answered, so no text changes under the person.
 export const useSignInPage = () => {
   const [ready, setReady] = useState(false)
-  // The household's name, under the logo once known.
-  const [name, setName] = useState<string | null>(null)
   const [resetByMail, setResetByMail] = useState(false)
   useEffect(() => {
     getSetup()
@@ -39,13 +38,12 @@ export const useSignInPage = () => {
         if (home) return window.location.replace(home)
         setReady(true)
         if (state.needed) return
-        setName(state.name)
         setResetByMail(state.resetByMail === true)
         if (state.language) setHouseholdLanguage(state.language)
       })
       .catch(() => setReady(true))
   }, [])
-  return { ready, name, resetByMail }
+  return { ready, resetByMail }
 }
 
 // The e-mail and password, then with « Validation en deux étapes » the app's code (or a recovery code).

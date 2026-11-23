@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import type { Database as WasmDatabase } from 'node-sqlite3-wasm'
+import { CONFIG } from '../../fixed-config.ts'
 
 // A plugin's SQLite runs in WebAssembly, not in Node's native node:sqlite: a native query cannot be stopped from
 // JavaScript (worker.terminate() waits for it, forever for an endless WITH RECURSIVE), while WebAssembly stops when the
@@ -16,7 +17,7 @@ import type { Database as WasmDatabase } from 'node-sqlite3-wasm'
 export const SNAPSHOT_SUFFIX = '.backup'
 
 // The build starts with 16 MiB; this is the most it may grow to.
-export const SQLITE_HEAP_BYTES = 32 * 1024 * 1024
+export const SQLITE_HEAP_BYTES = CONFIG.pluginSandbox.sqliteHeap
 
 // The loader that was read and changed here (node-sqlite3-wasm 0.8.61, pinned): another one does not run.
 const LOADER_SHA256 = 'c69e2d5015a19ba98a073cda9a4c01a112064fc4bcb3d220f9dd1f53b96b1998'

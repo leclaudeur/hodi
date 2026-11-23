@@ -6,6 +6,7 @@ import type { FetchBytes } from './fetch-text.ts'
 import type { ImageSize } from './inline-images.ts'
 import { pictureMaker, type PictureMaker } from './picture-maker.ts'
 import { imageType } from './source-icons.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Article pictures, made smaller once on the server. A news site's picture is often 1600 pixels wide and 150 KB or
 // more, for a card 80 or 236 pixels wide: a phone downloading the original pays for it in time and battery. The
@@ -19,22 +20,22 @@ export type ImageWidth = (typeof IMAGE_WIDTHS)[number]
 // A picture this wide fills the largest copy: a narrower feed picture is compared with the page's share picture.
 const SHARP_WIDTH = 960
 
-const PREVIEW_WIDTH = 16
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024
+const PREVIEW_WIDTH = CONFIG.images.previewWidth
+const MAX_IMAGE_BYTES = CONFIG.images.maxSize
 // A picture larger than this (in pixels) is refused before it is decoded. Decoded, a pixel takes up to 4 bytes: 16
 // million pixels are 64 MB, which the container (256 MB with Node) can afford one at a time. A news site's picture is
 // rarely past 12 million (4000 × 3000); a larger one shows from its site instead.
-const MAX_INPUT_PIXELS = 16_000_000
-const QUALITY = 72
-const PREVIEW_QUALITY = 40
+const MAX_INPUT_PIXELS = CONFIG.images.maxPixels
+const QUALITY = CONFIG.images.quality
+const PREVIEW_QUALITY = CONFIG.images.previewQuality
 // New articles' pictures are made in the background, one at a time, so they are ready when a list opens: feeds are
 // read every 15 minutes, and a minute later their pictures are there.
-const WARM_INTERVAL_MS = 60 * 1000
-const WARM_BATCH = 20
+const WARM_INTERVAL_MS = CONFIG.images.warmEvery
+const WARM_BATCH = CONFIG.images.warmBatch
 // Pictures downloaded at once. A card someone is looking at must not wait for the others' downloads, but each one
 // holds up to 8 MB until it is made smaller.
-const MAX_DOWNLOADS = 4
-const WARM_WINDOW_MS = 3 * 24 * 60 * 60 * 1000
+const MAX_DOWNLOADS = CONFIG.images.downloadsAtOnce
+const WARM_WINDOW_MS = CONFIG.images.warmWindow
 
 // Picture n of a text: no article has hundreds.
 const MAX_INLINE_INDEX = 199

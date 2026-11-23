@@ -53,6 +53,23 @@ describe('user state', () => {
     expect(store.getUserState().revision).toBe(1)
   })
 
+  it('puts sources in and out of « Mes sources », shown hidden at once', async () => {
+    const calls = server(() => true)
+    const store = await load()
+    const preferences = await import('../src/lib/preferences.ts')
+
+    preferences.setMySources(['rtl', 'f24'], false)
+    expect(preferences.getPreferences().hiddenSources).toEqual(['rtl', 'f24'])
+    preferences.setMySources(['rtl'], true)
+    expect(preferences.getPreferences().hiddenSources).toEqual(['f24'])
+    expect(await store.sendPendingChanges()).toBe(true)
+    expect(calls).toEqual([
+      { method: 'DELETE', path: '/sources/rtl', body: undefined },
+      { method: 'DELETE', path: '/sources/f24', body: undefined },
+      { method: 'PUT', path: '/sources/rtl', body: undefined }
+    ])
+  })
+
   it('keeps changes made offline on the device, in order, and sends them when the network is back', async () => {
     let online = false
     const calls = server(() => online)

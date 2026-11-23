@@ -8,7 +8,8 @@ import { setServerOnly } from './lib/server-only.ts'
 import { setHouseholdLanguage, setProfileLanguage } from './lib/i18n.ts'
 import { setContentDays } from './lib/content-days.ts'
 import { setNoPassword, setTwoFactorOn } from './lib/two-factor.ts'
-import { setHourCycle } from './lib/format.ts'
+import { setHourCycle, setOwnHourCycle } from './lib/format.ts'
+import { setOwnGame } from './lib/game.ts'
 import { usePreferences } from './lib/preferences.ts'
 import { startLimits, useLimits, useLimitsReady } from './lib/limits.ts'
 import { PROFILE_SWITCHING } from './lib/profiles.ts'
@@ -18,6 +19,8 @@ import { loadedPlugins, loadPlugins, loadPublicPlugins } from './plugins/registr
 import SignedOut from './app/SignedOut.tsx'
 import Tour from './app/Tour.tsx'
 import HomePage from './pages/HomePage.tsx'
+import AccountPage from './pages/AccountPage.tsx'
+import CataloguePage from './pages/CataloguePage.tsx'
 import NoHouseholdPage from './pages/NoHouseholdPage.tsx'
 import ProfilePicker from './pages/ProfilePicker.tsx'
 import TimeUpPage from './pages/TimeUpPage.tsx'
@@ -175,6 +178,12 @@ const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: S
     return <TimeUpPage limits={limits.limits} />
   }
 
+  // Mon compte: a page of its own, as the legal pages.
+  if (route.name === 'account') return <AccountPage inHousehold />
+
+  // The catalogue of the server's sources: a page of its own, as Mon compte.
+  if (route.name === 'catalogue') return <CataloguePage />
+
   // The server's admin space: its own layout, none of the app's.
   if (route.name === 'server')
     return <ServerSpace section={route.section} item={route.item} pluginSection={route.plugin} />
@@ -190,7 +199,7 @@ const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: S
 const App = () => {
   const [status, setStatus] = useState<Status>('loading')
   const route = useHashRoute()
-  const { language } = usePreferences()
+  const { language, hourCycle, game } = usePreferences()
 
   const check = useCallback(() => {
     openingSession()
@@ -210,10 +219,13 @@ const App = () => {
     window.location.reload()
   }, [])
 
-  // The profile's own language, once its settings are in; until then (and without one) the household's.
+  // The person's own language, time format and game, once their settings are in; until then, the last ones here.
   useEffect(() => {
-    setProfileLanguage(status === 'authenticated' ? language : null)
-  }, [status, language])
+    if (status !== 'authenticated') return
+    setProfileLanguage(language)
+    setOwnHourCycle(hourCycle)
+    setOwnGame(game)
+  }, [status, language, hourCycle, game])
 
   // For preload.js on the next load of this tab: whether a profile is open here.
   useEffect(() => {
@@ -242,11 +254,11 @@ const App = () => {
   }
   if (status === 'setup') return <SetupPage onDone={signedIn} />
   if (status === 'anonymous') return <SignedOut onLoggedIn={signedIn} />
-  if (status === 'noHousehold')
-    return <NoHouseholdPage account={route.name === 'settings' && route.section === 'account'} />
+  if (status === 'noHousehold') return <NoHouseholdPage account={route.name === 'account'} />
 
   // No household yet: the server's space whatever the address, with its plugins' sections.
   if (status === 'server') {
+    if (route.name === 'account') return <AccountPage inHousehold={false} />
     return route.name === 'server' ? (
       <ServerSpace section={route.section} item={route.item} pluginSection={route.plugin} />
     ) : (

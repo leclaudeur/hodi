@@ -10,8 +10,8 @@ const NOW = Date.UTC(2026, 10, 6, 14, 0)
 const withReadings = () => {
   const db = openDatabase(':memory:')
   const insert = db.prepare(
-    `INSERT INTO readings (profile_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done)
-     VALUES (1, ?, ?, ?, ?, ?, ?, 'article', 1)`
+    `INSERT INTO readings (owner, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done)
+     VALUES ('p1', ?, ?, ?, ?, ?, ?, 'article', 1)`
   )
   // One article a day for six themes and sources, ten days long.
   const topics = ['belgium', 'world', 'tech', 'science', 'sport', 'ai']

@@ -1,3 +1,4 @@
+import type { BlockedDomainStore } from './db/blocked-domain-store.ts'
 import type { LoginThrottle } from './auth/login-throttle.ts'
 import type { AccountDataStore } from './db/account-data.ts'
 import type { Database } from './db/database.ts'
@@ -12,8 +13,13 @@ import type { ServerPeopleStore } from './db/server-people-store.ts'
 import type { ServerSettingsStore } from './db/server-settings-store.ts'
 import type { ServerStatsStore } from './db/server-stats-store.ts'
 import type { SignInCodeStore } from './db/sign-in-code-store.ts'
+import type { SourceReportStore } from './db/source-report-store.ts'
+import type { SourceReviewStore } from './db/source-review-store.ts'
+import type { ShareReportStore } from './db/share-report-store.ts'
 import type { SourceStore } from './db/source-store.ts'
 import type { TwoFactorStore } from './db/two-factor-store.ts'
+import type { HandleStore } from './db/handle-store.ts'
+import type { AccountAiStore } from './db/account-ai-store.ts'
 import type { UserAccountStore } from './db/user-account-store.ts'
 import type { UserDeviceStore } from './db/user-device-store.ts'
 import type { UserStore } from './db/user-store.ts'
@@ -52,7 +58,17 @@ export interface AppOptions {
   storage?: { usage: () => StorageUsage; clearTexts: () => void }
   // "Ajouter une source": the catalogue in the database and the feed finder; absent in tests that do not need them.
   // file: sources.yml's catalogue, whose sources not yet added are offered ("Sources proposées").
-  sources?: { store: SourceStore; find: (link: string) => Promise<FindResult>; file: Catalog }
+  // reviews: À traiter's sources, when the server validates them.
+  sources?: {
+    store: SourceStore
+    find: (link: string) => Promise<FindResult>
+    file: Catalog
+    reviews?: SourceReviewStore
+    // « Signaler »: the reports À traiter shows.
+    reports?: SourceReportStore
+    // « Bloquer »: the domains no feed comes from any more.
+    blocked?: BlockedDomainStore
+  }
   // The household game's points (gamification.yml); absent in tests that do not need it.
   game?: GameStore
   // The young profiles' rules and time; absent in tests that do not need them.
@@ -70,6 +86,12 @@ export interface AppOptions {
   // The people's own accounts; absent in tests of an install from before them, which signs in with the household's
   // password.
   accounts?: UserAccountStore
+  // « Signaler ce partage »: the shares À traiter shows; absent in tests that do not need them.
+  shareReports?: ShareReportStore
+  // The accounts' @identifiers; absent in tests without accounts.
+  handles?: HandleStore
+  // Each account's own AI key (Mon compte › IA et crédits); with accounts.
+  accountAi?: AccountAiStore
   // Serveur › Vue d'ensemble: the server's totals and who is online.
   serverStats?: ServerStatsStore
   // Serveur › Foyers and Comptes.

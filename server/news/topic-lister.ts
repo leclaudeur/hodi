@@ -11,13 +11,14 @@ import type { CheckQueue } from './check-queue.ts'
 import type { ArticleLoader } from './article-loader.ts'
 import type { DayFeed, ListenFeed, TopicItem } from './news-types.ts'
 import type { VideoLengths } from './video-lengths.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A topic's articles as its page lists them: from the feeds and the store, within the window, grouped by story, and
 // only once they are known to open in the reader. "Le fil" lists a day of them.
 
-export const MAX_TOPIC_LIMIT = 300
+export const MAX_TOPIC_LIMIT = CONFIG.lists.topicMax
 // "Le fil" skips this many empty days at most in one request.
-const MAX_EMPTY_DAYS = 7
+const MAX_EMPTY_DAYS = CONFIG.lists.emptyDaysMax
 export const DAY_MS = 24 * 60 * 60 * 1000
 
 export const byNewest = (a: FeedItem, b: FeedItem) => (b.publishedAt ?? '').localeCompare(a.publishedAt ?? '')

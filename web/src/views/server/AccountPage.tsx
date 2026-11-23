@@ -1,8 +1,8 @@
-import { KeyRound, Trash2 } from 'lucide-react'
+import { Ban, KeyRound, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { type ServerAccount, createAccountCode, deleteServerAccount } from '../../api.ts'
+import { type ServerAccount, blockServerAccount, createAccountCode, deleteServerAccount } from '../../api.ts'
 import { askToConfirm } from '../../lib/confirm.ts'
 import { contentDays } from '../../lib/content-days.ts'
 import { clockTime } from '../../lib/format.ts'
@@ -13,18 +13,14 @@ import CodeDialog from '../profiles/CodeDialog.tsx'
 import SectionPage from '../settings/SectionPage.tsx'
 import SettingRow from '../settings/SettingRow.tsx'
 import styles from '../settings/Settings.module.css'
-import { dateOf, usePeople } from './server-people.ts'
+import { dateOf, load, usePeople } from './server-people.ts'
 
-// What the account is: its e-mail, household, role, last visit, devices and age.
+// What the account is: its e-mail, role, last visit, devices and age.
 const AccountFacts = ({ account, role }: { account: ServerAccount; role: string }) => {
   const { t } = useTranslation()
   return (
     <div className={styles.card}>
       <SettingRow label={t('server.people.account.email')} value={account.email} />
-      <SettingRow
-        label={t('server.people.account.household')}
-        value={account.household?.name ?? t('server.people.noHousehold')}
-      />
       <SettingRow
         label={t('server.people.account.role')}
         value={account.serverAdmin ? `${role} · ${t('server.people.account.serverAdmin')}` : role}
@@ -46,27 +42,23 @@ const AccountFacts = ({ account, role }: { account: ServerAccount; role: string 
   )
 }
 
-const confirmDelete = (account: ServerAccount, t: TFunction) =>
+// « Supprimer », or « Bloquer », which also keeps its e-mail from coming back: both with the admin's own password.
+const confirmRemove = (account: ServerAccount, t: TFunction, blocks: boolean) =>
   askToConfirm({
-    title: t('server.people.account.confirmDelete.title'),
+    title: t(blocks ? 'server.people.account.confirmBlock.title' : 'server.people.account.confirmDelete.title'),
     message: (
       <RichText
-        i18nKey={
-          account.profile?.role === 'admin'
-            ? 'server.people.account.confirmDelete.messageAdmin'
-            : 'server.people.account.confirmDelete.message'
-        }
+        i18nKey={blocks ? 'server.people.account.confirmBlock.message' : 'server.people.account.confirmDelete.message'}
         values={{
           email: account.email,
-          household: account.household?.name ?? '',
           days: t('count.day', { count: contentDays().backupCopies })
         }}
       />
     ),
-    label: t('server.people.account.deleteButton'),
+    label: t(blocks ? 'server.people.account.blockButton' : 'server.people.account.deleteButton'),
     proof: {},
     onConfirm: async proof => {
-      await deleteServerAccount(account.id, proof)
+      await (blocks ? blockServerAccount : deleteServerAccount)(account.id, proof)
       window.location.replace(serverHref('accounts'))
       window.location.reload()
     }
@@ -103,10 +95,14 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
       message: <RichText i18nKey="confirm.resetPassword.message" values={{ name }} />,
       label: t('confirm.resetPassword.button'),
       proof: {},
-      onConfirm: async proof => setMade(await createAccountCode(account.id, proof))
+      onConfirm: async proof => {
+        setMade(await createAccountCode(account.id, proof))
+        // The request is handled: its notice goes.
+        void load()
+      }
     })
 
-  const role = t(`server.people.account.roles.${account.profile?.role ?? 'none'}`)
+  const role = t(account.profile ? 'server.people.account.roles.member' : 'server.people.account.roles.none')
   return (
     <SectionPage
       title={account.profile?.name ?? account.email}
@@ -123,19 +119,11 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
         <>
           <h2 className={styles.label}>{t('server.people.account.reset')}</h2>
           <div className={styles.card}>
-            {account.serverAdmin ? (
-              <SettingRow label={t('server.people.account.resetLabel')} hint={t('server.people.account.own')} />
-            ) : (
-              <SettingRow
-                label={t('server.people.account.resetLabel')}
-                hint={t('server.people.account.resetHint')}
-                action={{
-                  label: t('server.people.account.resetLabel'),
-                  icon: KeyRound,
-                  onClick: () => reset(account.profile!.name)
-                }}
-              />
-            )}
+            {/* Only once the person asked, from the notice above: nobody takes an account over on their own. */}
+            <SettingRow
+              label={t('server.people.account.resetLabel')}
+              hint={t(account.serverAdmin ? 'server.people.account.own' : 'server.people.account.resetOnRequest')}
+            />
           </div>
           <CodeDialog
             target={made ? { id: account.profile.id, name: account.profile.name, reset: true } : undefined}
@@ -157,7 +145,17 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
                 label: t('server.people.account.deleteButton'),
                 look: 'danger',
                 icon: Trash2,
-                onClick: () => confirmDelete(account, t)
+                onClick: () => confirmRemove(account, t, false)
+              }}
+            />
+            <SettingRow
+              label={t('server.people.account.block')}
+              hint={t('server.people.account.blockHint')}
+              action={{
+                label: t('server.people.account.blockButton'),
+                look: 'danger',
+                icon: Ban,
+                onClick: () => confirmRemove(account, t, true)
               }}
             />
           </div>

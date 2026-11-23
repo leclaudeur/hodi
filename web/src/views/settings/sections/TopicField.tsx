@@ -2,9 +2,10 @@ import { useTranslation } from 'react-i18next'
 import type { TopicSummary } from '../../../api.ts'
 import ChoiceField from '../../../ui/ChoiceField.tsx'
 import TopicIcon from '../../../ui/TopicIcon.tsx'
+import { CONFIG } from '../../../lib/config.ts'
 
 // As many as the server takes for one source.
-export const MAX_SOURCE_TOPICS = 8
+export const MAX_SOURCE_TOPICS = CONFIG.sources.topicsMax
 
 interface TopicFieldProps {
   topics: TopicSummary[]

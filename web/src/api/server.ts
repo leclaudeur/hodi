@@ -1,6 +1,7 @@
 import { type Language as InterfaceLanguage } from '../lib/i18n.ts'
 import { RequestError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
+import type { ReportReason, ShareReportReason } from './sources.ts'
 
 // Serveur › Vue d'ensemble: every household and profile together, totals only, day by day (YYYY-MM-DD).
 export interface ServerDay {
@@ -208,3 +209,85 @@ export const removeServerMail = () => sendJson<{ mail: null }>('DELETE', '/serve
 
 // « Envoyer un essai »: to the admin's own address, which comes back.
 export const sendTestMail = () => sendJson<{ to: string }>('POST', '/server/mail/test')
+
+// À traiter's sources: those that wait for the server's admin, never with who added them.
+export interface SourceReview {
+  id: string
+  name: string
+  site: string
+  kind: 'article' | 'video' | 'podcast'
+  lang: 'fr' | 'en'
+  description: string | null
+  topicIds: string[]
+  askedAt: number
+}
+
+export const getSourceReviews = () => getJson<{ validating: boolean; sources: SourceReview[] }>('/server/reviews')
+
+export const setSourceValidation = (on: boolean) =>
+  sendJson<{ validating: boolean }>('PUT', '/server/reviews/validation', { on })
+
+export const decideSource = (
+  id: string,
+  decision: { decision: 'accept' | 'refuse'; topicIds?: string[]; teen: boolean; child: boolean }
+) => sendJson<null>('POST', `/server/reviews/sources/${encodeURIComponent(id)}`, decision)
+
+// À traiter's reports: a source, how many reported it and why, never who.
+export interface SourceReportView {
+  id: string
+  name: string
+  site: string
+  kind: 'article' | 'video' | 'podcast'
+  lang: 'fr' | 'en'
+  description: string | null
+  count: number
+  reasons: Record<ReportReason, number>
+  lastAt: number
+}
+
+export const getSourceReports = () => getJson<{ reports: SourceReportView[] }>('/server/reports')
+
+// Ignorer keeps the source; Retirer du catalogue takes it out for those who do not read it yet.
+export const decideReport = (id: string, decision: 'ignore' | 'unlist') =>
+  sendJson<null>('POST', `/server/reports/${encodeURIComponent(id)}`, { decision })
+
+// A share someone reported, as it was received, and its sender's account (null once deleted); never who reported it.
+export interface ShareReportView {
+  id: number
+  sender: number | null
+  senderName: string
+  item: { title: string; sourceName: string; link: string; kind: string }
+  note: string | null
+  reason: ShareReportReason
+  day: number
+}
+
+export const getShareReports = () => getJson<{ reports: ShareReportView[] }>('/server/share-reports')
+
+export const ignoreShareReport = (id: number) =>
+  sendJson<null>('POST', `/server/share-reports/${id}`, { decision: 'ignore' })
+
+// What « Bloquer » takes, said before the password: its domain (or on a shared host, its feed's address), how many
+// sources go, and whether the account that added it goes.
+export const getBlockPreview = (id: string) =>
+  getJson<{ target: string; sources: number; account: boolean }>(`/server/sources/${encodeURIComponent(id)}/block`)
+
+// « Bloquer » a source, for illegal content, with the admin's password and app code.
+export const blockSource = (id: string, proof: AdminProof) =>
+  sendJson<{ target: string }>('POST', `/server/sources/${encodeURIComponent(id)}/block`, proof)
+
+export interface BlockedDomain {
+  domain: string
+  at: number
+}
+
+// Blocages: the domains blocked, the latest first.
+export const getBlocks = () => getJson<{ domains: BlockedDomain[] }>('/server/blocks')
+
+// « Débloquer »: someone may add it again; nothing erased comes back.
+export const unblockDomain = (domain: string, proof: AdminProof) =>
+  sendJson<null>('DELETE', `/server/blocks/${encodeURIComponent(domain)}`, proof)
+
+// « Débloquer une adresse »: an account blocked by mistake may come back.
+export const unblockEmail = (email: string, proof: AdminProof) =>
+  sendJson<null>('POST', '/server/accounts/unblock', { email, ...proof })

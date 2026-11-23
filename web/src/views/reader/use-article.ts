@@ -5,9 +5,10 @@ import { closeArticle, markRead } from '../../lib/read-state.ts'
 import { loadSanitizer } from '../../lib/deferred.ts'
 import { findSaved, save } from '../../lib/saved.ts'
 import { useReadingProgress } from './reading-progress.ts'
+import { CONFIG } from '../../lib/config.ts'
 
 // About 230 words a minute.
-const WORDS_A_MINUTE = 230
+const WORDS_A_MINUTE = CONFIG.reading.wordsPerMinute
 const wordsOf = (html: string) =>
   new DOMParser().parseFromString(html, 'text/html').body.textContent?.match(/\S+/g)?.length ?? 0
 

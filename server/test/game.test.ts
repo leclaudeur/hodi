@@ -125,7 +125,7 @@ describe('GameStore', () => {
     const pointsOn = (day: string) =>
       (
         db
-          .prepare('SELECT COALESCE(SUM(points), 0) AS points FROM game_events WHERE profile_id = 1 AND day = ?')
+          .prepare("SELECT COALESCE(SUM(points), 0) AS points FROM game_events WHERE owner = 'p1' AND day = ?")
           .get(day) as { points: number }
       ).points
 

@@ -5,14 +5,13 @@ import { I18N_BASE_OPTIONS, type Language, isLanguage } from '../../../shared/i1
 
 export { LANGUAGES, type Language, isLanguage } from '../../../shared/i18n.ts'
 
-// The language the interface shows: the one picked in the first-run screens, else the profile's, else the
-// household's, else the browser's (before setup, or before the server answered). Components read the texts with
+// The language the interface shows: the one picked on the sign-in screens, else the person's, else the browser's. Components read the texts with
 // react-i18next's useTranslation(); code outside React with t() below.
 
 // Each language under its own name, as a picker shows it.
 export const LANGUAGE_NAMES: Record<Language, string> = { fr: 'Français', en: 'English' }
 
-// The household's, kept on this device so the sign-in screen opens in it before the server answers.
+// The person's, kept on this device so the app opens in it before their settings come.
 const STORAGE_KEY = 'hodi:language'
 
 const browserLanguage = (): Language => {
@@ -32,10 +31,11 @@ const stored = () => {
   }
 }
 
-let household: Language | null = stored()
-let profile: Language | null = null
+// The server's language: the sources it suggests first are in it.
+let household: Language | null = null
+let profile: Language | null = stored()
 let chosen: Language | null = null
-const resolve = () => chosen ?? profile ?? household ?? browserLanguage()
+const resolve = () => chosen ?? profile ?? browserLanguage()
 
 // French, the reference and the fallback, is in the app's code: init is synchronous. Another language comes in its
 // own file the first time it is shown (about 17 KB each start would download for nothing otherwise).
@@ -89,20 +89,20 @@ export const languageReady = update()
 
 export const setHouseholdLanguage = (language: Language) => {
   household = language
-  try {
-    localStorage.setItem(STORAGE_KEY, language)
-  } catch {
-    // Private browsing: the browser's language until the server answers next time.
-  }
-  void update()
 }
 
-// The household's language, which a profile may read in another one.
+// The server's language, which a person may read in another one.
 export const getHouseholdLanguage = (): Language => household ?? resolve()
 
-// null: the household's.
+// null: the browser's.
 export const setProfileLanguage = (language: Language | null) => {
   profile = language
+  try {
+    if (language) localStorage.setItem(STORAGE_KEY, language)
+    else localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    // Private browsing: the browser's language until the settings come next time.
+  }
   void update()
 }
 

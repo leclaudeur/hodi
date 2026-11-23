@@ -1,9 +1,10 @@
 import type { Database } from './database.ts'
 import { LAST_SEEN_STEP, MAX_USER_AGENT_LENGTH } from './user-device-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A young profile's own devices (Réglages > Profils > its form > Appareils): linked by a parent with a code, each
 // one opens that profile only. A device unused for this long is no longer linked, and asks for a new code.
-export const PROFILE_DEVICE_IDLE = 90 * 24 * 60 * 60 * 1000
+export const PROFILE_DEVICE_IDLE = CONFIG.accounts.profileDeviceIdle
 
 export interface ProfileDevice {
   id: number

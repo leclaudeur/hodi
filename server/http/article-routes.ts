@@ -4,8 +4,9 @@ import { type ImageSize, inlineImageSources, numberInlineImages } from '../news/
 import type { NewsService } from '../news/news-service.ts'
 import { profileIdOf } from './profile-routes.ts'
 import type { ReaderContext } from './reader-context.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const MAX_QUESTION_LENGTH = 300
+const MAX_QUESTION_LENGTH = CONFIG.ai.questionMaxLength
 
 // HTTP status of each way an AI request can fail.
 const AI_ERROR_STATUS = {
@@ -136,7 +137,7 @@ const mountArticleRoute = (
         status: 'ok',
         item: result.item,
         article: { title, byline, contentHtml: sizes ? numberInlineImages(contentHtml, sizes) : contentHtml },
-        canSummarize: news.canSummarize
+        canSummarize: news.canSummarize(profileIdOf(response))
       })
       return
     }

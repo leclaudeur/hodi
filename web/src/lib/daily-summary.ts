@@ -8,9 +8,10 @@ import {
   getDailySummary,
   writeDailySummary
 } from '../api.ts'
-import { aiLeft, refreshAiUsage } from './ai-left.ts'
+import { refreshAiUsage } from './ai-left.ts'
 import { type Preferences, orderTopics } from './preferences.ts'
 import { showError } from './toast.ts'
+import { CONFIG } from './config.ts'
 
 // The last "Résumé du jour", shared by its bubble at the head of "À la une" and its story. Reading it is free;
 // writing one is a click (the bubble when none is written, the story's violet buttons), never automatic.
@@ -37,8 +38,8 @@ const ofToday = (dailySummary: DailySummaryResult | null) =>
 export const useDailySummary = () => useSyncExternalStore(subscribe, () => ofToday(current))
 
 // The server writes the daily summary once the front page is gathered: asked again until then, only after the click.
-const POLL_INTERVAL_MS = 4000
-const MAX_POLLS = 12
+const POLL_INTERVAL_MS = CONFIG.app.dailySummaryPollEvery
+const MAX_POLLS = CONFIG.app.dailySummaryPolls
 
 let writing = false
 
@@ -76,11 +77,6 @@ const pollDailySummary = async (): Promise<DailySummaryResult> => {
 // Writes a new daily summary: the bubble or the story's violet buttons, once at a time. Throws UnauthorizedError only.
 export const requestDailySummary = async () => {
   if (writing) return
-  // The day's cap reached: said at once, no call is made.
-  if (aiLeft('dailySummary') === 0) {
-    reportFailure('limited')
-    return
-  }
   setWriting(true)
   try {
     const result = await pollDailySummary()
@@ -107,7 +103,8 @@ export const loadDailySummary = () =>
   })
 
 // On each visit of "À la une", unless it was just asked with the front page (lib/front-page.ts).
-export const refreshDailySummary = () => (Date.now() - loadedAt < 30_000 ? Promise.resolve() : loadDailySummary())
+export const refreshDailySummary = () =>
+  Date.now() - loadedAt < CONFIG.app.dailySummaryFreshFor ? Promise.resolve() : loadDailySummary()
 
 // "08:12", or "HIER 22:40": when the daily summary was written, under its story.
 export const writtenAt = (iso: string, now = Date.now()) => {

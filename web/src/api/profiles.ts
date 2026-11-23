@@ -1,5 +1,6 @@
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
+import { CONFIG } from '../lib/config.ts'
 
 // Profiles. Mirrors server/db/profile-store.ts.
 
@@ -38,8 +39,8 @@ export const PROFILE_AVATARS = [
 ] as const
 export type ProfileAvatarName = (typeof PROFILE_AVATARS)[number]
 
-export const MAX_PROFILES = 5
-export const MAX_PROFILE_NAME_LENGTH = 24
+export const MAX_PROFILES = CONFIG.profiles.max
+export const MAX_PROFILE_NAME_LENGTH = CONFIG.profiles.nameMaxLength
 
 // admin: manages every profile and the household's shared data. member: its own profile and settings.
 export type ProfileRole = 'admin' | 'member'
@@ -90,9 +91,6 @@ export interface ProfileChanges {
   avatar?: ProfileAvatarName
 }
 
-export const createProfile = (name: string, color: ProfileColor, { kind, avatar }: ProfileChanges = {}) =>
-  sendJson<Profile>('POST', '/profiles', { name, color, kind, avatar })
-
 export const updateProfile = (id: number, changes: ProfileChanges) =>
   sendJson<Profile>('PATCH', `/profiles/${id}`, changes)
 
@@ -100,7 +98,6 @@ export const updateProfile = (id: number, changes: ProfileChanges) =>
 export const deleteProfile = (id: number, proof?: AdminProof) => sendJson<null>('DELETE', `/profiles/${id}`, proof)
 
 // « Passer le rôle d'admin »: that adult becomes the household's admin, this profile a member. With the admin's proof.
-export const makeAdmin = (id: number, proof: AdminProof) => sendJson<null>('PUT', `/profiles/${id}/admin`, proof)
 
 // This device now reads as that profile, with the password it asks for, if any.
 // What « Qui lit ? » typed: a private profile's password (trust: « Ne plus demander sur cet appareil »), or the

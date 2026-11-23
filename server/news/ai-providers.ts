@@ -9,6 +9,7 @@ import {
   createSourceSuggester,
   createSummarizer
 } from './summarizer.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The AIs a household can pick, in the first-run screens or in Réglages > IA et crédits. Claude only for now:
 // another one adds an entry here, with the same tasks behind it.
@@ -44,7 +45,7 @@ const anthropic: AiProvider = {
   keyPattern: /^sk-ant-[\w-]{20,}$/,
   checkKey: async key => {
     try {
-      await new Anthropic({ apiKey: key, maxRetries: 0, timeout: 10_000 }).models.list({ limit: 1 })
+      await new Anthropic({ apiKey: key, maxRetries: 0, timeout: CONFIG.ai.keyCheckTimeout }).models.list({ limit: 1 })
       return 'ok'
     } catch (error) {
       return error instanceof AuthenticationError || error instanceof PermissionDeniedError ? 'invalid' : 'unreachable'

@@ -1,54 +1,24 @@
 import type { Catalog, Language, Source } from '../news/catalog.ts'
 import { type Database, transaction } from './database.ts'
 import { currentHouseholdId } from './household-scope.ts'
+import { readerCounts } from './my-sources.ts'
+import { SELECT_FOLLOWED, type SourceRow, toSource, topicsOf } from './source-rows.ts'
 import { followFileReaderOff, ownOldBaseSources, ownOldChannels, tidyOldSourceNames } from './source-upkeep.ts'
 
 // The sources' catalogue in the database, which holds them for good. sources.yml's base sources for the household's
 // language fill it once, when the household is set up (no "Vidéos" channel is a base one); its other sources are only offered ("Sources proposées") until a
 // profile adds one. Then the admin removes any source and profiles add theirs, each in one topic or more (the
-// topics and their labels stay in the file). Each profile turns sources off in its preferences
-// (hiddenSources); a profile only starts with the base sources, and sources nobody reads are paused.
+// topics and their labels stay in the file). Each person reads their own list of them (my-sources.ts);
+// a new adult only starts with the base sources, and sources nobody reads are paused.
 //
 // A feed is one row of sources for the whole server, fetched once. Which household follows it, in which topics and
 // added by whom is that household's row of household_sources: every method here is for the household of the request
 // (household-scope.ts).
 
-interface SourceRow {
-  id: string
-  section: 'topic' | 'listen'
-  section_id: string
-  topics: string | null
-  name: string
-  url: string
-  kind: Source['kind']
-  lang: Source['lang']
-  domains: string
-  reader: number
-  skip: string
-  added_by: number | null
-}
-
-const toSource = (row: SourceRow): Source => ({
-  id: row.id,
-  name: row.name,
-  url: row.url,
-  kind: row.kind,
-  lang: row.lang,
-  domains: JSON.parse(row.domains) as string[],
-  reader: row.reader === 1,
-  skip: JSON.parse(row.skip) as string[],
-  ...(row.added_by === null ? {} : { addedBy: row.added_by })
-})
-
-// A household's source: the feed, with that household's topics, order and adder.
-const SELECT_FOLLOWED = `SELECT s.id, s.name, s.url, s.kind, s.lang, s.domains, s.reader, s.skip, h.section, h.section_id, h.topics,
-  h.added_by FROM household_sources h JOIN sources s ON s.id = h.source_id WHERE h.household_id = ?`
-
-const topicsOf = (row: SourceRow) =>
-  row.section !== 'topic' ? [] : row.topics ? (JSON.parse(row.topics) as string[]) : [row.section_id]
-
 export class SourceStore {
   readonly #db: Database
+  // How many people have each source in « Mes sources ».
+  readonly readers = () => readerCounts(this.#db)
 
   constructor(db: Database) {
     this.#db = db
@@ -79,8 +49,8 @@ export class SourceStore {
   ) {
     this.#db
       .prepare(
-        `INSERT OR IGNORE INTO sources (id, section, section_id, topics, position, name, url, kind, lang, domains, reader, skip, added_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)`
+        `INSERT OR IGNORE INTO sources (id, section, section_id, topics, position, name, url, kind, lang, domains, reader, skip, description, added_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)`
       )
       .run(
         source.id,
@@ -95,6 +65,7 @@ export class SourceStore {
         JSON.stringify(source.domains),
         source.reader ? 1 : 0,
         JSON.stringify(source.skip),
+        source.description ?? null,
         now
       )
     this.#db
@@ -232,7 +203,7 @@ export class SourceStore {
   feedOf(url: string): Source | null {
     const row = this.#db
       .prepare(
-        'SELECT id, name, url, kind, lang, domains, reader, skip, section, section_id, topics, NULL AS added_by FROM sources WHERE url = ?'
+        'SELECT id, name, url, kind, lang, domains, reader, skip, description, section, section_id, topics, NULL AS added_by FROM sources WHERE url = ?'
       )
       .get(url) as unknown as SourceRow | undefined
     return row ? toSource(row) : null

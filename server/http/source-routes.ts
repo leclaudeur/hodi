@@ -6,6 +6,7 @@ import type { FindResult } from '../news/source-finder.ts'
 import { isPluginFeed } from '../plugins/feeds.ts'
 import { isAdminOf, profileIdOf } from './profile-routes.ts'
 import { newSuggestions } from './source-suggestions.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // "Ajouter une source": a profile pastes a link, sees what it would follow, picks its topics, adds it to the
 // household's catalogue; or adds one of sources.yml's proposals. The household holds up to Serveur › Contenu's limit, if
@@ -13,11 +14,11 @@ import { newSuggestions } from './source-suggestions.ts'
 // profile removes only its own, the admin any. A source added shows for the profile that added it: the others
 // find it off, in "Ajoutées par le foyer".
 
-const MAX_LINK_LENGTH = 500
+const MAX_LINK_LENGTH = CONFIG.sources.linkMaxLength
 // The same link looked at, then added: found once.
-const FOUND_TTL_MS = 10 * 60 * 1000
+const FOUND_TTL_MS = CONFIG.sources.foundKeptFor
 // Of the sites the AI names, the ones offered.
-const MAX_SUGGESTIONS = 4
+const MAX_SUGGESTIONS = CONFIG.sources.aiSuggestions
 
 export const slug = (name: string) =>
   name
@@ -44,6 +45,12 @@ interface SourceRoutesOptions {
   maxSources: () => number | null
   // Turned off for the household's other profiles.
   onAdded: (sourceId: string, profileId: number) => void
+  // Out of the catalogue (À traiter, refused): its link is free to add again.
+  unlisted?: () => Set<string>
+  // A feed on a domain the server's admin blocked: never added again, by anyone.
+  blocked?: (source: { url: string; domains: string[] }) => boolean
+  // Its link added again while it is out of the catalogue: in this person's list, back to À traiter if refused.
+  onAddedAgain?: (sourceId: string, profileId: number) => void
   now: () => number
 }
 
@@ -57,14 +64,14 @@ export const sourceRoutes = (options: SourceRoutesOptions) => {
   return router
 }
 
-const sourceHelpers = ({ news, sources, find, maxSources, onAdded, now }: SourceRoutesOptions) => {
+const sourceHelpers = ({ news, sources, find, maxSources, onAdded, blocked, now }: SourceRoutesOptions) => {
   const found = new Map<string, { at: number; result: Promise<FindResult> }>()
   const full = () => {
     const limit = maxSources()
     return limit !== null && sources.count() >= limit
   }
 
-  const lookUp = (link: string) => {
+  const cached = (link: string) => {
     for (const [key, entry] of found) if (now() - entry.at > FOUND_TTL_MS) found.delete(key)
     const known = found.get(link)
     if (known) return known.result
@@ -73,6 +80,11 @@ const sourceHelpers = ({ news, sources, find, maxSources, onAdded, now }: Source
     // A failure is tried again next time.
     void result.then(answer => answer.status === 'failed' && found.delete(link))
     return result
+  }
+  // Read after the cache: a domain blocked a minute ago is refused at once.
+  const lookUp = async (link: string): Promise<FindResult> => {
+    const result = await cached(link)
+    return result.status === 'ok' && blocked?.(result.source) ? { status: 'unavailable' } : result
   }
 
   const linkOf = (request: express.Request) => {
@@ -114,7 +126,7 @@ type SourceHelpers = ReturnType<typeof sourceHelpers>
 
 const mountFindRoutes = (
   router: express.Router,
-  { news, sources, maxSources }: SourceRoutesOptions,
+  { news, sources, maxSources, unlisted }: SourceRoutesOptions,
   { lookUp, linkOf }: SourceHelpers
 ) => {
   router.post('/find', async (request, response) => {
@@ -124,7 +136,9 @@ const mountFindRoutes = (
       return
     }
     const result = await lookUp(link)
-    const followed = result.status === 'ok' ? sources.findByUrl(result.source.url) : null
+    const known = result.status === 'ok' ? sources.findByUrl(result.source.url) : null
+    // One out of the catalogue is not said to exist: adding it puts it in this person's list.
+    const followed = known && !unlisted?.().has(known.id) ? known : null
     response.json({
       ...result,
       // Already in the catalogue: nothing to add.
@@ -213,9 +227,10 @@ const mountProposalRoutes = (
       response.status(409).json({ error: 'followed' })
       return
     }
-    const { url, lang, domains, reader } = result.source
+    const { url, lang, domains, reader, description } = result.source
+    const site = { url, lang, domains, reader, ...(description ? { description } : {}) }
     save(
-      { ...proposal.source, base: undefined, url, lang, domains, reader, addedBy: profileIdOf(response) },
+      { ...proposal.source, base: undefined, ...site, addedBy: profileIdOf(response) },
       'topic',
       topicIdsOf(request) ?? [proposal.topicId],
       response
@@ -225,7 +240,7 @@ const mountProposalRoutes = (
 
 const mountAddRoute = (
   router: express.Router,
-  { sources }: SourceRoutesOptions,
+  { sources, unlisted, onAddedAgain }: SourceRoutesOptions,
   { full, lookUp, linkOf, topicIdsOf, save }: SourceHelpers
 ) => {
   router.post('/', async (request, response) => {
@@ -248,7 +263,13 @@ const mountAddRoute = (
       return
     }
     const { source: found } = result
-    if (sources.findByUrl(found.url)) {
+    const known = sources.findByUrl(found.url)
+    if (known && onAddedAgain && unlisted?.().has(known.id)) {
+      onAddedAgain(known.id, profileId)
+      response.status(201).json({ id: known.id, name: known.name })
+      return
+    }
+    if (known) {
       response.status(409).json({ error: 'followed' })
       return
     }
@@ -272,6 +293,7 @@ const mountAddRoute = (
       domains: found.domains,
       reader: found.reader,
       skip: [],
+      ...(found.description ? { description: found.description } : {}),
       addedBy: profileId
     }
     save(source, section, sectionIds, response)

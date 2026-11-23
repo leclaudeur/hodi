@@ -58,11 +58,19 @@ small hooks under `lib/`.
 
 - **Migrations**: a schema change is a new entry at the end of `db/migrations.ts`
 - **Outgoing requests**: through `news/fetch-text.ts`, and the SSRF guard for any URL a user gives
-- **AI**: through `news/ai-providers.ts`, only from a click, counted against the daily caps
+- **AI**: through `news/ai-providers.ts`, only from a click, counted in each account's usage
 - **Households**: `db/household-scope.ts` keeps the request's household, so a route never sees another's
+- **Fixed settings**: every limit, duration, rate and size Serveur does not let an admin change is in
+  [`config.yml`](../config.yml), read once at start by `fixed-config.ts` (`CONFIG`). Its keys and their kinds are in
+  `shared/config-schema.ts`, checked by `shared/config-file.ts`: a missing, unknown or wrong value stops the server at
+  start. The web app gets the groups it reads (`shared/config-web.ts`) at build time, through the `virtual:hodi-config`
+  module (`web/config-plugin.ts`), and the plugin SDK carries the values it was built with. The file is for developers
+  and forks, and a change means a rebuild. A new limit goes there, never as a number in the code
 
 A feed is one row of `sources` for the whole server, fetched once whoever follows it. Which household follows it, and
-in which topics, is that household's row of `household_sources`. `server/test/household-isolation.test.ts` writes a second household in by hand, and checks that neither household ever sees what the other holds.
+in which topics, is that household's row of `household_sources`. Which of them each person reads is their rows of
+`my_sources` (`db/my-sources.ts`, through `/api/me/sources/:id`); the app still gets the others as the preferences'
+`hiddenSources`. `server/test/household-isolation.test.ts` writes a second household in by hand, and checks that neither household ever sees what the other holds.
 
 ### Accounts and sign-in
 
@@ -73,7 +81,8 @@ session cookie holds one token per account signed in on the device, and `http/ac
 device is a flag on the account's own row in `user_devices` (`http/trusted-devices.ts`).
 
 What opens a profile in _Who's in?_ is decided by `http/profile-guard.ts`: a private profile's password
-(`users.private_profile`), the household's parental code (`accounts.parental_pin_hash`) or nothing.
+(`users.private_profile`), the adult's own parental code (`users.parental_code_hash`, only on a device where a young
+account is or was signed in, `user_devices.young_here`; the adult's password stands in for a forgotten one) or nothing.
 `http/profile-current-routes.ts` checks it. `http/trusted-devices.ts` keeps the browsers that skip a private profile's
 password: the `hodi_trusted` cookie, checked against `user_devices.trusted`.
 

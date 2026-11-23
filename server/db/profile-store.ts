@@ -1,15 +1,16 @@
 import { type Database, transaction } from './database.ts'
 import { recordForget, rowKey } from './forget-log.ts'
 import { currentHouseholdId } from './household-scope.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Netflix-style profiles: one household (the password), up to five readers, each with their own
 // preferences, "Enregistrés", reads, stats and alerts (UserStore, by profile). Articles, their texts and
 // what the AI wrote stay shared.
 
-export const MAX_PROFILES = 5
-export const MAX_NAME_LENGTH = 24
+export const MAX_PROFILES = CONFIG.profiles.max
+export const MAX_NAME_LENGTH = CONFIG.profiles.nameMaxLength
 // A square picture made small on the device: well under this.
-export const MAX_PHOTO_BYTES = 200_000
+export const MAX_PHOTO_BYTES = CONFIG.profiles.photoMaxSize
 export const PHOTO_TYPES = ['image/webp', 'image/jpeg', 'image/png'] as const
 export type PhotoType = (typeof PHOTO_TYPES)[number]
 
@@ -235,17 +236,19 @@ export class ProfileStore {
   // parental opens, with that code. It holds the profile's creation time too: SQLite gives a deleted profile's id to
   // the next one, which a device's old choice must not open.
   lock(id: number): { version: string } | null {
+    // The parent's code version apart from the rest, -1 once the profile is private: a sum would let turning private
+    // on (pin_version + 1) give back the very version the code had.
     const row = this.#db
       .prepare(
-        `SELECT p.pin_version + COALESCE(u.session_generation, 0) +
-           CASE WHEN p.kind = 'adult' AND COALESCE(u.private_profile, 0) = 0 THEN a.parental_pin_version ELSE 0 END
-           AS version,
+        `SELECT p.pin_version + COALESCE(u.session_generation, 0) AS version,
+           CASE WHEN p.kind = 'adult' AND COALESCE(u.private_profile, 0) = 0 THEN COALESCE(u.parental_code_version, 0)
+             ELSE -1 END AS code,
            p.created_at AS createdAt
-         FROM profiles p JOIN accounts a ON a.id = p.account_id LEFT JOIN users u ON u.id = p.user_id
+         FROM profiles p LEFT JOIN users u ON u.id = p.user_id
          WHERE p.id = ? AND p.account_id = ?`
       )
-      .get(id, this.#account) as { version: number; createdAt: number } | undefined
-    return row ? { version: `${row.version}.${row.createdAt}` } : null
+      .get(id, this.#account) as { version: number; code: number; createdAt: number } | undefined
+    return row ? { version: `${row.version}.${row.code}.${row.createdAt}` } : null
   }
 
   photo(id: number): { data: Buffer; type: PhotoType } | null {

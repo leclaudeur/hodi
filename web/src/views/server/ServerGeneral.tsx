@@ -13,6 +13,7 @@ import SectionPage from '../settings/SectionPage.tsx'
 import SettingRow from '../settings/SettingRow.tsx'
 import styles from '../settings/Settings.module.css'
 import youngStyles from '../settings/sections/young/Young.module.css'
+import ServerDefaults from './ServerDefaults.tsx'
 
 type AddressKey = keyof General
 
@@ -80,7 +81,8 @@ const AddressDialog = ({ name, current, onClose, onSaved }: AddressDialogProps) 
   )
 }
 
-// Serveur › Général: Hodi's own address, for the links of its e-mails, and the public site a first visit goes to.
+// Serveur › Général: Hodi's own address, for the links of its e-mails, the public site a first visit goes to, and
+// what holds for every account.
 const ServerGeneral = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
   const [general, setGeneral] = useState<General | undefined>(undefined)
@@ -112,6 +114,7 @@ const ServerGeneral = ({ layout }: { layout: 'desktop' | 'phone' }) => {
             {row('appUrl')}
             {row('publicHome')}
           </div>
+          <ServerDefaults />
           {editing && (
             <AddressDialog
               name={editing}

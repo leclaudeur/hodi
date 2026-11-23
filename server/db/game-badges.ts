@@ -1,10 +1,12 @@
 import type { BadgeId } from '../game/rules.ts'
 import type { Database } from './database.ts'
+import { ownerOf } from './stats-owner.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The topic the globetrotter badge counts.
 const WORLD_TOPIC = 'world'
-const EARLY_HOUR = 7
-const LATE_HOUR = 23
+const EARLY_HOUR = CONFIG.game.earlyHour
+const LATE_HOUR = CONFIG.game.lateHour
 
 // How far a profile went towards each badge, from what earned it points. topicIds: the themes the all-rounder badge
 // asks for, each of them.
@@ -21,17 +23,17 @@ export const badgeCounts = (db: Database, profileId: number, topicIds: string[])
          COUNT(CASE WHEN kind = 'reaction_received' THEN 1 END) AS reactions,
          COUNT(CASE WHEN kind = 'alert_opened' THEN 1 END) AS alerts,
          COUNT(CASE WHEN kind = 'challenge' THEN 1 END) AS challenges
-       FROM game_events WHERE profile_id = ?`
+       FROM game_events WHERE owner = ?`
     )
-    .get(EARLY_HOUR, LATE_HOUR, WORLD_TOPIC, profileId) as Record<string, number>
+    .get(EARLY_HOUR, LATE_HOUR, WORLD_TOPIC, ownerOf(db, profileId)) as Record<string, number>
   const byTopic = new Map(
     (
       db
         .prepare(
           `SELECT topic_id, COUNT(*) AS read FROM game_events
-           WHERE profile_id = ? AND kind = 'article_read' AND topic_id IS NOT NULL GROUP BY topic_id`
+           WHERE owner = ? AND kind = 'article_read' AND topic_id IS NOT NULL GROUP BY topic_id`
         )
-        .all(profileId) as { topic_id: string; read: number }[]
+        .all(ownerOf(db, profileId)) as { topic_id: string; read: number }[]
     ).map(entry => [entry.topic_id, entry.read])
   )
   return {

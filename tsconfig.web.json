@@ -15,6 +15,7 @@
     "web/test/**/*.ts",
     "shared/**/*.ts",
     "vite.config.ts",
+    "web/config-plugin.ts",
     "vitest.config.ts"
   ]
 }

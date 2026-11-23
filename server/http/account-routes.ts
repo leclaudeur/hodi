@@ -2,7 +2,6 @@ import express from 'express'
 import { rateLimit } from 'express-rate-limit'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword } from '../auth/password.ts'
-import { clearedProfileCookie, clearedSessionCookie } from '../auth/session.ts'
 import { type AccountDataStore, deletionPlan } from '../db/account-data.ts'
 import { currentHouseholdId } from '../db/household-scope.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
@@ -11,22 +10,29 @@ import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-
 import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
 import { isPassword } from './household-input.ts'
 import { profileIdOf } from './profile-routes.ts'
+import type { HandleStore } from '../db/handle-store.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
+import { mountDeleteRoute } from './account-delete-route.ts'
 import { mountLeaveRoute } from './account-leave-route.ts'
-import { mountLockRoutes } from './account-lock-routes.ts'
+import { mountLockRoutes, mountParentalCodeRoutes } from './account-lock-routes.ts'
+import { mountRegionRoutes } from './account-region-routes.ts'
+import { type AccountAiOptions, accountAiView, mountAiRoutes } from './account-ai-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The person's own account, after the session and profile checks: Réglages > Compte et données.
 
 // « Télécharger une copie »: how many an account may ask in a minute.
-export const COPIES_PER_MINUTE = 5
+export const COPIES_PER_MINUTE = CONFIG.accounts.copiesPerMinute
 
-export interface AccountRoutesOptions {
+export interface AccountRoutesOptions extends AccountAiOptions {
   data: AccountDataStore
   accounts: UserAccountStore
   devices: UserDeviceStore
   profiles?: ProfileStore
   household: HouseholdStore
+  // The install's time zone, for an account and a household with none.
+  defaultTimeZone?: string
   // The account and device a request is signed in with.
   sessionOf: (request: express.Request) => { account: UserAccount; device: UserDevice | null } | null
   cookieForDevice: (account: UserAccount, deviceId: number, request: express.Request) => string
@@ -46,6 +52,8 @@ export interface AccountRoutesOptions {
   // What each plugin keeps of the person, by plugin id, for the copy.
   // « Validation en deux étapes »; absent in tests without it.
   twoFactor?: TwoFactorStore
+  // The @identifier's next change, for Mon compte.
+  handles?: HandleStore
   pluginCopies?: (who: {
     accountId: number
     profileId: number | null
@@ -56,12 +64,24 @@ export interface AccountRoutesOptions {
 export const accountRoutes = (options: AccountRoutesOptions) => {
   const router = express.Router()
   const helpers = accountHelpers(options)
+  // A teen or a child sees its account; its parents change it (its password, its region, its AI, its deletion). It
+  // may still sign out one of its own devices, a lost phone.
+  router.use((request, response, next) => {
+    const ownDevice = request.method === 'DELETE' && request.path.startsWith('/devices/')
+    const session = request.method === 'GET' || ownDevice ? null : options.sessionOf(request)
+    if (session && options.accounts.young.isYoung(session.account.id))
+      response.status(403).json({ error: 'parents_only' })
+    else next()
+  })
   router.get('/', (request, response) => {
     const session = helpers.sessionOrRefuse(request, response)
     if (session) response.json(helpers.view(session.account, session.device))
   })
   mountTwoFactorRoutes(router, options, helpers)
   mountLockRoutes(router, options, helpers)
+  mountParentalCodeRoutes(router, options, helpers)
+  mountRegionRoutes(router, options, helpers)
+  mountAiRoutes(router, options, helpers)
   mountCredentialRoutes(router, options, helpers)
   mountCopyRoute(router, options, helpers)
   mountDeleteRoute(router, options, helpers)
@@ -77,7 +97,12 @@ const accountHelpers = ({
   sessionOf,
   throttle,
   now,
-  twoFactor
+  twoFactor,
+  data,
+  defaultTimeZone = 'UTC',
+  accountAi,
+  providers,
+  handles
 }: AccountRoutesOptions) => {
   // All of it is the signed-in account's own, from its own profile: a child's profile open on a parent's
   // device sees none of it.
@@ -106,11 +131,21 @@ const accountHelpers = ({
     const going = plan(account)
     return {
       email: account.email,
+      young: accounts.young.isYoung(account.id),
+      handle: account.handle,
+      // Before then, « Modifier » keeps the identifier as it is.
+      handleChangeableFrom: handles?.changeableFrom(account.id, now()) ?? null,
       passwordChangedAt: account.passwordChangedAt,
       // No password of its own: its changes need a sign-in on this device in the last 5 minutes instead.
       loginOnly: !account.hasPassword,
       recentSignIn: recentlySignedIn(device),
       privateProfile: account.privateProfile,
+      // Its own Code parental is set; Mes enfants offers it while it is not.
+      parentalCode: account.parentalCode !== null,
+      // Its own, else the household's, as the account's days run in it.
+      timeZone: account.timeZone ?? household.get().timeZone ?? defaultTimeZone,
+      country: account.country,
+      ...accountAiView({ accountAi, providers }, account),
       devices: devices.list(account.id).map(({ id, userAgent, lastSeenAt, trusted }) => ({
         id,
         userAgent,
@@ -123,6 +158,8 @@ const accountHelpers = ({
         householdGoes: going.householdGoes,
         household: going.household,
         others: going.profiles.slice(1).map(profile => profile.name),
+        // The teens and children it is the only parent of, which go with it.
+        children: going.children.map(child => child.name),
         // Who becomes the household's admin when the person leaves or goes.
         heir: going.heir?.name ?? null,
         // The person reads in this household: an account with no profile here has nothing to leave.
@@ -130,6 +167,8 @@ const accountHelpers = ({
         // The person runs this household: leaving hands that over to the heir.
         admin: going.profiles[0] !== undefined && profiles?.get(going.profiles[0].id)?.role === 'admin'
       },
+      // In no household: what it read and earned, its own wherever it reads; in one, Réglages › Statistiques shows it.
+      stats: going && going.profiles.length > 0 ? null : data.stats(account.id),
       // « Validation en deux étapes »: the server's admin must keep it on.
       ...(twoFactor ? { twoFactor: { ...twoFactor.status(account.id), required: account.serverAdmin } } : {})
     }
@@ -157,7 +196,7 @@ const mountTwoFactorRoutes = (
       return
     }
     if (!recentlySignedIn(session.device) && !(await checkProof(session.account, request, response))) return
-    response.json(twoFactor.start(session.account.id, session.account.email, now()))
+    response.json(twoFactor.start(session.account.id, session.account.email ?? `@${session.account.handle}`, now()))
   })
 
   // The app's first code: on from now, and the recovery codes, shown this once.
@@ -214,7 +253,8 @@ const mountCredentialRoutes = (
     }
     if (!(await checkProof(session.account, request, response))) return
     const owner = accounts.byEmail(email)
-    if (owner && owner.id !== session.account.id) {
+    // A blocked address is as taken as another account's: nobody gets it back by changing theirs.
+    if ((owner && owner.id !== session.account.id) || accounts.isBlocked(email)) {
       response.status(409).json({ error: 'email_taken' })
       return
     }
@@ -314,30 +354,4 @@ const mountCopyRoute = (
     response.set('Cache-Control', 'no-store')
     response.type('application/json').send(JSON.stringify(copy, null, 2))
   }
-}
-
-const mountDeleteRoute = (
-  router: express.Router,
-  { data, profiles, now, onDeleteProfile, onAccountDeleted, onHouseholdGone, cookieWithout }: AccountRoutesOptions,
-  { sessionOrRefuse, checkProof, plan }: AccountHelpers
-) => {
-  // "Supprimer ton compte", after its red confirmation and the account's password: at once, with what the plan says
-  // goes with it.
-  router.delete('/', async (request, response) => {
-    const session = sessionOrRefuse(request, response)
-    if (!session) return
-    if (!profiles) {
-      response.status(409).json({ error: 'not_available' })
-      return
-    }
-    if (!(await checkProof(session.account, request, response))) return
-    // After the password, which takes a moment: what goes is read as it is now.
-    const going = plan(session.account)!
-    for (const profile of going.profiles) onDeleteProfile?.(profile.id)
-    for (const accountId of data.delete(session.account, going, now())) onAccountDeleted?.(accountId)
-    if (going.householdGoes) onHouseholdGone?.()
-    const left = cookieWithout ? cookieWithout(session.account.id, request).cookie : clearedSessionCookie()
-    response.set('Set-Cookie', [left, clearedProfileCookie()])
-    response.status(204).end()
-  })
 }

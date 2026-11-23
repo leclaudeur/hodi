@@ -1,3 +1,5 @@
+import { CONFIG } from '../fixed-config.ts'
+
 // What a plugin may put in an e-mail (ctx.mail.send), checked field by field: one plain address, a one-line subject,
 // plain text, and the template's optional blocks. Anything else it adds is left behind.
 
@@ -22,12 +24,12 @@ export interface PluginMailMessage {
   language?: 'fr' | 'en'
 }
 
-const MAX_ADDRESS = 254
-const MAX_SUBJECT = 200
-const MAX_TEXT = 20_000
-const MAX_LINE = 120
-const MAX_NOTE = 1_000
-const MAX_URL = 2_000
+const MAX_ADDRESS = CONFIG.pluginMail.addressMaxLength
+const MAX_SUBJECT = CONFIG.pluginMail.subjectMaxLength
+const MAX_TEXT = CONFIG.pluginMail.textMaxLength
+const MAX_LINE = CONFIG.pluginMail.lineMaxLength
+const MAX_NOTE = CONFIG.pluginMail.noteMaxLength
+const MAX_URL = CONFIG.pluginMail.urlMaxLength
 // One plain address, nothing around it: no display name, no list, no comment, no line break.
 const ADDRESS =
   /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$/

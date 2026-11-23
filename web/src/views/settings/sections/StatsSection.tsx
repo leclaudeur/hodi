@@ -7,23 +7,17 @@ import { getLanguage } from '../../../lib/i18n.ts'
 import { subscribeUserState } from '../../../lib/user-state.ts'
 import Segmented from '../../../ui/Segmented.tsx'
 import DaySeparator, { type CountUnit } from '../../../ui/DaySeparator.tsx'
-import SectionPage from '../SectionPage.tsx'
+import { durationLabel } from './duration-label.ts'
 import DayBars, { type Day } from './DayBars.tsx'
 import StatsFavourites from './StatsFavourites.tsx'
 import StatsClear from './StatsClear.tsx'
-import StatsHousehold from './StatsHousehold.tsx'
 import styles from '../Settings.module.css'
 import statStyles from './StatsSection.module.css'
 import { DAY_MS } from '../../../../../shared/time.ts'
-
-// "2 H 40", "45 MIN".
-const durationLabel = (total: number) => {
-  const minutes = Math.round(total)
-  return minutes < 60 ? `${minutes} MIN` : `${Math.floor(minutes / 60)} H ${String(minutes % 60).padStart(2, '0')}`
-}
+import { CONFIG } from '../../../lib/config.ts'
 
 // Left past this share, a skimmed article or video is still under way: it is in "Reprendre".
-const STARTED = 0.15
+const STARTED = CONFIG.reading.resumeFrom
 
 // What a card counts: its words are under stats.*.article or stats.*.video.
 type Kind = 'article' | 'video'
@@ -216,11 +210,11 @@ const StatTiles = ({ kind, read, skimmed, duration, timeLabel, streak }: StatTil
 
 interface StatsSectionProps {
   topics: TopicInfo[]
-  layout: 'desktop' | 'phone'
 }
 
-// What was read and seen, on every device: the last 7 or 30 days, favourite topics and sources.
-const StatsSection = ({ topics, layout }: StatsSectionProps) => {
+// Mon compte › Statistiques: what was read and seen, on every device, the last 7 or 30 days, favourite topics and
+// sources.
+const StatsSection = ({ topics }: StatsSectionProps) => {
   const { t } = useTranslation()
   const all: ReadingEntry[] = useSyncExternalStore(subscribeUserState, getReadings)
   const [period, setPeriod] = useState<7 | 30>(7)
@@ -245,9 +239,8 @@ const StatsSection = ({ topics, layout }: StatsSectionProps) => {
   const periodLabel = periodLabelOf(t, period)
 
   return (
-    <SectionPage title={t('stats.title')} layout={layout} intro={t('stats.intro')}>
-      <StatsHousehold />
-      {/* The period only counts this profile's reading: beside its own title, under the household's week. */}
+    <>
+      {/* The period only counts this profile's reading, beside its own title. */}
       <div className={statStyles.subtitle}>
         <h2 className={statStyles.subtitleText}>{t('stats.yours')}</h2>
         <Segmented
@@ -304,7 +297,7 @@ const StatsSection = ({ topics, layout }: StatsSectionProps) => {
       <DaySeparator label={t('stats.favourites')} still className={statStyles.separator} />
       <StatsFavourites entries={inPeriod} topics={topics} periodLabel={periodLabel} />
       <StatsClear />
-    </SectionPage>
+    </>
   )
 }
 

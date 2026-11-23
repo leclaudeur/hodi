@@ -10,6 +10,7 @@ import type { SendMail } from '../mail/mailer.ts'
 import { renderMail } from '../mail/template.ts'
 import type { Language } from '../../shared/i18n.ts'
 import { isParentOf, profileIdOf } from './profile-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Réglages › Profils › Personnes invitées: the invitations an adult of the household made and nobody used yet, each
 // under the name it was given. With Serveur › E-mail set, its code also goes by e-mail.
@@ -31,7 +32,7 @@ export interface InvitationOptions {
   mail?: InvitationMail
 }
 
-const MAX_INVITE_NAME = 40
+const MAX_INVITE_NAME = CONFIG.invitations.nameMaxLength
 
 // The invitation's name and address as typed: null when the name is missing or too long, or the address is not one.
 export const inviteOf = (body: unknown): Invite | null | 'invalid' => {
@@ -50,8 +51,8 @@ const canMail = (mail: InvitationMail | undefined) => mail !== undefined && mail
 // Each e-mail goes to any address a person typed: a household sends a few a day at most, and the whole server a few
 // hundred, so the server's address never becomes a way to write to strangers. Past them the code still shows, to give
 // by hand.
-export const INVITATION_MAILS_PER_DAY = 10
-const SERVER_INVITATION_MAILS_PER_DAY = 300
+export const INVITATION_MAILS_PER_DAY = CONFIG.invitations.mailsPerDay
+const SERVER_INVITATION_MAILS_PER_DAY = CONFIG.invitations.serverMailsPerDay
 const DAY_MS = 24 * 60 * 60 * 1000
 const budgets = new WeakMap<InvitationMail, LoginThrottle>()
 

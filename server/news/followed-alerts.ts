@@ -3,6 +3,7 @@ import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
 import { truncate } from './text.ts'
 import { foldText, wordPattern } from '../../shared/word-match.ts'
 import { HOUR_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A browser's push subscription, as PushSubscription.toJSON() gives it.
 export interface PushTarget {
@@ -65,16 +66,16 @@ export interface FollowedAlertsOptions {
   mayNotify?: (profileId: number, now: number) => boolean
 }
 
-export const CHECK_INTERVAL_MS = 10 * 60 * 1000
+export const CHECK_INTERVAL_MS = CONFIG.alerts.checkEvery
 // At most one notification per subject in this time; articles in between are grouped into the next one.
-export const SUBJECT_COOLDOWN_MS = 3 * HOUR_MS
-export const MAX_ALERTS_PER_DAY = 12
+export const SUBJECT_COOLDOWN_MS = CONFIG.alerts.subjectCooldown
+export const MAX_ALERTS_PER_DAY = CONFIG.alerts.perDay
 // Older articles are never announced, even for a subject just followed.
-const MAX_ARTICLE_AGE_MS = 24 * HOUR_MS
-const MAX_DEVICES = 10
-const MAX_KNOWN_IDS = 2000
+const MAX_ARTICLE_AGE_MS = CONFIG.alerts.articleMaxAge
+const MAX_DEVICES = CONFIG.alerts.devices
+const MAX_KNOWN_IDS = CONFIG.alerts.knownIds
 // About three lines of a notification.
-const PREVIEW_LENGTH = 160
+const PREVIEW_LENGTH = CONFIG.alerts.previewLength
 
 // Push services of the browsers that can install Hodi: nothing else is ever sent a request.
 const PUSH_HOSTS = [

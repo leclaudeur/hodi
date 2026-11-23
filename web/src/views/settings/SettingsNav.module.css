@@ -155,5 +155,5 @@
 
 /* Leaving looks like the other lines: nothing is lost, the password brings everything back. */
 .logout {
-  color: var(--text);
+  color: var(--danger);
 }

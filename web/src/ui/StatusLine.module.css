@@ -23,6 +23,10 @@
   color: var(--info-icon);
 }
 
+.success {
+  color: var(--approve-border);
+}
+
 .error {
   color: var(--danger);
 }

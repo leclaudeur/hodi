@@ -1,6 +1,8 @@
+import { ownerOf } from './stats-owner.ts'
 import { type Database, transaction } from './database.ts'
 import { type RowKey, recordForget, resetHousehold, rowKey } from './forget-log.ts'
 import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
+import { accountStatRowsOf, accountStatsOf } from './account-stats.ts'
 import type { Profile, ProfileStore } from './profile-store.ts'
 import type { UserAccount, UserAccountStore } from './user-account-store.ts'
 
@@ -15,6 +17,9 @@ export interface DeletionPlan {
   profiles: Pick<Profile, 'id' | 'name' | 'kind'>[]
   // Who takes over the household's admin and the server's, when the person held them.
   heir: Profile | null
+  // The teens and children the person is the only parent of: their accounts go too. With the household, they are
+  // among its profiles already.
+  children: { accountId: number; id: number; name: string }[]
 }
 
 export const deletionPlan = (
@@ -27,8 +32,15 @@ export const deletionPlan = (
   const own = accounts.profileOf(account.id, householdId)
   // No profile here any more (deleted from the household): the account goes alone, never the household it left. The
   // server's admin still hands /server over to an heir.
+  // Its children still go with it: no one would run them any more.
   if (own === null && !account.serverAdmin)
-    return { householdGoes: false, household: householdName, profiles: [], heir: null }
+    return {
+      householdGoes: false,
+      household: householdName,
+      profiles: [],
+      heir: null,
+      children: onlyChildren(account, accounts, profiles, householdId)
+    }
   const all = profiles.list()
   const others = all.filter(profile => profile.kind === 'adult' && profile.hasAccount && profile.id !== own)
   const householdGoes = others.length === 0
@@ -38,9 +50,17 @@ export const deletionPlan = (
     householdGoes,
     household: householdName,
     profiles: going.map(({ id, name, kind }) => ({ id, name, kind })),
-    heir: householdGoes ? null : (others.find(profile => profile.role === 'admin') ?? others[0]!)
+    heir: householdGoes ? null : (others.find(profile => profile.role === 'admin') ?? others[0]!),
+    children: householdGoes ? [] : onlyChildren(account, accounts, profiles, householdId)
   }
 }
+
+const onlyChildren = (account: UserAccount, accounts: UserAccountStore, profiles: ProfileStore, householdId: number) =>
+  accounts.young.invitations.onlyChildrenOf(account.id).flatMap(accountId => {
+    const id = accounts.profileOf(accountId, householdId)
+    const profile = id === null ? null : profiles.get(id)
+    return profile ? [{ accountId, id: profile.id, name: profile.name }] : []
+  })
 
 // The account and what the plan says goes with it, at once. A household that goes is left as a new install's: its
 // first-run screens come back, with one first profile to give the next admin. Answers the ids of the accounts deleted:
@@ -114,16 +134,15 @@ const leaveHousehold = (
   // (forget-log.ts).
   const keyOf = (table: 'profiles' | 'users' | 'accounts', id: number) => rowKey(db, table, id)
   if (plan.householdGoes) return wipeHousehold(db, account, householdId, now)
+  const children = forgetChildren(db, plan, householdId)
   const own = plan.profiles[0]
   // Nothing of the household is the account's: it goes alone.
-  if (!plan.heir) return []
+  if (!plan.heir) return children
   const heir = plan.heir
   const heirKey = keyOf('profiles', heir.id)
   if (own) {
-    const wasAdmin =
-      (db.prepare('SELECT role FROM profiles WHERE id = ?').get(own.id) as { role: string } | undefined)?.role ===
-      'admin'
-    if (wasAdmin) {
+    const row = db.prepare('SELECT role FROM profiles WHERE id = ?').get(own.id) as { role: string } | undefined
+    if (row?.role === 'admin') {
       if (heirKey) recordForget({ kind: 'admin', ...heirKey })
       db.prepare("UPDATE profiles SET role = 'admin' WHERE id = ?").run(heir.id)
     }
@@ -140,8 +159,18 @@ const leaveHousehold = (
     if (heirUser) recordForget({ kind: 'serverAdmin', ...heirUser })
     db.prepare('UPDATE users SET server_admin = 1 WHERE id = (SELECT user_id FROM profiles WHERE id = ?)').run(heir.id)
   }
-  return []
+  return children
 }
+
+// The young accounts left with no parent: their profiles and accounts, each written down first.
+const forgetChildren = (db: Database, plan: DeletionPlan, householdId: number) =>
+  plan.children.map(child => {
+    const key = rowKey(db, 'profiles', child.id)
+    if (key) recordForget({ kind: 'profile', ...key, householdId })
+    db.prepare('DELETE FROM profiles WHERE id = ?').run(child.id)
+    forgetAccount(db, child.accountId)
+    return child.accountId
+  })
 
 // The households an account reads in, by their ids.
 export const householdsOf = (db: Database, accountId: number) =>
@@ -208,15 +237,14 @@ export const deleteHousehold = (db: Database, householdId: number, now: number):
   })
 
 // The tables of a profile's own state, and the columns a copy leaves out: what only the device or the server needs.
+// Those by owner are the account's (or a young profile's) in any household (stats-owner.ts).
 const PROFILE_TABLES: { table: string; where: string; omit?: string[] }[] = [
-  { table: 'profile_settings', where: 'profile_id' },
-  { table: 'saved_articles', where: 'profile_id' },
-  { table: 'read_articles', where: 'profile_id' },
-  { table: 'readings', where: 'profile_id' },
+  { table: 'profile_settings', where: 'owner' },
+  { table: 'saved_articles', where: 'owner' },
+  { table: 'read_articles', where: 'owner' },
   { table: 'shares', where: 'profile_id' },
   { table: 'shares', where: 'from_profile' },
-  { table: 'seen_stories', where: 'profile_id' },
-  { table: 'game_events', where: 'profile_id' },
+  { table: 'seen_stories', where: 'owner' },
   { table: 'daily_summaries', where: 'profile_id' },
   { table: 'ai_calls', where: 'profile_id' }
 ]
@@ -275,10 +303,12 @@ export const accountCopy = (
             .all(profileId),
           ...Object.fromEntries(
             PROFILE_TABLES.map(({ table, where }) => [
-              where === 'profile_id' ? table : `${table}_sent`,
-              (db.prepare(`SELECT * FROM ${table} WHERE ${where} = ?`).all(profileId) as Record<string, unknown>[]).map(
-                parsed
-              )
+              where === 'from_profile' ? `${table}_sent` : table,
+              (
+                db
+                  .prepare(`SELECT * FROM ${table} WHERE ${where} = ?`)
+                  .all(where === 'owner' ? ownerOf(db, profileId) : profileId) as Record<string, unknown>[]
+              ).map(parsed)
             ])
           )
         }
@@ -286,7 +316,9 @@ export const accountCopy = (
     exportedAt: new Date(now).toISOString(),
     account: { ...(user as object), serverAdmin: account.serverAdmin, devices },
     household: { ...(household as object), profiles },
-    you: own
+    you: own,
+    // What it read and earned, its own in any household: its readings and the game's points.
+    stats: accountStatRowsOf(db, account.id)
   }
 }
 
@@ -296,6 +328,10 @@ export class AccountDataStore {
 
   constructor(db: Database) {
     this.#db = db
+  }
+
+  stats(accountId: number) {
+    return accountStatsOf(this.#db, accountId)
   }
 
   copy(account: UserAccount, profileId: number | null, now: number) {

@@ -18,7 +18,7 @@ interface LoginPageProps {
 // device.
 const LoginPage = ({ onLoggedIn }: LoginPageProps) => {
   const { t } = useTranslation()
-  const { ready, name, resetByMail } = useSignInPage()
+  const { ready, resetByMail } = useSignInPage()
   const login = useLogin(onLoggedIn)
   // "J'ai un code": open from the button, or at once from a code's link, filled in.
   const [joining, setJoining] = useState(() => CODE_LINK.test(window.location.hash))
@@ -86,7 +86,6 @@ const LoginPage = ({ onLoggedIn }: LoginPageProps) => {
       ) : (
         <SignInForm
           login={login}
-          name={name}
           notice={notice}
           onJoin={() => setJoining(true)}
           onForgot={() => setForgot(true)}
