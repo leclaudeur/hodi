@@ -1,5 +1,6 @@
 import {
   ArchiveRestore,
+  Ban,
   Bell,
   ChartColumn,
   ChevronRight,
@@ -79,7 +80,8 @@ const serverGroup = (t: TFunction, waiting: number): CoreGroup => ({
       icon: Inbox,
       count: waiting
     },
-    { id: 'accounts', label: t('server.titles.accounts'), hint: t('server.hints.accounts'), icon: UserRound }
+    { id: 'accounts', label: t('server.titles.accounts'), hint: t('server.hints.accounts'), icon: UserRound },
+    { id: 'blocks', label: t('server.titles.blocks'), hint: t('server.hints.blocks'), icon: Ban }
   ]
 })
 

@@ -9,6 +9,7 @@ import { rich } from '../../../ui/rich.tsx'
 import SettingRow from '../../settings/SettingRow.tsx'
 import settingsStyles from '../../settings/Settings.module.css'
 import styles from './Inbox.module.css'
+import BlockSourceRow from './BlockSourceRow.tsx'
 import { SourceAbout } from './SourceReviewPanel.tsx'
 import { inboxChanged } from './use-inbox.ts'
 
@@ -61,6 +62,7 @@ const SourceReportPanel = ({ report }: { report: SourceReportView }) => {
           {t('server.inbox.report.unlist')}
         </Button>
       </div>
+      <BlockSourceRow source={report} />
     </>
   )
 }

@@ -54,6 +54,7 @@ export const SERVER_SECTIONS = [
   'inbox',
   'households',
   'accounts',
+  'blocks',
   'general',
   'content',
   'backups',

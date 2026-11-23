@@ -250,3 +250,28 @@ export const getSourceReports = () => getJson<{ reports: SourceReportView[] }>('
 // Ignorer keeps the source; Retirer du catalogue takes it out for those who do not read it yet.
 export const decideReport = (id: string, decision: 'ignore' | 'unlist') =>
   sendJson<null>('POST', `/server/reports/${encodeURIComponent(id)}`, { decision })
+
+// What « Bloquer » takes, said before the password: its domain (or on a shared host, its feed's address), how many
+// sources go, and whether the account that added it goes.
+export const getBlockPreview = (id: string) =>
+  getJson<{ target: string; sources: number; account: boolean }>(`/server/sources/${encodeURIComponent(id)}/block`)
+
+// « Bloquer » a source, for illegal content, with the admin's password and app code.
+export const blockSource = (id: string, proof: AdminProof) =>
+  sendJson<{ target: string }>('POST', `/server/sources/${encodeURIComponent(id)}/block`, proof)
+
+export interface BlockedDomain {
+  domain: string
+  at: number
+}
+
+// Blocages: the domains blocked, the latest first.
+export const getBlocks = () => getJson<{ domains: BlockedDomain[] }>('/server/blocks')
+
+// « Débloquer »: someone may add it again; nothing erased comes back.
+export const unblockDomain = (domain: string, proof: AdminProof) =>
+  sendJson<null>('DELETE', `/server/blocks/${encodeURIComponent(domain)}`, proof)
+
+// « Débloquer une adresse »: an account blocked by mistake may come back.
+export const unblockEmail = (email: string, proof: AdminProof) =>
+  sendJson<null>('POST', '/server/accounts/unblock', { email, ...proof })

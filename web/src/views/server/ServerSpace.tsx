@@ -29,6 +29,7 @@ import InboxList from './inbox/InboxList.tsx'
 import InboxPage from './inbox/InboxPage.tsx'
 import ServerNotifications from './ServerNotifications.tsx'
 import ServerOverview from './ServerOverview.tsx'
+import ServerBlocks from './ServerBlocks.tsx'
 import AccountPage from './AccountPage.tsx'
 import HouseholdPage from './HouseholdPage.tsx'
 import PeopleList from './PeopleList.tsx'
@@ -54,6 +55,8 @@ const Page = ({ section, item, layout }: { section: ServerSection; item?: string
       return <ServerGeneral layout={layout} />
     case 'content':
       return <ServerContent layout={layout} />
+    case 'blocks':
+      return <ServerBlocks layout={layout} />
     case 'mail':
       return <ServerMail layout={layout} />
     case 'notifications':

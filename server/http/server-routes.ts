@@ -23,7 +23,8 @@ import { type CheckProof, accountAsking, askingWithProof } from './proof.ts'
 import { type Backups, mountBackupRoutes } from './server-backup-routes.ts'
 import { mountAccountCodeRoute } from './server-account-code-route.ts'
 import { mountGeneralRoutes } from './server-general-routes.ts'
-import { mountDeletionRoutes } from './server-deletion-routes.ts'
+import { accountRemover, mountDeletionRoutes } from './server-deletion-routes.ts'
+import { type SourceBlockOptions, mountSourceBlockRoutes } from './source-block-routes.ts'
 
 // The server's own space (#/server), for its admin only: requireServerAdmin stands in front of these.
 
@@ -61,6 +62,8 @@ export interface ServerRoutesOptions {
   codeRequests?: { askedAt: (accountId: number) => number | null; handled: (accountId: number) => void }
   // false: the server admin has not turned « Validation en deux étapes » on yet, which these moments need first.
   twoFactorOn?: (accountId: number) => boolean
+  // « Bloquer » a source, and Sources bloquées.
+  blocks?: SourceBlockOptions
   // Comptes and Foyers › « Supprimer ».
   deletions?: {
     data: AccountDataStore
@@ -81,6 +84,14 @@ export const serverRoutes = (options: ServerRoutesOptions) => {
   mountInviteRoutes(router, options, helpers)
   mountAccountCodeRoute(router, options, helpers)
   mountDeletionRoutes(router, options, helpers)
+  const { blocks, accounts: accountStore } = options
+  if (blocks && accountStore)
+    mountSourceBlockRoutes(router, blocks, {
+      accounts: accountStore,
+      proven: helpers.proven,
+      removeAccount: accountRemover(options),
+      now: options.now
+    })
   mountContentRoutes(router, options)
   if (options.settings) mountGeneralRoutes(router, options.settings)
   const { settings, backups, accounts, profiles, checkProof, now } = options

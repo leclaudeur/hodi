@@ -14,7 +14,8 @@ const STATUS_LABELS = {
   none: 'no feed found on the site',
   empty: 'feed has no items',
   failed: 'site unreachable or refusing Hodi',
-  reddit: 'Reddit closed its feeds'
+  reddit: 'Reddit closed its feeds',
+  unavailable: 'domain blocked on this server'
 }
 
 const catalog = loadCatalog(path.resolve(process.env.SOURCES_FILE ?? 'sources.yml'))

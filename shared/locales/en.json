@@ -475,7 +475,8 @@
       "following": "You already read this source.",
       "pending": "You already asked for this source.",
       "full": "Already 3 waiting: wait for your parents.",
-      "other": "The request could not be sent. Try again in a moment."
+      "other": "The request could not be sent. Try again in a moment.",
+      "unavailable": "Source unavailable on this server."
     },
     "title": "Requests",
     "waiting_one": "{{count}} waiting",
@@ -1540,7 +1541,8 @@
       "reddit": "Hodi dropped Reddit: its feeds are closing.",
       "limit": "The household has hit its source limit. Remove one to add another.",
       "followed": "Source already followed.",
-      "bad_section": "Pick another topic for this source."
+      "bad_section": "Pick another topic for this source.",
+      "unavailable": "Source unavailable on this server."
     },
     "origins": {
       "feed": "Feed",
@@ -2009,7 +2011,8 @@
       "mail": "E-mail",
       "plugins": "Plugins",
       "notifications": "Alerts",
-      "inbox": "To do"
+      "inbox": "To do",
+      "blocks": "Blocks"
     },
     "pluginsIntro": "More features, for the whole server, from Hodi’s registry or a file. Each plugin runs apart, with its own data. Only verified plugins add pages to Hodi.",
     "hints": {
@@ -2022,7 +2025,8 @@
       "notifications": "E-mail and push, for each kind",
       "inbox": "Requests to deal with",
       "inboxWaiting_one": "{{count}} request to handle",
-      "inboxWaiting_other": "{{count}} requests to handle"
+      "inboxWaiting_other": "{{count}} requests to handle",
+      "blocks": "Blocked sources, addresses"
     },
     "overview": {
       "introOne": "The server in totals, beside the period before. The server counts, it doesn’t look: never what a person reads.",
@@ -2438,6 +2442,47 @@
         "ignored": "Report ignored",
         "unlisted": "{{name}} is out of the catalogue",
         "failed": "This choice could not be saved"
+      }
+    },
+    "blocks": {
+      "intro": "The sites blocked for illegal content, and the way back for an account blocked by mistake.",
+      "unblock": "Unblock",
+      "sources": {
+        "section": "Blocked sources",
+        "search": "Search a domain",
+        "since": "Blocked on {{date}}",
+        "emptyTitle": "No blocked source",
+        "emptyText": "A site blocked from To do comes here.",
+        "confirmTitle": "Unblock this domain?",
+        "confirmText": "Someone may add <b>{{domain}}</b> again. Nothing that was erased comes back.",
+        "done": "{{domain}} is unblocked"
+      },
+      "emails": {
+        "section": "Blocked accounts",
+        "title": "Unblock an address",
+        "hint": "For an account blocked by mistake",
+        "intro": "The server does not keep blocked addresses: type the one of the account to let back.",
+        "field": "Its e-mail",
+        "confirmTitle": "Unblock this address?",
+        "confirmText": "<b>{{email}}</b> may make an account on this server again. The erased account does not come back.",
+        "done": "Address unblocked",
+        "notBlocked": "This address was not blocked."
+      },
+      "block": {
+        "section": "Illegal content",
+        "label": "Block this site",
+        "hint": "Everywhere, for everyone",
+        "short": "Block",
+        "button": "Block everywhere",
+        "title": "Block {{name}}?",
+        "done": "{{target}} is blocked",
+        "textDomain": "The whole domain <b>{{target}}</b> is blocked: its feed is no longer read, and nobody can add it again.",
+        "textFeed": "This feed of <b>{{host}}</b> is blocked alone: the rest of the site is untouched, and nobody can add it again.",
+        "erased_one": "Its source leaves every account’s list, with everything read of it on the server.",
+        "erased_other": "Its {{count}} sources leave every account’s list, with everything read of them on the server.",
+        "account": "The account that added it is blocked, without you knowing which.",
+        "final": "<b>There is no going back.</b>",
+        "failed": "The block could not be prepared. Try again in a moment."
       }
     }
   },

@@ -475,7 +475,8 @@
       "following": "Tu lis déjà cette source.",
       "pending": "Tu as déjà demandé cette source.",
       "full": "Déjà 3 demandes en attente : attends les parents.",
-      "other": "La demande n’a pas pu être envoyée. Réessaie dans un instant."
+      "other": "La demande n’a pas pu être envoyée. Réessaie dans un instant.",
+      "unavailable": "Source indisponible sur ce serveur."
     },
     "title": "Demandes",
     "waiting_one": "{{count}} en attente",
@@ -1540,7 +1541,8 @@
       "reddit": "Hodi ne suit plus Reddit, qui ferme ses flux.",
       "limit": "Le foyer a atteint son maximum de sources. Retires-en une pour en ajouter une autre.",
       "followed": "Cette source est déjà suivie.",
-      "bad_section": "Choisis un autre thème pour cette source."
+      "bad_section": "Choisis un autre thème pour cette source.",
+      "unavailable": "Source indisponible sur ce serveur."
     },
     "origins": {
       "feed": "Flux",
@@ -2009,7 +2011,8 @@
       "mail": "E-mail",
       "plugins": "Plugins",
       "notifications": "Alertes",
-      "inbox": "À traiter"
+      "inbox": "À traiter",
+      "blocks": "Blocages"
     },
     "pluginsIntro": "Des fonctions en plus, pour tout le serveur, depuis le registre de Hodi ou un fichier. Chaque plugin tourne à part, avec ses propres données. Seuls les plugins vérifiés ajoutent des pages à Hodi.",
     "hints": {
@@ -2022,7 +2025,8 @@
       "notifications": "E-mail et push, pour chaque type",
       "inbox": "Les demandes à régler",
       "inboxWaiting_one": "{{count}} demande à traiter",
-      "inboxWaiting_other": "{{count}} demandes à traiter"
+      "inboxWaiting_other": "{{count}} demandes à traiter",
+      "blocks": "Sources bloquées, adresses"
     },
     "overview": {
       "introOne": "Le serveur en totaux, comparé à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
@@ -2438,6 +2442,47 @@
         "ignored": "Signalement ignoré",
         "unlisted": "{{name}} est retirée du catalogue",
         "failed": "Ce choix n’a pas pu être enregistré"
+      }
+    },
+    "blocks": {
+      "intro": "Les sites bloqués pour un contenu illégal, et le retour d’un compte bloqué par erreur.",
+      "unblock": "Débloquer",
+      "sources": {
+        "section": "Sources bloquées",
+        "search": "Chercher un domaine",
+        "since": "Bloqué le {{date}}",
+        "emptyTitle": "Aucune source bloquée",
+        "emptyText": "Un site bloqué depuis À traiter arrive ici.",
+        "confirmTitle": "Débloquer ce domaine ?",
+        "confirmText": "Quelqu’un pourra de nouveau ajouter <b>{{domain}}</b>. Rien de ce qui a été effacé ne revient.",
+        "done": "{{domain}} est débloqué"
+      },
+      "emails": {
+        "section": "Comptes bloqués",
+        "title": "Débloquer une adresse",
+        "hint": "Pour un compte bloqué par erreur",
+        "intro": "Le serveur ne garde pas les adresses bloquées : tape celle du compte à laisser revenir.",
+        "field": "Son e-mail",
+        "confirmTitle": "Débloquer cette adresse ?",
+        "confirmText": "<b>{{email}}</b> pourra de nouveau créer un compte sur ce serveur. Le compte effacé ne revient pas.",
+        "done": "Adresse débloquée",
+        "notBlocked": "Cette adresse n’était pas bloquée."
+      },
+      "block": {
+        "section": "Contenu illégal",
+        "label": "Bloquer ce site",
+        "hint": "Partout, pour tout le monde",
+        "short": "Bloquer",
+        "button": "Bloquer partout",
+        "title": "Bloquer {{name}} ?",
+        "done": "{{target}} est bloqué",
+        "textDomain": "Tout le domaine <b>{{target}}</b> est bloqué : son flux n’est plus lu, et plus personne ne pourra l’ajouter.",
+        "textFeed": "Ce flux de <b>{{host}}</b> est bloqué, seul : le reste du site n’est pas touché, et plus personne ne pourra l’ajouter.",
+        "erased_one": "Sa source quitte les listes de tous les comptes, avec tout ce qui en a été lu sur le serveur.",
+        "erased_other": "Ses {{count}} sources quittent les listes de tous les comptes, avec tout ce qui en a été lu sur le serveur.",
+        "account": "Le compte qui l’a ajoutée est bloqué, sans que tu saches lequel.",
+        "final": "<b>Il n’y a pas de retour en arrière.</b>",
+        "failed": "Impossible de préparer le blocage. Réessaie dans un instant."
       }
     }
   },
