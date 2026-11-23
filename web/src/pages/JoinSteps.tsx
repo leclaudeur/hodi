@@ -62,7 +62,15 @@ export const CodeStep = ({ join, onBack }: { join: Join; onBack: () => void }) =
       <StepHeader
         title={t('join.code.title')}
         intro={t('join.code.intro')}
-        help={{ id: 'join-code', title: t('join.code.helpTitle'), body: <p>{t('join.code.help')}</p> }}
+        help={{
+          id: 'join-code',
+          title: t('join.code.helpTitle'),
+          body: (
+            <p>
+              <RichText i18nKey="join.code.help" />
+            </p>
+          )
+        }}
       />
       <div className={householdStyles.field}>
         <PinField

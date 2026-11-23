@@ -555,11 +555,11 @@
     "sources": {
       "title": "Les sources",
       "what": "Les sites et les chaînes que Hodi lit pour toi.",
-      "open": "Ouvre « Sources »."
+      "open": "Ouvre <i>Sources</i>."
     },
     "topic": {
       "suggestions": "Chaque thème a ses sources.",
-      "pick": "Choisis « {{topic}} ».",
+      "pick": "Choisis <i>{{topic}}</i>.",
       "via": "Ouvre la liste des thèmes, puis choisis {{topic}}."
     },
     "site": {
@@ -771,19 +771,19 @@
     "shares": {
       "title": "Partages",
       "desktop": [
-        "Ce que les autres profils du foyer t’ont envoyé avec « Pour… », pendant 7 jours. Un article lu ou masqué s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
+        "Ce que les autres profils du foyer t’ont envoyé avec <i>Pour…</i>, pendant 7 jours. Un article lu ou masqué s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
       ],
       "phone": [
-        "Ce que les autres profils du foyer t’ont envoyé avec « Pour… », pendant 7 jours. Un article lu, ou glissé vers la gauche, s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
+        "Ce que les autres profils du foyer t’ont envoyé avec <i>Pour…</i>, pendant 7 jours. Un article lu, ou glissé vers la gauche, s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
       ]
     },
     "videos": {
       "title": "Vidéos",
       "desktop": [
-        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Elles se lisent ici, à côté de la liste. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans « Reprendre » sur Le fil. Ajoute des chaînes dans Réglages › Sources."
+        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Elles se lisent ici, à côté de la liste. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans <i>Reprendre</i> sur Le fil. Ajoute des chaînes dans Réglages › Sources."
       ],
       "phone": [
-        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans « Reprendre » sur l’accueil. Ajoute des chaînes dans Réglages › Sources."
+        "Les vidéos et épisodes des chaînes que tu suis, une semaine à la fois, sans les Shorts. Une vidéo vue en entier quitte la liste ; commencée, elle t’attend dans <i>Reprendre</i> sur l’accueil. Ajoute des chaînes dans Réglages › Sources."
       ]
     }
   },
@@ -1350,7 +1350,7 @@
       "choosePasswordTitle": "Choisir un mot de passe",
       "choosePasswordIntro": "Tu pourras te connecter avec l’e-mail du compte et ce mot de passe, en plus de l’autre façon.",
       "signInAgain": "Pour confirmer que c’est toi, reconnecte-toi juste avant (il y a moins de 5 minutes), puis reviens ici.",
-      "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise « Mot de passe oublié » ou demande un code à l’admin du serveur.",
+      "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise <i>Mot de passe oublié</i> ou demande un code à l’admin du serveur.",
       "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter",
       "moreDevices_one": "Voir l’autre",
       "moreDevices_other": "Voir les {{count}} autres",
