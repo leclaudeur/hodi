@@ -53,4 +53,31 @@ describe('the households merged into one', () => {
       ]
     )
   })
+
+  it('keeps one profile per account, its first household’s, and leaves the other with no account', () => {
+    const db = new DatabaseSync(':memory:')
+    db.exec('PRAGMA foreign_keys = ON')
+    migrate(db, versionBefore('CREATE TEMP TABLE merged_positions'))
+    db.exec(`
+      INSERT INTO accounts (id, name, created_at) VALUES (2, 'Famille Martin', 0);
+      INSERT INTO users (id, email, password_hash, created_at, password_changed_at) VALUES (7, 'marc@example.com', 'hash', 0, 0);
+      DELETE FROM profiles;
+      INSERT INTO profiles (id, account_id, name, color, position, created_at, role, user_id) VALUES
+        (1, 1, 'Marc', 'tech', 0, 0, 'admin', 7),
+        (2, 2, 'Marc', 'world', 0, 0, 'admin', 7);
+    `)
+
+    migrate(db)
+
+    assert.deepEqual(
+      db
+        .prepare('SELECT id, account_id, user_id FROM profiles ORDER BY id')
+        .all()
+        .map(row => Object.values(row)),
+      [
+        [1, 1, 7],
+        [2, 1, null]
+      ]
+    )
+  })
 })

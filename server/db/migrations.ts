@@ -1505,8 +1505,16 @@ const MIGRATIONS: string[] = [
   END;
   `,
   // One group of people on the server: every profile, code and plugin's AI turned off of a later household joins the
-  // first one, the profiles after its own. A plugin's AI turned off in any household stays off for the server.
+  // first one, the profiles after its own. A plugin's AI turned off in any household stays off for the server. An
+  // account keeps one profile, its first household's: any other stays, with no account, for the server's admin to
+  // give or delete, and what the account read is its own anyway (stats-owner.ts).
   `
+  UPDATE profiles SET user_id = NULL WHERE id IN (
+    SELECT id FROM (
+      SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY account_id, id) AS n
+      FROM profiles WHERE user_id IS NOT NULL
+    ) WHERE n > 1
+  );
   CREATE TEMP TABLE merged_positions AS
     SELECT id, ROW_NUMBER() OVER (ORDER BY account_id, position, id) - 1 AS n FROM profiles;
   UPDATE profiles SET
