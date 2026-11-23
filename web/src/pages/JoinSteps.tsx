@@ -11,6 +11,7 @@ import PinField from '../ui/PinField.tsx'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import RichText from '../ui/RichText.tsx'
 import StatusLine from '../ui/StatusLine.tsx'
+import { rich } from '../ui/rich.tsx'
 import TextField from '../ui/TextField.tsx'
 import householdStyles from '../views/household/Household.module.css'
 import ProfileForm from '../views/profiles/ProfileForm.tsx'
@@ -35,7 +36,7 @@ const MemberRow = ({ use }: { use: Profiled }) => (
   </div>
 )
 
-const ErrorLine = ({ error }: { error: string | null }) => error && <StatusLine tone="error">{error}</StatusLine>
+const ErrorLine = ({ error }: { error: string | null }) => error && <StatusLine tone="error">{rich(error)}</StatusLine>
 
 const NewPassword = ({ join }: { join: Join }) => (
   <NewPasswordFields

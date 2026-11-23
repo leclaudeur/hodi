@@ -90,7 +90,7 @@
     "newAccount": "Créer un nouveau compte",
     "signIn": "Rejoindre",
     "alreadyMember": "Ce compte a déjà un profil sur ce serveur : connecte-toi avec lui.",
-    "otherHousehold": "Le compte <b>{{email}}</b> est déjà dans {{current}}. Pour rejoindre {{household}}, quitte d’abord ce foyer dans <i>Mon compte</i>."
+    "otherHousehold": "Le compte <b>{{email}}</b> est déjà dans <b>{{current}}</b>. Pour rejoindre <b>{{household}}</b>, quitte d’abord ce foyer dans <i>Mon compte</i>."
   },
   "password": {
     "show": "Afficher le mot de passe",
@@ -1418,7 +1418,7 @@
       "noSubject": "Tu ne suis encore aucun sujet.",
       "subjects": "Un nouvel article sur un sujet avec alerte : {{alerts}} sur {{total}}. Une par sujet toutes les 3 heures, 12 par jour au plus.",
       "shares": "Articles partagés",
-      "sharesHint": "Quand quelqu’un t’envoie un article ou une vidéo avec « Pour… ».",
+      "sharesHint": "Quand quelqu’un t’envoie un article ou une vidéo avec <i>Pour…</i>.",
       "reactions": "Réactions aux partages",
       "reactionsHint": "Quand quelqu’un réagit d’un emoji à un article que tu lui as envoyé.",
       "badge": "Pastille sur l’icône",
@@ -1958,7 +1958,7 @@
       "aiHint": "Un clic sur son bouton violet pose une question à l’IA, payée sur les crédits du foyer. Seulement s’il est Vérifié.",
       "feeds_one": "Proposer {{count}} source",
       "feeds_other": "Proposer {{count}} sources",
-      "feedsHint": "Dans « Ajouter une source » : {{names}}"
+      "feedsHint": "Dans <i>Ajouter une source</i> : {{names}}"
     },
     "aiButton": {
       "unavailable": "L’IA n’est pas activée pour ce foyer.",
