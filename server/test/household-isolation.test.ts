@@ -174,12 +174,11 @@ describe('two households on one server', () => {
     assert.deepEqual(await targets(dupont), [])
   })
 
-  it("makes a household's codes for that household", async () => {
+  // A code no longer opens a household: whoever made it, the new account gets its own profile on the server.
+  it('makes an account of its own with any adult’s code', async () => {
     const made = await call('/codes', martin, 'POST', {})
     assert.equal(made.status, 201)
     const { code } = (await made.json()) as { code: string }
-    const checked = (await (await call('/codes/check', '', 'POST', { code })).json()) as { household: string }
-    assert.equal(checked.household, 'Famille Martin')
     const joined = await call('/codes/join', '', 'POST', {
       code,
       email: 'julie@example.com',

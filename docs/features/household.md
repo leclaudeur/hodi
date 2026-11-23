@@ -42,7 +42,7 @@ Codes are eight letters and digits with a QR, valid once for 24 hours, typed aft
   _Forgot password_.
   Its person types it, then a new password.
 
-Until it is used, the invitation waits under _Invited people_, below the profiles' groups (_Adults_, _Teens_,
+Until it is used, the invitation waits under _Invited people_ of the adult who made it, below the profiles' groups (_Adults_, _Teens_,
 _Children_). **Send again** or **See the code** replaces its code with a new one for another 24 hours, as only a hash of
 a code is kept, and the red cross cancels it.
 

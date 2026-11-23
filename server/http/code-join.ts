@@ -45,12 +45,9 @@ export type ResolvedJoinOptions = CodeJoinOptions & Required<Pick<CodeJoinOption
 // What "Rejoins <foyer>" and "Ton profil t'attend" show of a profile: no photo, which only a session may load.
 const publicProfile = ({ id, name, color, kind, avatar }: Profile) => ({ id, name, color, kind, avatar })
 
-// Whether a household's admin may give a code that sets a new password for this account: never the server's admin's
-// (that would hand the whole server to the household's admin), nor an account that also reads in another household,
-// which this household's admin has no say over. Those use « Mot de passe oublié » by e-mail, or the server's admin.
-export const resettableByCode = (accounts: UserAccountStore, account: UserAccount) =>
-  !account.serverAdmin &&
-  accounts.profilesOf(account.id).every(({ householdId }) => householdId === currentHouseholdId())
+// Whether a code may set a new password for this account: never the server's admin's, which would hand the whole
+// server to whoever holds the code. Theirs goes through « Mot de passe oublié » by e-mail.
+export const resettableByCode = (account: UserAccount) => !account.serverAdmin
 
 // The cookies of a device that now reads as this profile, after its session cookie.
 export const withProfileCookie = (
@@ -72,7 +69,7 @@ export const codeHelpers = ({
   // Checked again when the code is used: the account may have become the server's admin since the code was made.
   const resettable = (profileId: number) => {
     const account = accounts.ofProfile(profileId)
-    return account !== null && resettableByCode(accounts, account)
+    return account !== null && resettableByCode(account)
   }
 
   // A profile's code holds while it still waits for it: an adult without an account or, for a reset, an adult who

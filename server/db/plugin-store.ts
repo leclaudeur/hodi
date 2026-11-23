@@ -2,6 +2,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { existsSync, rmSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
 import { type Database, transaction } from './database.ts'
+import { DEFAULT_ACCOUNT_ID } from './household-scope.ts'
 import { migrate } from './migrations.ts'
 
 // Each installed plugin's state in the household: on or off, and the settings the admin chose. A plugin starts on: it
@@ -103,23 +104,21 @@ export class PluginStore {
     this.#db.prepare("UPDATE plugins SET settings = '{}' WHERE id = ?").run(id)
   }
 
-  // Everything Hodi's database keeps for a plugin: its row and settings, its ways in, and the tables API 1 made in it.
-  // The plugins whose AiButton a household's admin turned off (Réglages › IA et crédits).
-  aiOff(householdId: number): Set<string> {
-    const rows = this.#db.prepare('SELECT plugin_id FROM plugin_ai_off WHERE household_id = ?').all(householdId) as {
-      plugin_id: string
-    }[]
+  // The plugins whose AiButton is turned off on the server (Réglages › IA et crédits).
+  aiOff(): Set<string> {
+    const rows = this.#db.prepare('SELECT plugin_id FROM plugin_ai_off').all() as { plugin_id: string }[]
     return new Set(rows.map(row => row.plugin_id))
   }
 
-  setAiOff(householdId: number, id: string, off: boolean) {
+  setAiOff(id: string, off: boolean) {
     if (off)
       this.#db
         .prepare('INSERT OR IGNORE INTO plugin_ai_off (household_id, plugin_id) VALUES (?, ?)')
-        .run(householdId, id)
-    else this.#db.prepare('DELETE FROM plugin_ai_off WHERE household_id = ? AND plugin_id = ?').run(householdId, id)
+        .run(DEFAULT_ACCOUNT_ID, id)
+    else this.#db.prepare('DELETE FROM plugin_ai_off WHERE plugin_id = ?').run(id)
   }
 
+  // Everything Hodi's database keeps for a plugin: its row and settings, its ways in, and the tables API 1 made in it.
   forget(id: string) {
     const tables = (
       this.#db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as { name: string }[]

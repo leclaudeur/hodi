@@ -1,9 +1,8 @@
 import { cleanHandle } from '../handle.ts'
 import express from 'express'
 import { hashPassword } from '../auth/password.ts'
-import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
 import { type ProfileStore, cleanName, isYoung, profileColorOf } from '../db/profile-store.ts'
-import { type SignInCodeStore, signInCodeOf } from '../db/sign-in-code-store.ts'
+import type { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
 import {
   type CodeHelpers,
@@ -196,14 +195,7 @@ const mountResetRoute = (router: express.Router, options: ResolvedJoinOptions, {
 // Before the session check: a device signed in with nothing.
 export const codeJoinRoutes = ({ checkSignIn = ANYONE_IN, signsInHere = () => true, ...rest }: CodeJoinOptions) => {
   const options: ResolvedJoinOptions = { ...rest, checkSignIn, signsInHere }
-  const { codes, now } = options
   const router = express.Router()
-  // A code belongs to one household: what it opens, makes or changes stays in that one (household-scope.ts).
-  router.use((request, _response, next) => {
-    const code = signInCodeOf(request.body?.code)
-    const found = code ? codes.peek(code, now()) : null
-    inHousehold(found?.householdId ?? currentHouseholdId(), next)
-  })
   const helpers = codeHelpers(options)
 
   // "Entre le code": what it opens, so the next screen says whose household and, for a profile, whose.

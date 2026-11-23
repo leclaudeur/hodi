@@ -1503,6 +1503,20 @@ const MIGRATIONS: string[] = [
       SELECT 1 FROM profiles p JOIN users u ON u.id = p.user_id WHERE u.server_admin = 1 AND p.id != OLD.id
     );
   END;
+  `,
+  // One group of people on the server: every profile, code and plugin's AI turned off of a later household joins the
+  // first one, the profiles after its own. A plugin's AI turned off in any household stays off for the server.
+  `
+  CREATE TEMP TABLE merged_positions AS
+    SELECT id, ROW_NUMBER() OVER (ORDER BY account_id, position, id) - 1 AS n FROM profiles;
+  UPDATE profiles SET
+    position = (SELECT n FROM merged_positions m WHERE m.id = profiles.id),
+    role = CASE WHEN account_id = 1 THEN role ELSE 'member' END,
+    account_id = 1;
+  DROP TABLE merged_positions;
+  UPDATE sign_in_codes SET account_id = 1;
+  INSERT OR IGNORE INTO plugin_ai_off (household_id, plugin_id) SELECT 1, plugin_id FROM plugin_ai_off;
+  DELETE FROM plugin_ai_off WHERE household_id != 1;
   `
 ]
 

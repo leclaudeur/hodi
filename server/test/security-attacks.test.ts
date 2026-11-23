@@ -302,24 +302,6 @@ describe('codes for a new password', () => {
     )
   })
 
-  it('refuses a code for an account that also reads in another household', async () => {
-    const now = Date.now()
-    install.db
-      .prepare(
-        `INSERT INTO accounts (id, name, created_at, set_up_at, time_zone, language)
-         VALUES (2, 'Famille Martin', ?, ?, 'Europe/Paris', 'fr')`
-      )
-      .run(now, now)
-    const elsewhere = new ProfileStore(install.db, 2).create('Paul', 'world', now)!
-    install.accounts.linkProfile(install.accounts.byEmail('paul@example.com')!.id, elsewhere.id)
-    assert.equal((await reset(serverCode(profileOf('Paul')))).status, 403)
-    assert.equal(
-      (await install.call('/login', { method: 'POST', body: { email: 'paul@example.com', password: PASSWORD } }))
-        .status,
-      204
-    )
-  })
-
   it('lets a code from the server admin give anyone else a new password', async () => {
     const done = await reset(serverCode(profileOf('Marie')))
     assert.equal(done.status, 200)

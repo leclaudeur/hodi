@@ -58,7 +58,7 @@ export const startPlugins = async (wiring: PluginWiring) => {
   const { db, news, accounts, install, profiles, store } = wiring
   // A click on a signed plugin's AiButton: one question to the household's AI, in its 'plugin' caps.
   const pluginAiCalls = pluginAi({
-    isOff: (householdId, pluginId) => store.aiOff(householdId).has(pluginId),
+    isOff: (_householdId, pluginId) => store.aiOff().has(pluginId),
     left: (householdId, profileId) => inHousehold(householdId, () => news.pluginAiLeft(profileId)),
     ask: (householdId, pluginId, profileId, question) =>
       inHousehold(householdId, () => news.askForPlugin(pluginId, profileId, question))

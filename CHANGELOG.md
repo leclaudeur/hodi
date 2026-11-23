@@ -63,6 +63,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **One group of people on the server.** A server with several households merges them once: every profile, code and
+  plugin's AI turned off joins the first one. Invited people lists the invitations each adult made, and a plugin's AI
+  turned off is off for the whole server. A code made by the server's admin sets a new password for anyone but
+  themselves.
 - **One catalogue of sources for the server.** Every source added is in the one catalogue of the server, and each
   person still picks the ones they read in My sources. A server with several groups of people merges their lists once,
   each feed keeping the topics it had first; a source only one group saw waits in Server › To do. A source someone
