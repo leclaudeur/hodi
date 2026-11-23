@@ -148,7 +148,6 @@ describe('plugin routes open with no household', () => {
         profileId: null,
         householdId: null,
         kind: 'adult',
-        householdAdmin: false,
         serverAdmin: false,
         accountId: env.samAccount.id
       })

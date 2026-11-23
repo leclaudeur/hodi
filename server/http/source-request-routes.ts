@@ -4,7 +4,7 @@ import type { YouthStore } from '../db/youth-store.ts'
 import type { FindResult } from '../news/source-finder.ts'
 import type { NewsService } from '../news/news-service.ts'
 import type { YouthSources } from '../news/youth-sources.ts'
-import { isAdminOf, isParentOf, kindOf, profileIdOf } from './profile-routes.ts'
+import { isServerAdminOf, isParentOf, kindOf, profileIdOf } from './profile-routes.ts'
 import { MAX_PENDING_REQUESTS, idList } from './youth-routes.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -106,7 +106,7 @@ export const sourceRequestRoutes = ({
   const router = express.Router()
 
   const parentsOnly = (response: express.Response) => {
-    if (isParentOf(response) || isAdminOf(response)) return true
+    if (isParentOf(response) || isServerAdminOf(response)) return true
     response.status(403).json({ error: 'parents_only' })
     return false
   }

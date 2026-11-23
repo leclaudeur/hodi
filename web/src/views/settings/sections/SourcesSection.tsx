@@ -38,7 +38,7 @@ const useReader = () => {
   const me = household?.profiles.find(profile => profile.id === current)
   const young = me ? isYoung(me) : false
   const teen = me?.kind === 'teen'
-  return { current, admin: me?.role === 'admin', young, teen }
+  return { current, admin: household?.serverAdmin === true, young, teen }
 }
 
 // The page's state: the sources, the profile reading them, the filters and the dialogs.

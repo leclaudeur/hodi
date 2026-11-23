@@ -71,7 +71,7 @@ const YoungProfileSection = ({ id }: { id: number }) => {
   const [opened, setOpened] = useState<Opened | null>(null)
   const profile = value?.profiles.find(entry => entry.id === id)
   const own = value?.profiles.find(entry => entry.id === value.current)
-  const admin = own?.role === 'admin'
+  const admin = value?.serverAdmin === true
   const young = profile && isYoung(profile)
   // A teen asks for sources: what it asked waits here too, as on top of Réglages.
   const asked = usePendingRequests(profile?.kind === 'teen').filter(request => request.profileId === id)

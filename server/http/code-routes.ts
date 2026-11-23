@@ -19,7 +19,7 @@ import {
 import { ANYONE_IN, refuseSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
 import { type InvitationMail, invitationRoutes, inviteOf, mailInvitation } from './invitation-routes.ts'
-import { isAdminOf, isParentOf, profileIdOf } from './profile-routes.ts'
+import { isServerAdminOf, isParentOf, profileIdOf } from './profile-routes.ts'
 
 // "J'ai un code": an adult of the household invites a new adult, or the admin gives an adult profile without an
 // account its person; that person types the code on the Connexion page and makes their own account. The admin's code
@@ -238,7 +238,7 @@ const profileCode = ({ codes, profiles, now }: CodeRoutesOptions, profileId: unk
     return
   }
   // The admin first, so no one else learns from the answer which profiles are young.
-  if (!isAdminOf(response)) {
+  if (!isServerAdminOf(response)) {
     response.status(403).json({ error: 'admin_only' })
     return
   }

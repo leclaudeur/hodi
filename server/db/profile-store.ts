@@ -258,18 +258,6 @@ export class ProfileStore {
     return row ? { data: Buffer.from(row.photo), type: row.photo_type } : null
   }
 
-  // « Passer le rôle d'admin »: an adult with an account of their own becomes the household's admin, the admin until
-  // now a member. false when that profile cannot be.
-  handOverAdmin(id: number) {
-    const target = this.get(id)
-    if (!target || target.kind !== 'adult' || !target.hasAccount || target.role === 'admin') return false
-    transaction(this.#db, () => {
-      this.#db.prepare("UPDATE profiles SET role = 'member' WHERE account_id = ? AND role = 'admin'").run(this.#account)
-      this.#db.prepare("UPDATE profiles SET role = 'admin' WHERE id = ? AND account_id = ?").run(id, this.#account)
-    })
-    return true
-  }
-
   // Its state goes with it. The admin stays: the household always has a reader who manages it.
   delete(id: number) {
     const profiles = this.list()

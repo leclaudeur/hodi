@@ -2,7 +2,7 @@ import express from 'express'
 import type { GameStore } from '../db/game-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { NewsService } from '../news/news-service.ts'
-import { profileIdOf, requireAdmin } from './profile-routes.ts'
+import { profileIdOf, requireServerAdmin } from './profile-routes.ts'
 
 // What the server knows of an article or a video read, for the game: its kind, its theme, when it came out.
 export const readFactsOf = (news: NewsService) => (id: string) => {
@@ -116,7 +116,7 @@ const mountHouseholdGameRoutes = (router: express.Router, { game, news, profiles
     })
   })
 
-  router.put('/game/enabled', requireAdmin, (request, response) => {
+  router.put('/game/enabled', requireServerAdmin, (request, response) => {
     const { enabled } = (request.body ?? {}) as { enabled?: unknown }
     if (typeof enabled !== 'boolean') {
       response.status(400).json({ error: 'bad_request' })

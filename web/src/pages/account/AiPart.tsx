@@ -102,12 +102,12 @@ const KeyCard = ({ account, onAccount, onUnauthorized }: KeyCardProps) => {
   )
 }
 
-// The account's calls of the last 24 hours, kind by kind, then the household's plugins (the admin's).
+// The account's calls of the last 24 hours, kind by kind, then the plugins' (the server admin's).
 const Usage = ({ onUnauthorized }: { onUnauthorized: () => void }) => {
   const { t } = useTranslation()
   const { value: usage } = useAiUsage(onUnauthorized)
   const household = useProfiles({ onError: () => {} })
-  const admin = household?.profiles.find(profile => profile.id === household.current)?.role === 'admin'
+  const admin = household?.serverAdmin === true
   // The plugins' kind only once a plugin of the household has a violet button.
   const pluginsAsk = usePlugins().plugins.some(plugin => plugin.enabled && !plugin.error && plugin.usesAi)
   if (!usage?.available) return null
