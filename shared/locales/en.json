@@ -555,11 +555,11 @@
     "sources": {
       "title": "Sources",
       "what": "The sites and channels Hodi reads for you.",
-      "open": "Open “Sources”."
+      "open": "Open <i>Sources</i>."
     },
     "topic": {
       "suggestions": "Each topic has its sources.",
-      "pick": "Pick “{{topic}}”.",
+      "pick": "Pick <i>{{topic}}</i>.",
       "via": "Open the list of topics, then pick {{topic}}."
     },
     "site": {
@@ -771,19 +771,19 @@
     "shares": {
       "title": "Shared",
       "desktop": [
-        "What other profiles of the household sent you with “For…”, for 7 days. A read or hidden article goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
+        "What other profiles of the household sent you with <i>For…</i>, for 7 days. A read or hidden article goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
       ],
       "phone": [
-        "What other profiles of the household sent you with “For…”, for 7 days. A read article, or one swiped left, goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
+        "What other profiles of the household sent you with <i>For…</i>, for 7 days. A read article, or one swiped left, goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
       ]
     },
     "videos": {
       "title": "Videos",
       "desktop": [
-        "Videos and episodes from the channels you follow, one week at a time, without Shorts. They play here, beside the list. A video watched to the end leaves the list; once started, it waits for you in “Pick up” on the feed. Add channels in Settings › Sources."
+        "Videos and episodes from the channels you follow, one week at a time, without Shorts. They play here, beside the list. A video watched to the end leaves the list; once started, it waits for you in <i>Pick up</i> on the feed. Add channels in Settings › Sources."
       ],
       "phone": [
-        "Videos and episodes from the channels you follow, one week at a time, without Shorts. A video watched to the end leaves the list; once started, it waits for you in “Pick up” on the home screen. Add channels in Settings › Sources."
+        "Videos and episodes from the channels you follow, one week at a time, without Shorts. A video watched to the end leaves the list; once started, it waits for you in <i>Pick up</i> on the home screen. Add channels in Settings › Sources."
       ]
     }
   },
