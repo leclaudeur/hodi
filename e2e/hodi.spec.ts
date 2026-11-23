@@ -480,7 +480,12 @@ test('opens a parent with their Code parental, and a private profile with its pa
 
 test('adds a source from the link of its site', async () => {
   await page.goto('/#/settings/sources')
-  await page.getByRole('button', { name: 'Ajouter une source' }).click()
+  // The dashed card, first in Mes sources.
+  await page
+    .getByRole('listitem')
+    .filter({ hasText: 'Ajouter une source' })
+    .getByRole('button', { name: 'Ajouter' })
+    .click()
   const dialog = page.getByRole('dialog', { name: 'Ajouter une source' })
   // A home page: Hodi finds the feed it names.
   await dialog.getByRole('textbox', { name: 'Lien de la source à ajouter' }).fill('gamma.example')
@@ -492,8 +497,7 @@ test('adds a source from the link of its site', async () => {
   // The dialog stays open, empty, for another source.
   await expect(dialog.getByRole('textbox', { name: 'Lien de la source à ajouter' })).toHaveValue('')
   await dialog.getByRole('button', { name: 'Fermer' }).click()
-  await page.getByRole('button', { name: 'Ajoutées par toi 1' }).click()
-  await expect(page.getByRole('main').getByRole('listitem').filter({ hasText: 'gamma.example' })).toContainText('Gamma')
+  await expect(page.getByRole('main').getByRole('heading', { level: 3, name: /Gamma/ })).toBeVisible()
 
   await page.goto('/')
   await afterReload(page, () =>
@@ -777,7 +781,7 @@ test('shows a teen only the sources its parents gave it', async ({ browser }) =>
 test('a teen asks for two sources: a parent accepts one and refuses the other', async () => {
   for (const site of ['delta.example', 'epsilon.example']) {
     await teen.goto('/#/settings/sources')
-    await teen.getByRole('button', { name: 'Demander une source' }).click()
+    await teen.getByRole('button', { name: 'Demander', exact: true }).click()
     const dialog = teen.getByRole('dialog', { name: 'Demander une source' })
     await dialog.getByRole('textbox', { name: 'Lien du site ou de la chaîne' }).fill(site)
     await dialog.getByRole('button', { name: 'Demander' }).click()
@@ -808,7 +812,8 @@ test('a teen asks for two sources: a parent accepts one and refuses the other', 
   )
   await expect(teen.getByText('Un nouveau jeu vidéo belge')).toHaveCount(0)
   await teen.goto('/#/settings/sources')
-  await expect(teen.getByRole('heading', { name: 'Mes demandes 0' })).toBeVisible()
+  // Nothing left waiting: no requests' grid.
+  await expect(teen.getByRole('heading', { name: /^Mes demandes/ })).toHaveCount(0)
   await expect(teen.getByRole('heading', { name: 'Ajoutées par les parents 1' })).toBeVisible()
   await page.goto('/')
   await expect(page.getByText('Victoire des Diables rouges')).toHaveCount(0)

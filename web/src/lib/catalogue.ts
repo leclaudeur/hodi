@@ -18,8 +18,10 @@ export interface CatalogueEntry {
   proposal: boolean
 }
 
-// 'official': sources.yml's tab; otherwise a topic's id.
-export type CataloguePart = 'official' | string
+// Alphabétique (A → Z or Z → A), or by readers (most or fewest first).
+export type CatalogueSort = 'az' | 'za' | 'popular' | 'unpopular'
+
+export const CATALOGUE_SORTS: CatalogueSort[] = ['az', 'za', 'popular', 'unpopular']
 
 interface CatalogueInput {
   sources: SourceStatus[]
@@ -58,18 +60,31 @@ export const catalogueOf = ({ sources, proposals, topics, hiddenSources }: Catal
   return [...followed, ...offered]
 }
 
-// A part's sources: the person's language first, then the most read, then by name. A search looks in every part.
-export const entriesOf = (entries: CatalogueEntry[], part: CataloguePart, language: string, search = '') => {
+interface EntriesQuery {
+  topicId: string
+  language: string
+  search?: string
+  sort?: CatalogueSort
+}
+
+// A topic's sources, by name or by readers (then by name), those in « Mes sources » kept in their place. The search
+// looks in the topic's, by name and description.
+export const entriesOf = (entries: CatalogueEntry[], { topicId, language, search = '', sort = 'az' }: EntriesQuery) => {
   const wanted = foldText(search.trim())
-  const shown = wanted
-    ? entries.filter(entry => foldText(`${entry.name} ${entry.description ?? ''}`).includes(wanted))
-    : entries.filter(entry => (part === 'official' ? entry.official : entry.topicIds.includes(part)))
-  return [...shown].sort(
-    (a, b) =>
-      Number(b.lang === language) - Number(a.lang === language) ||
-      (b.readers ?? 0) - (a.readers ?? 0) ||
-      a.name.localeCompare(b.name, language)
+  const shown = entries.filter(
+    entry =>
+      entry.topicIds.includes(topicId) &&
+      (!wanted || foldText(`${entry.name} ${entry.description ?? ''}`).includes(wanted))
   )
+  const byName = (a: CatalogueEntry, b: CatalogueEntry) => a.name.localeCompare(b.name, language)
+  const byReaders = (a: CatalogueEntry, b: CatalogueEntry) => (a.readers ?? 0) - (b.readers ?? 0)
+  const order: Record<CatalogueSort, (a: CatalogueEntry, b: CatalogueEntry) => number> = {
+    az: byName,
+    za: (a, b) => byName(b, a),
+    popular: (a, b) => byReaders(b, a) || byName(a, b),
+    unpopular: (a, b) => byReaders(a, b) || byName(a, b)
+  }
+  return [...shown].sort(order[sort])
 }
 
 // The topics the catalogue has sources in, in the topics' order.

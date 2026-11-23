@@ -152,8 +152,6 @@ export const teenSteps = (game: boolean): Step[] => [
     target: '[data-tour="ask-source"]',
     title: t('tour.teen.ask.title'),
     text: [t('tour.teen.ask.press')],
-    // On a computer, the "ask" card is in the closed "Mes demandes".
-    via: { target: '[data-tour="requests"]', text: [t('tour.teen.ask.requests')] },
     where: on('#/settings/sources'),
     until: 'press'
   },

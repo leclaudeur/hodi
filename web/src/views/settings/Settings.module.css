@@ -36,6 +36,11 @@
   padding: 0 0 calc(24px + var(--nav-room, env(safe-area-inset-bottom)));
 }
 
+/* Three cards across (Sources). */
+.widePage {
+  max-width: 940px;
+}
+
 .phonePage {
   max-width: none;
   padding: 4px var(--gutter) calc(120px + env(safe-area-inset-bottom));
