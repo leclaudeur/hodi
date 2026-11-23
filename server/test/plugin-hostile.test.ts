@@ -35,9 +35,6 @@ import { MAX_WAITING_CALLS, threadCostMb } from '../plugins/sandbox/sandbox.ts'
 import { pluginMailer } from '../plugins/mail.ts'
 import { accountHooks, pluginAccounts } from '../plugins/accounts.ts'
 import { PluginAccountStore } from '../db/plugin-account-store.ts'
-import { householdHooks, pluginHouseholds } from '../plugins/households.ts'
-import { PluginHouseholdStore } from '../db/plugin-household-store.ts'
-import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { DEFAULT_MAX_FAILURES, LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword } from '../auth/password.ts'
 import type { MailMessage } from '../mail/mailer.ts'
@@ -252,7 +249,7 @@ describe('hostile plugins', () => {
         description: 'Makes an account and signs the device in',
         api: 2,
         audience: 'admin',
-        permissions: { accounts: true, publicRoutes: true, signIn: true, households: true }
+        permissions: { accounts: true, publicRoutes: true, signIn: true }
       })
     )
     writeFileSync(
@@ -292,16 +289,6 @@ describe('hostile plugins', () => {
             )
             return { body: await Promise.all(tries) }
           },
-          // A household whose admin is an account that already exists: only the one this call checked.
-          'POST /household': async (request, ctx) => {
-            const admin = request.body.password
-              ? await ctx.accounts.checkPassword(request.body.email, request.body.password)
-              : { id: request.body.accountId }
-            if (!admin) return { status: 401, body: {} }
-            return ctx.households
-              .create({ name: 'Foyer ' + admin.id, admin: { name: 'Lea', accountId: admin.id } })
-              .then(made => ({ body: { made: made.name } }), error => ({ status: 403, body: { error: error.message } }))
-          }
         }
       }`
     )
@@ -313,13 +300,13 @@ describe('hostile plugins', () => {
       manifest.id = id
       writeFileSync(path.join(pluginDir, id, 'plugin.json'), JSON.stringify(manifest))
     }
-    // The fixtures that ask for accounts, households, sign-ins, mail or notifications run only verified: signed here,
+    // The fixtures that ask for accounts, sign-ins, mail or notifications run only verified: signed here,
     // once their files are final.
     for (const id of readdirSync(pluginDir)) {
       const { permissions = {} } = JSON.parse(readFileSync(path.join(pluginDir, id, 'plugin.json'), 'utf8')) as {
         permissions?: Record<string, unknown>
       }
-      if (['accounts', 'households', 'signIn', 'mail', 'notify'].some(key => permissions[key]))
+      if (['accounts', 'signIn', 'mail', 'notify'].some(key => permissions[key]))
         signTestFolder(path.join(pluginDir, id))
     }
     plugins = await loadPlugins({
@@ -343,12 +330,6 @@ describe('hostile plugins', () => {
         made: new PluginAccountStore(db),
         hooks: accountHooks(),
         throttle
-      }),
-      households: pluginHouseholds({
-        store: new PluginHouseholdStore(db),
-        accounts: new UserAccountStore(db),
-        codes: new SignInCodeStore(db, Buffer.alloc(32, 5)),
-        hooks: householdHooks()
       }),
       mail: pluginMailer({
         store: { get: () => mailSettings },
@@ -622,19 +603,23 @@ describe('hostile plugins', () => {
       })
       assert.equal(again.status, 429)
     },
-    // Suspend and remove fail on every household the plugin did not make; its own goes, with all it held.
+    // Suspend and remove fail on every account the plugin did not make; its own it suspends and resumes.
     H35: async id => {
       const results = (await (await call(`/${id}/wipe`, { method: 'POST' })).json()) as { name: string; ok: boolean }[]
-      for (const result of results) assert.equal(result.ok, result.name === 'remove own', result.name)
+      for (const result of results) assert.equal(result.ok, result.name.startsWith('own '), result.name)
       assert.ok(
         results.some(result => result.name === 'suspend 1') && results.some(result => result.name === 'remove 2')
       )
-      for (const household of [1, 2]) {
-        assert.equal(coreHousehold(household)?.suspended_at, null)
-        assert.ok(profilesOf(household) > 0)
+      const others = db
+        .prepare(
+          'SELECT count(*) AS n FROM users WHERE id IN (1, 2) AND suspended_at IS NULL AND made_by_plugin IS NULL'
+        )
+        .get() as { n: number }
+      assert.equal(others.n, 2)
+      const made = db.prepare('SELECT suspended_at FROM users WHERE made_by_plugin = ?').get(id) as {
+        suspended_at: number | null
       }
-      const made = db.prepare('SELECT count(*) AS n FROM accounts WHERE made_by_plugin = ?').get(id) as { n: number }
-      assert.equal(made.n, 0)
+      assert.equal(made.suspended_at, null)
     },
     // Both moves were ignored: no device was set to read in another household than its account's.
     H50: async () => {
@@ -722,20 +707,10 @@ describe('hostile plugins', () => {
 
   // What a case needs before its requests.
   let devicesBefore = 0
-  const coreHousehold = (id: number) =>
-    db.prepare('SELECT id, name, suspended_at FROM accounts WHERE id = ?').get(id) as
-      { id: number; name: string; suspended_at: number | null } | undefined
-  const profilesOf = (id: number) =>
-    (db.prepare('SELECT count(*) AS n FROM profiles WHERE account_id = ?').get(id) as { n: number }).n
   const prepare: Record<string, (id: string) => void> = {
-    // A second household made by the core, as Serveur › Foyers would: no plugin made it.
+    // A second account with an e-mail, made by the core: no plugin made it.
     H35: () => {
-      db.prepare(
-        "INSERT INTO accounts (id, name, created_at, set_up_at, language) VALUES (2, 'Famille Martin', ?, ?, 'fr')"
-      ).run(Date.now(), Date.now())
-      db.prepare(
-        "INSERT INTO profiles (account_id, name, color, position, created_at, role) VALUES (2, 'Marie', 'world', 0, ?, 'admin')"
-      ).run(Date.now())
+      new UserAccountStore(db).create('martin@example.com', 'hash', Date.now())
     },
     H33: () => {
       devicesBefore = (db.prepare('SELECT count(*) AS n FROM user_devices').get() as { n: number }).n
@@ -762,7 +737,14 @@ describe('hostile plugins', () => {
   }
 
   it('never moves a device to another household, even one where its account has a profile', async () => {
-    // Only a plugin's own data could give an account a second profile: one account reads in one household.
+    // A second household, and only a plugin's own data could give an account a profile there: one account reads in
+    // one household.
+    db.prepare(
+      "INSERT INTO accounts (id, name, created_at, set_up_at, language) VALUES (2, 'Famille Martin', ?, ?, 'fr')"
+    ).run(Date.now(), Date.now())
+    db.prepare(
+      "INSERT INTO profiles (account_id, name, color, position, created_at, role) VALUES (2, 'Marie', 'world', 0, ?, 'admin')"
+    ).run(Date.now())
     db.prepare(
       "INSERT INTO profiles (account_id, name, color, position, created_at, role, user_id) VALUES (2, 'Antho', 'world', 1, ?, 'member', 1)"
     ).run(Date.now())
@@ -914,26 +896,6 @@ describe('hostile plugins', () => {
     // The plugin never sees what was typed: only its own body.
     const right = await remove({ 'Hodi-Proof': proofOf({ password: ADMIN_PASSWORD }) })
     assert.deepEqual([right.status, await right.json()], [200, { gone: true, saw: null }])
-  })
-
-  it('makes a household for an existing account only when the call checked that account', async () => {
-    const post = (body: unknown) =>
-      fetch(`${baseUrl}/api/public/plugins/sign-up/household`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '203.0.113.36' },
-        body: JSON.stringify(body)
-      })
-    const adult = db.prepare("SELECT id FROM users WHERE email = 'adult@example.test'").get() as { id: number }
-    const households = () => (db.prepare('SELECT count(*) AS n FROM accounts').get() as { n: number }).n
-    const before = households()
-    // Only its id: the plugin never asked that person anything.
-    const taken = await post({ accountId: adult.id })
-    assert.deepEqual([taken.status, await taken.json()], [403, { error: 'not_vouched' }])
-    assert.equal(households(), before)
-    // The person typed their password: the household is theirs.
-    const asked = await post({ email: 'adult@example.test', password: ADULT_PASSWORD })
-    assert.deepEqual([asked.status, await asked.json()], [200, { made: `Foyer ${adult.id}` }])
-    assert.equal(households(), before + 1)
   })
 
   it('keeps a memory bomb inside what one plugin thread may use', async () => {

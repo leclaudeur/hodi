@@ -3,11 +3,9 @@ import type { ForgetRecord } from '../db/forget-log.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
-import type { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import type { PluginStore } from '../db/plugin-store.ts'
 import { AccountLoginStore } from '../db/account-login-store.ts'
-import { PluginHouseholdStore } from '../db/plugin-household-store.ts'
 import { type ServerSettingsStore, publicServerSettings } from '../db/server-settings-store.ts'
 import { inHousehold } from '../db/household-scope.ts'
 import { smtpSend } from '../mail/mailer.ts'
@@ -17,7 +15,6 @@ import type { NewsService } from '../news/news-service.ts'
 import { pluginArticles } from '../plugins/articles.ts'
 import { type AccountHooks, pluginAccounts } from '../plugins/accounts.ts'
 import { PluginAccountStore } from '../db/plugin-account-store.ts'
-import { type HouseholdHooks, pluginHouseholds } from '../plugins/households.ts'
 import { pluginMailer } from '../plugins/mail.ts'
 import { pluginNotifier } from '../plugins/notify.ts'
 import { pluginServerNotifier } from '../plugins/server-notify.ts'
@@ -34,12 +31,10 @@ interface PluginWiring {
   store: PluginStore
   news: NewsService
   accounts: UserAccountStore
-  codes: SignInCodeStore
   household: HouseholdStore
   profiles: ProfileStore
   alerts: FollowedAlerts
   serverNotices: ServerNotifier
-  hooks: HouseholdHooks
   accountHooks: AccountHooks
   throttle: LoginThrottle
   mailSettings: MailSettingsStore
@@ -90,12 +85,6 @@ export const startPlugins = async (wiring: PluginWiring) => {
     }),
     // What a plugin tells the server's admin of (Serveur › Notifications).
     serverNotifier: pluginServerNotifier({ notifier: wiring.serverNotices }),
-    households: pluginHouseholds({
-      store: new PluginHouseholdStore(db),
-      accounts,
-      codes: wiring.codes,
-      hooks: wiring.hooks
-    }),
     serverSettings: () => publicServerSettings(wiring.serverSettings),
     // A plugin's e-mail ends in the language of the recipient's household, when they have an account.
     mail: pluginMailer({

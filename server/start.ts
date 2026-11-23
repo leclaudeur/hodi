@@ -8,7 +8,6 @@ import { codeForPeople, drawCode } from './db/sign-in-code-store.ts'
 import { smtpSend } from './mail/mailer.ts'
 import { PluginInstaller } from './plugins/installer.ts'
 import { pluginArticle } from './plugins/articles.ts'
-import { householdHooks } from './plugins/households.ts'
 import { accountHooks } from './plugins/accounts.ts'
 import type { PluginRegistry } from './plugins/registry.ts'
 import type { PluginAi } from './plugins/ai.ts'
@@ -43,7 +42,6 @@ interface Running {
   pluginsDir: string
   pluginBackup: PluginBackup
   pendingRestore: string
-  hooks: ReturnType<typeof householdHooks>
   accountHooks: ReturnType<typeof accountHooks>
   throttle: LoginThrottle
   restart: (reason: string) => void
@@ -62,7 +60,6 @@ const drawSetupCode = (stores: Stores) => {
 const serve = ({ config, outside, stores, news, plugins, restart, ...running }: Running) => {
   const { store } = stores
   return createApp(config, {
-    householdHooks: running.hooks,
     accountHooks: running.accountHooks,
     news,
     accounts: stores.accounts,
@@ -157,8 +154,6 @@ export const startHodi = async (config: Config, outside: Outside) => {
   const pluginsDir = path.join(path.dirname(config.databaseFile), 'plugins')
   // Failed sign-ins, and a plugin's failed password checks, count together for each address.
   const throttle = new LoginThrottle()
-  // What a plugin's new household needs from the app (its base sources, its profiles' set-up), filled in by createApp.
-  const hooks = householdHooks()
   // What removing an account a plugin made takes (its profiles, the plugins told), filled in by createApp too.
   const removals = accountHooks()
   const { plugins, pluginAiCalls } = await startPlugins({
@@ -170,7 +165,6 @@ export const startHodi = async (config: Config, outside: Outside) => {
     news,
     alerts,
     serverNotices,
-    hooks,
     accountHooks: removals,
     throttle
   })
@@ -204,7 +198,6 @@ export const startHodi = async (config: Config, outside: Outside) => {
     pluginsDir,
     pluginBackup,
     pendingRestore,
-    hooks,
     accountHooks: removals,
     throttle,
     restart: shutdown

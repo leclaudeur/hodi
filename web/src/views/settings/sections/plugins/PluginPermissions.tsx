@@ -3,7 +3,6 @@ import {
   Database,
   DoorOpen,
   Globe,
-  House,
   KeyRound,
   type LucideIcon,
   Mail,
@@ -23,7 +22,6 @@ import own from './Plugins.module.css'
 // beyond it. Hodi refuses anything the manifest did not declare.
 const GRANTS: { key: Exclude<keyof Permissions, 'network'>; icon: LucideIcon }[] = [
   { key: 'articles', icon: Newspaper },
-  { key: 'households', icon: House },
   { key: 'accounts', icon: UserPlus },
   { key: 'signIn', icon: KeyRound },
   { key: 'publicRoutes', icon: DoorOpen },

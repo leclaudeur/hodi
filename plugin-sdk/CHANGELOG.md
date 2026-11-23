@@ -34,6 +34,12 @@ and never touch `version`; a small release pull request raises `version` and mov
 - **Hodi's limits built in.** The SDK carries the limits of the Hodi it was built with (Hodi's `config.yml`): the test
   kit and `hodi-plugin build` follow that SDK version's values, and a plugin's folder needs no config file.
 
+### Removed
+
+- **`ctx.households` and `permissions.households`.** Hodi no longer has households a plugin makes or runs: a plugin makes
+  accounts (`ctx.accounts.create`) and suspends, resumes or removes them. A manifest that still asks for `households`
+  loads, and the permission is ignored.
+
 ## [1.0.0-beta.5] - 2026-11-19
 
 Plugins can show Hodi's − / + number picker and its multi-select of a source's topics, offer a way on to an account

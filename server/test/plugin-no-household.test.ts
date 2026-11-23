@@ -12,9 +12,7 @@ import type { Config } from '../config.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
-import { PluginHouseholdStore } from '../db/plugin-household-store.ts'
 import { PluginStore } from '../db/plugin-store.ts'
-import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
@@ -22,7 +20,6 @@ import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { PLUGIN_API } from '../plugins/manifest.ts'
 import { packageDigest } from '../plugins/package.ts'
-import { householdHooks, pluginHouseholds } from '../plugins/households.ts'
 import { loadPlugins } from '../plugins/registry.ts'
 import { checkShape } from '../plugins/plugin-shape.ts'
 import { fakeFetch } from './helpers/news.ts'
@@ -37,16 +34,7 @@ const FAST = { N: 2 ** 10, r: 8, p: 1 }
 const SERVER = `export default {
   routes: {
     'POST /mine': { noHousehold: true, handler: async request => ({ status: 201, body: { who: request.who } }) },
-    'GET /notes': async request => ({ body: { who: request.who } }),
-    // The household the caller asked for, with them as its admin: only an account in no household may be made one.
-    'POST /household': { noHousehold: true, handler: async (request, ctx) => {
-      const made = await ctx.households.create({ name: 'Famille Martin', admin: { name: 'Sam', accountId: request.who.accountId } })
-      return { status: 201, body: { id: made.id } }
-    } },
-    'POST /hand-over': async (request, ctx) => {
-      await ctx.households.create({ name: 'X', admin: { name: 'Sam', accountId: request.body.accountId } })
-      return { status: 201 }
-    }
+    'GET /notes': async request => ({ body: { who: request.who } })
   }
 }`
 
@@ -56,7 +44,7 @@ const cookiesFrom = (response: Response) =>
     .map(cookie => cookie.split(';')[0])
     .join('; ')
 
-// ctx.households is only for a plugin a trusted key signed.
+// Signed, as the plugins that open such routes are.
 const testKey = generateKeyPairSync('ed25519')
 const TRUSTED = [testKey.publicKey.export({ type: 'spki', format: 'pem' }).toString()]
 
@@ -64,7 +52,7 @@ const writePlugin = (dir: string) => {
   const root = path.join(dir, 'club')
   mkdirSync(root, { recursive: true })
   const manifest = { id: 'club', name: 'Club', version: '0.1.0', description: 'Un club.', api: PLUGIN_API }
-  writeFileSync(path.join(root, 'plugin.json'), JSON.stringify({ ...manifest, permissions: { households: true } }))
+  writeFileSync(path.join(root, 'plugin.json'), JSON.stringify({ ...manifest, permissions: {} }))
   writeFileSync(path.join(root, 'server.js'), SERVER)
   writeFileSync(path.join(root, 'signature'), sign(null, packageDigest(root), testKey.privateKey).toString('base64'))
 }
@@ -87,18 +75,11 @@ const start = async () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'hodi-plugins-'))
   writePlugin(dir)
   const accounts = new UserAccountStore(db)
-  const hooks = householdHooks()
   const plugins = await loadPlugins({
     dir,
     trustedKeys: TRUSTED,
     dataDir: mkdtempSync(path.join(tmpdir(), 'hodi-plugin-data-')),
     store: new PluginStore(db),
-    households: pluginHouseholds({
-      store: new PluginHouseholdStore(db),
-      accounts,
-      codes: new SignInCodeStore(db, Buffer.alloc(32, 5)),
-      hooks
-    }),
     log: () => {}
   })
   const webDir = mkdtempSync(path.join(tmpdir(), 'hodi-web-'))
@@ -114,8 +95,7 @@ const start = async () => {
     devices: new UserDeviceStore(db),
     accountData: new AccountDataStore(db),
     throttle: new LoginThrottle(5, 60_000),
-    plugins,
-    householdHooks: hooks
+    plugins
   }).listen(0)
   await new Promise(resolve => server.once('listening', resolve))
   const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
@@ -180,22 +160,6 @@ describe('plugin routes open with no household', () => {
         const refused = await env.call(url, env.sam, method, method === 'GET' ? undefined : {})
         assert.deepEqual([refused.status, await refused.json()], [423, { error: 'no_household' }], url)
       }
-    } finally {
-      await env.close()
-    }
-  })
-
-  it('lets the plugin make that account a household’s admin, on such a route only', async () => {
-    const env = await start()
-    try {
-      // In a household, the same account cannot be handed another one, nor anyone else's.
-      const handed = await env.call('/plugins/club/hand-over', env.admin, 'POST', { accountId: env.samAccount.id })
-      assert.equal(handed.status, 500)
-      assert.equal((await env.call('/account/leave', env.sam, 'POST', { password: SAM_PASSWORD })).status, 204)
-      const made = await env.call('/plugins/club/household', env.sam, 'POST', {})
-      assert.equal(made.status, 201)
-      const session = (await (await env.call('/session', env.sam)).json()) as { noHousehold?: boolean }
-      assert.equal(session.noHousehold, undefined)
     } finally {
       await env.close()
     }
