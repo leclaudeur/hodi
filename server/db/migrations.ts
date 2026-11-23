@@ -1291,6 +1291,18 @@ const MIGRATIONS: string[] = [
     created_at INTEGER NOT NULL
   );
   CREATE INDEX parent_invitations_to ON parent_invitations (to_id);
+  `,
+  // « Code parental », one for each adult: six digits that open only that adult's profile, on a device where a young
+  // one reads. The household's code, which every adult shared, becomes each adult's own to begin with. young_here: a
+  // teen or a child signed in on that device of the account once, so its code is still asked once they leave it.
+  `
+  ALTER TABLE users ADD COLUMN parental_code_hash TEXT;
+  ALTER TABLE users ADD COLUMN parental_code_version INTEGER NOT NULL DEFAULT 0;
+  UPDATE users SET parental_code_hash = (
+    SELECT a.parental_pin_hash FROM profiles p JOIN accounts a ON a.id = p.account_id
+    WHERE p.user_id = users.id AND p.kind = 'adult' AND a.parental_pin_hash IS NOT NULL LIMIT 1
+  );
+  ALTER TABLE user_devices ADD COLUMN young_here INTEGER NOT NULL DEFAULT 0;
   `
 ]
 

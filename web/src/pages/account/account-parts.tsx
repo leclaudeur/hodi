@@ -82,7 +82,7 @@ export const PartBody = ({
   if (account === null) return <DevicePart />
   switch (part) {
     case 'children':
-      return <ChildrenPart />
+      return <ChildrenPart account={account} onAccount={onAccount} />
     case 'profile':
       return <AccountProfile account={account} onAccount={onAccount} />
     case 'sign-in':

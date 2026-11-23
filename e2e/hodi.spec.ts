@@ -11,7 +11,7 @@ const PASSWORD = 'un mot de passe solide 42'
 // Sam's, once the admin's code has given a new one.
 const SAM_PASSWORD = 'une toute nouvelle phrase 7'
 const ZOE_PASSWORD = 'la phrase de Zoé 2026'
-// The household's Code parental, which Alex sets for the adults' profiles that are not private.
+// Alex's own Code parental, asked for Alex's profile on a device where Zoé is signed in.
 const PARENTAL_CODE = '482913'
 
 // Longer than Playwright's 30 s: a sign-in may wait for the app's next code (see appCode).
@@ -370,9 +370,9 @@ test('links Zoé’s own tablet with a parent’s code, which opens her profile 
   await tablet.close()
 })
 
-// « Qui lit ? »: an adult opens at once, or with the household's Code parental once Alex sets one; Sam's private
-// profile asks for Sam's password instead, except on a device Sam trusts; the teen never asks for anything.
-test('opens an adult with the Code parental, and a private profile with its password unless trusted', async ({
+// « Qui lit ? »: a parent opens at once, or with their own Code parental where their teen is signed in too; Sam's
+// private profile asks for Sam's password instead, except on a device Sam trusts; the teen never asks for anything.
+test('opens a parent with their Code parental, and a private profile with its password unless trusted', async ({
   browser
 }) => {
   // Sam makes the profile private, with the password it will ask for.
@@ -389,10 +389,11 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await question.getByRole('button', { name: 'Rendre privé' }).click()
   await expect(own.getByRole('switch', { name: 'Profil privé' })).toHaveAttribute('aria-checked', 'true')
 
-  // Alex, the server's admin, sets the Code parental in Mon compte › Mes enfants.
+  // Alex, Zoé's parent, sets a Code parental in Mon compte › Mes enfants.
   await page.goto('/#/account/children')
+  await expect(page.getByText('Conseillé, pas encore choisi')).toBeVisible()
   await page.getByRole('switch', { name: 'Code parental' }).click()
-  const choose = page.getByRole('dialog', { name: 'Code parental' })
+  const choose = page.getByRole('dialog', { name: 'Ton code parental' })
   await choose.getByLabel('Nouveau code').fill(PARENTAL_CODE)
   await choose.getByRole('button', { name: 'Enregistrer' }).click()
   // Then Alex's own password: a profile left open does not prove who changes the code.
@@ -402,8 +403,18 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await proof.getByRole('button', { name: 'Enregistrer' }).click()
   await expect(page.getByText('6 chiffres')).toBeVisible()
 
-  // Alex's account on a shared device: Zoé opens at once, Alex's profile with the code, its last digit opens it.
+  // Alex's account on the family tablet: no young account signed in yet, Alex's profile opens at once.
   const device = await signIn(browser, 'Zoé')
+  await expect(device.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
+  await device.goto('/#/profiles')
+  await device.getByRole('button', { name: /Alex/ }).click()
+  await expect(device.getByRole('button', { name: 'Alex, mon profil' })).toBeVisible()
+  // Zoé adds her own account: Alex's profile now asks for the code, its last digit opens it.
+  await device.goto('/#/profiles')
+  await device.getByRole('button', { name: 'Ajouter' }).click()
+  await device.getByRole('textbox', { name: 'E-mail' }).fill('@zoe')
+  await device.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(ZOE_PASSWORD)
+  await device.getByRole('button', { name: 'Se connecter' }).click()
   await expect(device.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
   await device.goto('/#/profiles')
   await device.getByRole('button', { name: /Alex/ }).click()
@@ -450,12 +461,20 @@ test('opens an adult with the Code parental, and a private profile with its pass
   await device.getByRole('button', { name: /Sam/ }).click()
   await expect(device.getByRole('textbox', { name: 'Mot de passe de Sam' })).toBeVisible()
 
+  // A forgotten code: Alex's password opens Alex's profile instead.
+  await device.getByRole('button', { name: 'Retour' }).click()
+  await device.getByRole('button', { name: /Alex/ }).click()
+  await device.getByRole('button', { name: 'Code oublié ? Ton mot de passe' }).click()
+  await device.getByRole('textbox', { name: /mot de passe/i }).fill(PASSWORD)
+  await device.getByRole('button', { name: 'Ouvrir' }).click()
+  await expect(device.getByRole('button', { name: 'Alex, mon profil' })).toBeVisible()
+
   await own.close()
   await device.close()
 
   // No code any more, with Alex's password: Alex's profile opens at once again.
   await page.getByRole('switch', { name: 'Code parental' }).click()
-  const off = page.getByRole('dialog', { name: 'Désactiver le code parental ?' })
+  const off = page.getByRole('dialog', { name: 'Désactiver ton code parental ?' })
   await off.getByLabel('Mon mot de passe').fill(PASSWORD)
   await off.getByLabel('Code de l’app d’authentification').fill(await appCode())
   await off.getByRole('button', { name: 'Désactiver' }).click()
