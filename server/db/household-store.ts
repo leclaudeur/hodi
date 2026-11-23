@@ -34,8 +34,6 @@ export interface Household {
 
 export type HourCycle = 12 | 24
 
-export const isHourCycle = (value: unknown): value is HourCycle => value === 12 || value === 24
-
 interface HouseholdRow {
   name: string
   set_up_at: number | null
@@ -148,35 +146,5 @@ export class HouseholdStore {
         )
       return true
     })
-  }
-
-  setHourCycle(hourCycle: HourCycle) {
-    this.#db.prepare('UPDATE accounts SET hour_cycle = ? WHERE id = ?').run(hourCycle, this.#account)
-  }
-
-  setLanguage(language: Language) {
-    this.#db.prepare('UPDATE accounts SET language = ? WHERE id = ?').run(language, this.#account)
-  }
-
-  rename(name: string) {
-    this.#db.prepare('UPDATE accounts SET name = ? WHERE id = ?').run(name, this.#account)
-  }
-
-  setRegion(region: { timeZone?: string | null; country?: string | null }) {
-    const current = this.get()
-    this.#db
-      .prepare('UPDATE accounts SET time_zone = ?, country = ? WHERE id = ?')
-      .run(
-        region.timeZone === undefined ? current.timeZone : region.timeZone,
-        region.country === undefined ? current.country : region.country,
-        this.#account
-      )
-  }
-
-  // null: no AI, its buttons are hidden.
-  setAi(ai: HouseholdAi | null) {
-    this.#db
-      .prepare('UPDATE accounts SET ai_provider = ?, ai_key = ?, ai_model = ? WHERE id = ?')
-      .run(ai?.provider ?? null, ai?.key ?? null, ai?.model ?? null, this.#account)
   }
 }

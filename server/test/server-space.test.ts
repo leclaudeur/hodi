@@ -330,34 +330,15 @@ describe('server overview route', () => {
     assert.equal((await call('/server/accounts/999/code', adminCookie, 'POST')).status, 404)
   })
 
-  it('keeps the household’s photo, set by its admin, shown to its people and to the server’s admin', async () => {
+  it('shows the household’s photo to its people and to the server’s admin', async () => {
     const png = await sharp({ create: { width: 8, height: 8, channels: 3, background: '#c06040' } })
       .png()
       .toBuffer()
-    const put = (cookie: string, body: Uint8Array, type = 'image/png') =>
-      fetch(`${baseUrl}/api/household/photo`, {
-        method: 'PUT',
-        headers: { cookie, 'Content-Type': type },
-        body: new Uint8Array(body)
-      })
-
-    assert.equal(((await (await call('/household', adminCookie)).json()) as { photo: unknown }).photo, null)
-    // Réglages › Foyer is its admin's: Sam reads in the household, but does not run it.
-    assert.equal((await put(memberCookie, png)).status, 403)
-    // What the bytes are, not what the request says.
-    assert.equal((await put(adminCookie, Buffer.from('not a picture'))).status, 400)
-    assert.equal((await put(adminCookie, png, 'image/jpeg')).status, 400)
-    // A picture far larger than the app ever makes: a few kilobytes that would unpack into gigabytes.
-    const huge = await sharp({ create: { width: 1100, height: 8, channels: 3, background: '#000' } })
-      .png()
-      .toBuffer()
-    assert.equal((await put(adminCookie, huge)).status, 400)
-
-    const saved = await put(adminCookie, png)
-    assert.equal(saved.status, 200)
-    const { photo } = (await saved.json()) as { photo: string }
-    assert.match(photo, /^\/api\/households\/\d+\/photo\?v=\d+$/)
-    const id = Number(/households\/(\d+)/.exec(photo)![1])
+    // A plugin sets it now: the core has no screen for it.
+    const household = new HouseholdStore(db)
+    household.setPhoto({ data: png, type: 'image/png' }, NOW)
+    const id = household.ids()[0]!
+    const photo = `/api/households/${id}/photo?v=${NOW}`
 
     // Its people see it, as a plugin's household picker would.
     const seen = await fetch(`${baseUrl}${photo}`, { headers: { cookie: memberCookie } })
@@ -372,12 +353,11 @@ describe('server overview route', () => {
     const listed = (await (await call('/server/households', adminCookie)).json()) as {
       households: { id: number; photoVersion: number | null }[]
     }
-    assert.notEqual(listed.households.find(household => household.id === id)?.photoVersion, null)
+    assert.notEqual(listed.households.find(entry => entry.id === id)?.photoVersion, null)
     assert.equal((await call(`/server/households/${id}/photo`, adminCookie)).status, 200)
     assert.equal((await call(`/server/households/${id}/photo`, memberCookie)).status, 403)
 
-    const removed = await call('/household/photo', adminCookie, 'DELETE')
-    assert.equal(((await removed.json()) as { photo: unknown }).photo, null)
+    household.setPhoto(null, NOW + 1)
     assert.equal((await fetch(`${baseUrl}${photo}`, { headers: { cookie: memberCookie } })).status, 404)
   })
 

@@ -364,7 +364,7 @@ describe('attacks from outside', () => {
         })
         assert.equal(deleted.status, 403)
         assert.deepEqual(await deleted.json(), { error: 'cross_site' })
-        const changed = await install.call('/household', {
+        const changed = await install.call('/profiles/1', {
           method: 'PATCH',
           cookie: install.admin,
           headers: { 'Sec-Fetch-Site': site },
@@ -447,7 +447,7 @@ describe('attacks from outside', () => {
         body: { id: '1 OR 1=1' }
       })
       assert.equal(current.status, 400)
-      const large = await install.call('/household', {
+      const large = await install.call('/profiles/1', {
         method: 'PATCH',
         cookie: install.admin,
         body: { name: 'x'.repeat(3000) }

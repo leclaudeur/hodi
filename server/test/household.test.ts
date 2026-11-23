@@ -246,18 +246,10 @@ describe('household', () => {
       model: null
     })
 
-    const view = await (await fetch(`${baseUrl}/api/household`, { headers: { cookie: signedIn } })).json()
-    assert.equal(view.name, 'Chez nous')
-    // The household has no password of its own: everyone has their own.
-    assert.equal('sharedPassword' in view, false)
-    assert.equal(view.timeZone, 'Europe/Brussels')
-    assert.equal(view.country, 'BE')
-    assert.deepEqual(view.ai, {
-      provider: 'fake',
-      providerName: 'Fausse IA',
-      model: 'fake-1',
-      keyHint: 'sk-test-••••1234'
-    })
+    const stored = household.get()
+    assert.equal(stored.name, 'Chez nous')
+    assert.equal(stored.timeZone, 'Europe/Brussels')
+    assert.equal(stored.country, 'BE')
 
     assert.equal((await post('/setup', SETUP, { cookie })).status, 409)
     assert.equal((await post('/setup/account', ACCOUNT)).status, 409)
@@ -289,42 +281,11 @@ describe('household', () => {
     assert.deepEqual(await (await login({ password: PASSWORD })).json(), { error: 'invalid_request' })
   })
 
-  it('keeps the language chosen at setup, which the admin can change', async () => {
+  it('keeps the language chosen at setup', async () => {
     const cookie = await signIn()
     const session = await (await fetch(`${baseUrl}/api/session`, { headers: { cookie } })).json()
     assert.equal(session.language, 'fr')
     assert.equal((await (await fetch(`${baseUrl}/api/setup`)).json()).language, 'fr')
-
-    const patch = (body: unknown) => post('/household', body, { cookie }, 'PATCH')
-    assert.equal((await (await patch({ language: 'en' })).json()).language, 'en')
-    assert.equal((await patch({ language: 'nl' })).status, 400)
-
-    // The time of day, for every device: 24 h until the admin picks 12 h.
-    assert.equal((await (await patch({ hourCycle: 12 })).json()).hourCycle, 12)
-    assert.equal((await (await fetch(`${baseUrl}/api/session`, { headers: { cookie } })).json()).hourCycle, 12)
-    assert.equal((await patch({ hourCycle: 13 })).status, 400)
-    assert.equal(household.get().language, 'en')
-    assert.equal((await (await fetch(`${baseUrl}/api/setup`)).json()).language, 'en')
-    await patch({ language: 'fr' })
-  })
-
-  it('lets the admin rename it, move it and change or drop its AI', async () => {
-    const cookie = await signIn()
-    const patch = (body: unknown) => post('/household', body, { cookie }, 'PATCH')
-
-    assert.equal((await (await patch({ name: '  La   maison ' })).json()).name, 'La maison')
-    assert.equal((await patch({ name: '' })).status, 400)
-    const moved = await (await patch({ timeZone: 'America/Montreal', country: null })).json()
-    assert.equal(moved.timeZone, 'America/Montreal')
-    assert.equal(moved.country, null)
-    assert.equal(changes, 2)
-
-    const refused = await post('/household/ai', { provider: 'fake', key: 'sk-test-wrong1234' }, { cookie }, 'PUT')
-    assert.equal(refused.status, 422)
-    assert.equal(household.get().ai?.key, 'sk-test-good1234')
-    const dropped = await (await fetch(`${baseUrl}/api/household/ai`, { method: 'DELETE', headers: { cookie } })).json()
-    assert.equal(dropped.ai, null)
-    assert.equal(changes, 3)
   })
 
   it('is the admin’s only', async () => {

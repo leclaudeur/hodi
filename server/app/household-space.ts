@@ -5,10 +5,9 @@ import { accountRoutes } from '../http/account-routes.ts'
 import { codeRoutes } from '../http/code-routes.ts'
 import { accountHandleRoutes } from '../http/handle-routes.ts'
 import type { InvitationMail } from '../http/invitation-routes.ts'
-import { householdRoutes } from '../http/household-routes.ts'
 import { householdPhotoRoutes } from '../http/household-photo.ts'
 import { profileDeviceRoutes } from '../http/profile-device-routes.ts'
-import { profileRoutes, requireAdmin } from '../http/profile-routes.ts'
+import { profileRoutes } from '../http/profile-routes.ts'
 import { sessionRoutes } from '../http/session-routes.ts'
 import { sourceRequestMeRoutes, sourceRequestRoutes } from '../http/source-request-routes.ts'
 import { youngAccountRoutes } from '../http/young-account-routes.ts'
@@ -176,6 +175,4 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
   mountProfiles(api, wiring)
   mountSourceRequests(api, wiring)
   api.use(householdPhotoRoutes({ household, profiles, accounts }))
-  if (wiring.householdOptions)
-    api.use('/household', requireAdmin, householdRoutes({ ...wiring.householdOptions, checkProof: wiring.checkProof }))
 }
