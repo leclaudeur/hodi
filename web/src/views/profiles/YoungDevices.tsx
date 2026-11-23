@@ -13,8 +13,8 @@ interface YoungDevicesProps {
   profile: { id: number; name: string }
 }
 
-// A young one's own devices, on its card › Appareils: those it signed in on with its @identifier (and those a parent's
-// code linked before), and "Retirer" to sign one out. Nothing while there is none.
+// A young one's own devices, on its card › Appareils: those it signed in on with its @identifier, and "Retirer" to
+// sign one out. Nothing while there is none.
 const YoungDevices = ({ profile }: YoungDevicesProps) => {
   const { t } = useTranslation()
   const [devices, setDevices] = useState<ProfileDevice[]>([])
@@ -49,7 +49,7 @@ const YoungDevices = ({ profile }: YoungDevicesProps) => {
     const label = deviceLabel(device.userAgent, { browser: t('settings.account.browser') })
     return (
       <SettingRow
-        key={`${device.kind}-${device.id}`}
+        key={device.id}
         label={label}
         hint={t('settings.account.used', { when: timeAgo(new Date(device.lastSeenAt).toISOString()) })}
         action={{

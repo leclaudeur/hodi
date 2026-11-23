@@ -13,7 +13,6 @@ import { HouseholdStore } from '../db/household-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { SIGN_IN_CODE_LIFETIME, SignInCodeStore } from '../db/sign-in-code-store.ts'
-import { PROFILE_DEVICE_IDLE, ProfileDeviceStore } from '../db/profile-device-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { createUserSessionToken, userSessionKey } from '../auth/session.ts'
@@ -64,7 +63,6 @@ const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => 
     household,
     accounts,
     devices: new UserDeviceStore(db),
-    profileDevices: new ProfileDeviceStore(db),
     accountData: new AccountDataStore(db),
     accountAi: new AccountAiStore(db),
     codes: new SignInCodeStore(db, config.sessionSecret),
@@ -526,7 +524,7 @@ describe('an account with no password of its own (« Se connecter avec Google »
 })
 
 describe("a young profile's own device", () => {
-  let clock = Date.UTC(2026, 10, 6, 9)
+  const clock = Date.UTC(2026, 10, 6, 9)
   let admin: string
   let lea: number
 
@@ -542,84 +540,13 @@ describe("a young profile's own device", () => {
   after(() => install.close())
 
   const get = (url: string, cookie: string) => fetch(`${baseUrl}/api${url}`, { headers: { cookie } })
-  const codeFor = async (cookie: string, profileId: number) =>
-    ((await (await post('/codes', { profileId }, { cookie })).json()) as { code: string }).code
 
-  it('links the device a parent gives a code to, which opens that profile only', async () => {
-    const code = await codeFor(admin, lea)
-    const checked = (await (await post('/codes/check', { code })).json()) as { kind: string; profile: { id: number } }
-    assert.equal(checked.kind, 'device')
-    assert.equal(checked.profile.id, lea)
-    // It makes no account.
-    assert.equal(
-      (await post('/codes/join', { email: 'lea@example.com', password: PASSWORD, ageConfirmed: true, code })).status,
-      400
-    )
-
-    const linked = await post('/codes/link', { code }, { 'User-Agent': 'Mozilla/5.0 (iPad) Safari/605.1.15' })
-    assert.deepEqual(await linked.json(), { profileId: lea })
-    const cookie = cookiesFrom(linked)
-    assert.match(cookie, /hodi_session=y2\.\d+\.\d+\./)
-    const session = await (await get('/session', cookie)).json()
-    assert.equal(session.profileChosen, true)
-    assert.equal(session.linkedDevice, true)
-    const own = (await (await get('/profiles', cookie)).json()) as { current: number }
-    assert.equal(own.current, lea)
-
-    // Used once: nothing more. And a linked device never changes profile, nor makes codes.
-    assert.equal((await post('/codes/link', { code })).status, 403)
-    const admins = profiles.list()[0]!.id
-    assert.equal((await post('/profiles/current', { id: admins }, { cookie }, 'PUT')).status, 403)
-    assert.equal((await post('/codes', {}, { cookie })).status, 403)
-    assert.equal((await get(`/profiles/${lea}/devices`, cookie)).status, 403)
-
-    const devices = (await (await get(`/profiles/${lea}/devices`, admin)).json()) as {
-      devices: { id: number; userAgent: string }[]
-    }
-    assert.equal(devices.devices.length, 1)
-    assert.match(devices.devices[0]!.userAgent, /iPad/)
-  })
-
-  it('is removed by a parent, and signs out on its own only once', async () => {
-    const cookie = cookiesFrom(await post('/codes/link', { code: await codeFor(admin, lea) }))
-    const listed = (await (await get(`/profiles/${lea}/devices`, admin)).json()) as { devices: { id: number }[] }
-    assert.equal(listed.devices.length, 2)
-    const removed = await post(`/profiles/${lea}/devices/${listed.devices[0]!.id}`, {}, { cookie: admin }, 'DELETE')
-    assert.equal(removed.status, 204)
-    assert.equal((await get('/session', cookie)).status, 401)
-
-    // The first device signs out: it is no longer linked either.
-    const first = listed.devices[1]!.id
-    const other = cookiesFrom(await post('/codes/link', { code: await codeFor(admin, lea) }))
-    assert.equal((await post('/logout', {}, { cookie: other })).status, 204)
-    const left = (await (await get(`/profiles/${lea}/devices`, admin)).json()) as { devices: { id: number }[] }
-    assert.deepEqual(
-      left.devices.map(device => device.id),
-      [first]
-    )
-  })
-
-  it('stays linked for 90 days from its last use', async () => {
-    const cookie = cookiesFrom(await post('/codes/link', { code: await codeFor(admin, lea) }))
-    clock += PROFILE_DEVICE_IDLE - 60_000
-    const used = await get('/session', cookie)
-    assert.equal(used.status, 200)
-    // Its cookie comes again, for 90 more days.
-    assert.match(cookiesFrom(used), /hodi_session=y2\./)
-    clock += PROFILE_DEVICE_IDLE - 60_000
-    assert.equal((await get('/session', cookie)).status, 200)
-    clock += PROFILE_DEVICE_IDLE
-    assert.equal((await get('/session', cookie)).status, 401)
-  })
-
-  it('goes with its profile', async () => {
-    // Months later: the admin signs in again.
-    admin = await signIn()
-    const tom = profiles.create('Tom', 'sport', clock, { kind: 'child' })!.id
-    const cookie = cookiesFrom(await post('/codes/link', { code: await codeFor(admin, tom) }))
-    assert.equal((await get('/session', cookie)).status, 200)
-    assert.equal((await post(`/profiles/${tom}`, {}, { cookie: admin }, 'DELETE')).status, 204)
-    assert.equal((await get('/session', cookie)).status, 401)
+  it('links no device to it: a young one signs in with the account its parents made', async () => {
+    const made = await post('/codes', { profileId: lea }, { cookie: admin })
+    assert.deepEqual([made.status, await made.json()], [400, { error: 'young_account' }])
+    assert.equal((await post('/codes/link', { code: 'ABCDEFGH' })).status, 401)
+    const devices = (await (await get(`/profiles/${lea}/devices`, admin)).json()) as { devices: unknown[] }
+    assert.deepEqual(devices.devices, [])
   })
 })
 

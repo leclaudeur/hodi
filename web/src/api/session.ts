@@ -21,8 +21,6 @@ export interface Session {
   language: InterfaceLanguage | null
   // How the household writes the time of day.
   hourCycle: 12 | 24
-  // A young profile's own device, linked with a parent's code: that profile only.
-  linkedDevice: boolean
   // How long an article stays in the lists and a video in Vidéos, in days (Serveur › Contenu).
   content: { articleDays: number; videoDays: number; backupCopies: number } | null
   // No household yet (« Plus tard » at the setup): the server's admin, in /server only.
@@ -59,7 +57,6 @@ export const getSession = async (fresh = false): Promise<Session | null | 'setup
     profileChosen: body.profileChosen === true,
     language: isLanguage(body.language) ? body.language : null,
     hourCycle: body.hourCycle === 12 ? 12 : 24,
-    linkedDevice: body.linkedDevice === true,
     content: body.content ?? null,
     serverOnly: body.serverOnly === true,
     noHousehold: body.noHousehold === true,

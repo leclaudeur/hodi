@@ -121,35 +121,6 @@ export const verifyAccountToken = (
     : null
 }
 
-// A young profile's own device, linked with a code: y2.<device>.<its row's creation time>.<signature>. No expiry in
-// it: the device stays linked while its row does (see ProfileDeviceStore), and its cookie is sent again as it is
-// used. The creation time tells that row from a later one SQLite gave the same id. y1.<device>.<signature>, from
-// before, names the id alone.
-const PROFILE_DEVICE_VERSION = 'y2'
-const LEGACY_PROFILE_DEVICE_VERSION = 'y1'
-
-const profileDeviceKey = (secret: Buffer) => createHmac('sha256', secret).update('profile-device').digest()
-
-export const createProfileDeviceToken = (deviceId: number, createdAt: number, secret: Buffer) => {
-  const payload = `${PROFILE_DEVICE_VERSION}.${deviceId}.${createdAt}`
-  return `${payload}.${sign(payload, profileDeviceKey(secret))}`
-}
-
-// The device a y2 token names with its creation time, or a y1 token with none (null), once its signature holds;
-// null for any other token.
-export const readProfileDeviceToken = (token: string, secret: Buffer) => {
-  const parts = token.split('.')
-  const legacy = parts[0] === LEGACY_PROFILE_DEVICE_VERSION && parts.length === 3
-  if (!legacy && !(parts[0] === PROFILE_DEVICE_VERSION && parts.length === 4)) return null
-  const fields = parts.slice(1, -1)
-  const signature = parts.at(-1)
-  if (!fields.every(field => /^\d+$/.test(field)) || !signature) return null
-  const expected = Buffer.from(sign(parts.slice(0, -1).join('.'), profileDeviceKey(secret)))
-  const received = Buffer.from(signature)
-  if (expected.length !== received.length || !timingSafeEqual(expected, received)) return null
-  return { id: Number(fields[0]), createdAt: legacy ? null : Number(fields[1]) }
-}
-
 export const readCookie = (header: string | undefined, name: string) => {
   for (const part of header?.split(';') ?? []) {
     const separator = part.indexOf('=')

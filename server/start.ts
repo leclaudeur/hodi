@@ -65,7 +65,6 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
     accounts: stores.accounts,
     accountAi: stores.accountAi,
     devices: stores.devices,
-    profileDevices: stores.profileDevices,
     accountData: stores.accountData,
     handles: stores.handles,
     codes: stores.codes,

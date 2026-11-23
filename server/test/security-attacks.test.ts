@@ -11,7 +11,6 @@ import type { Config } from '../config.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
-import { ProfileDeviceStore } from '../db/profile-device-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
@@ -40,7 +39,6 @@ const startInstall = async (now: () => number) => {
   const db = openDatabase(':memory:')
   const profiles = new ProfileStore(db)
   const accounts = new UserAccountStore(db)
-  const profileDevices = new ProfileDeviceStore(db)
   const webDir = mkdtempSync(path.join(tmpdir(), 'hodi-web-'))
   writeFileSync(path.join(webDir, 'index.html'), '<!doctype html><title>Hodi</title>')
   const config: Config = {
@@ -61,7 +59,6 @@ const startInstall = async (now: () => number) => {
     household: new HouseholdStore(db),
     accounts,
     devices: new UserDeviceStore(db),
-    profileDevices,
     users: profileId => new UserStore(db, profileId),
     accountData: new AccountDataStore(db),
     codes: new SignInCodeStore(db, SECRET),
@@ -89,7 +86,7 @@ const startInstall = async (now: () => number) => {
   let admin = cookiesFrom(account)
   admin = `${admin}; ${cookiesFrom(await call('/setup', { method: 'POST', cookie: admin, body: SETUP }))}`
 
-  return { db, profiles, accounts, profileDevices, call, admin, close: () => server.close() }
+  return { db, profiles, accounts, call, admin, close: () => server.close() }
 }
 
 interface CallOptions {
@@ -175,44 +172,17 @@ describe('a row that goes never lets its cookie open the next one given its id',
     assert.equal(await sessionStatus(sam), 401)
   })
 
-  it("never opens the next young device with a removed one's cookie", async () => {
+  it('opens nothing with the cookie of a device once linked to a young profile', async () => {
     const lea = install.profiles.create('Léa', 'music', clock, { kind: 'teen' })!.id
-    const link = async () => {
-      const { code } = (await (
-        await install.call('/codes', { method: 'POST', cookie: install.admin, body: { profileId: lea } })
-      ).json()) as { code: string }
-      const linked = await install.call('/codes/link', { method: 'POST', body: { code } })
-      assert.equal(linked.status, 200)
-      return cookiesFrom(linked)
-    }
-    const removed = await link()
-    const [device] = install.profileDevices.list(lea, clock)
-    const gone = await install.call(`/profiles/${lea}/devices/${device!.id}`, {
-      method: 'DELETE',
-      cookie: install.admin
-    })
-    assert.equal(gone.status, 204)
-
-    clock += 60_000
-    const linked = await link()
-    assert.equal(install.profileDevices.list(lea, clock)[0]!.id, device!.id)
-    assert.equal(await sessionStatus(linked), 200)
-    assert.equal(await sessionStatus(removed), 401)
-  })
-
-  it('opens a device with a cookie from before creation times only when it was linked before them', async () => {
-    const lea = install.profiles.list().find(profile => profile.name === 'Léa')!.id
-    const [device] = install.profileDevices.list(lea, clock)
-    const payload = `y1.${device!.id}`
+    const made = await install.call('/codes', { method: 'POST', cookie: install.admin, body: { profileId: lea } })
+    assert.equal(made.status, 400)
+    assert.equal((await install.call('/codes/link', { method: 'POST', body: { code: 'ABCDEFGH' } })).status, 401)
+    // Signed as those devices' cookies were: the server no longer reads them.
     const key = createHmac('sha256', SECRET).update('profile-device').digest()
-    const old = `hodi_session=${payload}.${createHmac('sha256', key).update(payload).digest('base64url')}`
-    assert.equal(await sessionStatus(old), 401)
-
-    install.db.prepare('UPDATE profile_devices SET legacy = 1 WHERE id = ?').run(device!.id)
-    const legacy = await install.call('/session', { cookie: old })
-    assert.equal(legacy.status, 200)
-    // Replaced at once by one naming the row's creation time.
-    assert.match(cookiesFrom(legacy), /hodi_session=y2\.\d+\.\d+\./)
+    for (const payload of ['y1.1', `y2.1.${clock}`]) {
+      const old = `hodi_session=${payload}.${createHmac('sha256', key).update(payload).digest('base64url')}`
+      assert.equal(await sessionStatus(old), 401, payload)
+    }
   })
 
   it("never opens the next adult profile with a deleted profile's signed cookie", async () => {

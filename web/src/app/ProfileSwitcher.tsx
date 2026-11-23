@@ -10,7 +10,6 @@ import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import { Bar } from '../ui/Skeleton.tsx'
 import CreateChildDialog from '../views/profiles/CreateChildDialog.tsx'
 import styles from './ProfileSwitcher.module.css'
-import { isLinkedDevice } from '../lib/linked-device.ts'
 import { youngProfileHref } from '../lib/use-hash-route.ts'
 import { useAvatarMenu } from '../plugins/Slots.tsx'
 import UnlockDialog from './UnlockDialog.tsx'
@@ -31,16 +30,6 @@ const Waiting = () => (
     <span className={`${styles.selector} ${styles.waiting}`}>
       <Bar width={28} height={28} radius={14} />
       <Bar width={72} height={10} />
-    </span>
-  </div>
-)
-
-// A young profile's own device: its face and name, nothing to switch to.
-const Still = ({ current }: { current: Profile }) => (
-  <div className={styles.switcher}>
-    <span className={`${styles.selector} ${styles.still}`}>
-      <ProfileAvatar profile={current} size={28} />
-      <span className={styles.name}>{current.name}</span>
     </span>
   </div>
 )
@@ -152,7 +141,6 @@ const ProfileSwitcher = () => {
   const profiles = value?.profiles ?? []
   const current = profiles.find(profile => profile.id === value?.current)
   if (!current) return <Waiting />
-  if (isLinkedDevice()) return <Still current={current} />
 
   const pick = (profile: Profile) => {
     setOpen(false)

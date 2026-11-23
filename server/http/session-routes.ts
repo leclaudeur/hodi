@@ -37,7 +37,6 @@ export const sessionRoutes = ({
           }
         : {}),
       // true: a young profile's own device, which opens that profile only (no "Qui lit ?", no Se déconnecter).
-      ...(response.locals.linkedDevice === true ? { linkedDevice: true } : {}),
       // true: no household yet, the app opens /server and nothing else.
       ...(response.locals.serverOnly === true ? { serverOnly: true } : {}),
       // true: an account whose profile was deleted from its household: the app shows its account alone.

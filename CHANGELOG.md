@@ -123,6 +123,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   gone: a plugin makes accounts instead. A plugin that still makes households stops working on this version, so
   update your plugins together with Hodi.
 - **Household photos.** Nothing showed them any more: the server deletes the ones it still kept.
+- **Devices linked to a young profile by a code.** A teen or a child now signs in with the account a parent made in
+  My account › My children. A device still linked by a code is signed out: sign it in with that account.
 
 ## [1.0.0-beta.13] - 2026-11-19
 

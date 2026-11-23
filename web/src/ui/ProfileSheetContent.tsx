@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { type BadgeId, type BadgeProgress, type ProfileGame, getMyGame, getProfileGame, wearBadge } from '../api.ts'
 import { hasNews, refreshGame } from '../lib/game.ts'
 import { t as textNow } from '../lib/i18n.ts'
-import { isLinkedDevice } from '../lib/linked-device.ts'
 import { showError } from '../lib/toast.ts'
 import { useIsDesktop } from '../lib/use-media.ts'
 import { PROFILES_HREF } from '../lib/use-hash-route.ts'
@@ -239,7 +238,7 @@ const SheetContent = ({ profile, mine, onClose, page, last, cheer, onParty, onPa
   const { game, wearing, wear } = useSheetGame(profile.id, mine, onParty)
   // On a computer the sidebar's selector changes profile: the sheet has no button for it.
   const desktop = useIsDesktop()
-  const footer = mine && !desktop && !isLinkedDevice()
+  const footer = mine && !desktop
   const badge = opened && game ? game.badges.find(candidate => candidate.id === opened) : undefined
 
   if (page && game) {

@@ -114,30 +114,6 @@ export const FullStep = ({ onBack }: { onBack: () => void }) => {
   )
 }
 
-// A young profile's code: "Relier cet appareil" links the device to it.
-export const DeviceStep = ({ join, use }: { join: Join; use: Profiled }) => {
-  const { t } = useTranslation()
-  return (
-    <form
-      className={styles.form}
-      onSubmit={event => {
-        event.preventDefault()
-        void join.link()
-      }}
-    >
-      <StepHeader
-        title={t('join.device.title')}
-        intro={<RichText i18nKey="join.device.intro" values={{ name: use.profile.name }} />}
-      />
-      <MemberRow use={use} />
-      <ErrorLine error={join.error} />
-      <Actions onBack={join.back}>
-        <Next busy={join.busy}>{t('join.device.button')}</Next>
-      </Actions>
-    </form>
-  )
-}
-
 // The admin's code for an adult who forgot their password: "Nouveau mot de passe".
 export const ResetStep = ({ join, use }: { join: Join; use: Profiled }) => {
   const { t } = useTranslation()

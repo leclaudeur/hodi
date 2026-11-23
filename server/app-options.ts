@@ -7,7 +7,6 @@ import type { HouseholdStore } from './db/household-store.ts'
 import type { MailSettingsStore } from './db/mail-settings-store.ts'
 import type { PluginBackup } from './db/maintenance.ts'
 import type { PasswordResetStore } from './db/password-reset-store.ts'
-import type { ProfileDeviceStore } from './db/profile-device-store.ts'
 import type { ProfileStore } from './db/profile-store.ts'
 import type { ServerPeopleStore } from './db/server-people-store.ts'
 import type { ServerSettingsStore } from './db/server-settings-store.ts'
@@ -122,8 +121,6 @@ export interface AppOptions {
   codes?: SignInCodeStore
   // « Validation en deux étapes »: absent in tests that do not need it.
   twoFactor?: TwoFactorStore
-  // A young profile's own devices, linked with a code; with accounts.
-  profileDevices?: ProfileDeviceStore
   // Asked in the first-run screens of a device that is not on the server's own network.
   setupCode?: string
   // The AIs a household can pick (AI_PROVIDERS); fakes in tests.

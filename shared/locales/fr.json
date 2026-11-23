@@ -76,11 +76,6 @@
     "create": "Créer mon compte",
     "emailTaken": "Cette adresse a déjà un compte : connecte-toi avec elle.",
     "failed": "Le compte n’a pas pu être créé. Réessaie dans un instant.",
-    "device": {
-      "title": "Relier cet appareil",
-      "intro": "Cet appareil ouvrira seulement le profil de <b>{{name}}</b>, sans e-mail ni mot de passe. Il reste connecté tant qu’il sert au moins une fois tous les 90 jours, ou jusqu’à ce qu’un parent le retire.",
-      "button": "Valider"
-    },
     "reset": {
       "title": "Nouveau mot de passe",
       "intro": "Choisis le nouveau mot de passe du compte de <b>{{name}}</b>. Les autres appareils se déconnectent : tu t’y reconnecteras avec lui.",
@@ -329,7 +324,6 @@
       "copyFailed": "Le lien n’a pas pu être copié.",
       "done": "Terminé",
       "failed": "Le code n’a pas pu être créé. Réessaie dans un instant.",
-      "deviceIntro": "Avec ce code, l’appareil de {{name}} s’ouvre sur son profil, sans e-mail ni mot de passe. Sur cet appareil, ouvre Hodi, choisis <i>J’ai un code</i> sur la page Connexion et tape ces 8 caractères. <b>L’appareil n’ouvrira que le profil de {{name}}.</b>",
       "resetTitle": "Nouveau mot de passe",
       "resetIntro": "Avec ce code, {{name}} choisit un nouveau mot de passe. Sur son appareil, {{name}} ouvre Hodi, choisit <i>J’ai un code</i> sur la page Connexion et tape ces 8 caractères, puis son nouveau mot de passe. <b>Ses autres appareils se déconnectent</b> : il faudra s’y reconnecter avec le nouveau."
     },

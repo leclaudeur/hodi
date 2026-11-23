@@ -1428,6 +1428,10 @@ const MIGRATIONS: string[] = [
   // Nothing shows, copies or deletes a household's photo any more: none is kept out of reach.
   `
   UPDATE accounts SET photo = NULL, photo_type = NULL, photo_version = NULL;
+  `,
+  // A young one signs in with the account its parents made: no device is linked to its profile by a code any more.
+  `
+  DROP TABLE profile_devices;
   `
 ]
 
