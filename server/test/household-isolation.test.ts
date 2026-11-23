@@ -175,9 +175,10 @@ describe('two households on one server', () => {
     })
     assert.equal(joined.status, 200)
     const julie = cookiesFrom(joined)
+    // Julie reads with her own profile: nobody else's is on her device.
     const ids = await profileIds(julie)
-    assert.equal(ids.length, 3)
-    assert.ok(ids.includes(martinAdmin))
+    assert.equal(ids.length, 1)
+    assert.ok(!ids.includes(martinAdmin))
     assert.deepEqual(
       (await json<{ profiles: { name: string }[] }>('/profiles', dupont)).profiles.map(p => p.name),
       ['Claire']

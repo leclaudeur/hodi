@@ -53,7 +53,7 @@ export const sharePeople = ({ users, profiles, accounts, signedInHere }: SharePe
     const family = sender ? familyOf(sender.id) : new Set<number>()
     const near = new Set([...family, ...(signedInHere?.(request) ?? [])])
     const before = new Set(users(from.id).sharedWith())
-    return (profiles?.list() ?? []).filter(to => {
+    return (profiles?.everyone() ?? []).filter(to => {
       if (!mayShare(from, to, family)) return false
       const receiver = accountOf(to.id)
       return !sender || !receiver || near.has(receiver.id) || before.has(to.id)
@@ -64,7 +64,7 @@ export const sharePeople = ({ users, profiles, accounts, signedInHere }: SharePe
   const byHandle = (from: Profile, handle: string) => {
     const account = accounts?.byHandle(handle.replace(/^@/, '').toLowerCase())
     const profileId = account ? accounts?.profileOf(account.id) : null
-    const to = typeof profileId === 'number' ? (profiles?.get(profileId) ?? null) : null
+    const to = typeof profileId === 'number' ? (profiles?.find(profileId) ?? null) : null
     return to && mayShare(from, to) ? to : null
   }
 

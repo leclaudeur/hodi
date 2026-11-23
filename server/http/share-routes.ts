@@ -72,7 +72,7 @@ const mountPeopleRoutes = (router: express.Router, { users, profiles }: ShareRou
     }
     const known = new Set([...people.mutedBy(me.id), ...users(me.id).sharedWith()])
     const offered = new Set(people.offered(me, request).map(profile => profile.id))
-    const senders = (profiles?.list() ?? []).filter(
+    const senders = (profiles?.everyone() ?? []).filter(
       profile => profile.id !== me.id && (offered.has(profile.id) || known.has(profile.id))
     )
     response.json({ people: senders.map(people.personOf) })
@@ -82,7 +82,7 @@ const mountPeopleRoutes = (router: express.Router, { users, profiles }: ShareRou
 const mountShareRoutes = (
   router: express.Router,
   { users, profiles, news, game, alerts, now }: ShareRoutesOptions,
-  { sharingOn, mutedBy, mayShare }: SharePeople
+  { sharingOn, mutedBy, mayShare, personOf }: SharePeople
 ) => {
   router.get('/me/shares', (_request, response) => {
     const profileId = profileIdOf(response)
@@ -90,14 +90,20 @@ const mountShareRoutes = (
       response.json({ items: [] })
       return
     }
-    const senders = new Set(
-      (profiles?.list() ?? []).filter(other => other.id !== profileId && sharingOn(other.id)).map(other => other.id)
+    const senders = new Map(
+      (profiles?.everyone() ?? [])
+        .filter(other => other.id !== profileId && sharingOn(other.id))
+        .map(other => [other.id, other])
     )
     const muted = mutedBy(profileId)
+    // Each with who sent it: often someone whose profile is not on this device.
     response.json({
       items: users(profileId)
         .shares(now() - SHARES_RETENTION_MS)
-        .filter(share => senders.has(share.from) && !muted.includes(share.from))
+        .flatMap(share => {
+          const sender = senders.get(share.from)
+          return sender && !muted.includes(share.from) ? [{ ...share, person: personOf(sender) }] : []
+        })
     })
   })
 
@@ -106,7 +112,7 @@ const mountShareRoutes = (
     const { articleId, to, note } = (request.body ?? {}) as { articleId?: unknown; to?: unknown; note?: unknown }
     const me = profiles?.get(profileId) ?? null
     const reachable = (id: unknown) => {
-      const to = typeof id === 'number' ? profiles?.get(id) : null
+      const to = typeof id === 'number' ? profiles?.find(id) : null
       return me !== null && !!to && mayShare(me, to)
     }
     if (
@@ -131,7 +137,7 @@ const mountShareRoutes = (
     response.json({ ok: true })
 
     // The other profiles' devices hear of it, each in its profile's language; the share itself is already kept.
-    const from = profiles?.list().find(profile => profile.id === profileId)?.name
+    const from = profiles?.find(profileId)?.name
     for (const id of to as number[]) {
       const video = item.kind === 'video' || item.kind === 'podcast'
       const t = textsIn(news.languageOf(id))
@@ -149,7 +155,7 @@ const mountShareRoutes = (
 const mountReactionRoutes = (
   router: express.Router,
   { users, profiles, news, game, alerts, now }: ShareRoutesOptions,
-  { sharingOn }: SharePeople
+  { sharingOn, personOf }: SharePeople
 ) => {
   // An emoji back to whoever sent the article ("Léa a réagi ❤️"), changed or taken back at will.
   router.post('/me/shares/reaction', (request, response) => {
@@ -178,7 +184,7 @@ const mountReactionRoutes = (
     // Its sender hears of a new one, unless it turned sharing off since.
     if (!result.changed || reaction === null || !sharingOn(from)) return
     const { item } = result
-    const name = profiles?.list().find(profile => profile.id === profileId)?.name
+    const name = profiles?.find(profileId)?.name
     const video = item.kind === 'video' || item.kind === 'podcast'
     const t = textsIn(news.languageOf(from))
     void alerts?.notifyShare(
@@ -194,16 +200,17 @@ const mountReactionRoutes = (
     )
   })
 
-  // The reactions to what this profile sent, until "Partages" shows them.
+  // The reactions to what this profile sent, until "Partages" shows them, each with who reacted: often someone whose
+  // profile is not on this device.
   router.get('/me/shares/reactions', (_request, response) => {
     const profileId = profileIdOf(response)
-    const known = new Set((profiles?.list() ?? []).map(profile => profile.id))
+    const known = new Map((profiles?.everyone() ?? []).map(profile => [profile.id, profile]))
+    const reactions = sharingOn(profileId) ? users(profileId).reactions() : []
     response.json({
-      items: sharingOn(profileId)
-        ? users(profileId)
-            .reactions()
-            .filter(entry => known.has(entry.to))
-        : []
+      items: reactions.flatMap(entry => {
+        const to = known.get(entry.to)
+        return to ? [{ ...entry, person: personOf(to) }] : []
+      })
     })
   })
 

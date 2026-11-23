@@ -198,12 +198,9 @@ describe('a row that goes never lets its cookie open the next one given its id',
     const joined = await invite('max@example.com', 'Max')
     const maxCookie = joined.split('; ').find(cookie => cookie.startsWith('hodi_profile='))!
     const max = install.profiles.list().find(profile => profile.name === 'Max')!.id
-    const deleted = await install.call(`/profiles/${max}`, {
-      method: 'DELETE',
-      cookie: install.admin,
-      body: { password: PASSWORD }
-    })
-    assert.equal(deleted.status, 204)
+    // An adult's profile goes only with its account, which this install has no Serveur › Comptes for: the row goes
+    // here as it does there.
+    assert.equal(install.profiles.delete(max), true)
 
     clock += 60_000
     const ines = await invite('ines@example.com', 'Inès')
@@ -273,14 +270,15 @@ describe('codes for a new password', () => {
       const refused = await askCode(profileId)
       assert.deepEqual([refused.status, await refused.json()], [403, { error: 'admin_only' }])
     }
-    // Not even the server's admin: theirs comes from Serveur › Comptes.
+    // Not even the server's admin: theirs comes from Serveur › Comptes. Another account's profile is not even on
+    // the admin's device.
     for (const profileId of [profileOf('Sophie'), profileOf('Paul')]) {
       const refused = await install.call('/codes', {
         method: 'POST',
         cookie: install.admin,
         body: { profileId, password: PASSWORD }
       })
-      assert.deepEqual([refused.status, await refused.json()], [403, { error: 'own_password' }])
+      assert.deepEqual([refused.status, await refused.json()], [400, { error: 'bad_request' }])
     }
     assert.deepEqual(install.db.prepare('SELECT COUNT(*) AS n FROM sign_in_codes').get(), before)
   })

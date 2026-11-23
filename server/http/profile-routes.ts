@@ -19,7 +19,6 @@ import {
 } from './profile-current-routes.ts'
 import { isParentOfYoung } from './parent-check.ts'
 import { isAccountGuard, lockOf } from './profile-guard.ts'
-import { type CheckProof, askingWithProof } from './proof.ts'
 import { mountPhotoRoutes } from './profile-photos.ts'
 
 // "Qui lit ?": the household's profiles, the one open on this device, and their names, colours and photos.
@@ -49,8 +48,6 @@ interface ProfileRoutesOptions extends CurrentRoutesOptions {
   onDelete?: (profileId: number) => void
   // A profile changed (its kind among others).
   onChange?: (profile: Profile) => void
-  // The admin's own password, before what cannot be undone for another adult who has an account.
-  checkProof?: CheckProof
 }
 
 export const profileRoutes = (options: ProfileRoutesOptions) => {
@@ -64,7 +61,7 @@ export const profileRoutes = (options: ProfileRoutesOptions) => {
   return router
 }
 
-const profileHelpers = ({ profiles, accounts, checkProof }: ProfileRoutesOptions) => {
+const profileHelpers = ({ profiles, accounts }: ProfileRoutesOptions) => {
   const idOf = (request: express.Request) => {
     const id = Number(request.params.id)
     return Number.isInteger(id) && profiles.get(id) ? id : null
@@ -86,14 +83,7 @@ const profileHelpers = ({ profiles, accounts, checkProof }: ProfileRoutesOptions
     return false
   }
 
-  // Another adult's profile with its account: what they read and kept goes, and they no longer read here. The admin's
-  // password comes first.
-  const withProof = async (target: Profile, request: express.Request, response: express.Response) => {
-    if (isYoung(target) || !target.hasAccount || !accounts || !checkProof) return true
-    return (await askingWithProof(checkProof, accounts, request, response)) !== null
-  }
-
-  return { idOf, mayManage, mayChange, mayDelete, withProof }
+  return { idOf, mayManage, mayChange, mayDelete }
 }
 
 type ProfileHelpers = ReturnType<typeof profileHelpers>
@@ -226,9 +216,10 @@ const mountEditRoutes = (
 const mountAdminRoutes = (
   router: express.Router,
   { profiles, accounts, onDelete }: ProfileRoutesOptions,
-  { idOf, mayDelete, withProof }: ProfileHelpers
+  { idOf, mayDelete }: ProfileHelpers
 ) => {
-  // An adult's, the admin's; a teen's or a child's, its parents'.
+  // A teen's or a child's, its parents'; an adult's that no account reads with, the server admin's. An adult's own
+  // profile goes only with its account (Mon compte, or Serveur › Comptes).
   router.delete('/:id', async (request, response) => {
     const id = idOf(request)
     if (id === null) {
@@ -242,7 +233,10 @@ const mountAdminRoutes = (
       response.status(409).json({ error: 'admin_profile' })
       return
     }
-    if (!(await withProof(target, request, response))) return
+    if (!isYoung(target) && target.hasAccount) {
+      response.status(409).json({ error: 'account_profile' })
+      return
+    }
     // A teen's or a child's account goes with its profile; with two parents, once one has stepped back.
     const young = isYoung(target) ? accounts?.ofProfile(id) : null
     if (young && accounts!.young.invitations.parentsOf(young.id).length > 1) {

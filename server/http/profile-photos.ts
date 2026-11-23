@@ -19,7 +19,7 @@ export const photoFormatOf = async (data: Buffer, sharp = pictureMaker): Promise
   return format === 'webp' ? 'image/webp' : format === 'jpeg' ? 'image/jpeg' : format === 'png' ? 'image/png' : null
 }
 
-// A profile's photo: changed by whoever may change the profile, read by the household.
+// A profile's photo: changed by whoever may change the profile.
 export const mountPhotoRoutes = (
   router: express.Router,
   { profiles, now }: { profiles: ProfileStore; now: () => number },
@@ -71,9 +71,12 @@ export const mountPhotoRoutes = (
     response.json(profiles.setPhoto(id, null, now()))
   })
 
-  // ?v=<photoVersion>: a new photo has a new address, so each one is kept by the browser for good.
+  // ?v=<photoVersion>: a new photo has a new address, so each one is kept by the browser for good. Read by the device's
+  // accounts for their profiles, and by anyone for an adult's own (found by its @username anyway, in « Envoyer à… »).
   router.get('/:id/photo', (request, response) => {
-    const id = idOf(request)
+    const asked = Number(request.params.id)
+    const target = Number.isInteger(asked) ? profiles.find(asked) : null
+    const id = target && (idOf(request) !== null || (target.kind === 'adult' && target.hasAccount)) ? target.id : null
     const photo = id === null ? null : profiles.photo(id)
     if (!photo) {
       response.status(404).json({ error: 'not_found' })

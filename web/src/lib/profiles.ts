@@ -5,7 +5,6 @@ import {
   type ProfileSecret,
   chooseProfile,
   clearDataCache,
-  type AdminProof,
   deleteProfile,
   getProfiles,
   removeProfilePhoto,
@@ -150,8 +149,8 @@ export const editProfile = async (
   return profile
 }
 
-export const removeProfile = async (id: number, proof?: AdminProof) => {
-  await deleteProfile(id, proof)
+export const removeProfile = async (id: number) => {
+  await deleteProfile(id)
   dropRequestsOf(id)
   if (!state) return
   commit({ ...state, profiles: state.profiles.filter(profile => profile.id !== id) })

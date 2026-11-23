@@ -172,12 +172,13 @@ describe('Mon compte › Mes enfants', () => {
     )
     const listOf = async (cookie: string) =>
       (await household.call(`/profiles/${zoe.profileId}/devices`, cookie)) as Response
-    assert.equal((await listOf(household.sam)).status, 403)
+    // Not one of Sam's children: not even on Sam's device.
+    assert.equal((await listOf(household.sam)).status, 404)
     const listed = (await (await listOf(household.admin)).json()) as { devices: { id: number; kind: string }[] }
     const signedIn = listed.devices.filter(device => device.kind === 'account')
     assert.ok(signedIn.length >= 1)
     const path = (id: number) => `/profiles/${zoe.profileId}/account-devices/${id}`
-    assert.equal((await household.call(path(signedIn[0]!.id), household.sam, 'DELETE')).status, 403)
+    assert.equal((await household.call(path(signedIn[0]!.id), household.sam, 'DELETE')).status, 404)
     for (const device of signedIn)
       assert.equal((await household.call(path(device.id), household.admin, 'DELETE')).status, 204)
     assert.equal((await household.call('/account', tablet)).status, 401)
@@ -218,9 +219,11 @@ describe('Mon compte › Mes enfants', () => {
     )
     const rename = (cookie: string) => household.call(`/profiles/${noa.profileId}`, cookie, 'PATCH', { name: 'Noah' })
     assert.equal((await rename(household.sam)).status, 200)
-    assert.equal((await rename(household.admin)).status, 403)
+    // Not one of the admin's children: not even on the admin's device.
+    assert.equal((await rename(household.admin)).status, 404)
     const deleted = await household.call(`/profiles/${noa.profileId}`, household.admin, 'DELETE')
-    assert.equal(deleted.status, 403)
+    assert.equal(deleted.status, 404)
+    assert.ok(household.profiles.find(noa.profileId))
   })
 })
 

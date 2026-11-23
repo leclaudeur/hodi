@@ -101,8 +101,9 @@ export const TOPICS_CHANGED = 'hodi:topics-changed'
 // "Partages": articles another profile of the household sent here, newest first.
 export interface ShareEntry {
   item: SearchItem
-  // The profile that sent it.
+  // The profile that sent it, and who it is.
   from: number
+  person: SharePerson
   sharedAt: number
   // The word that came with it, if any.
   note: string | null
@@ -131,8 +132,9 @@ export const reportShare = (articleId: string, from: number, reason: ShareReport
 // The reactions to what this profile sent, not shown yet.
 export interface ShareReaction {
   item: SearchItem
-  // The profile that reacted.
+  // The profile that reacted, and who it is.
   to: number
+  person: SharePerson
   reaction: Reaction
   reactedAt: number
 }

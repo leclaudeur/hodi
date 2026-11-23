@@ -131,7 +131,7 @@ const mountOverviewRoute = (
       response.status(400).json({ error: 'invalid_request' })
       return
     }
-    const known = new Map((profiles?.list() ?? []).map(profile => [profile.id, profile.name]))
+    const known = new Map((profiles?.everyone() ?? []).map(profile => [profile.id, profile.name]))
     const householdName = household?.get().name ?? ''
     response.json({
       ...stats.overview(period, now()),
