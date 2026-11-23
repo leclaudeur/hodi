@@ -1489,7 +1489,8 @@ const MIGRATIONS: string[] = [
     DELETE FROM my_sources WHERE source_id = OLD.source_id;
   END;
   -- A profile that goes takes the sources it added with it, unless someone else reads them: those become the server
-  -- admin's, so nobody takes a source away from the others by leaving.
+  -- admin's, so nobody takes a source away from the others by leaving. The server admin's own, with no other profile of
+  -- theirs to take them, still go.
   CREATE TRIGGER profiles_hand_over_catalog BEFORE DELETE ON profiles BEGIN
     UPDATE catalog_sources SET added_by = (
       SELECT p.id FROM profiles p JOIN users u ON u.id = p.user_id
