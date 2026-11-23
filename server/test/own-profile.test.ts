@@ -95,6 +95,19 @@ describe('an account with no profile', () => {
     assert.equal(profiles.list().filter(profile => profile.name === 'Sophie').length, 1)
   })
 
+  it('makes one profile only, however many requests come at once', async () => {
+    const made = accounts.create('paul@example.com', await hashPassword(SOPHIE.password, FAST), clock)!
+    const device = cookieOf(await call('POST', '/login', '', { email: made.email, password: SOPHIE.password }))
+    const answers = await Promise.all(
+      ['/session', '/profiles', '/topics', '/session', '/profiles'].map(route => call('GET', route, device))
+    )
+    assert.deepEqual(
+      answers.map(answer => answer.status),
+      [200, 200, 200, 200, 200]
+    )
+    assert.equal(profiles.list().filter(profile => profile.name === 'Paul').length, 1)
+  })
+
   it('names the profile of an account a plugin made after its e-mail', async () => {
     const made = accounts.create('marie.dupont@example.com', await hashPassword(SOPHIE.password, FAST), clock)!
     const device = cookieOf(await call('POST', '/login', '', { email: made.email, password: SOPHIE.password }))

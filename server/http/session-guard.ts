@@ -63,14 +63,6 @@ const serverOnly = (request: express.Request, response: express.Response, accoun
   return true
 }
 
-const householdHelpers = ({ accounts }: Pick<SessionGuardOptions, 'accounts'>) => {
-  // The household a signed-in device reads in: its account's own, the only one it has.
-  const householdOfSession = ({ account }: { account: UserAccount }) =>
-    accounts ? accounts.householdOf(account.id) : null
-
-  return { householdOfSession }
-}
-
 // Before the server is set up: the server's admin alone, for /server and the setup steps.
 const answerBeforeSetup = (
   { accounts, sessionOf }: Pick<SessionGuardOptions, 'accounts' | 'sessionOf'>,
@@ -97,7 +89,6 @@ const answerBeforeSetup = (
 
 const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
   const { accounts, devices, sessionOf, cookieFor } = options
-  const { householdOfSession } = householdHelpers(options)
   return (request, response, next) => {
     if (!options.install.isSetUp()) {
       answerBeforeSetup(options, request, response, next)
@@ -108,9 +99,12 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
     // that one (household-scope.ts).
     const session = sessionOf(request)
     if (session) {
-      // Every account reads with a profile of its own: one made by a plugin, or whose profile was deleted, gets one now.
-      if (accounts && options.profiles) giveOwnProfile(accounts, options.profiles, session.account, options)
-      const householdId = householdOfSession(session) ?? DEFAULT_ACCOUNT_ID
+      // The household a signed-in device reads in: its account's own, the only one it has. An account with no profile
+      // (made by a plugin, or whose profile was deleted) gets one now.
+      const householdId =
+        (accounts && options.profiles
+          ? giveOwnProfile(accounts, options.profiles, session.account, options)
+          : accounts?.householdOf(session.account.id)) ?? DEFAULT_ACCOUNT_ID
       response.locals.accountId = session.account.id
       // A session from before devices were kept: this device gets its row in Appareils, and a cookie naming it.
       if (!session.device && devices) response.append('Set-Cookie', cookieFor(session.account, request))
