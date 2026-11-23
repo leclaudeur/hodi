@@ -13,11 +13,17 @@ test('the style hashes allowed by the CSP match the installed libraries', () => 
   assert.ok(sonner, 'sonner no longer inserts its CSS')
   assert.ok(STYLE_HASHES.includes(hashOf(JSON.parse(sonner[1]) as string)), 'sonner')
 
+  // The bundle's names change with each build: the probe's ${…} are read from the constants they name.
   const overlay = source('overlayscrollbars/overlayscrollbars.mjs')
-  const environment = /const L = "([^"]+)";/.exec(overlay)?.[1]
-  const probe = /const t = `(\.\$\{L\}\{scroll-behavior[^`]+)`;/.exec(overlay)?.[1]
-  assert.ok(environment && probe, 'OverlayScrollbars no longer adds its probe style')
-  const css = probe.replaceAll('${L}', environment).replaceAll('${P}', `${environment}-scrollbar-hidden`)
+  const probe = /const \w+ = `(\.\$\{\w+\}\{scroll-behavior[^`]+)`;/.exec(overlay)?.[1]
+  assert.ok(probe, 'OverlayScrollbars no longer adds its probe style')
+  const valueOf = (name: string): string => {
+    const constant = new RegExp(`const ${name} = (?:"([^"]*)"|\`([^\`]*)\`);`).exec(overlay)
+    assert.ok(constant, `OverlayScrollbars no longer names ${name}`)
+    return constant[1] ?? fill(constant[2]!)
+  }
+  const fill = (template: string) => template.replaceAll(/\$\{(\w+)\}/g, (_, name: string) => valueOf(name))
+  const css = fill(probe)
   assert.ok(STYLE_HASHES.includes(hashOf(css)), 'overlayscrollbars')
 
   assert.ok(STYLE_HASHES.includes(hashOf('')), 'empty style')
