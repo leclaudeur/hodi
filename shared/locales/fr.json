@@ -22,8 +22,8 @@
   "language": {
     "label": "Langue",
     "profileHint": "Celle de l’interface ; les articles restent dans la leur",
-    "householdLabel": "Langue du foyer",
-    "householdHint": "Pour l’écran de connexion et les profils qui n’en ont pas choisi",
+    "householdLabel": "Langue par défaut",
+    "householdHint": "Pour l’écran de connexion et les comptes qui n’en ont pas choisi",
     "in": {
       "fr": "En français",
       "en": "En anglais"
@@ -49,28 +49,28 @@
   "join": {
     "code": {
       "title": "Entre le code",
-      "intro": "Les 8 caractères qu’un adulte du foyer t’a donnés, ou le lien qui va avec.",
+      "intro": "Les 8 caractères que l’admin du serveur t’a donnés, ou le lien qui va avec.",
       "label": "Code",
       "helpTitle": "D’où vient ce code ?",
-      "help": "Un adulte du foyer le crée dans Réglages › Profils, avec « Inviter un adulte » ou « Connecter un appareil ». Pour un mot de passe oublié, c’est l’admin du serveur qui le donne. Il sert une seule fois, pendant 24 h.",
+      "help": "L’admin du serveur le crée dans Serveur › Comptes, pour inviter quelqu’un ou pour un mot de passe oublié. Un adulte le crée aussi pour connecter un appareil au profil d’un ado ou d’un enfant. Il sert une seule fois, pendant 24 h.",
       "wrong": "Ce code ne marche pas : il a peut-être déjà servi, ou ses 24 h sont passées. Demandes-en un nouveau."
     },
     "invite": {
-      "title": "Rejoins {{household}}",
+      "title": "Bienvenue sur Hodi",
       "intro": "<b>{{name}}</b> t’invite. Crée un compte : avec un e-mail et un mot de passe, tu te connectes sur chacun des appareils.",
       "introNoName": "Crée un compte : avec un e-mail et un mot de passe, tu te connectes sur chacun des appareils."
     },
     "profile": {
       "title": "Dernière étape : le profil",
-      "intro": "Dans <b>{{household}}</b>. Crée un compte : ce profil y sera lié, avec ses lectures.",
-      "introExisting": "Dans <b>{{household}}</b>. Entre avec le compte que tu as déjà : ce profil y sera lié, avec ses lectures."
+      "intro": "Crée un compte : ce profil y sera lié, avec ses lectures.",
+      "introExisting": "Entre avec le compte que tu as déjà : ce profil y sera lié, avec ses lectures."
     },
     "full": {
-      "title": "Le foyer est complet",
+      "title": "Le serveur est complet",
       "intro": "Il a déjà 5 profils. Demande à l’admin d’en retirer un, puis réessaie avec ce code."
     },
     "who": {
-      "intro": "Un prénom et une couleur dans le foyer. Tu pourras les changer dans <i>Réglages</i>."
+      "intro": "Un prénom et une couleur, que les autres verront. Tu pourras les changer dans <i>Mon compte</i>."
     },
     "age": "J’ai au moins 13 ans",
     "create": "Créer mon compte",
@@ -89,7 +89,7 @@
     "existing": "J’ai déjà un compte",
     "newAccount": "Créer un nouveau compte",
     "signIn": "Rejoindre",
-    "alreadyMember": "Ce compte a déjà un profil dans ce foyer : connecte-toi avec lui.",
+    "alreadyMember": "Ce compte a déjà un profil sur ce serveur : connecte-toi avec lui.",
     "otherHousehold": "Ton compte {{email}} est déjà dans {{current}}. Pour rejoindre {{household}}, quitte d’abord ton foyer dans Réglages › Mon compte."
   },
   "password": {
@@ -189,15 +189,7 @@
       "title": "Bientôt, une app rien que pour lui",
       "text": "Le profil Enfant est en préparation. En attendant, choisis Ado ou Adulte."
     },
-    "account": "Compte",
-    "noAccount": "Sans compte",
-    "noAccountHint": "Un code, sur son appareil",
-    "connect": "Connecter un appareil",
-    "inviteHint": "Un adulte crée son propre compte : tu lui donnes un code d’invitation, à taper dans « J’ai un code ».",
-    "invite": "Inviter",
-    "makeAdmin": "Admin du foyer",
-    "makeAdminHint": "Lui passer le rôle : un seul admin par foyer.",
-    "makeAdminButton": "Passer le rôle d’admin"
+    "connect": "Connecter un appareil"
   },
   "setup": {
     "step": "Étape {{step}} sur {{total}}",
@@ -208,7 +200,7 @@
     "start": {
       "kicker": "Bienvenue dans Hodi",
       "title": "L’actu de toute la maison",
-      "lead": "Tes sites d’info préférés, <b>rangés par thème</b>, et lus <b>sans pub ni pistage</b>. Chacun a son profil, et le foyer se partage ce qui vaut la peine d’être lu.",
+      "lead": "Tes sites d’info préférés, <b>rangés par thème</b>, et lus <b>sans pub ni pistage</b>. Chacun a son compte, et on se partage ce qui vaut la peine d’être lu.",
       "codeNoticeTitle": "Le code est dans le journal du serveur",
       "codeNoticeText": "Prends la dernière ligne <i>Setup code</i> de <code>docker compose logs app</code>.",
       "code": "Code d’installation",
@@ -217,7 +209,7 @@
     },
     "account": {
       "title": "Compte",
-      "intro": "Il est à toi, pas au foyer : chaque personne que tu inviteras aura le sien. Tu deviens l’admin de ce serveur.",
+      "intro": "Il est à toi seul : chaque personne que tu inviteras aura le sien. Tu deviens l’admin de ce serveur.",
       "helpTitle": "E-mail et mot de passe",
       "help": "Tu te connectes avec eux sur chacun des appareils, qui s’en souvient 90 jours. 8 caractères minimum : plus le mot de passe est long et mélange majuscules, chiffres et symboles, plus il est solide.",
       "email": "E-mail",
@@ -228,8 +220,8 @@
     },
     "ready": {
       "title": "Le serveur est prêt",
-      "intro": "Crée maintenant le foyer qui lira Hodi, ou va d’abord dans l’espace <i>Serveur</i> : un foyer s’y crée aussi plus tard, pour toi ou pour quelqu’un d’autre.",
-      "household": "Créer mon foyer",
+      "intro": "Crée maintenant le profil avec lequel tu liras Hodi, ou va d’abord dans l’espace <i>Serveur</i> : tu pourras le créer plus tard.",
+      "household": "Créer mon profil",
       "server": "Plus tard"
     },
     "plugins": {
@@ -249,10 +241,6 @@
       "later": "Plus tard"
     },
     "household": {
-      "title": "Créer le foyer",
-      "intro": "Le foyer réunit jusqu’à 5 profils, chacun avec ses lectures. Pas de mot de passe partagé : chacun a son compte.",
-      "helpTitle": "Le nom du foyer",
-      "help": "Il s’affiche sur la page de connexion et dans Hodi. Tu pourras le changer dans Réglages › Foyer.",
       "name": "Nom du foyer",
       "namePlaceholder": "Ex. La maison Martin",
       "confirm": "Confirme le mot de passe",
@@ -261,13 +249,13 @@
     },
     "profile": {
       "title": "Et toi, c’est qui ?",
-      "intro": "Ce profil est l’admin du foyer : il gère les sources, l’IA et les autres profils."
+      "intro": "Le prénom et la couleur que les autres verront. Tu pourras les changer dans <i>Mon compte</i>."
     },
     "ai": {
       "title": "L’IA, si tu veux",
       "intro": "Résumer un article, lui poser des questions, le <i>Résumé du jour</i> : avec une clé d’API à soi, payée à l’usage. Sans IA, tout le reste marche pareil.",
       "helpTitle": "Rien ne part sans un clic",
-      "help": "Chaque bouton violet est un appel payé sur les crédits du foyer, jamais automatique. Fixe une limite de dépense mensuelle sur la console du fournisseur. Tu pourras ajouter, changer ou retirer la clé dans Réglages › IA et crédits.",
+      "help": "Chaque bouton violet est un appel payé sur les crédits de cette clé, jamais automatique. Fixe une limite de dépense mensuelle sur la console du fournisseur. Tu pourras ajouter, changer ou retirer la clé dans Mon compte › IA et crédits.",
       "label": "IA",
       "providerHint": "Avec une clé d’API, facturée à l’usage",
       "none": "Sans IA",
@@ -278,8 +266,7 @@
       "intro": "Hodi a deviné la région depuis ce navigateur. Corrige si besoin, puis entre dans Hodi.",
       "account": "Compte",
       "serverAdmin": "{{email}} · Admin du serveur",
-      "household": "Foyer",
-      "admin": "{{household}} · {{profile}}, admin",
+      "household": "Profil",
       "ai": "IA",
       "keyChecked": "{{provider}} · clé vérifiée",
       "enter": "Entrer dans Hodi"
@@ -324,9 +311,9 @@
     "add": "Ajouter",
     "admin": "Admin",
     "code": {
-      "invite": "Inviter un adulte",
-      "inviteTitle": "Inviter un adulte",
-      "inviteIntro": "Avec ce code, un adulte rejoint le foyer avec son propre compte. Sur son appareil, la personne ouvre Hodi, choisit <i>J’ai un code</i> sur la page <i>Connexion</i> et tape ces 8 caractères. Elle choisit ensuite son e-mail et son mot de passe.",
+      "invite": "Inviter quelqu’un",
+      "inviteTitle": "Inviter quelqu’un",
+      "inviteIntro": "Avec ce code, la personne crée son compte sur ce serveur. Sur son appareil, la personne ouvre Hodi, choisit <i>J’ai un code</i> sur la page <i>Connexion</i> et tape ces 8 caractères. Elle choisit ensuite son e-mail et son mot de passe.",
       "connectTitle": "Connecter {{name}}",
       "connectIntro": "Avec ce code, {{name}} se connecte à son profil avec son propre compte. Sur son appareil, {{name}} ouvre Hodi, choisit <i>J’ai un code</i> sur la page Connexion et tape ces 8 caractères, puis choisit son e-mail et son mot de passe. <b>Le profil devient le sien</b>, avec toutes ses lectures.",
       "label": "Code",
@@ -348,23 +335,14 @@
     "open": "Ouvrir",
     "noAccount": "{{name}} n’a pas encore de compte. Son profil s’ouvrira quand {{name}} l’aura créé avec son code.",
     "loginOnly": "{{name}} se connecte sans mot de passe : continue avec le même bouton qu'à la connexion pour ouvrir son profil.",
-    "loginOnlyNoWay": "{{name}} se connecte sans mot de passe, par un plugin qui n'est plus là. Un adulte du foyer peut lui donner un code pour choisir un mot de passe.",
-    "invite": {
-      "intro": "Un code de 8 caractères pour rejoindre le foyer avec son propre compte. Le nom sert à reconnaître l’invitation dans <i>Personnes invitées</i> : la personne choisit le sien en créant son compte.",
-      "name": "Nom",
-      "email": "E-mail (facultatif)",
-      "send": "Envoyer le code",
-      "create": "Créer le code",
-      "sent": "Code envoyé à {{email}}",
-      "invalid": "Vérifie le nom (40 caractères au plus) et l’adresse e-mail."
-    },
+    "loginOnlyNoWay": "{{name}} se connecte sans mot de passe, par un plugin qui n'est plus là. L’admin du serveur peut lui donner un code pour choisir un mot de passe.",
     "parentalCode": "Code parental",
     "wrongCode": "Ce code n’est pas le bon.",
     "trustDevice": "Ne plus demander sur cet appareil",
-    "codeHint": "Demande-le à l’admin du foyer.",
+    "codeHint": "Demande-le à l’admin du serveur.",
     "addAccount": {
       "title": "Ajouter mon compte",
-      "intro": "Connecte-toi pour retrouver ton profil sur cet appareil, dans le foyer <b>{{household}}</b>. Les comptes déjà ajoutés à <i>Qui lit ?</i> restent comme ils sont.",
+      "intro": "Connecte-toi pour retrouver ton profil sur cet appareil. Les comptes déjà ajoutés à <i>Qui lit ?</i> restent comme ils sont.",
       "submit": "Se connecter",
       "otherHousehold": "<b>{{email}}</b> est dans le foyer <b>{{household}}</b>, et cet appareil sert le foyer <b>{{here}}</b>.",
       "recovery": "Code de secours",
@@ -900,9 +878,9 @@
   "shareTo": {
     "sent": "Envoyé à {{names}}",
     "failed": "L’article n’a pas pu être envoyé.",
-    "label": "Envoyer à un profil du foyer",
+    "label": "Envoyer à quelqu’un",
     "title": "Envoyer à…",
-    "nobody": "Personne d’autre du foyer ne reçoit de partages pour l’instant.",
+    "nobody": "Personne d’autre ne reçoit de partages pour l’instant.",
     "noteLabel": "Un mot avec l’article",
     "notePlaceholder": "Ajouter un mot…",
     "send": "Envoyer"
@@ -981,7 +959,7 @@
     "filter": "Filtrer par profil",
     "loadFailed": "Impossible de charger les partages",
     "empty": "Rien pour l’instant",
-    "emptyText": "Ce que le foyer t’envoie arrive ici.",
+    "emptyText": "Ce qu’on t’envoie arrive ici.",
     "reactions": "Réactions aux partages",
     "reacted": "<b>{{name}}</b> a réagi {{reaction}}",
     "dismiss": "Effacer"
@@ -1058,7 +1036,7 @@
       }
     },
     "account": {
-      "intro": "Les tiennes, liées à ton compte : elles te suivent dans chaque foyer que tu rejoins.",
+      "intro": "Les tiennes, liées au compte : elles te suivent sur chaque appareil.",
       "articles_one": "article lu",
       "articles_other": "articles lus",
       "videos_one": "vidéo vue",
@@ -1190,7 +1168,7 @@
       "reading": "Lecture",
       "subjects": "Sujets",
       "you": "Toi",
-      "household": "Foyer",
+      "household": "Famille",
       "device": "Cet appareil",
       "about": "Hodi"
     },
@@ -1202,8 +1180,7 @@
       "muted": "Sujets masqués",
       "stats": "Statistiques",
       "sharing": "Partage",
-      "household": "Foyer",
-      "profiles": "Profils",
+      "profiles": "Ados et enfants",
       "ai": "IA et crédits",
       "notifications": "Notifications",
       "account": "Mon compte",
@@ -1222,7 +1199,6 @@
       "stats": "Lectures et vidéos",
       "on": "Activé",
       "off": "Désactivé",
-      "household": "Nom, langue, région",
       "callsLeft_one": "{{count}} appel restant aujourd’hui",
       "callsLeft_other": "{{count}} appels restants aujourd’hui",
       "aiOff": "Non activée",
@@ -1245,8 +1221,7 @@
       "notifications": "Notifications",
       "stats": "Statistiques",
       "ai": "IA et crédits",
-      "household": "Foyer",
-      "profiles": "Profils",
+      "profiles": "Ados et enfants",
       "sharing": "Partage",
       "account": "Mon compte",
       "shortcuts": "Raccourcis",
@@ -1320,8 +1295,8 @@
       "unmute": "Ne plus masquer « {{word}} »"
     },
     "sharing": {
-      "intro": "Envoie des articles aux autres profils du foyer, et reçois les leurs. Dans le lecteur, <i>Pour…</i> envoie l’article à un profil, avec un mot si tu veux. Ce qu’on t’envoie arrive dans <i>Partages</i>, jamais dans le fil.",
-      "toggle": "Partager avec le foyer",
+      "intro": "Envoie des articles aux autres comptes, et reçois les leurs. Dans le lecteur, <i>Pour…</i> envoie l’article à quelqu’un, avec un mot si tu veux. Ce qu’on t’envoie arrive dans <i>Partages</i>, jamais dans le fil.",
+      "toggle": "Partager avec les autres",
       "onHint": "Tu envoies et tu reçois des articles",
       "offHint": "Ni envoi ni réception, Partages est caché",
       "receiveFrom": "Recevoir de",
@@ -1354,7 +1329,7 @@
       "signOutFailed": "L’appareil n’a pas pu être déconnecté. Réessaie dans un instant.",
       "yourData": "Données",
       "copy": "Télécharger une copie",
-      "copyHint": "Le compte, le foyer, les profils, sources, enregistrés, lus, partages et statistiques, dans un fichier JSON",
+      "copyHint": "Le compte, le profil, les sources, enregistrés, lus, partages et statistiques, dans un fichier JSON",
       "download": "Télécharger",
       "delete": "Supprimer mon compte",
       "deleteHint": "Effacé tout de suite, avec tout ce qu’il contient",
@@ -1376,25 +1351,16 @@
       "choosePasswordTitle": "Choisir un mot de passe",
       "choosePasswordIntro": "Tu pourras te connecter avec l’e-mail du compte et ce mot de passe, en plus de l’autre façon.",
       "signInAgain": "Pour confirmer que c’est toi, reconnecte-toi juste avant (il y a moins de 5 minutes), puis reviens ici.",
-      "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise « Mot de passe oublié » ou demande un code à un adulte du foyer.",
+      "noWayIn": "Pour confirmer que c’est toi, il faut t’être connecté il y a moins de 5 minutes, mais la façon de te connecter n’est plus là. Utilise « Mot de passe oublié » ou demande un code à l’admin du serveur.",
       "sessionHintNoPassword": "Connecté pour 90 jours, puis il faut se reconnecter",
       "moreDevices_one": "Voir l’autre",
       "moreDevices_other": "Voir les {{count}} autres",
-      "household": "Foyer",
-      "householdAdmin": "Admin du foyer",
-      "householdMember": "Membre du foyer",
-      "lastAdult": "{{role}} · seul adulte avec un compte",
-      "leave": "Quitter",
       "private": "Profil privé",
       "privateHint": "Ton mot de passe pour ouvrir ton profil",
       "trusted": "S’ouvre sans mot de passe",
       "askAgain": "Redemander",
       "trustedDevices": "Appareils de confiance",
       "privateFailed": "Ton profil privé n’a pas pu être changé. Réessaie dans un instant."
-    },
-    "roles": {
-      "admin": "Admin",
-      "member": "Membre"
     },
     "edit": "Modifier",
     "editName": "Modifier {{name}}",
@@ -1421,33 +1387,14 @@
       "tourHintTeen": "Le fil et comment demander une source, pas à pas"
     },
     "profiles": {
-      "intro": "Jusqu’à {{max}} lecteurs sur ce compte, chacun avec ses enregistrés, ses lectures, ses statistiques et ses réglages. L’admin ajoute et supprime les profils, les autres modifient le leur. Un profil adulte qui a son compte demande son mot de passe sur l’appareil d’un autre compte.",
+      "intro": "Les ados et les enfants, chacun avec ses sources, ses horaires et son temps par jour. Chaque adulte les ajoute et les gère ; les adultes, eux, ont chacun leur compte.",
       "deleteTitle": "Supprimer {{name}} ?",
       "deleteMessage": "Ses enregistrés, ses lectures et ses réglages sont supprimés aussi. Impossible d’annuler.",
-      "deleted": "{{name}} supprimé",
-      "deleteFailed": "La suppression a échoué. Réessaie dans un instant.",
       "active": "Actif",
       "add": "Ajouter un profil",
       "groups": {
-        "adults": "Adultes",
         "teens": "Ados",
-        "children": "Enfants",
-        "invited": "Personnes invitées"
-      },
-      "ownAccount": "Son propre compte",
-      "waitingAccount": "En attente de son compte",
-      "invited": {
-        "untilToday": "jusqu’à {{time}}",
-        "untilTomorrow": "jusqu’à demain, {{time}}",
-        "code": "Code valable {{until}}",
-        "unnamed": "Invitation",
-        "resend": "Renvoyer",
-        "resendName": "Renvoyer un code à {{name}}",
-        "show": "Voir le code",
-        "showName": "Voir un code pour {{name}}",
-        "cancelName": "Annuler l’invitation de {{name}}",
-        "cancelled": "Invitation de {{name}} annulée",
-        "cancelFailed": "L’invitation n’a pas pu être annulée. Réessaie dans un instant."
+        "children": "Enfants"
       }
     },
     "notifications": {
@@ -1473,7 +1420,7 @@
       "noSubject": "Tu ne suis encore aucun sujet.",
       "subjects": "Un nouvel article sur un sujet avec alerte : {{alerts}} sur {{total}}. Une par sujet toutes les 3 heures, 12 par jour au plus.",
       "shares": "Articles partagés",
-      "sharesHint": "Quand quelqu’un du foyer t’envoie un article ou une vidéo avec « Pour… ».",
+      "sharesHint": "Quand quelqu’un t’envoie un article ou une vidéo avec « Pour… ».",
       "reactions": "Réactions aux partages",
       "reactionsHint": "Quand quelqu’un réagit d’un emoji à un article que tu lui as envoyé.",
       "badge": "Pastille sur l’icône",
@@ -1486,7 +1433,7 @@
       "end": "Fin du silence",
       "testBody": "Les notifications arrivent bien sur cet appareil.",
       "plugins": "Plugins",
-      "pluginsHint": "Ce que les plugins du foyer t’envoient, comme la réponse à une demande."
+      "pluginsHint": "Ce que les plugins t’envoient, comme la réponse à une demande."
     },
     "data": {
       "kb": "{{value}} Ko",
@@ -1516,27 +1463,11 @@
       "sevenKept": "7 gardées"
     },
     "household": {
-      "renameTitle": "Renommer le foyer",
-      "renameFailed": "Le nom n’a pas pu être enregistré. Réessaie dans un instant.",
       "wrongPassword": "Le mot de passe actuel n’est pas le bon.",
       "passwordFailed": "Le mot de passe n’a pas pu être changé. Réessaie dans un instant.",
       "passwordTitle": "Changer le mot de passe",
       "currentPassword": "Mot de passe actuel",
       "newPassword": "Nouveau mot de passe",
-      "intro": "Ce qui vaut pour toute l’installation, et que seul l’admin voit : son nom, sa langue et ce que partagent tous les profils.",
-      "loadFailed": "Impossible de lire les réglages du foyer. Réessaie dans un instant.",
-      "heading": "Le foyer",
-      "photo": "Photo",
-      "photoHint": "JPEG, PNG, WebP · 20 Mo",
-      "photoAdd": "Ajouter",
-      "photoChange": "Changer",
-      "photoRemove": "Retirer",
-      "photoFailed": "Impossible d’enregistrer la photo.",
-      "photoRemoveTitle": "Retirer la photo du foyer ?",
-      "photoRemoveMessage": "La photo de <b>{{name}}</b> disparaît pour tout le foyer, dans Hodi et dans <i>Serveur › Foyers</i> : l’initiale du foyer reprend sa place. Tu pourras en ajouter une autre à tout moment.",
-      "name": "Nom",
-      "rename": "Renommer",
-      "regionFailed": "La région n’a pas pu être enregistrée. Réessaie dans un instant.",
       "game": "Jeu",
       "gameToggle": "Niveaux et badges",
       "gameHint": "Des points pour chaque lecture, un défi et un classement chaque semaine",
@@ -1774,7 +1705,7 @@
     }
   },
   "push": {
-    "someone": "Quelqu’un du foyer",
+    "someone": "Quelqu’un",
     "shared": {
       "article": "{{name}} t’envoie un article",
       "video": "{{name}} t’envoie une vidéo",
@@ -1788,7 +1719,7 @@
   },
   "hourCycle": {
     "label": "Format des heures",
-    "hint": "Pour tous les profils : réglages, notifications, horaires",
+    "hint": "Pour tous les comptes : réglages, notifications, horaires",
     "option24": "24 h",
     "option12": "12 h",
     "example24": "21:00",
@@ -1823,7 +1754,7 @@
     },
     "clearTexts": {
       "title": "Libérer de l’espace ?",
-      "message": "Hodi garde sur son serveur une copie des articles déjà ouverts, pour les afficher plus vite. Ces copies sont effacées <b>pour tout le foyer</b>, sauf celles des articles <b>enregistrés</b>. Un article rouvert se rechargera depuis son site.",
+      "message": "Hodi garde sur son serveur une copie des articles déjà ouverts, pour les afficher plus vite. Ces copies sont effacées <b>pour tout le serveur</b>, sauf celles des articles <b>enregistrés</b>. Un article rouvert se rechargera depuis son site.",
       "button": "Libérer de l’espace"
     },
     "resetSettings": {
@@ -1882,17 +1813,6 @@
       "message": "Le code qui suit permet de choisir un nouveau mot de passe pour le compte de <b>{{name}}</b>, et donc d’y entrer. Confirme avec le mot de passe pour le créer.",
       "button": "Créer le code"
     },
-    "makeAdmin": {
-      "title": "Passer le rôle d’admin ?",
-      "message": "<b>{{name}}</b> gère alors les profils, les sources, la clé IA et les réglages du foyer. <b>Toi, tu deviens un adulte comme les autres</b>, et seul·e <b>{{name}}</b> pourra te rendre ce rôle. Confirme avec le mot de passe.",
-      "button": "Passer le rôle"
-    },
-    "leaveHousehold": {
-      "title": "Quitter {{name}} ?",
-      "message": "Ton profil dans <b>{{name}}</b> s’en va, avec ce que tu y as enregistré et suivi. Ton compte <b>{{email}}</b> reste, avec tes statistiques et tes points : un adulte d’un foyer pourra t’y inviter avec un code.",
-      "messageAdmin": "Ton profil dans <b>{{name}}</b> s’en va, avec ce que tu y as enregistré et suivi, et <b>{{heir}}</b> devient l’admin du foyer. Ton compte <b>{{email}}</b> reste, avec tes statistiques et tes points : un adulte d’un foyer pourra t’y inviter avec un code.",
-      "button": "Quitter le foyer"
-    },
     "cancelInvitation": {
       "title": "Annuler l’invitation ?",
       "message": "Le code de <b>{{name}}</b> ne marchera plus. Tu pourras l’inviter à nouveau.",
@@ -1917,8 +1837,8 @@
       "message_one": "Ton profil part de <i>Qui lit ?</i> sur cet appareil, mais ton compte et tes lectures restent intacts. <b>{{others}}</b> reste ici. Pour revenir plus tard, touche <i>Ajouter</i> et entre ton e-mail et ton mot de passe.",
       "message_other": "Ton profil part de <i>Qui lit ?</i> sur cet appareil, mais ton compte et tes lectures restent intacts. <b>{{others}}</b> restent ici. Pour revenir plus tard, touche <i>Ajouter</i> et entre ton e-mail et ton mot de passe.",
       "messageAlone": "Cet appareil revient à la connexion. Ton compte et tes lectures restent intacts.",
-      "messageLast_one": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quitte aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte du foyer pourra le reconnecter quand il veut.",
-      "messageLast_other": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quittent aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte du foyer pourra le reconnecter quand il veut.",
+      "messageLast_one": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quitte aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte pourra le reconnecter quand il veut.",
+      "messageLast_other": "Plus aucun adulte ne sera connecté sur cet appareil : <b>{{young}}</b> quittent aussi <i>Qui lit ?</i>, faute de compte. L’appareil revient à la connexion, et les lectures restent intactes. Un adulte pourra le reconnecter quand il veut.",
       "button": "Se déconnecter"
     },
     "resetMine": {
@@ -1929,7 +1849,7 @@
     }
   },
   "dialogIntro": {
-    "codeOpen": "Tape le <b>code parental</b> du foyer pour ouvrir ce profil.",
+    "codeOpen": "Tape le <b>code parental</b> pour ouvrir ce profil.",
     "ownOpen": "Tape <b>le mot de passe du compte</b> pour ouvrir ce profil.",
     "shortcuts": "Sur ordinateur, sans quitter le clavier. Appuie sur <b>?</b> n’importe où pour les revoir.",
     "timeZone": "Il fixe <b>le début de chaque jour</b> : nouveau fil, <i>Résumé du jour</i>, heures calmes et temps d’écran des jeunes.",
@@ -1938,17 +1858,16 @@
     "addSource": "Colle le <b>lien d’un site</b>, ou choisis un thème pour voir des suggestions. La source arrive dans le fil de <b>tout le foyer</b>.",
     "replaceSource": "Trouve une autre source pour remplacer <b>{{name}}</b>. Elle est masquée dès que la nouvelle est ajoutée.",
     "aiTurnOn": "Colle une <b>clé d’API</b> du fournisseur. Elle est vérifiée sans dépenser de crédits, puis gardée sur ce serveur.",
-    "aiReplace": "La nouvelle clé remplace l’ancienne <b>pour tout le foyer</b>. Elle est vérifiée sans dépenser de crédits.",
-    "rename": "Le nom du foyer s’affiche <b>sur l’écran de connexion</b> de chaque appareil.",
+    "aiReplace": "La nouvelle clé remplace l’ancienne <b>pour ce compte</b>. Elle est vérifiée sans dépenser de crédits.",
     "sourceTopics": "Choisis où ranger <b>{{name}}</b>. Ses articles apparaissent dans <b>chaque thème</b> coché.",
     "daily": "Le temps de lecture permis chaque jour. Une fois écoulé, l’app se met en pause <b>jusqu’à demain</b>.",
     "window": "Les heures où l’app s’ouvre. En dehors, elle reste fermée et dit <b>à quelle heure elle rouvre</b>.",
     "quiet": "Pendant ces heures, <b>aucune notification</b> n’arrive sur ses appareils. L’app reste ouverte.",
-    "explain": "Chaque fois que <b>{{name}}</b> demande à l’IA d’expliquer un article ou un mot. Compté sur les <b>crédits du foyer</b>.",
+    "explain": "Chaque fois que <b>{{name}}</b> demande à l’IA d’expliquer un article ou un mot. Compté sur les <b>crédits de son compte</b>.",
     "week": "Son temps à l’écran et ses lectures des 7 derniers jours, <b>jamais les titres</b>.",
     "topics": "Choisis les thèmes visibles dans son fil. Un thème coupé disparaît <b>avec ses sources</b>, sans rien supprimer : tu peux le rallumer quand tu veux.",
     "sources": "Le catalogue jeunesse, rangé par thème. Les sources de base sont allumées au départ : garde celles qui lui conviennent. <b>Seules les sources allumées</b> arrivent dans son fil.",
-    "shareTo": "Choisis un ou plusieurs profils du foyer. L’article arrive dans leurs <i>Partages</i>, avec un mot si tu en écris un.",
+    "shareTo": "Choisis une ou plusieurs personnes. L’article arrive dans leurs <i>Partages</i>, avec un mot si tu en écris un.",
     "ask": "Colle le lien d’un site ou d’une chaîne YouTube. <b>Les parents</b> reçoivent la demande : s’ils l’acceptent, elle arrive dans le fil ou dans <i>Vidéos</i>.",
     "request": "<b>{{name}}</b> aimerait ajouter cette source à son fil. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, rangée dans le thème ci-dessous.",
     "requestChannel": "<b>{{name}}</b> aimerait suivre cette chaîne. Acceptée, elle n’apparaît <b>que pour {{name}}</b>, dans ses <i>Vidéos</i>.",
@@ -2156,10 +2075,9 @@
     "pluginsIntro": "Des fonctions en plus, pour tout le serveur, depuis le registre de Hodi ou un fichier. Chaque plugin tourne à part, avec ses propres données. Seuls les plugins vérifiés ajoutent des pages à Hodi.",
     "hints": {
       "overview": "Totaux, qui est en ligne",
-      "households": "Les foyers et leurs profils",
-      "accounts": "Les e-mails et leur foyer",
+      "accounts": "Les e-mails et leurs profils",
       "general": "L’adresse de Hodi et la page d’accueil",
-      "content": "Durées et sources par foyer",
+      "content": "Durées et sources",
       "backups": "Copies de toute la base de données",
       "mail": "Le serveur d’envoi des e-mails",
       "notifications": "E-mail et push, pour chaque type",
@@ -2168,7 +2086,7 @@
       "inboxWaiting_other": "{{count}} demandes à traiter"
     },
     "overview": {
-      "introOne": "Le foyer en totaux, comparé à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
+      "introOne": "Le serveur en totaux, comparé à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
       "introSeveral": "Tous les foyers ensemble, en totaux, comparés à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
       "period": "Période",
       "span": {
@@ -2256,6 +2174,7 @@
       "householdRowWaiting_one": "{{count}} profil · en attente de {{name}}",
       "householdRowWaiting_other": "{{count}} profils · en attente de {{name}}",
       "noHousehold": "Sans foyer",
+      "noProfile": "Sans profil",
       "noMatchHouseholds": "Aucun foyer ne correspond.",
       "noMatchAccounts": "Aucun compte ne correspond.",
       "backToHouseholds": "Retour aux foyers",
@@ -2298,7 +2217,6 @@
         "intro": "Le serveur voit le compte, jamais ce qui y est lu ni ses réglages.",
         "section": "Compte",
         "email": "E-mail",
-        "household": "Foyer",
         "role": "Rôle",
         "roles": {
           "admin": "Admin du foyer",
@@ -2321,8 +2239,7 @@
         "deleteButton": "Supprimer",
         "confirmDelete": {
           "title": "Supprimer ce compte ?",
-          "message": "<b>{{email}}</b> est effacé tout de suite avec son profil, ses enregistrés, ses lectures, ses partages et ses statistiques. Les copies de sauvegarde l’oublient au plus tard dans {{days}}. <b>Il n’y a pas de retour en arrière.</b>",
-          "messageAdmin": "<b>{{email}}</b> est effacé tout de suite avec son profil, ses enregistrés, ses lectures, ses partages et ses statistiques. <b>C’est l’admin de {{household}}</b> : le rôle passe à l’adulte avec un compte le plus ancien du foyer, et sans autre adulte, le foyer part aussi. Les copies de sauvegarde l’oublient au plus tard dans {{days}}. <b>Il n’y a pas de retour en arrière.</b>"
+          "message": "<b>{{email}}</b> est effacé tout de suite avec son profil, ses enregistrés, ses lectures, ses partages et ses statistiques. Les copies de sauvegarde l’oublient au plus tard dans {{days}}. <b>Il n’y a pas de retour en arrière.</b>"
         },
         "codeAsked": "Code demandé",
         "codeAskedTitle": "Code demandé le {{date}} à {{time}}",
@@ -2341,8 +2258,10 @@
       "oneText": "Ce serveur a déjà le sien. Pour y lire, demande à son admin de t’inviter."
     },
     "general": {
-      "intro": "L’adresse de Hodi, que les liens des e-mails ouvrent, et la page d’accueil publique. Un navigateur qui n’a jamais ouvert Hodi arrive sur ce site, par exemple ta page de présentation ; les autres arrivent sur <i>Connexion</i>.",
+      "intro": "L’adresse de Hodi, que les liens des e-mails ouvrent, et la page d’accueil publique. Un navigateur qui n’a jamais ouvert Hodi arrive sur ce site, par exemple ta page de présentation ; les autres arrivent sur <i>Connexion</i>. Puis ce qui vaut pour tous les comptes.",
       "addresses": "Adresses",
+      "everyone": "Pour tous les comptes",
+      "defaultsFailed": "Ce réglage n’a pas pu être enregistré. Réessaie dans un instant.",
       "invalid": "Écris une adresse complète, avec https://.",
       "saved": "Adresse enregistrée",
       "failed": "L’adresse n’a pas pu être enregistrée.",
@@ -2558,10 +2477,10 @@
     },
     "invite": {
       "subject": "{{name}} t’invite sur Hodi",
-      "title": "Rejoins le foyer {{household}}",
-      "text": "{{name}} t’invite dans le foyer {{household}} sur Hodi. Avec ce code, tu crées ton propre compte et ton profil y est ajouté. Il est valable 24 heures, une seule fois.",
+      "title": "Invitation sur Hodi",
+      "text": "{{name}} t’invite sur Hodi. Avec ce code, tu crées ton propre compte. Il est valable 24 heures, une seule fois.",
       "code": "Ton code : {{code}}",
-      "button": "Rejoindre le foyer",
+      "button": "Créer mon compte",
       "note": "Si tu ne connais pas cette personne, ignore cet e-mail : sans le code, rien ne se passe."
     }
   },
@@ -2621,7 +2540,7 @@
       "title": "Protège le compte",
       "intro": "Ce compte gère tout le serveur. En plus du mot de passe, il demandera un code du téléphone à chaque connexion sur un nouvel appareil.",
       "helpTitle": "Pourquoi c’est obligatoire ?",
-      "help": "Le compte du serveur peut créer et supprimer des foyers et des comptes, installer des plugins et restaurer des sauvegardes. Un mot de passe volé ne suffit pas à le prendre : il faut aussi le téléphone."
+      "help": "Le compte du serveur peut créer et supprimer des comptes, installer des plugins et restaurer des sauvegardes. Un mot de passe volé ne suffit pas à le prendre : il faut aussi le téléphone."
     },
     "account": {
       "row": "Validation en deux étapes",
@@ -2674,7 +2593,7 @@
   },
   "seo": {
     "title": "Hodi - L’actu pour toute la famille, gratuite et partout",
-    "description": "Tes sites d’actualités préférés, triés par thème et réunis au même endroit. Un profil pour chacun, et le foyer partage ce qui vaut la peine d’être lu."
+    "description": "Tes sites d’actualités préférés, triés par thème et réunis au même endroit. Un compte pour chacun, et on partage ce qui vaut la peine d’être lu."
   },
   "noHousehold": {
     "title": "Tu n’as plus de foyer",
@@ -2697,10 +2616,10 @@
       "data": "Données"
     },
     "intros": {
-      "profile": "Le prénom, la photo et la couleur que le foyer voit, et la langue de Hodi.",
+      "profile": "Le prénom, la photo et la couleur que les autres voient, et la langue de Hodi.",
       "sign-in": "Comment tu te connectes, et les appareils où le compte est ouvert.",
       "region": "Le fuseau horaire dit quand commence une journée : celle des statistiques, du <i>Résumé du jour</i> et des badges.",
-      "data": "Le foyer où tu lis, une copie de tout ce que Hodi garde du compte, ou sa suppression.",
+      "data": "Une copie de tout ce que Hodi garde du compte, ou sa suppression.",
       "ai": "Chaque bouton violet est un appel à l’IA, payé avec la clé d’API de ce compte : rien ne part sans un clic. Les appels se comptent sur 24 heures glissantes ; plafond atteint, les boutons violets se désactivent."
     },
     "noStats": "Rien de lu pour l’instant."

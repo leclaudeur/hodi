@@ -17,7 +17,6 @@ interface DoneStepProps {
   timeZone: string
   onTimeZone: (timeZone: string) => void
   email: string
-  household: string
   profile: string
   provider: AiProviderInfo | null
   busy: boolean
@@ -26,7 +25,7 @@ interface DoneStepProps {
   onBack: () => void
 }
 
-// The recap, with the time zone, before the household reaches the server.
+// The recap, with the time zone, before the profile reaches the server.
 const DoneStep = (props: DoneStepProps) => {
   const { t } = useTranslation()
   const [picking, setPicking] = useState(false)
@@ -41,10 +40,7 @@ const DoneStep = (props: DoneStepProps) => {
           action={{ label: t('common.change'), icon: Clock, onClick: () => setPicking(true) }}
         />
         <SettingRow label={t('setup.done.account')} hint={t('setup.done.serverAdmin', { email: props.email })} />
-        <SettingRow
-          label={t('setup.done.household')}
-          hint={t('setup.done.admin', { household: props.household, profile: props.profile })}
-        />
+        <SettingRow label={t('setup.done.household')} hint={props.profile} />
         <SettingRow
           label={t('setup.done.ai')}
           hint={provider ? t('setup.done.keyChecked', { provider: provider.name }) : t('setup.ai.none')}

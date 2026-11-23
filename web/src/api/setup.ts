@@ -253,7 +253,8 @@ export const removeProfileDevice = (profileId: number, deviceId: number) =>
   sendJson<null>('DELETE', `/profiles/${profileId}/devices/${deviceId}`)
 
 export interface HouseholdSetup {
-  name: string
+  // The server's one space needs none: a plugin with several households names them.
+  name?: string
   profile: { name: string; color: ProfileColor }
   timeZone: string
   country: string | null

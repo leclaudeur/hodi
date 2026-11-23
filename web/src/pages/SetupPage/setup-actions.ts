@@ -211,7 +211,6 @@ export const finishAction =
     flow.setError(null)
     try {
       const { profileId } = await setUpHousehold({
-        name: answers.name.replace(/\s+/g, ' ').trim(),
         profile: { name: profile.name, color: profile.color },
         timeZone: answers.timeZone,
         country: provider ? answers.country : null,

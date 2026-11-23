@@ -15,7 +15,7 @@ import Button from '../../ui/Button.tsx'
 import ProfileAvatar from '../../ui/ProfileAvatar.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
 import styles from './ProfileForm.module.css'
-import { AccountRows, AvatarPicker, ColorField, KindField, PhotoPicker, useProfilePhoto } from './ProfileFormParts.tsx'
+import { AvatarPicker, ColorField, KindField, PhotoPicker, useProfilePhoto } from './ProfileFormParts.tsx'
 
 export interface ProfileDraft {
   name: string
@@ -46,13 +46,6 @@ interface ProfileFormProps {
   onCancel?: () => void
   // Shown on an existing profile that is not the household's last.
   onDelete?: () => void
-  // The admin, on a member's private profile: takes its forgotten code off.
-  // The admin, on an adult profile without an account: a code for its person ("Connecter un appareil").
-  onConnect?: () => void
-  // « Passer le rôle d'admin »: from the household's admin, to another adult with an account.
-  onMakeAdmin?: () => void
-  // A new profile from « Qui lit ? »: picking Adulte invites one with a code instead, so that it has its account.
-  onInvite?: () => void
 }
 
 interface ActionsProps {
@@ -155,15 +148,13 @@ const ProfilePicture = ({ profile, name, color, avatar, photo }: PictureProps) =
 const firstAvatar = (profile: Profile | undefined, others: Profile[]): ProfileAvatarName =>
   profile?.avatar ?? PROFILE_AVATARS.find(name => !others.some(other => other.avatar === name)) ?? 'fox'
 
-// The type picked, and what it leads to: an adult invited, a new child waiting, or a child with its avatar.
-const useKind = (profile: Profile | undefined, kinds: ProfileKind[], canInvite: boolean) => {
-  const [kind, setKind] = useState<ProfileKind>(profile?.kind ?? (canInvite ? 'teen' : kinds[0]) ?? 'adult')
-  // An adult is invited, not made here: only the type and what happens next show.
-  const invite = !profile && canInvite && kind === 'adult'
+// The type picked, and what it leads to: a new child waiting, or a child with its avatar.
+const useKind = (profile: Profile | undefined, kinds: ProfileKind[]) => {
+  const [kind, setKind] = useState<ProfileKind>(profile?.kind ?? kinds[0] ?? 'adult')
   // The Enfant interface is being redone: a new child profile waits for it, one already made keeps working.
   const soon = kind === 'child' && profile?.kind !== 'child'
   const child = kind === 'child' && !soon
-  return { kind, setKind, invite, soon, child }
+  return { kind, setKind, soon, child }
 }
 
 // A profile's name, type, colour and photo, or a child's drawn avatar: to add one, or change it.
@@ -178,15 +169,12 @@ const ProfileForm = ({
   className = '',
   onSave,
   onCancel,
-  onDelete,
-  onConnect,
-  onMakeAdmin,
-  onInvite
+  onDelete
 }: ProfileFormProps) => {
   const { t } = useTranslation()
   const [name, setName] = useState(profile?.name ?? initial?.name ?? '')
   const [color, setColor] = useState<ProfileColor>(profile?.color ?? initial?.color ?? defaultColor)
-  const { kind, setKind, invite, soon, child } = useKind(profile, kinds, Boolean(onInvite))
+  const { kind, setKind, soon, child } = useKind(profile, kinds)
   const others = useProfiles()?.profiles.filter(other => other.id !== profile?.id) ?? []
   const [avatar, setAvatar] = useState<ProfileAvatarName>(() => firstAvatar(profile, others))
   const [saving, setSaving] = useState(false)
@@ -195,10 +183,6 @@ const ProfileForm = ({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    if (invite) {
-      onInvite?.()
-      return
-    }
     const trimmed = name.replace(/\s+/g, ' ').trim()
     if (!trimmed || soon) return
     setSaving(true)
@@ -220,26 +204,19 @@ const ProfileForm = ({
   return (
     <form className={`${styles.form} ${className}`} onSubmit={submit}>
       <div className={styles.layout}>
-        {!invite && (
-          <ProfilePicture profile={profile} name={name} color={color} avatar={child ? avatar : null} photo={photo} />
-        )}
+        <ProfilePicture profile={profile} name={name} color={color} avatar={child ? avatar : null} photo={photo} />
         <div className={styles.fields}>
-          {!invite && <NameField name={name} isNew={!profile} fixed={nameFixed} onName={setName} />}
-          {kinds.length > 1 && (
-            <KindField kinds={kinds} kind={kind} color={color} soon={soon} invite={invite} onKind={setKind} />
-          )}
-          {child && !invite && <AvatarPicker avatar={avatar} color={color} onAvatar={setAvatar} />}
-          {!invite && <ColorField color={color} onColor={setColor} />}
-          <AccountRows onConnect={onConnect} onMakeAdmin={onMakeAdmin} />
+          <NameField name={name} isNew={!profile} fixed={nameFixed} onName={setName} />
+          {kinds.length > 1 && <KindField kinds={kinds} kind={kind} color={color} soon={soon} onKind={setKind} />}
+          {child && <AvatarPicker avatar={avatar} color={color} onAvatar={setAvatar} />}
+          <ColorField color={color} onColor={setColor} />
         </div>
       </div>
       {error && <StatusLine tone="error">{error}</StatusLine>}
       <FormActions
         saving={saving}
-        disabled={!invite && (!name.trim() || soon)}
-        label={
-          invite ? t('profileForm.invite') : (submitLabel ?? (profile ? t('common.save') : t('profileForm.create')))
-        }
+        disabled={!name.trim() || soon}
+        label={submitLabel ?? (profile ? t('common.save') : t('profileForm.create'))}
         cancelLabel={cancelLabel}
         onCancel={onCancel}
         onDelete={onDelete}

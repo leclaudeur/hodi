@@ -1,26 +1,18 @@
-import { Plus, UserPlus, Users } from 'lucide-react'
+import { Plus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MAX_PROFILES, PROFILE_COLORS, type Profile, getYouthRules } from '../../../api.ts'
+import { MAX_PROFILES, PROFILE_COLORS, getYouthRules } from '../../../api.ts'
 import { isYoung, useProfiles } from '../../../lib/profiles.ts'
+import { useHousehold } from '../../../lib/settings-data.ts'
 import { PROFILES_HREF } from '../../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../../lib/use-media.ts'
 import Button from '../../../ui/Button.tsx'
-import CodeDialog from '../../profiles/CodeDialog.tsx'
-import InviteDialog from '../../profiles/InviteDialog.tsx'
 import SectionPage from '../SectionPage.tsx'
 import RowsSkeleton from '../SettingsSkeleton.tsx'
 import profileStyles from './ProfilesSection.module.css'
-import InvitedGroup, { useInvitations } from './InvitedGroup.tsx'
+import ParentalCodeCard from './ParentalCodeCard.tsx'
 import ProfileGroups from './ProfileGroups.tsx'
-import {
-  EditProfileDialog,
-  type Giving,
-  NewProfileDialog,
-  editActionsOf,
-  kindsOf,
-  profileConfirms
-} from './ProfilesParts.tsx'
+import { NewProfileDialog } from './ProfilesParts.tsx'
 
 // Each young profile's time a day (null: no limit), once its rules come.
 const useDailyMinutes = (ids: number[]) => {
@@ -46,13 +38,11 @@ interface AddButtonsProps {
   parent: boolean
   room: boolean
   adding: boolean
-  withAccounts: boolean
   onAdd: () => void
-  onInvite: () => void
 }
 
-// Under the list: a new profile, an invitation for an adult, and changing profile off a computer.
-const AddButtons = ({ parent, room, adding, withAccounts, onAdd, onInvite }: AddButtonsProps) => {
+// Under the list: a new young profile, and changing profile off a computer.
+const AddButtons = ({ parent, room, adding, onAdd }: AddButtonsProps) => {
   const { t } = useTranslation()
   const desktop = useIsDesktop()
   return (
@@ -60,11 +50,6 @@ const AddButtons = ({ parent, room, adding, withAccounts, onAdd, onInvite }: Add
       {parent && room && !adding && (
         <Button icon={Plus} onClick={onAdd}>
           {t('settings.profiles.add')}
-        </Button>
-      )}
-      {parent && withAccounts && room && (
-        <Button icon={UserPlus} onClick={onInvite}>
-          {t('profiles.code.invite')}
         </Button>
       )}
       {/* On a computer, the sidebar's selector changes profile. */}
@@ -77,26 +62,27 @@ const AddButtons = ({ parent, room, adding, withAccounts, onAdd, onInvite }: Add
   )
 }
 
-// The household's profiles: each reader's name, colour and photo. The admin adds, changes and removes them;
-// a member changes its own. Each one has its own "Enregistrés", reads, stats, followed subjects and settings.
+// The parental code, the server admin's for now: until each parent has their own, it asks for every adult on a device.
+const ParentalCode = () => {
+  const { value: household, replace } = useHousehold()
+  return household ? <ParentalCodeCard household={household} onSaved={replace} /> : null
+}
+
+// The teens and children: each one's name, colour and photo, its time a day for its parents. Every adult adds and
+// changes them; the adults themselves are accounts on the server, each with its own Mon compte.
 const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const { t } = useTranslation()
   const value = useProfiles({ fresh: true })
-  // The profile being changed, 'new' for one being added.
-  const [editing, setEditing] = useState<number | 'new' | null>(null)
-  const [giving, setGiving] = useState<Giving>(undefined)
-  const [inviting, setInviting] = useState(false)
+  // A young profile is changed on its own page: only a new one opens a dialog here.
+  const [adding, setAdding] = useState(false)
   // Its parents see a young profile's time a day under its name.
   const viewer = value?.profiles.find(profile => profile.id === value.current)
   const daily = useDailyMinutes(
     viewer?.kind === 'adult' ? (value?.profiles ?? []).filter(isYoung).map(profile => profile.id) : []
   )
 
-  // Personnes invitées: an adult's with an account, as invitations come with personal accounts.
-  const invited = useInvitations(viewer?.kind === 'adult' && viewer.hasAccount === true)
-
   const title = t('settings.nav.profiles')
-  const intro = t('settings.profiles.intro', { max: MAX_PROFILES })
+  const intro = t('settings.profiles.intro')
 
   if (!value)
     return (
@@ -107,66 +93,25 @@ const ProfilesSection = ({ layout }: { layout: 'desktop' | 'phone' }) => {
 
   const { profiles, current } = value
   const own = profiles.find(profile => profile.id === current)
-  const admin = own?.role === 'admin'
+  const admin = value.serverAdmin === true
   // Every adult is a parent: it adds and changes the young profiles.
   const parent = own?.kind === 'adult'
-  // Codes come with personal accounts: on an install still on the household's password, its admin moves first.
-  const withAccounts = own?.hasAccount === true
-  const mayEdit = (profile: Profile) => admin || profile.id === current || (parent && isYoung(profile))
-  const edited = typeof editing === 'number' ? profiles.find(profile => profile.id === editing) : undefined
-  const confirms = profileConfirms({ t, onEditing: setEditing })
-  const editActions = editActionsOf(edited, { admin, current, withAccounts, confirms, onGiving: setGiving })
+  const young = profiles.filter(isYoung)
 
   return (
     <SectionPage title={title} intro={intro} layout={layout}>
-      <ProfileGroups
-        profiles={profiles}
-        current={current}
-        parent={parent}
-        daily={daily}
-        mayEdit={mayEdit}
-        onEdit={setEditing}
-      />
-      {parent && withAccounts && <InvitedGroup invitations={invited.invitations} onChange={invited.reload} />}
+      <ProfileGroups profiles={young} current={current} parent={parent} daily={daily} />
 
-      <AddButtons
-        parent={parent}
-        room={profiles.length < MAX_PROFILES}
-        adding={editing === 'new'}
-        withAccounts={withAccounts}
-        onAdd={() => setEditing('new')}
-        onInvite={() => setInviting(true)}
-      />
+      <AddButtons parent={parent} room={profiles.length < MAX_PROFILES} adding={adding} onAdd={() => setAdding(true)} />
 
-      {/* Adding and changing a profile happen in a dialog, as every action in Réglages. */}
+      {admin && <ParentalCode />}
+
+      {/* Adding a profile happens in a dialog, as every action in Réglages. */}
       <NewProfileDialog
-        open={editing === 'new'}
+        open={adding}
         defaultColor={PROFILE_COLORS.find(color => !profiles.some(profile => profile.color === color))}
-        kinds={kindsOf(undefined, current, admin)}
-        onInvite={
-          withAccounts
-            ? () => {
-                setEditing(null)
-                setInviting(true)
-              }
-            : undefined
-        }
-        onClose={() => setEditing(null)}
-      />
-      <EditProfileDialog
-        edited={edited}
-        kinds={kindsOf(edited, current, admin)}
-        onClose={() => setEditing(null)}
-        {...editActions}
-      />
-      <InviteDialog open={inviting} onClose={() => setInviting(false)} onInvited={invited.reload} />
-      {/* Remade at each opening: a new code, nothing left of the one before. Opened from the profile's dialog, it takes
-          that one's place as the same card, with a way back to it (lib/dialog-stack.ts). */}
-      <CodeDialog
-        key={giving === undefined ? 'closed' : (giving?.id ?? 'invite')}
-        target={giving}
-        make={giving?.made ? () => Promise.resolve(giving.made!) : undefined}
-        onClose={() => setGiving(undefined)}
+        kinds={['teen', 'child']}
+        onClose={() => setAdding(false)}
       />
     </SectionPage>
   )

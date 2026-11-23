@@ -15,7 +15,6 @@ import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import { PluginSlots } from '../../../plugins/Slots.tsx'
 import AccountProfile from './AccountProfile.tsx'
-import HouseholdCard from './HouseholdCard.tsx'
 import AccountStatsCard from './AccountStatsCard.tsx'
 import { DeviceRows, TwoFactorRow, confirmDelete, labelOf } from './AccountRows.tsx'
 import PrivateProfileRow from './PrivateProfileRow.tsx'
@@ -204,13 +203,8 @@ export const SignInPart = ({ account, onAccount, layout }: PartProps) => {
   )
 }
 
-// Mon compte › Données: the household it reads in, a copy of everything, deleting it.
-export const DataPart = ({ account }: { account: AccountView }) => (
-  <>
-    <HouseholdCard account={account} />
-    <DataRows account={account} />
-  </>
-)
+// Mon compte › Données: a copy of everything, deleting it.
+export const DataPart = ({ account }: { account: AccountView }) => <DataRows account={account} />
 
 // A young profile open on this device has no account of its own: this device's part alone.
 export const DevicePart = () => {
