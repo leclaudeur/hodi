@@ -1388,6 +1388,30 @@ const MIGRATIONS: string[] = [
     domain TEXT PRIMARY KEY,
     at INTEGER NOT NULL
   );
+  `,
+  // « Signaler ce partage »: the share as it was received (its article and its word), why, and who sent it, for the
+  // server's admin. reporter (« a<account id> ») keeps one account from reporting a share twice and counts its reports
+  // of the day; the admin never sees it. handled_at: « Ignorer », kept a month so the same share is not reported again.
+  // A sender's account that goes leaves the report, without an account to open.
+  `
+  CREATE TABLE share_reports (
+    id INTEGER PRIMARY KEY,
+    reporter TEXT NOT NULL,
+    from_profile INTEGER NOT NULL,
+    sender INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    sender_name TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    item TEXT NOT NULL,
+    note TEXT,
+    reason TEXT NOT NULL CHECK (reason IN ('harassment', 'hateful', 'spam', 'other')),
+    at INTEGER NOT NULL,
+    handled_at INTEGER,
+    UNIQUE (reporter, from_profile, article_id)
+  );
+  CREATE INDEX share_reports_reporter ON share_reports (reporter, at);
+  CREATE TRIGGER users_forget_share_reports AFTER DELETE ON users BEGIN
+    DELETE FROM share_reports WHERE reporter = 'a' || OLD.id;
+  END;
   `
 ]
 

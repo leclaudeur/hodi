@@ -13,6 +13,7 @@ export type InboxFilter = InboxKind | 'handled' | null
 const CORE_KINDS: Record<string, InboxKind> = {
   'core:source-review': 'source',
   'core:source-report': 'report',
+  'core:share-report': 'report',
   'core:code-request': 'code'
 }
 
@@ -52,6 +53,12 @@ export const reviewedSourceOf = (item: Pick<InboxItem, 'url'>) =>
 export const reportedSourceOf = (item: Pick<InboxItem, 'url'>) =>
   item.url.startsWith(`${INBOX_PREFIX}report-`) ? item.url.slice(`${INBOX_PREFIX}report-`.length) : null
 
+// The reported share an item is about.
+export const reportedShareOf = (item: Pick<InboxItem, 'url'>) => {
+  const match = /^#\/server\/inbox\/share-(\d+)$/.exec(item.url)
+  return match ? Number(match[1]) : null
+}
+
 // Where a waiting request opens: a source to judge in À traiter itself, anything else on the page where it is done
 // (the account that asked a code, a plugin's page), never a page that only leads there.
 export const inboxHrefOf = (item: Pick<InboxItem, 'id' | 'url'>) =>
@@ -62,4 +69,6 @@ export const inboxHrefOf = (item: Pick<InboxItem, 'id' | 'url'>) =>
 // On a computer with none chosen, À traiter opens the first source still to judge or reported, as Comptes opens its
 // first account.
 export const firstOpen = <T extends Pick<InboxItem, 'type' | 'important' | 'handledAt' | 'url'>>(items: T[]) =>
-  items.find(item => isWaiting(item) && (reviewedSourceOf(item) ?? reportedSourceOf(item)) !== null) ?? null
+  items.find(
+    item => isWaiting(item) && (reviewedSourceOf(item) ?? reportedSourceOf(item) ?? reportedShareOf(item)) !== null
+  ) ?? null

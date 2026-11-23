@@ -1,6 +1,8 @@
 import { serverInboxRoutes } from '../http/server-inbox-routes.ts'
+import { shareDecisionRoutes } from '../http/share-report-routes.ts'
 import { reportDecisionRoutes } from '../http/source-report-routes.ts'
 import { sourceReviewRoutes } from '../http/source-review-routes.ts'
+import { shareReportKey } from '../notices/share-report.ts'
 import { sourceReportKey } from '../notices/source-report.ts'
 import { sourceReviewKey } from '../notices/source-review.ts'
 import { codeRequestKey, freshRequest } from '../notices/code-request.ts'
@@ -95,7 +97,7 @@ const mountNotices = (api: express.Router, { options }: Wiring) => {
     serverNoticeRoutes({
       store: serverNotices.store,
       accountOf: response => accountAsking(response, accounts)?.id ?? null,
-      coreKinds: ['code-request', 'source-review', 'source-report', 'weekly-report'],
+      coreKinds: ['code-request', 'source-review', 'source-report', 'share-report', 'weekly-report'],
       plugins: noticePlugins(plugins),
       mailReady: () => serverMail?.store.get() != null,
       publicKey: serverNotices.publicKey || null,
@@ -140,6 +142,21 @@ const mountReportDecisions = (api: express.Router, { options }: Wiring) => {
   )
 }
 
+// À traiter's reported shares: Ignorer; the sender's account is handled on its own page.
+const mountShareDecisions = (api: express.Router, { options }: Wiring) => {
+  const { shareReports, serverInbox, now } = options
+  if (!shareReports) return
+  api.use(
+    '/server/share-reports',
+    requireServerAdmin,
+    shareDecisionRoutes({
+      reports: shareReports,
+      onDecided: id => serverInbox?.notifier.handled?.(shareReportKey(id)),
+      now
+    })
+  )
+}
+
 // /server, for the server's admin, and the plugins' own routes.
 export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
   const { options } = wiring
@@ -164,6 +181,7 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
   if (inbox) api.use('/server/inbox', requireServerAdmin, serverInboxRoutes(inbox, now))
   mountReviews(api, wiring)
   mountReportDecisions(api, wiring)
+  mountShareDecisions(api, wiring)
   if (!serverStats) return
   api.use(
     '/server',

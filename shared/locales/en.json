@@ -2383,6 +2383,10 @@
       "sourceReport": {
         "label": "Reported sources",
         "hint": "When an account reports a source"
+      },
+      "shareReport": {
+        "label": "Reported shares",
+        "hint": "When an account reports a share it received"
       }
     },
     "inbox": {
@@ -2441,6 +2445,18 @@
         "unlistText": "<b>{{name}}</b> is no longer offered. Those who read it keep it in <i>My sources</i>.",
         "ignored": "Report ignored",
         "unlisted": "{{name}} is out of the catalogue",
+        "failed": "This choice could not be saved"
+      },
+      "share": {
+        "what": "The share",
+        "note": "Their note",
+        "why": "The reason",
+        "sender": "Sent by",
+        "senderGone": "Account deleted since",
+        "senderHint": "Block or delete their account from its page",
+        "openAccount": "See the account",
+        "ignore": "Ignore",
+        "ignored": "Report ignored",
         "failed": "This choice could not be saved"
       }
     },
@@ -2544,6 +2560,11 @@
       "eyebrow": "Server",
       "title": "Source reported: {{name}}",
       "text": "Someone reported {{name}}. Keep it or take it out of the catalogue in To do."
+    },
+    "shareReport": {
+      "eyebrow": "Server",
+      "title": "Share reported",
+      "text": "Someone reported a share they received. Ignore it or act on the account that sent it in To do."
     }
   },
   "forgot": {
@@ -2829,5 +2850,38 @@
     "send": "Send",
     "sent": "Report sent",
     "failed": "The report could not be sent"
+  },
+  "shareReport": {
+    "button": "Report",
+    "label": "Report {{name}}’s share",
+    "title": "Report this share",
+    "intro": "Only the server’s admin sees it, without your name being shown. Nothing changes for <b>{{name}}</b> until they decide.",
+    "reasonsLabel": "The reason",
+    "reasons": {
+      "harassment": {
+        "label": "Harassment",
+        "hint": "Insisting, threats or humiliation"
+      },
+      "hateful": {
+        "label": "Hateful",
+        "hint": "Insults or rejects people for who they are"
+      },
+      "spam": {
+        "label": "Spam",
+        "hint": "Mass sending or advertising"
+      },
+      "other": {
+        "label": "Other",
+        "hint": "Another reason worth the admin’s attention"
+      }
+    },
+    "send": "Report",
+    "sent": "Share reported",
+    "already": "You already reported this share",
+    "tooMany": "You reached 5 reports today. Try again tomorrow.",
+    "failed": "The report could not be sent",
+    "mute": "Stop receiving their shares",
+    "muteLabel": "Stop receiving {{name}}’s shares",
+    "muted": "You no longer receive {{name}}’s shares"
   }
 }

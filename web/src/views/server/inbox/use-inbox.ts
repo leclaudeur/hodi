@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   type InboxItem,
+  type ShareReportView,
   type SourceReportView,
   type SourceReview,
   getServerInbox,
+  getShareReports,
   getSourceReports,
   getSourceReviews
 } from '../../../api.ts'
@@ -20,20 +22,30 @@ interface Inbox {
   reviews: SourceReview[]
   // The sources reported, until the admin decides.
   reports: SourceReportView[]
+  // The shares reported, until the admin ignores them.
+  shares: ShareReportView[]
   failed: boolean
 }
 
-// À traiter's items, the requests still waiting first, and the sources they are about: to judge, or reported.
+// À traiter's items, the requests still waiting first, and what they are about: sources to judge or reported, shares
+// reported.
 export const useInbox = () => {
-  const [inbox, setInbox] = useState<Inbox>({ items: null, reviews: [], reports: [], failed: false })
+  const [inbox, setInbox] = useState<Inbox>({ items: null, reviews: [], reports: [], shares: [], failed: false })
   const load = useCallback(() => {
     Promise.all([
       getServerInbox(),
       getSourceReviews().catch(() => ({ validating: false, sources: [] })),
-      getSourceReports().catch(() => ({ reports: [] }))
+      getSourceReports().catch(() => ({ reports: [] })),
+      getShareReports().catch(() => ({ reports: [] }))
     ])
-      .then(([answer, reviews, reported]) =>
-        setInbox({ items: sortInbox(answer.items), reviews: reviews.sources, reports: reported.reports, failed: false })
+      .then(([answer, reviews, reported, shares]) =>
+        setInbox({
+          items: sortInbox(answer.items),
+          reviews: reviews.sources,
+          reports: reported.reports,
+          shares: shares.reports,
+          failed: false
+        })
       )
       .catch(() => setInbox(current => ({ ...current, items: current.items ?? [], failed: true })))
   }, [])

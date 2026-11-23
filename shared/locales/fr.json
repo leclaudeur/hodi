@@ -2383,6 +2383,10 @@
       "sourceReport": {
         "label": "Sources signalées",
         "hint": "Quand un compte signale une source"
+      },
+      "shareReport": {
+        "label": "Partages signalés",
+        "hint": "Quand un compte signale un partage reçu"
       }
     },
     "inbox": {
@@ -2441,6 +2445,18 @@
         "unlistText": "<b>{{name}}</b> n’est plus proposée. Ceux qui la lisent la gardent dans <i>Mes sources</i>.",
         "ignored": "Signalement ignoré",
         "unlisted": "{{name}} est retirée du catalogue",
+        "failed": "Ce choix n’a pas pu être enregistré"
+      },
+      "share": {
+        "what": "Le partage",
+        "note": "Son mot",
+        "why": "Le motif",
+        "sender": "Envoyé par",
+        "senderGone": "Compte supprimé depuis",
+        "senderHint": "Bloque ou supprime son compte depuis sa page",
+        "openAccount": "Voir le compte",
+        "ignore": "Ignorer",
+        "ignored": "Signalement ignoré",
         "failed": "Ce choix n’a pas pu être enregistré"
       }
     },
@@ -2544,6 +2560,11 @@
       "eyebrow": "Serveur",
       "title": "Source signalée : {{name}}",
       "text": "Quelqu’un a signalé {{name}}. Garde-la ou retire-la du catalogue dans À traiter."
+    },
+    "shareReport": {
+      "eyebrow": "Serveur",
+      "title": "Partage signalé",
+      "text": "Quelqu’un a signalé un partage reçu. Ignore-le ou agis sur le compte qui l’a envoyé dans À traiter."
     }
   },
   "forgot": {
@@ -2829,5 +2850,38 @@
     "send": "Envoyer",
     "sent": "Signalement envoyé",
     "failed": "Le signalement n’a pas pu partir"
+  },
+  "shareReport": {
+    "button": "Signaler",
+    "label": "Signaler le partage de {{name}}",
+    "title": "Signaler ce partage",
+    "intro": "Seul l’admin du serveur le voit, sans que ton nom lui soit montré. Rien ne change pour <b>{{name}}</b> avant sa décision.",
+    "reasonsLabel": "Le motif",
+    "reasons": {
+      "harassment": {
+        "label": "Harcèlement",
+        "hint": "Insistance, menaces ou humiliation"
+      },
+      "hateful": {
+        "label": "Haineux",
+        "hint": "Insulte ou rejette des personnes pour ce qu’elles sont"
+      },
+      "spam": {
+        "label": "Spam",
+        "hint": "Des envois en masse ou de la publicité"
+      },
+      "other": {
+        "label": "Autre",
+        "hint": "Une autre raison qui mérite l’attention de l’admin"
+      }
+    },
+    "send": "Signaler",
+    "sent": "Partage signalé",
+    "already": "Tu as déjà signalé ce partage",
+    "tooMany": "Tu as atteint 5 signalements aujourd’hui. Réessaie demain.",
+    "failed": "Le signalement n’a pas pu être envoyé",
+    "mute": "Ne plus recevoir ses partages",
+    "muteLabel": "Ne plus recevoir les partages de {{name}}",
+    "muted": "Tu ne reçois plus les partages de {{name}}"
   }
 }

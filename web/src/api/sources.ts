@@ -120,6 +120,14 @@ export type Reaction = (typeof REACTIONS)[number]
 export const reactToShare = (articleId: string, from: number, reaction: Reaction | null) =>
   sendJson<{ ok: true }>('POST', '/me/shares/reaction', { articleId, from, reaction })
 
+export type ShareReportReason = 'harassment' | 'hateful' | 'spam' | 'other'
+
+export const SHARE_REPORT_REASONS: ShareReportReason[] = ['harassment', 'hateful', 'spam', 'other']
+
+// « Signaler ce partage »: to the server's admin, who never learns who sent the report.
+export const reportShare = (articleId: string, from: number, reason: ShareReportReason) =>
+  sendJson<null>('POST', '/me/shares/report', { articleId, from, reason })
+
 // The reactions to what this profile sent, not shown yet.
 export interface ShareReaction {
   item: SearchItem

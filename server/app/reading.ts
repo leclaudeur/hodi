@@ -6,6 +6,7 @@ import { newsRoutes } from '../http/news-routes.ts'
 import { profileIdOf, requireAdmin } from '../http/profile-routes.ts'
 import { pushRoutes } from '../http/push-routes.ts'
 import { readingRoutes } from '../http/reading-routes.ts'
+import { shareReportRoutes } from '../http/share-report-routes.ts'
 import { shareRoutes } from '../http/share-routes.ts'
 import { sourceReportRoutes } from '../http/source-report-routes.ts'
 import { sourceRoutes } from '../http/source-routes.ts'
@@ -15,6 +16,7 @@ import { mySourcesRoutes } from '../http/my-sources-routes.ts'
 import { allSources } from '../news/catalog.ts'
 import { accountAsking } from '../http/proof.ts'
 import { SOURCE_REPORT, sourceReportKey, sourceReportNotice } from '../notices/source-report.ts'
+import { SHARE_REPORT, shareReportKey, shareReportNotice } from '../notices/share-report.ts'
 import { SOURCE_REVIEW, sourceReviewKey, sourceReviewNotice } from '../notices/source-review.ts'
 import { withPluginFeeds } from '../plugins/feeds.ts'
 import type { Wiring } from './wiring.ts'
@@ -104,6 +106,24 @@ const mountReports = (api: express.Router, { options }: Wiring) => {
   )
 }
 
+// « Signaler ce partage »: each report waits in À traiter on its own, as each is about another share.
+const mountShareReports = (api: express.Router, { options }: Wiring) => {
+  const { shareReports, accounts, serverInbox, now } = options
+  if (!shareReports || !accounts) return
+  api.use(
+    shareReportRoutes({
+      reports: shareReports,
+      accountOf: response => accountAsking(response, accounts)?.id ?? null,
+      profileOf: profileIdOf,
+      onReported: id =>
+        serverInbox?.notifier
+          .tell(SHARE_REPORT, language => shareReportNotice(id, language), { important: shareReportKey(id) })
+          .catch((error: unknown) => console.error(`Share report not told: ${String(error)}`)),
+      now
+    })
+  )
+}
+
 // "Ajouter une source".
 const mountSources = (api: express.Router, wiring: Wiring) => {
   const { options } = wiring
@@ -163,6 +183,7 @@ export const mountReading = (api: express.Router, wiring: Wiring) => {
   api.use(aiUsageRoutes({ news, plugins }))
   mountStorage(api, wiring)
   mountReports(api, wiring)
+  mountShareReports(api, wiring)
   mountSources(api, wiring)
   api.use(articleRoutes({ news, users, images, reader: wiring.reader }))
 }
