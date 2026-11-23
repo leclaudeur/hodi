@@ -243,6 +243,32 @@ export class SourceStore {
     return row ? toSource(row) : null
   }
 
+  // A source its adder lets go while others read it: the server admin's from now on. Returns that profile, or null when
+  // nobody else reads it or the server's admin has no other profile, and the source can go.
+  handOver(id: string, from: number): number | null {
+    const heir = this.#db
+      .prepare(
+        `SELECT p.id FROM profiles p JOIN users u ON u.id = p.user_id
+         WHERE u.server_admin = 1 AND p.id != ? ORDER BY p.id LIMIT 1`
+      )
+      .get(from) as { id: number } | undefined
+    const own = this.#db.prepare('SELECT user_id FROM profiles WHERE id = ?').get(from) as
+      { user_id: number | null } | undefined
+    const others = this.#db
+      .prepare('SELECT 1 FROM my_sources WHERE source_id = ? AND owner != ? AND owner != ? LIMIT 1')
+      .get(id, `p${from}`, `a${own?.user_id ?? 0}`)
+    if (!heir || !others) return null
+    this.#db.prepare('UPDATE catalog_sources SET added_by = ? WHERE source_id = ?').run(heir.id, id)
+    return heir.id
+  }
+
+  // Who added a source of the catalogue now: null for sources.yml's, undefined when it is not in it.
+  adderOf(id: string): number | null | undefined {
+    const row = this.#db.prepare('SELECT added_by FROM catalog_sources WHERE source_id = ?').get(id) as
+      { added_by: number | null } | undefined
+    return row === undefined ? undefined : row.added_by
+  }
+
   // In the catalogue.
   has(id: string) {
     return this.#db.prepare('SELECT 1 FROM catalog_sources WHERE source_id = ?').get(id) !== undefined

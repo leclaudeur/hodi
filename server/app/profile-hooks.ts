@@ -29,15 +29,17 @@ export const profileHooksOf = (options: Options, youthSources: YouthSources | nu
       if (profile.kind === 'adult') giveBaseSources(options, id)
       youthSources?.start(profile)
     },
-    // Its devices' alerts go with a deleted profile, and the sources it added (the database removes their rows).
+    // Its devices' alerts go with a deleted profile, and the sources it added that nobody else reads; the others are
+    // the server admin's now (the database decided as the row went).
     deleted: id => {
       alerts?.unregisterProfile(id)
       // The plugins forget it too, now or as soon as they can.
       plugins?.profileDeleted(id, currentHouseholdId())
-      news
-        .getSourceStatuses()
-        .filter(source => source.addedBy === id)
-        .forEach(source => news.removeSource(source.id))
+      for (const source of news.getSourceStatuses().filter(candidate => candidate.addedBy === id)) {
+        const adder = options.sources?.store.adderOf(source.id)
+        if (typeof adder === 'number') news.handOverSource(source.id, adder)
+        else news.removeSource(source.id)
+      }
     }
   }
 }

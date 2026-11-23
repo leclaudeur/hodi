@@ -1,6 +1,7 @@
 import express from 'express'
 import type { SourceStore } from '../db/source-store.ts'
 import type { Source } from '../news/catalog.ts'
+import { siteOf, slug } from '../news/source-name.ts'
 import type { NewsService } from '../news/news-service.ts'
 import type { FindResult } from '../news/source-finder.ts'
 import { isPluginFeed } from '../plugins/feeds.ts'
@@ -20,21 +21,6 @@ const FOUND_TTL_MS = CONFIG.sources.foundKeptFor
 // Of the sites the AI names, the ones offered.
 const MAX_SUGGESTIONS = CONFIG.sources.aiSuggestions
 
-export const slug = (name: string) =>
-  name
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 40) || 'source'
-
-// A source's home page, from its first domain or its feed's host.
-const siteOf = (source: Source) => {
-  const host = source.domains[0] ?? new URL(source.url).hostname
-  return `https://${host}/`
-}
-
 interface SourceRoutesOptions {
   news: NewsService
   sources: SourceStore
@@ -45,6 +31,8 @@ interface SourceRoutesOptions {
   maxSources: () => number | null
   // Turned off for the household's other profiles.
   onAdded: (sourceId: string, profileId: number) => void
+  // Its adder removed a source others still read: it stays for them, out of the adder's own list.
+  onLeft?: (sourceId: string, profileId: number) => void
   // Out of the catalogue (À traiter, refused): its link is free to add again.
   unlisted?: () => Set<string>
   // A feed on a domain the server's admin blocked: never added again, by anyone.
@@ -302,7 +290,7 @@ const mountAddRoute = (
 
 const mountEditRoutes = (
   router: express.Router,
-  { news, sources }: SourceRoutesOptions,
+  { news, sources, onLeft }: SourceRoutesOptions,
   { topicIdsOf }: SourceHelpers
 ) => {
   // A source's topics, changed by the profile that added it or the admin.
@@ -344,8 +332,15 @@ const mountEditRoutes = (
       response.status(403).json({ error: 'not_yours' })
       return
     }
-    sources.remove(source.id)
-    news.removeSource(source.id)
+    // Only the server's admin takes a source away from those who read it.
+    const heir = isServerAdminOf(response) ? null : sources.handOver(source.id, profileIdOf(response))
+    if (heir === null) {
+      sources.remove(source.id)
+      news.removeSource(source.id)
+    } else {
+      news.handOverSource(source.id, heir)
+      onLeft?.(source.id, profileIdOf(response))
+    }
     response.status(204).end()
   })
 }

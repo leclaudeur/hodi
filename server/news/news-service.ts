@@ -23,7 +23,7 @@ import { ArticleLoader } from './article-loader.ts'
 import { type NewsAi, createNewsAi } from './news-ai.ts'
 import { DAY_MS, MAX_TOPIC_LIMIT, TopicLister } from './topic-lister.ts'
 import { NewsSearch } from './news-search.ts'
-import { addToCatalog, moveToTopics, removeFromCatalog } from './catalog-edits.ts'
+import { addToCatalog, moveToTopics, handOverInCatalog, removeFromCatalog } from './catalog-edits.ts'
 import { frontSection } from './front-page.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -172,6 +172,11 @@ export class NewsService {
     const moved = moveToTopics(this.#catalog, sourceId, topicIds)
     if (moved) this.#search.forgetTrends()
     return moved
+  }
+
+  // A source kept for the others who read it, under its new adder.
+  handOverSource(sourceId: string, addedBy: number) {
+    handOverInCatalog(this.#catalog, sourceId, addedBy)
   }
 
   removeSource(sourceId: string) {

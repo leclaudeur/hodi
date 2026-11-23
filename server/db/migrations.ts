@@ -1470,12 +1470,37 @@ const MIGRATIONS: string[] = [
     created_at INTEGER NOT NULL
   );
   CREATE INDEX catalog_sources_added_by ON catalog_sources (added_by);
-  INSERT OR IGNORE INTO catalog_sources (source_id, section, section_id, topics, position, added_by, created_at)
-    SELECT source_id, section, section_id, topics, position, added_by, created_at FROM household_sources
-    ORDER BY household_id, created_at, rowid;
+  WITH firsts AS (
+    SELECT h.*, ROW_NUMBER() OVER (PARTITION BY source_id ORDER BY household_id, created_at, rowid) AS nth
+    FROM household_sources h
+  )
+  INSERT INTO catalog_sources (source_id, section, section_id, topics, position, added_by, created_at)
+    SELECT source_id, section, section_id, topics,
+      ROW_NUMBER() OVER (PARTITION BY section, section_id ORDER BY household_id, position, created_at, source_id) - 1,
+      added_by, created_at
+    FROM firsts WHERE nth = 1 ORDER BY household_id, created_at, source_id;
+  -- Only its own household saw a source another household added: the server's admin validates it before anyone else
+  -- sees it in the catalogue, as any source added from now on.
+  INSERT OR IGNORE INTO source_reviews (source_id, state, asked_at)
+    SELECT c.source_id, 'pending', c.created_at FROM catalog_sources c JOIN profiles p ON p.id = c.added_by
+    WHERE p.account_id != 1;
   DROP TABLE household_sources;
   CREATE TRIGGER catalog_sources_forget_readers AFTER DELETE ON catalog_sources BEGIN
     DELETE FROM my_sources WHERE source_id = OLD.source_id;
+  END;
+  -- A profile that goes takes the sources it added with it, unless someone else reads them: those become the server
+  -- admin's, so nobody takes a source away from the others by leaving.
+  CREATE TRIGGER profiles_hand_over_catalog BEFORE DELETE ON profiles BEGIN
+    UPDATE catalog_sources SET added_by = (
+      SELECT p.id FROM profiles p JOIN users u ON u.id = p.user_id
+      WHERE u.server_admin = 1 AND p.id != OLD.id ORDER BY p.id LIMIT 1
+    )
+    WHERE added_by = OLD.id AND EXISTS (
+      SELECT 1 FROM my_sources m WHERE m.source_id = catalog_sources.source_id
+        AND m.owner != 'p' || OLD.id AND m.owner != 'a' || COALESCE(OLD.user_id, 0)
+    ) AND EXISTS (
+      SELECT 1 FROM profiles p JOIN users u ON u.id = p.user_id WHERE u.server_admin = 1 AND p.id != OLD.id
+    );
   END;
   `
 ]

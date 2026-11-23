@@ -1,6 +1,6 @@
 import type { Catalog, Source, Topic } from './catalog.ts'
 
-// A household's catalogue changed from Sources: the in-memory lists the feeds and topics are read from.
+// The server's catalogue changed from Sources: the in-memory lists the feeds and topics are read from.
 
 // A source added: listed with its topics (or its section of "Vidéos") from now on. False when one is unknown.
 export const addToCatalog = (catalog: Catalog, source: Source, section: 'topic' | 'listen', sectionIds: string[]) => {
@@ -31,5 +31,12 @@ export const moveToTopics = (catalog: Catalog, sourceId: string, topicIds: strin
 export const removeFromCatalog = (catalog: Catalog, sourceId: string) => {
   for (const group of [...catalog.topics, ...catalog.listen]) {
     group.sources = group.sources.filter(source => source.id !== sourceId)
+  }
+}
+
+// A source handed to another adder (the server's admin, when its own goes and others still read it).
+export const handOverInCatalog = (catalog: Catalog, sourceId: string, addedBy: number) => {
+  for (const group of [...catalog.topics, ...catalog.listen]) {
+    group.sources = group.sources.map(source => (source.id === sourceId ? { ...source, addedBy } : source))
   }
 }

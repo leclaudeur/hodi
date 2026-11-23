@@ -425,12 +425,21 @@ describe('catalog_sources migration', () => {
        VALUES ('alpha', 'topic', 'world', NULL, 0, 'Alpha', 'https://alpha.example/feed', 'rss', 'fr', '[]', 1, '[]', NULL, ?),
               ('blog', 'topic', 'tech', NULL, 0, 'Blog', 'https://blog.example/feed', 'rss', 'fr', '[]', 1, '[]', NULL, ?)`
     ).run(NOW, NOW)
+    // Marc, of the second household, added the blog; the first household added its own feed at the same position.
+    db.prepare(
+      "INSERT INTO profiles (id, account_id, name, color, position, created_at) VALUES (20, 2, 'Marc', 'world', 0, ?)"
+    ).run(NOW)
+    db.prepare(
+      `INSERT INTO sources (id, section, section_id, topics, position, name, url, kind, lang, domains, reader, skip, added_by, created_at)
+       VALUES ('own', 'topic', 'tech', NULL, 0, 'Own', 'https://own.example/feed', 'rss', 'fr', '[]', 1, '[]', NULL, ?)`
+    ).run(NOW)
     db.prepare(
       `INSERT INTO household_sources (household_id, source_id, section, section_id, topics, position, added_by, created_at)
        VALUES (2, 'alpha', 'topic', 'tech', '["tech"]', 4, NULL, ?),
               (1, 'alpha', 'topic', 'world', '["world"]', 0, NULL, ?),
-              (2, 'blog', 'topic', 'tech', '["tech","ai"]', 3, NULL, ?)`
-    ).run(NOW, NOW, NOW)
+              (1, 'own', 'topic', 'tech', '["tech"]', 3, NULL, ?),
+              (2, 'blog', 'topic', 'tech', '["tech","ai"]', 3, 20, ?)`
+    ).run(NOW, NOW, NOW, NOW)
     db.prepare("INSERT INTO my_sources (owner, source_id, added_at) VALUES ('a9', 'blog', ?)").run(NOW)
 
     migrate(db)
@@ -442,11 +451,71 @@ describe('catalog_sources migration', () => {
         .map(row => Object.values(row)),
       [
         ['alpha', 'world', '["world"]', 0],
-        ['blog', 'tech', '["tech","ai"]', 3]
+        ['blog', 'tech', '["tech","ai"]', 1],
+        ['own', 'tech', '["tech"]', 0]
       ]
+    )
+    // Only the second household saw the blog: the server's admin validates it before anyone else does.
+    assert.deepEqual(
+      db
+        .prepare('SELECT source_id, state FROM source_reviews')
+        .all()
+        .map(row => Object.values(row)),
+      [['blog', 'pending']]
     )
     // Who reads a source stays theirs, and goes with it when it leaves the catalogue.
     db.prepare("DELETE FROM catalog_sources WHERE source_id = 'blog'").run()
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM my_sources').get()!.n, 0)
+  })
+})
+
+describe('a source whose adder goes', () => {
+  // Anna is the server's admin (profile 1); Paul (profile 2) added a feed.
+  const start = () => {
+    const db = openDatabase(':memory:')
+    const store = new SourceStore(db)
+    store.load(file(), NOW, 'fr')
+    db.exec(`
+      INSERT INTO users (id, email, password_hash, password_changed_at, created_at, server_admin)
+        VALUES (1, 'anna@example.com', 'x', 0, 0, 1), (2, 'paul@example.com', 'x', 0, 0, 0), (3, 'lea@example.com', 'x', 0, 0, 0);
+      UPDATE profiles SET user_id = 1 WHERE id = 1;
+    `)
+    const profile = (user: number, name: string) =>
+      Number(
+        db
+          .prepare(
+            "INSERT INTO profiles (account_id, name, color, position, created_at, user_id) VALUES (1, ?, 'world', 1, ?, ?)"
+          )
+          .run(name, NOW, user).lastInsertRowid
+      )
+    const paul = profile(2, 'Paul')
+    const lea = profile(3, 'Léa')
+    store.add({ ...file().topics[1]!.sources[0]!, addedBy: paul }, 'topic', ['tech'], NOW)
+    const reads = (owner: string) =>
+      db.prepare('INSERT INTO my_sources (owner, source_id, added_at) VALUES (?, ?, ?)').run(owner, 'delta', NOW)
+    reads('a2')
+    return { db, store, paul, lea, reads }
+  }
+
+  it('stays for those who read it, the server admin’s from then on', () => {
+    const { db, store, paul, reads } = start()
+    reads('a3')
+    db.prepare('DELETE FROM profiles WHERE id = ?').run(paul)
+    assert.equal(store.adderOf('delta'), 1)
+    assert.equal(store.handOver('delta', 1), null)
+  })
+
+  it('goes with its adder when nobody else reads it', () => {
+    const { db, store, paul } = start()
+    db.prepare('DELETE FROM profiles WHERE id = ?').run(paul)
+    assert.equal(store.adderOf('delta'), undefined)
+  })
+
+  it('is handed over when its adder removes it from the catalogue while others read it', () => {
+    const { store, paul, reads } = start()
+    assert.equal(store.handOver('delta', paul), null)
+    reads('a3')
+    assert.equal(store.handOver('delta', paul), 1)
+    assert.equal(store.adderOf('delta'), 1)
   })
 })
