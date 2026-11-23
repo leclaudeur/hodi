@@ -79,6 +79,7 @@ const completeJoin = (
 
 // A new account's e-mail and identifier, both still free.
 const newAccountRefusal = ({ accounts, now }: ResolvedJoinOptions, email: string, handle: string | null) => {
+  if (accounts.isBlocked(email)) return 'blocked'
   if (accounts.byEmail(email)) return 'email_taken'
   return handle && !accounts.isHandleFree(handle, now()) ? 'handle_taken' : null
 }

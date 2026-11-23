@@ -43,7 +43,8 @@
     "enter": "Entrer",
     "haveCode": "J’ai un code",
     "forgot": "Mot de passe oublié",
-    "refused": "La connexion a été refusée. Si ça dure, demande à la personne qui gère le serveur."
+    "refused": "La connexion a été refusée. Si ça dure, demande à la personne qui gère le serveur.",
+    "blocked": "Ce compte a été bloqué sur ce serveur."
   },
   "join": {
     "code": {
@@ -2172,7 +2173,7 @@
         "resetLabel": "Faire un code",
         "resetOnRequest": "Seulement quand la personne en demande un.",
         "own": "Le tien se change dans Réglages › Mon compte",
-        "deleteSection": "Supprimer",
+        "deleteSection": "Supprimer ou bloquer",
         "delete": "Supprimer ce compte",
         "deleteHint": "Son profil et tout ce qu’il contient partent avec lui",
         "deleteButton": "Supprimer",
@@ -2182,7 +2183,14 @@
         },
         "codeAsked": "Code demandé",
         "codeAskedTitle": "Code demandé le {{date}} à {{time}}",
-        "codeAskedText": "{{name}} a oublié son mot de passe et ce serveur n’envoie pas d’e-mails. Fais-lui un code, puis transmets-le-lui de la main à la main ou par message."
+        "codeAskedText": "{{name}} a oublié son mot de passe et ce serveur n’envoie pas d’e-mails. Fais-lui un code, puis transmets-le-lui de la main à la main ou par message.",
+        "block": "Bloquer ce compte",
+        "blockHint": "Supprimé, et son e-mail ne pourra plus revenir",
+        "blockButton": "Bloquer",
+        "confirmBlock": {
+          "title": "Bloquer ce compte ?",
+          "message": "<b>{{email}}</b> est effacé tout de suite, comme avec <i>Supprimer</i>, et cette adresse ne pourra plus créer de compte sur ce serveur. À la connexion, la personne lit <i>Ce compte a été bloqué sur ce serveur</i>. <b>Il n’y a pas de retour en arrière.</b>"
+        }
       },
       "emptyTitle": "Aucun foyer",
       "emptyText": "Crée le foyer où tu liras, ou un foyer pour quelqu’un d’autre, qui en sera l’admin.",

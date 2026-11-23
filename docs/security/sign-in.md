@@ -97,6 +97,14 @@ throttle, like a wrong password.
 _Who's in?_ never asks for the app's code, as the device is already signed in. A new password, by code or by e-mail,
 never signs such an account in on that device: it signs in again with the app's code.
 
+## Blocked e-mails
+
+_Block_ in _Server › Accounts_ keeps an e-mail from making an account again. Only its SHA-256 is stored: that keeps
+the address itself off the server, but it is no secret, as anyone holding a backup can check a guessed address. At
+_Sign in_, a blocked address is told so and counts as a failed sign-in, so addresses can't be tried at full speed.
+Aliases of the same mailbox (dots or `+tag` with Gmail) are other addresses and are not blocked. The server admin can
+unblock an address they type, after their password.
+
 ## Throttling
 
 Each client may fail 10 sign-ins, or setup codes, within 15 minutes. Further attempts are refused with `429` until its

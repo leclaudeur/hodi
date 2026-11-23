@@ -18,6 +18,7 @@ const refusalOf = (result: Refused, t: TFunction, email: string): ReactNode => {
     })
   if (result.reason === 'invalid_code') return t('twoFactor.login.wrong')
   if (result.reason === 'invalid_password') return t('login.wrongCredentials')
+  if (result.reason === 'blocked') return t('login.blocked')
   if (result.reason === 'too_many_attempts')
     return t('common.tooManyAttempts', { minutes: Math.ceil(result.retryAfterSeconds / 60) })
   if (result.reason === 'refused') return refusalText(result.refusal)

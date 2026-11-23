@@ -1373,6 +1373,14 @@ const MIGRATIONS: string[] = [
   CREATE TRIGGER users_forget_reports AFTER DELETE ON users BEGIN
     DELETE FROM source_reports WHERE reporter = 'a' || OLD.id;
   END;
+  `,
+  // « Bloquer » an account in Serveur › Comptes: its e-mail can make no account again. Only its SHA-256 is kept, so
+  // the server holds no address of someone who left.
+  `
+  CREATE TABLE blocked_emails (
+    hash TEXT PRIMARY KEY,
+    at INTEGER NOT NULL
+  );
   `
 ]
 

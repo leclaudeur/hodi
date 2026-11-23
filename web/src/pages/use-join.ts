@@ -26,6 +26,7 @@ const refusalOf = (failure: unknown, t: TFunction, joining?: { email: string; ho
     return t('common.tooManyAttempts', { minutes: Math.ceil(failure.retryAfterSeconds / 60) })
   }
   if (failure.code === 'email_taken') return t('join.emailTaken')
+  if (failure.code === 'blocked') return t('login.blocked')
   if (failure.code === 'invalid_credentials') return t('login.wrongCredentials')
   if (failure.code === 'already_member') return t('join.alreadyMember')
   if (failure.code === 'other_household' && failure.household && joining) {

@@ -237,6 +237,64 @@ describe('Serveur › Comptes › « Supprimer »', () => {
   })
 })
 
+describe('Serveur › Comptes › « Bloquer »', () => {
+  it('deletes the account and keeps its e-mail from any account again, never the server admin’s own', async () => {
+    const { call, admin, sam, samAccount, accounts, db, close } = await start()
+    try {
+      const url = `/server/accounts/${samAccount.id}/block`
+      assert.equal((await call(url, sam, 'POST', { password: SAM_PASSWORD })).status, 403)
+      assert.equal((await call(url, admin, 'POST', {})).status, 403)
+      const own = await call(`/server/accounts/${accounts.byEmail('antho@example.com')!.id}/block`, admin, 'POST', {
+        password: ADMIN_PASSWORD
+      })
+      assert.deepEqual([own.status, await own.json()], [403, { error: 'server_admin' }])
+
+      assert.equal((await call(url, admin, 'POST', { password: ADMIN_PASSWORD })).status, 204)
+      assert.equal(accounts.get(samAccount.id), null)
+      assert.equal((await call('/session', sam)).status, 401)
+      // Told at Connexion, whatever the password; the address itself is not kept.
+      const login = await call('/login', '', 'POST', { email: ' Sam@example.com', password: 'nimporte quoi' })
+      assert.deepEqual([login.status, await login.json()], [403, { error: 'blocked' }])
+      assert.equal(JSON.stringify(db.prepare('SELECT * FROM blocked_emails').all()).includes('sam@'), false)
+      // No new account with it, nor an e-mail changed to it.
+      assert.equal(accounts.create('sam@example.com', 'unused-hash', 1), null)
+      const changed = await call('/account/email', admin, 'PUT', { email: 'sam@example.com', password: ADMIN_PASSWORD })
+      assert.deepEqual([changed.status, await changed.json()], [409, { error: 'email_taken' }])
+
+      // « Débloquer une adresse », with the password: it may make an account again.
+      const unblock = '/server/accounts/unblock'
+      assert.equal((await call(unblock, admin, 'POST', { email: 'sam@example.com' })).status, 403)
+      assert.equal(
+        (await call(unblock, admin, 'POST', { email: 'nope@example.com', password: ADMIN_PASSWORD })).status,
+        404
+      )
+      assert.equal(
+        (await call(unblock, admin, 'POST', { email: 'Sam@example.com', password: ADMIN_PASSWORD })).status,
+        204
+      )
+      assert.notEqual(accounts.create('sam@example.com', 'unused-hash', 1), null)
+    } finally {
+      close()
+    }
+  })
+})
+
+describe('a blocked e-mail at Connexion', () => {
+  it('counts as a failed sign-in, so nobody tries addresses at full speed', async () => {
+    const { call, admin, samAccount, close } = await start()
+    try {
+      await call(`/server/accounts/${samAccount.id}/block`, admin, 'POST', { password: ADMIN_PASSWORD })
+      const tries = []
+      for (let count = 0; count < 6; count++)
+        tries.push((await call('/login', '', 'POST', { email: 'sam@example.com', password: 'x' })).status)
+      // The throttle in these tests allows 5 failures.
+      assert.deepEqual(tries, [403, 403, 403, 403, 403, 429])
+    } finally {
+      close()
+    }
+  })
+})
+
 describe('Serveur › Foyers › « Supprimer »', () => {
   it('empties the household and the accounts that read only there; the server admin goes on in /server', async () => {
     const { call, admin, sam, samAccount, accounts, settings, close } = await start()

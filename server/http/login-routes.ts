@@ -133,6 +133,12 @@ const accountOf = (accounts: UserAccountStore, typed: unknown) => {
   return email ? accounts.byEmail(email) : accounts.byHandle(handle!)
 }
 
+// An e-mail whose account the server's admin blocked: the person is told so, whatever password they typed.
+const isBlocked = (accounts: UserAccountStore | undefined, typed: unknown) => {
+  const email = cleanEmail(typed)
+  return email !== null && accounts !== undefined && accounts.isBlocked(email)
+}
+
 const mountLoginRoute = (
   router: express.Router,
   { accounts, throttle, cookieFor, now }: LoginRoutesOptions,
@@ -169,6 +175,12 @@ const mountLoginRoute = (
     // An account with no password yet takes as long as any other.
     const hash = account && account.passwordHash !== NO_PASSWORD ? account.passwordHash : await decoyHash
     const valid = (await verifyPassword(password, hash)) && account?.passwordHash !== NO_PASSWORD
+    if (!account && isBlocked(accounts, typedEmail)) {
+      // Counted as a wrong password: nobody tries addresses at full speed to learn who was blocked.
+      throttle.recordFailure(now(), client)
+      response.status(403).json({ error: 'blocked' })
+      return
+    }
     if (!account || !valid) {
       throttle.recordFailure(now(), client)
       response.status(401).json({ error: 'invalid_credentials' })
