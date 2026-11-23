@@ -1,4 +1,5 @@
 import type { Database } from './database.ts'
+import { ownerOf } from './stats-owner.ts'
 import type { Reading, ReadingKind, ReadingProgress } from './user-store.ts'
 
 // What one profile opened: articles, videos and episodes, how far it went, and « Reprendre ».
@@ -12,12 +13,13 @@ const trackedColumns = (reading: Reading) =>
 export const insertReadings = (db: Database, profile: number, readings: Reading[]) => {
   const insert = db.prepare(
     `INSERT OR IGNORE INTO readings
-     (profile_id, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate)
+     (owner, article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
+  const owner = ownerOf(db, profile)
   readings.forEach(reading =>
     insert.run(
-      profile,
+      owner,
       reading.id,
       reading.sourceId,
       reading.sourceName,
@@ -35,9 +37,9 @@ export const readingsOf = (db: Database, profile: number): Reading[] => {
   const rows = db
     .prepare(
       `SELECT article_id, source_id, source_name, topic_id, minutes, read_at, kind, done, progress, position, estimate
-       FROM readings WHERE profile_id = ? ORDER BY read_at`
+       FROM readings WHERE owner = ? ORDER BY read_at`
     )
-    .all(profile) as {
+    .all(ownerOf(db, profile)) as {
     article_id: string
     source_id: string
     source_name: string
@@ -74,8 +76,16 @@ export const updateReadingRow = (db: Database, profile: number, id: string, chan
   db.prepare(
     `UPDATE readings SET minutes = MAX(minutes, ?), progress = MAX(progress, ?), position = ?, done = MAX(done, ?),
      estimate = COALESCE(?, estimate)
-     WHERE profile_id = ? AND article_id = ? AND done IS NOT NULL`
-  ).run(change.minutes, change.progress, change.position, change.done ? 1 : 0, change.estimate ?? null, profile, id)
+     WHERE owner = ? AND article_id = ? AND done IS NOT NULL`
+  ).run(
+    change.minutes,
+    change.progress,
+    change.position,
+    change.done ? 1 : 0,
+    change.estimate ?? null,
+    ownerOf(db, profile),
+    id
+  )
 }
 
 // "Reprendre": articles, videos and episodes started but not read or seen for good, newest first, that were not
@@ -89,11 +99,11 @@ export const resumableReadings = (
   const rows = db
     .prepare(
       `SELECT article_id, kind, progress, position, estimate FROM readings
-       WHERE profile_id = ? AND done = 0 AND set_aside = 0 AND read_at >= ? AND progress >= ?
+       WHERE owner = ? AND done = 0 AND set_aside = 0 AND read_at >= ? AND progress >= ?
          AND (kind != 'article' OR progress < ?)
        ORDER BY read_at DESC LIMIT ?`
     )
-    .all(profile, since, minProgress, maxProgress, limit) as {
+    .all(ownerOf(db, profile), since, minProgress, maxProgress, limit) as {
     article_id: string
     kind: ReadingKind
     progress: number
@@ -111,7 +121,7 @@ export const resumableReadings = (
 
 // When this profile first opened something, or null.
 export const firstReadingAt = (db: Database, profile: number): number | null => {
-  const row = db.prepare('SELECT MIN(read_at) AS first FROM readings WHERE profile_id = ?').get(profile) as
+  const row = db.prepare('SELECT MIN(read_at) AS first FROM readings WHERE owner = ?').get(ownerOf(db, profile)) as
     { first: number | null } | undefined
   return row?.first ?? null
 }
@@ -119,9 +129,7 @@ export const firstReadingAt = (db: Database, profile: number): number | null => 
 // Articles and videos opened since then, by source.
 export const readingsBySource = (db: Database, profile: number, since: number): Map<string, number> => {
   const rows = db
-    .prepare(
-      'SELECT source_id, COUNT(*) AS count FROM readings WHERE profile_id = ? AND read_at >= ? GROUP BY source_id'
-    )
-    .all(profile, since) as { source_id: string; count: number }[]
+    .prepare('SELECT source_id, COUNT(*) AS count FROM readings WHERE owner = ? AND read_at >= ? GROUP BY source_id')
+    .all(ownerOf(db, profile), since) as { source_id: string; count: number }[]
   return new Map(rows.map(row => [row.source_id, row.count]))
 }

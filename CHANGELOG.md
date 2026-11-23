@@ -8,6 +8,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Stats and points belong to the account.** An adult's readings, stats, points and badges are their account's,
+  not their profile's: they stay the same in any household, after leaving one or being removed from it, and My
+  account shows them while the person is in no household. A young profile, which has no account, keeps its own.
+  Deleting the account deletes them.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My

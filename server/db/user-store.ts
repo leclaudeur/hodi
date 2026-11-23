@@ -1,5 +1,6 @@
 import type { AlertSettings } from '../news/followed-alerts.ts'
 import { type Database, transaction } from './database.ts'
+import { ownerOf } from './stats-owner.ts'
 import {
   firstReadingAt,
   insertReadings,
@@ -279,8 +280,8 @@ export class UserStore {
   setAside(id: string, now: number) {
     return this.#write(now, () => {
       this.#db
-        .prepare('UPDATE readings SET set_aside = 1 WHERE profile_id = ? AND article_id = ?')
-        .run(this.#profile, id)
+        .prepare('UPDATE readings SET set_aside = 1 WHERE owner = ? AND article_id = ?')
+        .run(ownerOf(this.#db, this.#profile), id)
     })
   }
 
@@ -350,7 +351,7 @@ export class UserStore {
 
   clearReadings(now: number) {
     return this.#write(now, () => {
-      this.#db.prepare('DELETE FROM readings WHERE profile_id = ?').run(this.#profile)
+      this.#db.prepare('DELETE FROM readings WHERE owner = ?').run(ownerOf(this.#db, this.#profile))
     })
   }
 
