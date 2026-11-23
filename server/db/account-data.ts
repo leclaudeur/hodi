@@ -12,7 +12,6 @@ import type { UserAccount, UserAccountStore } from './user-account-store.ts'
 // of their own, since no one could open it any more.
 export interface DeletionPlan {
   householdGoes: boolean
-  household: string
   // The profiles deleted, the person's own first.
   profiles: Pick<Profile, 'id' | 'name' | 'kind'>[]
   // Who takes over the household's admin and the server's, when the person held them.
@@ -26,7 +25,6 @@ export const deletionPlan = (
   account: UserAccount,
   accounts: UserAccountStore,
   profiles: ProfileStore,
-  householdName: string,
   householdId = currentHouseholdId()
 ): DeletionPlan => {
   const own = accounts.profileOf(account.id, householdId)
@@ -36,7 +34,6 @@ export const deletionPlan = (
   if (own === null && !account.serverAdmin)
     return {
       householdGoes: false,
-      household: householdName,
       profiles: [],
       heir: null,
       children: onlyChildren(account, accounts, profiles, householdId)
@@ -48,7 +45,6 @@ export const deletionPlan = (
   going.sort((a, b) => Number(b.id === own) - Number(a.id === own))
   return {
     householdGoes,
-    household: householdName,
     profiles: going.map(({ id, name, kind }) => ({ id, name, kind })),
     heir: householdGoes ? null : (others.find(profile => profile.role === 'admin') ?? others[0]!),
     children: householdGoes ? [] : onlyChildren(account, accounts, profiles, householdId)

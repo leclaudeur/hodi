@@ -14,12 +14,9 @@ export const accountRemover = ({ people, accounts, profiles, household, deletion
   const { data, onProfileDeleted, onAccountDeleted, onHouseholdGone } = deletions
   return (account: UserAccount, blocks: boolean) => {
     if (blocks && account.email) accounts.blockEmail(account.email, now())
-    const names = new Map(people.households().map(entry => [entry.id, entry.name]))
     const plans = data.householdsOf(account.id).map(householdId => ({
       householdId,
-      plan: inHousehold(householdId, () =>
-        deletionPlan(account, accounts, profiles, names.get(householdId) ?? '', householdId)
-      )
+      plan: inHousehold(householdId, () => deletionPlan(account, accounts, profiles, householdId))
     }))
     for (const { householdId, plan } of plans)
       inHousehold(householdId, () =>

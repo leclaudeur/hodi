@@ -17,8 +17,8 @@ import type { ProfileDraft } from '../views/profiles/ProfileForm.tsx'
 
 export type JoinStep = 'code' | 'account' | 'who'
 
-// What the server refused, in words. joining: the address typed and the household of the code, to name them.
-const refusalOf = (failure: unknown, t: TFunction, joining?: { email: string; household: string }) => {
+// What the server refused, in words. joining: the address typed, to name it.
+const refusalOf = (failure: unknown, t: TFunction, joining?: { email: string }) => {
   if (!(failure instanceof RequestError)) return t('common.unreachable')
   if (failure.refusal) return refusalText(failure.refusal)
   if (failure.code === 'too_many_attempts' && failure.retryAfterSeconds) {
@@ -76,7 +76,7 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
       await request()
     } catch (failure) {
       onRefused?.(failure)
-      setError(refusalOf(failure, t, use ? { email: fields.email.trim(), household: use.household } : undefined))
+      setError(refusalOf(failure, t, use ? { email: fields.email.trim() } : undefined))
       setBusy(false)
     }
   }

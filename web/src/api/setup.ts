@@ -115,7 +115,6 @@ export interface AccountView {
   // householdGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: {
     householdGoes: boolean
-    household: string
     others: string[]
     // The teens and children it is the only parent of: they go too.
     children: string[]
@@ -203,9 +202,9 @@ export const createSignInCode = (profileId?: number, proof?: AdminProof) =>
 export type CodeProfile = Pick<Profile, 'id' | 'name' | 'color' | 'kind' | 'avatar'>
 
 export type CodeUse =
-  | { kind: 'invite'; household: string; invitedBy: CodeProfile | null }
-  | { kind: 'profile'; household: string; profile: CodeProfile }
-  | { kind: 'reset'; household: string; profile: CodeProfile }
+  | { kind: 'invite'; invitedBy: CodeProfile | null }
+  | { kind: 'profile'; profile: CodeProfile }
+  | { kind: 'reset'; profile: CodeProfile }
 
 export const checkSignInCode = (code: string) => sendJson<CodeUse>('POST', '/codes/check', { code })
 

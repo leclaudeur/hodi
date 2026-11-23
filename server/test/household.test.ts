@@ -333,7 +333,6 @@ describe('joining the household with a code', () => {
     const checked = await post('/codes/check', { code })
     assert.deepEqual(await checked.json(), {
       kind: 'invite',
-      household: 'Hodi',
       invitedBy: { id: profiles.list()[0]!.id, name: 'Antho', color: 'tech', kind: 'adult', avatar: null }
     })
 
@@ -672,10 +671,9 @@ describe('the account and its data', () => {
     assert.equal(install.accounts.byEmail('sam@example.com')?.serverAdmin, true)
 
     // The last adult: the household goes with Sam's account, and the install waits for its first-run screens.
-    const last = (await (await get(sam)).json()) as { deletion: { householdGoes: boolean; household: string } }
+    const last = (await (await get(sam)).json()) as { deletion: { householdGoes: boolean } }
     assert.deepEqual(last.deletion, {
       householdGoes: true,
-      household: 'Hodi',
       others: [],
       children: [],
       heir: null,

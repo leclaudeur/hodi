@@ -20,7 +20,7 @@ export interface InvitationMail {
   // The inviter's language: the e-mail goes out in it.
   languageOf: (profileId: number) => Language
   // Who invites, named in the e-mail; and the household it is.
-  inviterOf: (profileId: number) => { name: string; household: string }
+  inviterOf: (profileId: number) => { name: string }
   home?: () => string | null
   log?: (line: string) => void
 }
@@ -78,12 +78,12 @@ export const mailInvitation = (
   if (!mail || !settings || !appUrl || !spendMail(mail, now, inviter)) return false
   const language = mail.languageOf(inviter)
   const t = textsIn(language)
-  const { name, household } = mail.inviterOf(inviter)
+  const { name } = mail.inviterOf(inviter)
   const content = {
-    eyebrow: household,
-    title: t('mail.invite.title', { household }),
+    eyebrow: name,
+    title: t('mail.invite.title'),
     blocks: [
-      { kind: 'text' as const, text: t('mail.invite.text', { name, household }) },
+      { kind: 'text' as const, text: t('mail.invite.text', { name }) },
       { kind: 'text' as const, text: t('mail.invite.code', { code: codeForPeople(code) }) },
       { kind: 'action' as const, label: t('mail.invite.button'), url: `${appUrl}/#/code/${code}` },
       { kind: 'note' as const, text: t('mail.invite.note') }

@@ -94,7 +94,7 @@ const mountHouseholdGameRoutes = (router: express.Router, { game, news, profiles
     })
     response.json({
       enabled: game.enabled(),
-      challenge: game.challenge(now()),
+      challenge: game.challenge(profileId, now()),
       ranking: ranking.sort((a, b) => b.week - a.week),
       // The profile asking: what its avatar has to show as new.
       news: game.news(profileId, gameTopics(), now())

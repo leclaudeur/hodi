@@ -208,12 +208,12 @@ const accountTexts = (use: AccountUse, existing: boolean, t: TFunction) => {
   if (use.kind === 'profile') {
     return {
       title: t('join.profile.title'),
-      intro: t(existing ? 'join.profile.introExisting' : 'join.profile.intro', { household: use.household }),
+      intro: t(existing ? 'join.profile.introExisting' : 'join.profile.intro'),
       button: existing ? t('join.signIn') : t('join.create')
     }
   }
   return {
-    title: t('join.invite.title', { household: use.household }),
+    title: t('join.invite.title'),
     intro: use.invitedBy ? t('join.invite.intro', { name: use.invitedBy.name }) : t('join.invite.introNoName'),
     button: t('common.continue')
   }

@@ -60,7 +60,6 @@ export const codeHelpers = ({
   codes,
   accounts,
   profiles,
-  household,
   install,
   throttle,
   now,
@@ -103,17 +102,12 @@ export const codeHelpers = ({
   }
 
   const describe = ({ profileId, createdBy, reset }: SignInCode) => {
-    const name = household.get().name
     if (profileId !== null) {
       const profile = profiles.get(profileId)!
-      return { kind: reset ? 'reset' : 'profile', household: name, profile: publicProfile(profile) }
+      return { kind: reset ? 'reset' : 'profile', profile: publicProfile(profile) }
     }
     const by = createdBy === null ? null : profiles.get(createdBy)
-    return {
-      kind: 'invite',
-      household: name,
-      invitedBy: by ? publicProfile(by) : null
-    }
+    return { kind: 'invite', invitedBy: by ? publicProfile(by) : null }
   }
 
   return { validCode, describe }

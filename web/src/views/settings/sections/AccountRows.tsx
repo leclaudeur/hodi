@@ -42,7 +42,6 @@ export const confirmDelete = (account: AccountView, t: TFunction) => {
           email: account.email ?? '',
           // As many days as the server keeps copies (Serveur › Sauvegardes).
           days: t('count.day', { count: contentDays().backupCopies }),
-          name: deletion?.household ?? '',
           profiles: new Intl.ListFormat(undefined, { type: 'conjunction' }).format(deletion?.others ?? []),
           children: new Intl.ListFormat(undefined, { type: 'conjunction' }).format(children)
         }}

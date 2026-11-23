@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
 import { DAILY_COUNT_LIMITS, GameStore, mondayOf } from '../db/game-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
+import { UserAccountStore } from '../db/user-account-store.ts'
 import { type Reading, UserStore } from '../db/user-store.ts'
 import { levelOf, nameIn, parseRules } from '../game/rules.ts'
 
@@ -304,24 +305,44 @@ describe('GameStore', () => {
     assert.equal(game.news(1, ['world'], NOW + 2000).since, NOW + 1000)
   })
 
-  it('gives every profile the weekly bonus once the household reaches its goal', () => {
+  it("gives the weekly bonus to the reader's family once it reaches its goal, never to another account", () => {
     const { db, game, open } = setup(easy)
-    const julie = new ProfileStore(db).create('Julie', 'world', NOW)
-    assert.ok(julie)
-    assert.deepEqual(game.challenge(NOW), { goal: 3, read: 0, reached: false })
+    const profiles = new ProfileStore(db)
+    const accounts = new UserAccountStore(db)
+    const withAccount = (name: string, email: string, profileId?: number) => {
+      const id = profileId ?? profiles.create(name, 'world', NOW)!.id
+      const account = accounts.create(email, 'hash', NOW)!
+      accounts.linkProfile(account.id, id)
+      return { id, accountId: account.id }
+    }
+    const claire = withAccount('Claire', 'claire@example.com', 1)
+    const julie = withAccount('Julie', 'julie@example.com')
+    db.prepare('INSERT INTO account_parents (child_id, parent_id, created_at) VALUES (?, ?, ?)').run(
+      julie.accountId,
+      claire.accountId,
+      NOW
+    )
+    // Another account of the server, with no tie to Claire's family.
+    const marc = withAccount('Marc', 'marc@example.com')
+    assert.deepEqual(game.challenge(claire.id, NOW), { goal: 3, read: 0, reached: false })
 
     const ids = Array.from({ length: 40 }, () => open('world'))
-    game.recordReads(1, ids, NOW)
-    assert.deepEqual(game.challenge(NOW), { goal: 3, read: 40, reached: true })
+    game.recordReads(claire.id, ids, NOW)
+    assert.deepEqual(game.challenge(claire.id, NOW), { goal: 3, read: 40, reached: true })
+    assert.deepEqual(game.challenge(julie.id, NOW), { goal: 3, read: 40, reached: true })
     // 40 × 10 + 5 (first in Monde) + 10 (reading day), then the bonus.
-    assert.equal(game.summary(1, NOW).points, 415 + rules.weeklyChallenge.bonus)
+    assert.equal(game.summary(claire.id, NOW).points, 415 + rules.weeklyChallenge.bonus)
     assert.equal(game.summary(julie.id, NOW).points, rules.weeklyChallenge.bonus)
     assert.equal(game.badges(julie.id, []).find(badge => badge.id === 'team-player')?.count, 1)
+    // Marc's goal counts his own reading only, and the bonus never reaches him.
+    assert.deepEqual(game.challenge(marc.id, NOW), { goal: 3, read: 0, reached: false })
+    assert.equal(game.summary(marc.id, NOW).points, 0)
 
-    // The next weeks' goal follows what the household read: 40 over 4 weeks, plus 10 %.
-    assert.equal(game.challenge(NOW + 7 * 24 * HOUR).goal, 11)
+    // The next weeks' goal follows what the family read: 40 over 4 weeks, plus 10 %.
+    assert.equal(game.challenge(claire.id, NOW + 7 * 24 * HOUR).goal, 11)
+    assert.equal(game.challenge(marc.id, NOW + 7 * 24 * HOUR).goal, 3)
     // Past the 4 weeks looked back, the minimum again.
-    assert.equal(game.challenge(NOW + 5 * 7 * 24 * HOUR).goal, 3)
+    assert.equal(game.challenge(claire.id, NOW + 5 * 7 * 24 * HOUR).goal, 3)
   })
 
   it('can be turned off for the household', () => {
