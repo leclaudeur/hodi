@@ -27,7 +27,11 @@ const useTopics = () => {
 }
 
 // What the source is: its logo, name, site and language, a way to its site, then what it says of itself.
-const SourceAbout = ({ review }: { review: SourceReview }) => {
+export const SourceAbout = ({
+  review
+}: {
+  review: Pick<SourceReview, 'id' | 'name' | 'site' | 'kind' | 'lang' | 'description'>
+}) => {
   const { t } = useTranslation()
   const meta = [hostOf(review.site), t(`server.inbox.source.kinds.${review.kind}`), review.lang.toUpperCase()]
   return (

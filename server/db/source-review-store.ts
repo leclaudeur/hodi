@@ -96,6 +96,16 @@ export class SourceReviewStore {
     return Number(result.changes) > 0
   }
 
+  // « Retirer du catalogue », after a report: refused as if it had waited, it stays with those who read it.
+  unlist(sourceId: string, now: number) {
+    this.#db
+      .prepare(
+        `INSERT INTO source_reviews (source_id, state, asked_at, decided_at) VALUES (?, 'refused', ?, ?)
+         ON CONFLICT (source_id) DO UPDATE SET state = 'refused', teen = 0, child = 0, decided_at = excluded.decided_at`
+      )
+      .run(sourceId, now, now)
+  }
+
   // Added again after a refusal: asked anew only once the refusal is a month old.
   mayAskAgain(sourceId: string, now: number): boolean {
     const review = this.get(sourceId)

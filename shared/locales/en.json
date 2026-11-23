@@ -2367,6 +2367,10 @@
       "sourceReview": {
         "label": "Sources to review",
         "hint": "When a source added waits for a decision"
+      },
+      "sourceReport": {
+        "label": "Reported sources",
+        "hint": "When an account reports a source"
       }
     },
     "inbox": {
@@ -2384,7 +2388,8 @@
         "source": "Sources",
         "code": "Passwords",
         "plugin": "Plugins",
-        "handled": "Handled"
+        "handled": "Handled",
+        "report": "Reports"
       },
       "failed": "Couldn’t load To do",
       "back": "Back to To do",
@@ -2412,6 +2417,19 @@
         "what": "The source",
         "topicsLabel": "Its topics",
         "young": "For young readers"
+      },
+      "report": {
+        "what": "The source",
+        "why": "The reasons",
+        "count_one": "{{count}} report",
+        "count_other": "{{count}} reports",
+        "ignore": "Ignore",
+        "unlist": "Take out of the catalogue",
+        "unlistTitle": "Take {{name}} out of the catalogue?",
+        "unlistText": "<b>{{name}}</b> is no longer offered. Those who read it keep it in <i>My sources</i>.",
+        "ignored": "Report ignored",
+        "unlisted": "{{name}} is out of the catalogue",
+        "failed": "This choice could not be saved"
       }
     }
   },
@@ -2468,6 +2486,11 @@
       "eyebrow": "Server",
       "title": "Source to review: {{name}}",
       "text": "{{name}} was just added. It stays out of the catalogue until it is accepted in To do."
+    },
+    "sourceReport": {
+      "eyebrow": "Server",
+      "title": "Source reported: {{name}}",
+      "text": "Someone reported {{name}}. Keep it or take it out of the catalogue in To do."
     }
   },
   "forgot": {
@@ -2725,5 +2748,33 @@
     "ask": "Ask",
     "askTitle": "Ask for a source",
     "askText": "The parents approve it before it arrives."
+  },
+  "report": {
+    "button": "Report",
+    "label": "Report {{name}}",
+    "title": "Report {{name}}",
+    "intro": "Tell the server’s admin why <b>{{name}}</b> does not belong here. They will not know it came from you.",
+    "reasons": {
+      "illegal": {
+        "label": "Illegal",
+        "hint": "Content the law forbids"
+      },
+      "hateful": {
+        "label": "Hateful",
+        "hint": "Hate, harassment, violence"
+      },
+      "misleading": {
+        "label": "Misleading",
+        "hint": "False news, scams"
+      },
+      "other": {
+        "label": "Something else",
+        "hint": "It does not suit this server"
+      }
+    },
+    "reasonsLabel": "Why?",
+    "send": "Send",
+    "sent": "Report sent",
+    "failed": "The report could not be sent"
   }
 }

@@ -509,6 +509,26 @@ test('adds a source from the link of its site', async () => {
   )
 })
 
+test('reports a source, which reaches the server’s admin without who reported it', async () => {
+  await page.goto('/#/settings/sources')
+  await page.getByRole('button', { name: /^Signaler Gamma/ }).click()
+  const dialog = page.getByRole('dialog', { name: /^Signaler Gamma/ })
+  const send = dialog.getByRole('button', { name: 'Envoyer' })
+  await expect(send).toBeDisabled()
+  await dialog.getByRole('radio', { name: /Trompeuse/ }).click()
+  await send.click()
+  await expect(dialog).toHaveCount(0)
+
+  await page.goto('/#/server/inbox')
+  await page.getByRole('link', { name: /^Source signalée : Gamma/ }).click()
+  await expect(page.getByText('Trompeuse')).toBeVisible()
+  await expect(page.getByText('1 signalement')).toBeVisible()
+  await page.getByRole('main').getByRole('button', { name: 'Ignorer' }).click()
+  await page.getByRole('button', { name: /^Traité/ }).click()
+  await expect(page.getByRole('link', { name: /^Source signalée : Gamma/ })).toHaveCount(0)
+  await expect(page.getByText(/^Traité le /).first()).toBeVisible()
+})
+
 test('signs in from another device, straight into its own profile', async ({ browser }) => {
   const other = await signIn(browser, 'Alex')
   await expect(other.getByRole('link', { name: 'La bourse de Paris recule' })).toBeVisible()

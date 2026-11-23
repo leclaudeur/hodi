@@ -10,6 +10,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Added
 
+- **Report a source.** A flag on every source card, in My sources and the catalogue, tells the server's admin why a
+  source does not belong (illegal, hateful, misleading, something else). The admin sees how many reported it and why,
+  never who, in Server › To do, and ignores it or takes it out of the catalogue. A new kind in Server › Alerts.
 - **Username.** Every account has an @username, unique on the server, for friends and mentions to come. It is suggested
   from the first name when the account is made (first-run screens, an invitation's code), says at once whether it is
   free, and changes once every 30 days in My account. Existing accounts get one from their profile's name. Sign in

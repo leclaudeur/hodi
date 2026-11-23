@@ -13,6 +13,7 @@ import SourceReaders from '../../ui/SourceReaders.tsx'
 import cardStyles from '../../ui/SourceCard.module.css'
 import StatusLine from '../../ui/StatusLine.tsx'
 import RowsSkeleton from '../../views/settings/SettingsSkeleton.tsx'
+import ReportSourceButton from '../../views/settings/sections/ReportSourceButton.tsx'
 import styles from './Catalogue.module.css'
 
 // Alphabétique or Plus populaires, each either way, in a menu beside the search.
@@ -98,14 +99,18 @@ const CatalogueCard = ({ entry, topics, current, busy, onAdd, onRemove }: CardPr
         )
       }
       end={
-        <RoundButton
-          size={34}
-          icon={ExternalLink}
-          label={t('addSource.seeSite', { name: entry.name })}
-          title={t('catalogue.openSite')}
-          href={entry.site}
-          external
-        />
+        <>
+          {/* A source sources.yml offers and nobody added yet is not on the server: nothing to report. */}
+          {!entry.proposal && <ReportSourceButton source={entry} />}
+          <RoundButton
+            size={34}
+            icon={ExternalLink}
+            label={t('addSource.seeSite', { name: entry.name })}
+            title={t('catalogue.openSite')}
+            href={entry.site}
+            external
+          />
+        </>
       }
     />
   )

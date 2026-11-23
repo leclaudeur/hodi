@@ -8,6 +8,7 @@ import RoundButton from '../../../ui/RoundButton.tsx'
 import SourceCard from '../../../ui/SourceCard.tsx'
 import styles from '../../../ui/SourceCard.module.css'
 import SourceReaders from '../../../ui/SourceReaders.tsx'
+import ReportSourceButton from './ReportSourceButton.tsx'
 
 export interface MySourceActions {
   replace: (() => void) | null
@@ -46,7 +47,8 @@ const Badge = ({ source, low }: { source: SourceStatus; low: boolean }) => {
   )
 }
 
-// Its other actions, each a round with its name on hover: replace it, change its topics, its site, delete it.
+// Its other actions, each a round with its name on hover: replace it, change its topics, report it, its site, delete
+// it.
 const OtherActions = ({ source, replace, retopic, deletable, removing, onRemove }: MySourceCardProps) => {
   const { t } = useTranslation()
   return (
@@ -69,6 +71,7 @@ const OtherActions = ({ source, replace, retopic, deletable, removing, onRemove 
           onClick={retopic}
         />
       )}
+      <ReportSourceButton source={source} />
       <RoundButton
         size={34}
         icon={ExternalLink}

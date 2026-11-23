@@ -6,6 +6,7 @@ import {
   inboxItemOf,
   inboxKindOf,
   isWaiting,
+  reportedSourceOf,
   reviewedSourceOf,
   sortInbox
 } from '../src/lib/server-inbox.ts'
@@ -26,6 +27,7 @@ const item = (
 describe('À traiter', () => {
   it('sorts each request into its kind, a plugin’s own as plugin', () => {
     expect(inboxKindOf(item(1, 'core:source-review'))).toBe('source')
+    expect(inboxKindOf(item(1, 'core:source-report'))).toBe('report')
     expect(inboxKindOf(item(1, 'core:code-request'))).toBe('code')
     expect(inboxKindOf(item(1, 'plugin:village:signup'))).toBe('plugin')
   })
@@ -55,6 +57,14 @@ describe('À traiter', () => {
     expect(reviewedSourceOf(item(1, 'core:code-request', { url: '#/server/accounts/3' }))).toBeNull()
   })
 
+  it('reads the source a report is about, never a review’s', () => {
+    const report = item(1, 'core:source-report', { url: '#/server/inbox/report-p1-gamma' })
+    expect(reportedSourceOf(report)).toBe('p1-gamma')
+    expect(reviewedSourceOf(report)).toBeNull()
+    expect(reportedSourceOf(item(2, 'core:source-review', { url: '#/server/inbox/source-p1-gamma' }))).toBeNull()
+    expect(inboxHrefOf(report)).toBe('#/server/inbox/1')
+  })
+
   it('opens a request where it is done, and a source to judge in À traiter', () => {
     expect(inboxHrefOf(item(1, 'core:code-request', { url: '#/server/accounts/3' }))).toBe('#/server/accounts/3')
     expect(inboxHrefOf(item(2, 'plugin:village:join', { url: '#/server/plugin/village/households' }))).toBe(
@@ -73,5 +83,8 @@ describe('À traiter', () => {
     ]
     expect(firstOpen(items)?.id).toBe(1)
     expect(firstOpen(items.slice(0, 2))).toBeNull()
+    // A report to decide counts as much as a source to judge.
+    const reported = [items[0]!, item(4, 'core:source-report', { url: '#/server/inbox/report-c' })]
+    expect(firstOpen(reported)?.id).toBe(4)
   })
 })

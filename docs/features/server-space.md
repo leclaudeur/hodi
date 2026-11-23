@@ -34,10 +34,11 @@ to the app.
   name and password, and the sender. Until the server and the sender are both there, Hodi sends no e-mail at all. Once
   saved, the server's password is never shown again, not even to the admin. A test goes to the admin's address.
 - **To do**: the requests the server asks its admins to act on, in their language, one row each, filtered by kind
-  (sources, password codes, plugins); the count of those waiting shows beside _To do_ in the sidebar. A row opens
+  (sources, reports, password codes, plugins); the count of those waiting shows beside _To do_ in the sidebar. A row opens
   where its request is done: a password code on the account that asked it, with its orange notice; a plugin's on the
   plugin's page; a source to review in _To do_ itself, accepted or refused (asked first) with its topics and whether
-  it suits teens and children. Once done, a request leaves _All_ for _Handled_, the last filter, for 7 days, then goes.
+  it suits teens and children; a reported source in _To do_ too, with how many reported it and why (never who), then
+  _Ignore_ or _Take out of the catalogue_ (asked first: those who read it keep it). Once done, a request leaves _All_ for _Handled_, the last filter, for 7 days, then goes.
   A notice that asks nothing, such as the weekly report, only goes out by e-mail or push.
 - **Alerts**: for each kind of notification, Hodi's and the plugins', whether it also goes out by e-mail or push, or
   not at all.

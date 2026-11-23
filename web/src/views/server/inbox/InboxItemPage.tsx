@@ -1,24 +1,27 @@
 import { Inbox } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { InboxItem, SourceReview } from '../../../api.ts'
-import { isWaiting, reviewedSourceOf } from '../../../lib/server-inbox.ts'
+import type { InboxItem, SourceReportView, SourceReview } from '../../../api.ts'
+import { isWaiting, reportedSourceOf, reviewedSourceOf } from '../../../lib/server-inbox.ts'
 import StatusLine from '../../../ui/StatusLine.tsx'
 import EmptyCard from '../../settings/EmptyCard.tsx'
 import SectionPage from '../../settings/SectionPage.tsx'
 import { textsOf, whenOf } from './InboxList.tsx'
 import styles from './Inbox.module.css'
+import SourceReportPanel from './SourceReportPanel.tsx'
 import SourceReviewPanel from './SourceReviewPanel.tsx'
 
 type Layout = 'desktop' | 'phone'
 
-// One request of À traiter opened here: its title and text, who told it and when, then a source to judge.
+// One request of À traiter opened here: its title and text, who told it and when, then a source to judge or reported.
 const InboxItemPage = ({
   item,
   reviews,
+  reports,
   layout
 }: {
   item: InboxItem | null
   reviews: SourceReview[]
+  reports: SourceReportView[]
   layout: Layout
 }) => {
   const { t, i18n } = useTranslation()
@@ -31,6 +34,8 @@ const InboxItemPage = ({
     )
   const sourceId = reviewedSourceOf(item)
   const review = reviews.find(candidate => candidate.id === sourceId) ?? null
+  const reportedId = reportedSourceOf(item)
+  const report = reports.find(candidate => candidate.id === reportedId) ?? null
   return (
     <SectionPage title={texts.title} intro={layout === 'desktop' ? texts.text : undefined} layout={layout}>
       {layout === 'phone' && (
@@ -44,6 +49,7 @@ const InboxItemPage = ({
         <StatusLine tone="success">{t('server.inbox.handled', { date: whenOf(item.handledAt) })}</StatusLine>
       )}
       {isWaiting(item) && review && <SourceReviewPanel key={review.id} review={review} />}
+      {isWaiting(item) && report && <SourceReportPanel key={report.id} report={report} />}
     </SectionPage>
   )
 }
