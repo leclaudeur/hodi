@@ -8,7 +8,7 @@ import type { WriteDailySummary, WrittenPoint } from './daily-summary.ts'
 import type { AnswerQuestion, PluginQuestion, SuggestSources, Summarize } from './summarizer.ts'
 import type { FetchVideoDuration } from './video-durations.ts'
 import type { NewsStore } from '../db/news-store.ts'
-import type { AiCaps, CapProfile } from './ai-ledger.ts'
+import type { AiCaps } from './ai-ledger.ts'
 
 // What NewsService answers, and what it is built with.
 export interface SourceStatus {
@@ -151,8 +151,9 @@ export interface NewsServiceOptions {
   // the catalogue given to the constructor), and every household, for the background pass.
   catalogOf?: () => Catalog
   households?: () => number[]
-  // Each household's AI and time zone, read as the catalogue is; setAi and setTimeZone change the request's.
-  aiOf?: () => AiTools | null
+  // Each reader's own AI, its account's key: none for a profile without one. Without it, the tools below are everyone's.
+  aiOf?: (profileId: number) => AiTools | null
+  // Each household's time zone, read as the catalogue is; setTimeZone changes the request's.
   timeZoneOf?: () => string
   // A reader's own time zone (its account's), or null to use the household's.
   readerTimeZoneOf?: (profileId: number) => string | null
@@ -167,9 +168,7 @@ export interface NewsServiceOptions {
   store?: NewsStore
   // Sources nobody reads (every profile turned them off): their feeds are not fetched.
   isPaused?: (sourceId: string) => boolean
-  // The household's profiles, between which the AI caps are shared. Absent in tests: one profile has it all.
-  profiles?: () => CapProfile[]
-  // Daily caps on API calls for the household, AI_CAPS by default.
+  // Daily caps on each reader's API calls, AI_CAPS by default.
   aiCaps?: AiCaps
   // Where "today" is for the Résumé du jour: the server's own time zone by default.
   timeZone?: string

@@ -27,6 +27,8 @@ const mountAccount = (api: express.Router, { options, config, session, profileHo
       profiles,
       household,
       defaultTimeZone: config.timeZone,
+      accountAi: options.accountAi,
+      providers: options.aiProviders,
       sessionOf: session.sessionOf,
       cookieForDevice: session.cookieForDevice,
       cookieWithout: session.cookieWithout,

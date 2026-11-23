@@ -1753,8 +1753,6 @@
     "countryFailed": "The country could not be saved. Try again in a moment.",
     "on": "AI on",
     "removed": "AI removed",
-    "removeTitle": "Remove the key?",
-    "removeMessage": "Violet buttons disappear for the whole household. What the AI already wrote stays.",
     "remove": "Remove",
     "removeFailed": "The key could not be removed. Try again in a moment.",
     "provider": "Provider",
@@ -1766,32 +1764,7 @@
     "addKey": "Add a key",
     "resetDone": "Reset",
     "resetFailed": "The reset failed. Try again in a moment.",
-    "resetHousehold": {
-      "summary": "Reset the household’s summaries?",
-      "question": "Reset the household’s questions?",
-      "dailySummary": "Reset the household’s Daily summaries?",
-      "sources": "Reset the household’s source suggestions?",
-      "plugin": "Reset the household’s plugin requests?"
-    },
-    "resetHouseholdAll": "Reset all for the household?",
-    "resetHouseholdMessage": "Calls from the last 24 hours no longer count, for any profile.",
-    "resetProfile": {
-      "summary": "Reset {{name}}’s summaries?",
-      "question": "Reset {{name}}’s questions?",
-      "dailySummary": "Reset {{name}}’s Daily summaries?",
-      "sources": "Reset {{name}}’s source suggestions?",
-      "plugin": "Reset {{name}}’s plugin requests?"
-    },
-    "resetProfileAll": "Reset everything for {{name}}?",
-    "resetProfileMessage": "{{name}} gets their credits back. The household total doesn’t change.",
-    "intro": "Each violet button is one AI call, paid on the household’s credits: nothing is sent without a click. The household cap is split evenly between profiles and counts over a rolling 24 hours. Cap reached, the AI buttons turn off.",
-    "loadFailed": "Today’s calls could not be read. Try again in a moment.",
-    "offMember": "The admin can turn it on here with an API key.",
-    "householdDay": "All household · 24 hours",
-    "profilesDay": "Per profile · 24 hours",
-    "yoursOf": "Calls · {{name}} · 24 hours",
     "yours": "Calls · 24 hours",
-    "introAdmin": "Resetting a profile gives back its credits without lowering the household total.",
     "plugins": {
       "title": "Plugins",
       "calls_one": "{{count}} call in 24 hours",
@@ -1865,28 +1838,8 @@
     },
     "removeKey": {
       "title": "Remove the AI key?",
-      "message": "The purple buttons disappear <b>for the whole household</b> until a new key is added. Summaries and answers the AI already wrote stay.",
+      "message": "The purple buttons disappear <b>for this account</b> until a new key is added. Summaries and answers already written stay.",
       "button": "Remove key"
-    },
-    "resetHousehold": {
-      "title": "Refill everyone’s AI?",
-      "message": "What was asked of the AI in the last 24 hours no longer counts, <b>for every profile</b>: everyone gets today’s credits back.",
-      "button": "Refill"
-    },
-    "resetHouseholdKind": {
-      "title": "Refill everyone’s AI?",
-      "message": "What was asked of the AI for <b>{{kind}}</b> in the last 24 hours no longer counts, <b>for every profile</b>.",
-      "button": "Refill"
-    },
-    "resetProfile": {
-      "title": "Refill the profile’s AI?",
-      "message": "<b>{{name}}</b> gets all of today’s AI credits back. The household’s credits don’t move.",
-      "button": "Refill"
-    },
-    "resetProfileKind": {
-      "title": "Refill the profile’s AI?",
-      "message": "<b>{{name}}</b> gets today’s credits for <b>{{kind}}</b> back. The household’s credits don’t move.",
-      "button": "Refill"
     },
     "kinds": {
       "summary": "summaries",
@@ -1967,6 +1920,12 @@
       "messageLast_one": "No adult will be signed in on this device any more: <b>{{young}}</b> leaves <i>Who’s in?</i> too, having no account. The device goes back to sign-in, and the reading stays intact. An adult of the household can sign it in again whenever they like.",
       "messageLast_other": "No adult will be signed in on this device any more: <b>{{young}}</b> leave <i>Who’s in?</i> too, having no account. The device goes back to sign-in, and the reading stays intact. An adult of the household can sign it in again whenever they like.",
       "button": "Sign out"
+    },
+    "resetMine": {
+      "title": "Recharge the AI?",
+      "message": "The AI calls of the last 24 hours no longer count: all of the day’s credits come back.",
+      "kindMessage": "The calls for <b>{{kind}}</b> of the last 24 hours no longer count: those credits of the day come back.",
+      "button": "Recharge"
     }
   },
   "dialogIntro": {
@@ -2733,6 +2692,7 @@
       "profile": "Profile",
       "sign-in": "Sign-in",
       "region": "Region",
+      "ai": "AI and credits",
       "stats": "Statistics",
       "data": "Data"
     },
@@ -2740,7 +2700,8 @@
       "profile": "The name, photo and colour the household sees, and Hodi's language.",
       "sign-in": "How you sign in, and the devices where the account is open.",
       "region": "The time zone says when a day starts: the statistics', the <i>Daily summary</i>'s and the badges'.",
-      "data": "The household you read in, a copy of everything Hodi keeps about the account, or deleting it."
+      "data": "The household you read in, a copy of everything Hodi keeps about the account, or deleting it.",
+      "ai": "Each purple button is a call to the AI, paid with this account's API key: nothing goes without a click. Calls count over a rolling 24 hours; once a cap is reached, the purple buttons turn off."
     },
     "noStats": "Nothing read yet."
   }

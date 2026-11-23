@@ -191,6 +191,8 @@ const householdGroups = ({ t, young, profile, household, usage }: GroupData): Gr
       },
       {
         id: 'ai',
+        href: accountHref('ai'),
+        leaves: true,
         label: t('settings.nav.ai'),
         hint: usage
           ? usage.available

@@ -9,6 +9,7 @@ import { signInCodeOf } from '../db/sign-in-code-store.ts'
 import { type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import { type Language, isLanguage } from '../../shared/i18n.ts'
 import type { AiProvider } from '../news/ai-providers.ts'
+import type { AccountAiStore } from '../db/account-ai-store.ts'
 import type { ManifestTranslations } from '../plugins/manifest-texts.ts'
 import type { AccountOf, CookieFor } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
@@ -31,6 +32,8 @@ export interface HouseholdRoutesOptions {
   throttle: LoginThrottle
   // The people's own accounts; absent on an install from before them, in tests.
   accounts?: UserAccountStore
+  // The admin's own AI key, from the AI step.
+  accountAi?: AccountAiStore
   accountOf: AccountOf
   // A session cookie for this account, signed as it is now.
   cookieFor: CookieFor
@@ -248,7 +251,7 @@ const mountSetupAccountRoutes = (
 
 const mountSetupHouseholdRoute = (
   router: express.Router,
-  { household, profiles, providers, now, secret, accounts, onChange, onSetUp, householdLater }: SetupOptions,
+  { household, profiles, providers, now, secret, accounts, accountAi, onChange, onSetUp, householdLater }: SetupOptions,
   { adminOf, notNeeded }: SetupChecks
 ) => {
   // "Crée ton foyer" to "Tout est prêt": the household, with the server admin's profile as its admin.
@@ -283,6 +286,8 @@ const mountSetupHouseholdRoute = (
     householdLater?.set(false)
     // The admin's own region too: its days and its AI's searches follow it from now on.
     accounts?.setRegion(admin.id, { timeZone: timeZone ?? undefined, country: country ?? null })
+    // The key given here is the admin's own: each account pays for its own AI.
+    if (settings) accountAi?.set(admin.id, settings)
     // The install's first profile becomes the one set up here, its admin, and the server admin's own.
     const first = profiles.list().find(candidate => candidate.role === 'admin')
     if (first) {

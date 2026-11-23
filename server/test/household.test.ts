@@ -1,3 +1,4 @@
+import { AccountAiStore } from '../db/account-ai-store.ts'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
@@ -65,6 +66,7 @@ const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => 
     devices: new UserDeviceStore(db),
     profileDevices: new ProfileDeviceStore(db),
     accountData: new AccountDataStore(db),
+    accountAi: new AccountAiStore(db),
     codes: new SignInCodeStore(db, config.sessionSecret),
     setupCode: CODE,
     now: () => now(),
@@ -237,6 +239,12 @@ describe('household', () => {
     assert.equal(admin?.tourPending, false)
     assert.equal(install.accounts.profileOf(install.accounts.byEmail(EMAIL)!.id), admin?.id)
     assert.equal(changes, 1)
+    // The key of the AI step is the admin's own: each account pays for its own AI.
+    assert.deepEqual(new AccountAiStore(install.db).get(install.accounts.byEmail(EMAIL)!.id), {
+      provider: 'fake',
+      key: 'sk-test-good1234',
+      model: null
+    })
 
     const view = await (await fetch(`${baseUrl}/api/household`, { headers: { cookie: signedIn } })).json()
     assert.equal(view.name, 'Chez nous')
