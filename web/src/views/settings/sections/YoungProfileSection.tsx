@@ -1,4 +1,4 @@
-import { Smartphone, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import type { TFunction } from 'i18next'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -11,7 +11,6 @@ import { settingsHref } from '../../../lib/use-hash-route.ts'
 import Button from '../../../ui/Button.tsx'
 import Dialog from '../../../ui/Dialog.tsx'
 import StatusLine from '../../../ui/StatusLine.tsx'
-import CodeDialog from '../../profiles/CodeDialog.tsx'
 import ChildParents from '../../profiles/ChildParents.tsx'
 import ChildPasswordRow from '../../profiles/ChildPasswordRow.tsx'
 import YoungDevices from '../../profiles/YoungDevices.tsx'
@@ -79,7 +78,6 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
   const { t } = useTranslation()
   const value = useProfiles({ fresh: true })
   const [opened, setOpened] = useState<Opened | null>(null)
-  const [connecting, setConnecting] = useState(false)
   const profile = value?.profiles.find(entry => entry.id === id)
   const own = value?.profiles.find(entry => entry.id === value.current)
   const admin = own?.role === 'admin'
@@ -111,20 +109,15 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
       <h2 className={styles.label}>{t('young.followUp')}</h2>
       <WeekRows {...rows} />
 
-      {/* Its own tablet or phone, linked with a code, and those already linked. Codes come with personal accounts. */}
-      {own?.hasAccount && <ChildParents profileId={profile.id} ownName={own.name} />}
+      {own?.hasAccount && <ChildParents profileId={profile.id} />}
 
       {own?.hasAccount && (
         <>
+          {/* The password it signs in with on its own devices, and the devices signed in. */}
           <h2 className={styles.label}>{t('young.devices')}</h2>
           <div className={styles.card}>
             <ChildPasswordRow profileId={profile.id} />
             <YoungDevices profile={profile} />
-            <SettingRow
-              label={t('young.ownDevice')}
-              hint={t('young.ownDeviceHint')}
-              action={{ label: t('profileForm.connect'), icon: Smartphone, onClick: () => setConnecting(true) }}
-            />
           </div>
         </>
       )}
@@ -152,12 +145,6 @@ const YoungProfileSection = ({ id, layout }: { id: number; layout: Layout }) => 
       >
         {dialog?.body}
       </Dialog>
-      {/* Remade at each opening: a new code, nothing left of the one before. */}
-      <CodeDialog
-        key={connecting ? 'open' : 'closed'}
-        target={connecting ? { id: profile.id, name, young: true } : undefined}
-        onClose={() => setConnecting(false)}
-      />
     </SectionPage>
   )
 }

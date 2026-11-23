@@ -306,8 +306,8 @@ test('creates a teen’s account, which signs in with its username and the passw
   browser
 }) => {
   await page.goto('/#/account/children')
-  await page.getByRole('button', { name: 'Créer un compte' }).click()
-  const dialog = page.getByRole('dialog', { name: 'Créer un compte' })
+  await page.getByRole('button', { name: 'Ajouter un enfant' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Ajouter un enfant' })
   await dialog.getByRole('textbox', { name: 'Prénom' }).fill('Zoé')
   await dialog.getByRole('radio', { name: 'Ado' }).check()
   await expect(dialog.getByRole('textbox', { name: 'Identifiant' })).toHaveValue('zoe')
@@ -337,37 +337,35 @@ test('creates a teen’s account, which signs in with its username and the passw
   await phone.close()
 })
 
-test('links Zoé’s own tablet with a parent’s code, which opens her profile only, until it is removed', async ({
+test('signs Zoé’s own tablet in with her username, which opens her profile only, until a parent removes it', async ({
   browser
 }) => {
-  await page.goto('/#/settings/profiles')
-  await page.getByRole('link', { name: 'Gérer Zoé' }).click()
-  await page.getByRole('button', { name: 'Connecter un appareil' }).click()
-  const connect = page.getByRole('dialog', { name: 'Connecter Zoé' })
-  await expect(connect.getByRole('img', { name: 'QR du lien d’invitation' })).toBeVisible()
-  const code = await connect.getByRole('textbox', { name: 'Code' }).inputValue()
-  await connect.getByRole('button', { name: 'Terminé' }).click()
-
-  // Her tablet: « J'ai un code », then this device is hers, with no e-mail or password.
+  // Her tablet: her username and her password, as on her phone.
   const tablet = await browser.newPage()
   await tablet.goto('/')
-  await tablet.getByRole('link', { name: 'J’ai un code' }).click()
-  await tablet.getByRole('textbox', { name: 'Code' }).fill(code)
-  await expect(tablet.getByRole('heading', { name: 'Relier cet appareil' })).toBeVisible()
-  await tablet.getByRole('button', { name: 'Valider' }).click()
+  await tablet.getByRole('textbox', { name: 'E-mail' }).fill('@zoe')
+  await tablet.getByRole('textbox', { name: 'Mot de passe' }).fill(ZOE_PASSWORD)
+  await tablet.getByRole('button', { name: 'Entrer' }).click()
   // Her tour was taken on her phone: straight into her profile.
   await expect(tablet.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
-  // No other profile to open from it.
+  // No other profile to open from it: « Qui lit ? » lists her alone.
   await tablet.goto('/#/profiles')
-  await expect(tablet.getByRole('heading', { name: 'Qui lit ?' })).toHaveCount(0)
+  await expect(tablet.getByRole('button', { name: /Zoé/ })).toBeVisible()
+  await expect(tablet.getByRole('button', { name: /Alex|Sam/ })).toHaveCount(0)
 
-  // A parent removes it: it asks for a code again.
-  await page.reload()
-  await page.getByRole('button', { name: /^Retirer / }).click()
-  await page.getByRole('dialog').getByRole('button', { name: 'Retirer' }).click()
-  await expect(page.getByRole('button', { name: /^Retirer / })).toHaveCount(0)
+  // A parent removes it from her card: it asks to sign in again.
+  await page.goto('/#/settings/profiles')
+  await page.getByRole('link', { name: 'Gérer Zoé' }).click()
+  // She signed in on a phone too, in the test before: each device goes.
+  const removes = page.getByRole('button', { name: /^Retirer / })
+  await expect(removes).not.toHaveCount(0)
+  for (let left = await removes.count(); left > 0; left -= 1) {
+    await removes.first().click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Retirer' }).click()
+    await expect(removes).toHaveCount(left - 1)
+  }
   await tablet.reload()
-  await expect(tablet.getByRole('link', { name: 'J’ai un code' })).toBeVisible()
+  await expect(tablet.getByRole('textbox', { name: 'E-mail' })).toBeVisible()
   await tablet.close()
 })
 
@@ -394,7 +392,7 @@ test('opens a parent with their Code parental, and a private profile with its pa
   await page.goto('/#/account/children')
   await expect(page.getByText('Conseillé, pas encore choisi')).toBeVisible()
   await page.getByRole('switch', { name: 'Code parental' }).click()
-  const choose = page.getByRole('dialog', { name: 'Ton code parental' })
+  const choose = page.getByRole('dialog', { name: 'Le code parental' })
   await choose.getByLabel('Nouveau code').fill(PARENTAL_CODE)
   await choose.getByRole('button', { name: 'Enregistrer' }).click()
   // Then Alex's own password: a profile left open does not prove who changes the code.
@@ -402,7 +400,7 @@ test('opens a parent with their Code parental, and a private profile with its pa
   await proof.getByLabel('Mon mot de passe').fill(PASSWORD)
   await proof.getByLabel('Code de l’app d’authentification').fill(await appCode())
   await proof.getByRole('button', { name: 'Enregistrer' }).click()
-  await expect(page.getByText('6 chiffres')).toBeVisible()
+  await expect(page.getByText('Oublié ? Le mot de passe du compte le remplace')).toBeVisible()
 
   // Alex's account on the family tablet: no young account signed in yet, Alex's profile opens at once.
   const device = await signIn(browser, 'Zoé')
@@ -440,7 +438,7 @@ test('opens a parent with their Code parental, and a private profile with its pa
   await expect(device.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
   await device.goto('/#/profiles')
   await device.getByRole('button', { name: /Sam/ }).click()
-  await device.getByRole('textbox', { name: 'Mot de passe de Sam' }).fill(SAM_PASSWORD)
+  await device.getByRole('textbox', { name: 'Mot de passe', exact: true }).fill(SAM_PASSWORD)
   await device.getByRole('checkbox', { name: 'Ne plus demander sur cet appareil' }).click()
   await device.getByRole('button', { name: 'Ouvrir' }).click()
   await expect(device.getByRole('button', { name: 'Sam, mon profil' })).toBeVisible()
@@ -460,12 +458,12 @@ test('opens a parent with their Code parental, and a private profile with its pa
   await expect(device.getByRole('button', { name: 'Zoé, mon profil' })).toBeVisible()
   await device.goto('/#/profiles')
   await device.getByRole('button', { name: /Sam/ }).click()
-  await expect(device.getByRole('textbox', { name: 'Mot de passe de Sam' })).toBeVisible()
+  await expect(device.getByRole('textbox', { name: 'Mot de passe', exact: true })).toBeVisible()
 
   // A forgotten code: Alex's password opens Alex's profile instead.
   await device.getByRole('button', { name: 'Retour' }).click()
   await device.getByRole('button', { name: /Alex/ }).click()
-  await device.getByRole('button', { name: 'Code oublié ? Ton mot de passe' }).click()
+  await device.getByRole('button', { name: 'Code oublié ? Le mot de passe du compte' }).click()
   await device.getByRole('textbox', { name: /mot de passe/i }).fill(PASSWORD)
   await device.getByRole('button', { name: 'Ouvrir' }).click()
   await expect(device.getByRole('button', { name: 'Alex, mon profil' })).toBeVisible()
@@ -475,7 +473,7 @@ test('opens a parent with their Code parental, and a private profile with its pa
 
   // No code any more, with Alex's password: Alex's profile opens at once again.
   await page.getByRole('switch', { name: 'Code parental' }).click()
-  const off = page.getByRole('dialog', { name: 'Désactiver ton code parental ?' })
+  const off = page.getByRole('dialog', { name: 'Désactiver le code parental ?' })
   await off.getByLabel('Mon mot de passe').fill(PASSWORD)
   await off.getByLabel('Code de l’app d’authentification').fill(await appCode())
   await off.getByRole('button', { name: 'Désactiver' }).click()
@@ -594,7 +592,7 @@ test('shares an article with and without a word, and the sender sees the reactio
       await expect(person).toHaveCount(0)
       await dialog.getByRole('textbox', { name: 'Son identifiant' }).fill('@personne')
       await dialog.getByRole('button', { name: 'Ajouter' }).click()
-      await expect(dialog.getByText('Personne à qui l’envoyer avec cet identifiant.')).toBeVisible()
+      await expect(dialog.getByText('Ce compte n’existe pas.')).toBeVisible()
       await dialog.getByRole('textbox', { name: 'Son identifiant' }).fill('@sam')
       await dialog.getByRole('button', { name: 'Ajouter' }).click()
     }
@@ -745,21 +743,20 @@ test('switches the interface to English and back', async () => {
 test('makes Sam Zoé’s second parent: Alex invites Sam’s username, Sam accepts', async () => {
   await page.goto('/#/settings/profiles')
   await page.getByRole('link', { name: 'Gérer Zoé' }).click()
-  await page.getByRole('button', { name: 'Inviter' }).click()
+  await page.getByRole('button', { name: 'Inviter un second parent' }).click()
   const invite = page.getByRole('dialog', { name: 'Inviter un parent' })
   await invite.getByRole('textbox', { name: 'Identifiant' }).fill('personne')
   await invite.getByRole('button', { name: 'Inviter' }).click()
-  await expect(invite.getByText('Aucun compte adulte avec cet identifiant sur ce serveur.')).toBeVisible()
+  await expect(invite.getByText('Ce compte n’existe pas.')).toBeVisible()
   await invite.getByRole('textbox', { name: 'Identifiant' }).fill('sam')
   await invite.getByRole('button', { name: 'Inviter' }).click()
-  await expect(page.getByText('Invitation envoyée, en attente de réponse')).toBeVisible()
+  await expect(page.getByText('@sam · Invitation envoyée, en attente de réponse')).toBeVisible()
 
   await sam.goto('/#/account/children')
-  await sam.getByRole('button', { name: 'Répondre pour Zoé' }).click()
-  await sam.getByRole('dialog', { name: 'Demande de parent' }).getByRole('button', { name: 'Accepter' }).click()
+  await sam.getByRole('button', { name: 'Accepter d’être parent de Zoé' }).click()
   await expect(sam.getByRole('link', { name: 'Gérer Zoé' })).toBeVisible()
   await page.reload()
-  await expect(page.getByText('Mêmes droits que toi')).toBeVisible()
+  await expect(page.getByText(/^@sam · parent depuis le /)).toBeVisible()
   // Out of Réglages: it lists the teen's requests again when it opens next.
   await page.goto('/')
 })

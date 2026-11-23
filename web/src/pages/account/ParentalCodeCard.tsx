@@ -11,6 +11,7 @@ import PinField from '../../ui/PinField.tsx'
 import RichText from '../../ui/RichText.tsx'
 import Toggle from '../../ui/Toggle.tsx'
 import SettingRow from '../../views/settings/SettingRow.tsx'
+import householdStyles from '../../views/household/Household.module.css'
 import styles from '../../views/settings/Settings.module.css'
 
 const CODE_LENGTH = 6
@@ -39,6 +40,7 @@ const CodeDialog = ({ onClose, onSaved }: { onClose: () => void; onSaved: (next:
       intro={<RichText i18nKey="children.parentalCode.dialogIntro" />}
     >
       <form
+        className={householdStyles.form}
         onSubmit={event => {
           event.preventDefault()
           save()
@@ -106,7 +108,7 @@ const ParentalCodeCard = ({ account, onAccount, parent }: ParentalCodeCardProps)
         {on && (
           <SettingRow
             label={t('children.parentalCode.code')}
-            value={t('children.parentalCode.codeValue')}
+            hint={t('children.parentalCode.codeValue')}
             action={{
               label: t('common.change'),
               ariaLabel: t('children.parentalCode.changeLabel'),

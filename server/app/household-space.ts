@@ -67,9 +67,13 @@ const mountAccount = (api: express.Router, wiring: Wiring) => {
 }
 
 const mountProfiles = (api: express.Router, wiring: Wiring) => {
-  const { profiles, profileDevices, youth, users, accounts, pinThrottle, now } = wiring.options
+  const { profiles, profileDevices, devices, youth, users, accounts, pinThrottle, now } = wiring.options
   if (!profiles) return
-  if (profileDevices) api.use('/profiles', profileDeviceRoutes({ devices: profileDevices, profiles, accounts, now }))
+  if (profileDevices)
+    api.use(
+      '/profiles',
+      profileDeviceRoutes({ devices: profileDevices, profiles, accounts, accountDevices: devices, now })
+    )
   api.use(
     '/profiles',
     profileRoutes({

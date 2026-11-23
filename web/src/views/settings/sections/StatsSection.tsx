@@ -11,7 +11,6 @@ import { durationLabel } from './duration-label.ts'
 import DayBars, { type Day } from './DayBars.tsx'
 import StatsFavourites from './StatsFavourites.tsx'
 import StatsClear from './StatsClear.tsx'
-import StatsHousehold from './StatsHousehold.tsx'
 import styles from '../Settings.module.css'
 import statStyles from './StatsSection.module.css'
 import { DAY_MS } from '../../../../../shared/time.ts'
@@ -240,8 +239,7 @@ const StatsSection = ({ topics }: StatsSectionProps) => {
 
   return (
     <>
-      <StatsHousehold />
-      {/* The period only counts this profile's reading: beside its own title, under the household's week. */}
+      {/* The period only counts this profile's reading, beside its own title. */}
       <div className={statStyles.subtitle}>
         <h2 className={statStyles.subtitleText}>{t('stats.yours')}</h2>
         <Segmented

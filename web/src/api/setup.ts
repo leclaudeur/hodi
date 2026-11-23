@@ -260,6 +260,8 @@ export const resetWithMailedCode = (code: string, password: string) =>
 // A young profile's own devices, in its form (Réglages > Profils).
 export interface ProfileDevice {
   id: number
+  // account: signed in with its @identifier; linked: with a parent's code, before.
+  kind: 'account' | 'linked'
   userAgent: string
   lastSeenAt: number
 }
@@ -267,8 +269,11 @@ export interface ProfileDevice {
 export const getProfileDevices = async (profileId: number) =>
   (await getJson<{ devices: ProfileDevice[] }>(`/profiles/${profileId}/devices`)).devices
 
-export const removeProfileDevice = (profileId: number, deviceId: number) =>
-  sendJson<null>('DELETE', `/profiles/${profileId}/devices/${deviceId}`)
+export const removeProfileDevice = (profileId: number, device: Pick<ProfileDevice, 'id' | 'kind'>) =>
+  sendJson<null>(
+    'DELETE',
+    `/profiles/${profileId}/${device.kind === 'account' ? 'account-devices' : 'devices'}/${device.id}`
+  )
 
 export interface HouseholdSetup {
   // The server's one space needs none: a plugin with several households names them.

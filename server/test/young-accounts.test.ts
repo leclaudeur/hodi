@@ -92,7 +92,7 @@ interface Child {
   kind: string
   handle: string
   hasPassword: boolean
-  parents: string[]
+  parents: { name: string; you: boolean }[]
 }
 
 describe('Mon compte › Mes enfants', () => {
@@ -109,7 +109,7 @@ describe('Mon compte › Mes enfants', () => {
   it('lists a parent’s own children only: Léa, made before, has an account and no password yet', async () => {
     const mine = await children(household.admin)
     assert.deepEqual(
-      mine.map(child => [child.name, child.kind, child.hasPassword, child.parents]),
+      mine.map(child => [child.name, child.kind, child.hasPassword, child.parents.map(parent => parent.name)]),
       [['Léa', 'child', false, ['Antho']]]
     )
     assert.match(mine[0]!.handle, /^lea/)
@@ -126,7 +126,10 @@ describe('Mon compte › Mes enfants', () => {
     })
     assert.equal(made.status, 201)
     zoe = (await made.json()) as Child
-    assert.deepEqual([zoe.name, zoe.handle, zoe.hasPassword, zoe.parents], ['Zoé', 'zoe', true, ['Antho']])
+    assert.deepEqual(
+      [zoe.name, zoe.handle, zoe.hasPassword, zoe.parents],
+      ['Zoé', 'zoe', true, [{ ...zoe.parents[0]!, name: 'Antho', you: true }]]
+    )
     assert.equal(household.accounts.get(zoe.accountId)?.email, null)
     // The identifier is taken now, and a part that cannot be is refused.
     const again = { kind: 'teen', name: 'Zoé', color: 'science', handle: 'zoe', password: 'un autre mot de passe' }
@@ -163,6 +166,25 @@ describe('Mon compte › Mes enfants', () => {
     assert.equal(none.status, 401)
   })
 
+  it('lists the devices its account signed in on to its parents, who sign one out, and to no one else', async () => {
+    const tablet = cookiesFrom(
+      await household.call('/login', '', 'POST', { email: '@zoe', password: 'le mot de passe de Zoé' })
+    )
+    const listOf = async (cookie: string) =>
+      (await household.call(`/profiles/${zoe.profileId}/devices`, cookie)) as Response
+    assert.equal((await listOf(household.sam)).status, 403)
+    const listed = (await (await listOf(household.admin)).json()) as { devices: { id: number; kind: string }[] }
+    const signedIn = listed.devices.filter(device => device.kind === 'account')
+    assert.ok(signedIn.length >= 1)
+    const path = (id: number) => `/profiles/${zoe.profileId}/account-devices/${id}`
+    assert.equal((await household.call(path(signedIn[0]!.id), household.sam, 'DELETE')).status, 403)
+    for (const device of signedIn)
+      assert.equal((await household.call(path(device.id), household.admin, 'DELETE')).status, 204)
+    assert.equal((await household.call('/account', tablet)).status, 401)
+    // Not one of hers: nothing to remove.
+    assert.equal((await household.call(path(signedIn[0]!.id), household.admin, 'DELETE')).status, 404)
+  })
+
   it('gives a new password and deletes, for its parents only, after their own password', async () => {
     const path = `/account/children/${zoe.accountId}`
     const body = { newPassword: 'un tout nouveau mot de passe', password: SAM_PASSWORD }
@@ -190,7 +212,10 @@ describe('Mon compte › Mes enfants', () => {
       password: 'le mot de passe de Noa'
     })
     const noa = (await made.json()) as Child
-    assert.deepEqual(noa.parents, ['Sam'])
+    assert.deepEqual(
+      noa.parents.map(parent => parent.name),
+      ['Sam']
+    )
     const rename = (cookie: string) => household.call(`/profiles/${noa.profileId}`, cookie, 'PATCH', { name: 'Noah' })
     assert.equal((await rename(household.sam)).status, 200)
     assert.equal((await rename(household.admin)).status, 403)

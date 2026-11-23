@@ -8,6 +8,7 @@ import Dialog from '../../ui/Dialog.tsx'
 import DialogActions from '../../ui/DialogActions.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
 import NewPasswordFields from '../../ui/NewPasswordFields.tsx'
+import householdStyles from '../household/Household.module.css'
 import ProfileForm, { type ProfileDraft } from './ProfileForm.tsx'
 
 interface CreateChildProps {
@@ -95,7 +96,7 @@ const PasswordStep = ({ draft, onBack, onCreated }: PasswordStepProps) => {
   }
 
   return (
-    <form onSubmit={submit}>
+    <form className={householdStyles.form} onSubmit={submit}>
       <NewPasswordFields password={password} confirm={again} onPassword={setPassword} onConfirm={setAgain} autoFocus />
       {error && <StatusLine tone="error">{error}</StatusLine>}
       <DialogActions>

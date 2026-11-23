@@ -8,6 +8,7 @@ import Button from '../../ui/Button.tsx'
 import Dialog from '../../ui/Dialog.tsx'
 import DialogActions from '../../ui/DialogActions.tsx'
 import NewPasswordFields from '../../ui/NewPasswordFields.tsx'
+import householdStyles from '../household/Household.module.css'
 import SettingRow from '../settings/SettingRow.tsx'
 
 // The young one's account, when the parent looking runs it; null while it loads or when it is not one of theirs.
@@ -97,7 +98,7 @@ const PasswordForm = ({ child, onCancel, onSaved }: PasswordFormProps) => {
     })
   }
   return (
-    <form onSubmit={submit}>
+    <form className={householdStyles.form} onSubmit={submit}>
       <NewPasswordFields password={password} confirm={again} onPassword={setPassword} onConfirm={setAgain} autoFocus />
       <DialogActions>
         <Button onClick={onCancel}>{t('common.cancel')}</Button>
