@@ -20,6 +20,7 @@ const ProfileStep = ({ step, total, profile, onBack, onSave }: ProfileStepProps)
       <StepHeader step={step} total={total} title={t('setup.profile.title')} intro={t('setup.profile.intro')} />
       <ProfileForm
         initial={profile ?? undefined}
+        withHandle={{}}
         className={styles.profileForm}
         submitLabel={
           <>

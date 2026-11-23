@@ -37,6 +37,7 @@
   "login": {
     "tagline": "Your news, just for you.",
     "email": "E-mail",
+    "emailOrHandle": "E-mail or username",
     "password": "Password",
     "wrongCredentials": "Wrong e-mail or password, try again.",
     "failed": "Something went wrong. Try again in a moment.",
@@ -189,7 +190,13 @@
       "title": "Soon, an app just for them",
       "text": "The Child profile is on its way. Until then, choose Teen or Adult."
     },
-    "connect": "Connect a device"
+    "connect": "Connect a device",
+    "handle": "Username",
+    "handleFree": "@{{handle}} is free.",
+    "handleTaken": "@{{handle}} is taken. Try @{{other}}.",
+    "handleRules": "3 to 20 characters: letters, digits, dot or underscore.",
+    "handleLocked": "You can change it on {{date}}.",
+    "handleEvery": "You can change it once every 30 days."
   },
   "setup": {
     "step": "Step {{step}} of {{total}}",

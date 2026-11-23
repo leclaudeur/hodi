@@ -1,16 +1,18 @@
 import type { ReactNode } from 'react'
-import { AlertCircle, Info } from 'lucide-react'
+import { AlertCircle, CircleCheck, Info } from 'lucide-react'
 import styles from './StatusLine.module.css'
 
 interface StatusLineProps {
-  tone: 'info' | 'error'
+  tone: 'info' | 'success' | 'error'
   children: ReactNode
   className?: string
 }
 
-// A line under a field, with its icon: blue to say what is going on, red when something failed.
+const ICONS = { info: Info, success: CircleCheck, error: AlertCircle }
+
+// A line under a field, with its icon: blue to say what is going on, green when it is fine, red when something failed.
 const StatusLine = ({ tone, children, className = '' }: StatusLineProps) => {
-  const Icon = tone === 'info' ? Info : AlertCircle
+  const Icon = ICONS[tone]
   return (
     <p className={`${styles.status} ${styles[tone]} ${className}`} role={tone === 'error' ? 'alert' : 'status'}>
       <span className={styles.mark}>

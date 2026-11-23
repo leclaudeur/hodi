@@ -108,7 +108,7 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
           email: fields.email.trim(),
           password: fields.password,
           ...(fields.existing ? { existing: true as const } : { ageConfirmed: true as const }),
-          ...(profile ? { profile: { name: profile.name, color: profile.color } } : {})
+          ...(profile ? { profile: { name: profile.name, color: profile.color, handle: profile.handle } } : {})
         }).catch((failure: unknown) => {
           if (!(failure instanceof RequestError) || failure.code !== 'profile_needed') throw failure
           return null

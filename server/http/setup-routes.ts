@@ -1,3 +1,4 @@
+import { cleanHandle } from '../../shared/handle.ts'
 import { timingSafeEqual } from 'node:crypto'
 import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
@@ -252,6 +253,9 @@ const mountSetupAccountRoutes = (
   })
 }
 
+// The identifier typed under the name: null when none was sent, false when it cannot be one.
+const chosenHandleOf = (value: unknown) => (value === undefined ? null : (cleanHandle(value) ?? false))
+
 const mountSetupHouseholdRoute = (
   router: express.Router,
   { household, profiles, providers, now, secret, accounts, accountAi, onChange, onSetUp, householdLater }: SetupOptions,
@@ -266,7 +270,7 @@ const mountSetupHouseholdRoute = (
       return
     }
     const body = (request.body ?? {}) as Record<string, unknown>
-    const profile = (body.profile ?? {}) as { name?: unknown; color?: unknown }
+    const profile = (body.profile ?? {}) as { name?: unknown; color?: unknown; handle?: unknown }
     // The server's one space is not shown any more: it needs no name of its own, and an empty one from an old page
     // gets the same.
     const name = body.name === undefined || body.name === '' ? SPACE_NAME : cleanHouseholdName(body.name)
@@ -276,11 +280,25 @@ const mountSetupHouseholdRoute = (
     const country = countryOf(body.country)
     const language = body.language === undefined ? 'fr' : isLanguage(body.language) ? body.language : null
     const ai = body.ai === null || body.ai === undefined ? null : aiOf(providers, body.ai)
-    if (!name || !profileName || !color || timeZone === false || country === false || !language || (body.ai && !ai)) {
+    const handle = chosenHandleOf(profile.handle)
+    if (
+      handle === false ||
+      !name ||
+      !profileName ||
+      !color ||
+      timeZone === false ||
+      country === false ||
+      !language ||
+      (body.ai && !ai)
+    ) {
       response.status(400).json({ error: 'bad_request' })
       return
     }
 
+    if (handle && accounts && !accounts.chooseHandle(admin.id, handle, now())) {
+      response.status(409).json({ error: 'handle_taken' })
+      return
+    }
     const settings: HouseholdAi | null = ai ? { provider: ai.provider.id, key: ai.key, model: null } : null
     if (
       !household.setUp({ name, timeZone: timeZone ?? null, country: country ?? null, language, ai: settings }, now())

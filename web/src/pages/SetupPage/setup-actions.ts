@@ -211,7 +211,7 @@ export const finishAction =
     flow.setError(null)
     try {
       const { profileId } = await setUpHousehold({
-        profile: { name: profile.name, color: profile.color },
+        profile: { name: profile.name, color: profile.color, handle: profile.handle },
         timeZone: answers.timeZone,
         country: provider ? answers.country : null,
         language,

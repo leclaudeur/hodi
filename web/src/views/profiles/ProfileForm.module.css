@@ -249,3 +249,39 @@ dialog .actions::before {
   font-size: 14px;
   font-weight: 600;
 }
+
+/* The identifier: its "@" where the settings' fields have their icon, past the pill's padding and border. */
+.handle {
+  position: relative;
+  display: flex;
+  color: var(--text-3);
+}
+
+.handle svg {
+  position: absolute;
+  top: 50%;
+  left: 17px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.handle input {
+  flex: 1;
+  min-width: 0;
+  padding-left: 42px;
+}
+
+.handle input[readonly] {
+  color: var(--text-2);
+}
+
+/* Taken: the colours of a refused settings field. */
+.handle:has(input[aria-invalid='true']) {
+  color: var(--destructive-text);
+}
+
+.handle input[aria-invalid='true'] {
+  border-color: var(--destructive-border);
+  background: var(--destructive);
+  color: var(--destructive-text);
+}

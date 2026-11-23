@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto'
+import { cleanHandle } from '../../shared/handle.ts'
 import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
@@ -124,6 +125,14 @@ const signInHelpers = ({
 
 type SignInHelpers = ReturnType<typeof signInHelpers>
 
+// The account an e-mail or an @identifier names; null when none has it, undefined when it cannot be either.
+const accountOf = (accounts: UserAccountStore, typed: unknown) => {
+  const email = typeof typed === 'string' && /.@/.test(typed) ? cleanEmail(typed) : null
+  const handle = email ? null : cleanHandle(typed)
+  if (!email && !handle) return undefined
+  return email ? accounts.byEmail(email) : accounts.byHandle(handle!)
+}
+
 const mountLoginRoute = (
   router: express.Router,
   { accounts, throttle, cookieFor, now }: LoginRoutesOptions,
@@ -132,7 +141,7 @@ const mountLoginRoute = (
   // Compared with when no account has the e-mail typed, so that a wrong address takes as long as a wrong password.
   let decoyHash: Promise<string> | null = null
 
-  // Everyone signs in with their own account: an e-mail and its password.
+  // Everyone signs in with their own account: its e-mail or its @identifier, and its password.
   router.post('/login', async (request, response) => {
     const password: unknown = request.body?.password
     const typedEmail: unknown = request.body?.email
@@ -151,12 +160,11 @@ const mountLoginRoute = (
       return
     }
 
-    const email = cleanEmail(typedEmail)
-    if (!accounts || !email) {
+    const account = accounts ? accountOf(accounts, typedEmail) : undefined
+    if (account === undefined) {
       response.status(400).json({ error: 'invalid_request' })
       return
     }
-    const account = accounts.byEmail(email)
     decoyHash ??= hashPassword(randomBytes(16).toString('hex'))
     const valid = await verifyPassword(password, account?.passwordHash ?? (await decoyHash))
     if (!account || !valid) {
@@ -172,7 +180,7 @@ const mountLoginRoute = (
     // « Validation en deux étapes »: the password was right, the app's code (or a recovery code) comes next.
     if (!secondStepOk(account, request, response, client)) return
     if (!sameHousehold(account, request, response)) return
-    if (needsRehash(account.passwordHash)) accounts.upgradePassword(account.id, await hashPassword(password))
+    if (needsRehash(account.passwordHash)) accounts?.upgradePassword(account.id, await hashPassword(password))
     const cookies = [cookieFor(account, request)]
     // Its own profile opens at once: the password proved who reads, a PIN of its own included.
     const own = ownProfileCookie(account.id)

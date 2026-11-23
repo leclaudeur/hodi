@@ -130,7 +130,7 @@ export type ValidCode = NonNullable<ReturnType<CodeHelpers['validCode']>>
 export const joinRequestOf = (body: Record<string, unknown>) => {
   const existing = body.existing === true
   const email = cleanEmail(body.email)
-  const draft = (body.profile ?? {}) as { name?: unknown; color?: unknown }
+  const draft = (body.profile ?? {}) as { name?: unknown; color?: unknown; handle?: unknown }
   const passwordSent =
     typeof body.password === 'string' && body.password.length > 0 && body.password.length <= MAX_PASSWORD_LENGTH
   if (!email || (existing ? !passwordSent : !isPassword(body.password) || body.ageConfirmed !== true)) return null

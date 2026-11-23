@@ -8,6 +8,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Username.** Every account has an @username, unique on the server, for friends and mentions to come. It is suggested
+  from the first name when the account is made (first-run screens, an invitation's code), says at once whether it is
+  free, and changes once every 30 days in My account. Existing accounts get one from their profile's name. Sign in
+  with the e-mail or the username.
+
 ### Changed
 
 - **Stats and points belong to the account.** An adult's readings, stats, points and badges are their account's,
