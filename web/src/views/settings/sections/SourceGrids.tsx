@@ -27,7 +27,7 @@ export const GridSection = ({ title, count, action, children }: GridSectionProps
   </section>
 )
 
-// A teen's requests, waiting for its parents: their cards, « En attente » in the corner.
+// A teen's requests, waiting for its parents: their cards, « En attente » in their footer.
 export const RequestCards = ({ requests }: { requests: SourceRequest[] }) => {
   const { t } = useTranslation()
   return (
@@ -39,12 +39,11 @@ export const RequestCards = ({ requests }: { requests: SourceRequest[] }) => {
           name={request.source.name}
           topic={null}
           moreTopics={0}
-          corner={
-            <span title={t('requests.pendingLabel')}>
+          start={
+            <span className={cardStyles.footerNote} title={t('requests.pendingLabel')}>
               <Clock size={13} aria-hidden="true" /> {t('requests.pending')}
             </span>
           }
-          actions={null}
         />
       ))}
     </GridSection>

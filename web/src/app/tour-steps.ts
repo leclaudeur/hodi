@@ -1,6 +1,6 @@
 import type { TopicSummary } from '../api.ts'
 import { t } from '../lib/i18n.ts'
-import { topicHref } from '../lib/use-hash-route.ts'
+import { catalogueHref, topicHref } from '../lib/use-hash-route.ts'
 
 export interface Step {
   // The first screen: topics to pick, in the middle (no target).
@@ -25,7 +25,6 @@ export interface Step {
 }
 
 const on = (prefix: string) => () => window.location.hash.startsWith(prefix)
-const inDialog = () => document.querySelector('dialog[open] [data-tour="add-way"]') !== null
 const inSheet = () => document.querySelector('dialog[open] [data-tour="level"]') !== null
 
 // The game's two steps: the header's avatar, then the level in the sheet it opens.
@@ -75,31 +74,29 @@ export const steps = ({ id, label }: TopicSummary, game: boolean): Step[] => [
     until: 'press'
   },
   {
-    target: '[data-tour="add-source"]',
-    title: t('tour.add.title'),
-    text: [t('tour.add.how'), t('tour.add.press')],
+    target: '[data-tour="catalogue"]',
+    title: t('tour.catalogue.title'),
+    text: [t('tour.catalogue.what'), t('tour.catalogue.open')],
     where: on('#/settings/sources'),
     until: 'press'
   },
   {
-    target: '[data-tour="add-way"] [role="radio"]:last-child',
-    title: t('tour.byTopic.title'),
-    text: [t('tour.byTopic.noLink'), t('tour.byTopic.offers'), t('tour.byTopic.pick')],
-    where: inDialog,
-    until: 'press'
-  },
-  {
-    target: `[data-tour="add-topics"] [data-topic="${id}"]`,
+    // The sidebar's topic on a computer; on a phone or a tablet, in the menu its button opens.
+    target: `[data-tour="catalogue-${id}"]`,
     title: label,
     text: [t('tour.topic.suggestions'), t('tour.topic.pick', { topic: label })],
-    where: inDialog,
+    via: {
+      target: '[data-tour="catalogue-parts"]',
+      text: [t('tour.topic.suggestions'), t('tour.topic.via', { topic: label })]
+    },
+    where: on('#/catalogue'),
     until: 'press'
   },
   {
-    target: '[data-tour="add-sites"]',
+    target: '[data-tour="catalogue-grid"]',
     title: t('tour.site.title'),
     text: [t('tour.site.feed'), t('tour.site.add')],
-    where: inDialog,
+    where: on(catalogueHref(id)),
     until: 'added'
   },
   {

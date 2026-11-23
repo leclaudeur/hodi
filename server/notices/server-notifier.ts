@@ -49,7 +49,7 @@ interface NotifierDeps {
   mail: { settings: () => MailSettings | null; send: SendMail; home?: () => string | null }
   push: SendPush
   languageOf: (account: UserAccount) => Language
-  // Serveur › Notifications' list: every notice, whatever way each admin chose.
+  // Serveur › À traiter: the requests, whatever way each admin chose.
   inbox?: ServerInboxStore
   now?: () => number
   log?: (line: string) => void
@@ -133,11 +133,12 @@ const mailOne = async (
   }
 }
 
-// Into Serveur › Notifications' list; false when the same request already waits there.
+// A request into Serveur › À traiter; false when the same one already waits there. A notice that asks nothing (the
+// weekly report) is only told.
 const record = (deps: NotifierDeps, type: string, written: ServerNoticeIn, important: string | undefined) => {
-  if (!deps.inbox) return true
+  if (!deps.inbox || !important) return true
   const url = (typeof written === 'function' ? written('fr') : written).url
-  return deps.inbox.add({ type, texts: textsOf(written), url, key: important ?? null }, (deps.now ?? Date.now)())
+  return deps.inbox.add({ type, texts: textsOf(written), url, key: important }, (deps.now ?? Date.now)())
 }
 
 export const serverNotifier = (deps: NotifierDeps): ServerNotifier => ({

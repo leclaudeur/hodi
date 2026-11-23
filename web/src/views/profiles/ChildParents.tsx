@@ -58,7 +58,7 @@ const ChildParents = ({ profileId }: ChildParentsProps) => {
         {child.parents.map(parent => (
           <SettingRow
             key={parent.accountId}
-            label={parent.you ? t('children.parents.youName', { name: parent.name }) : parent.name}
+            label={parent.name}
             hint={parentHint(parent, t)}
             action={
               parent.you && !alone

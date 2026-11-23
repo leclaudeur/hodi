@@ -30,12 +30,12 @@ const RecoveryRow = ({ account, onAccount, onNewCodes }: Omit<TwoFactorRowsProps
       action={{
         label: t('twoFactor.account.newCodes'),
         icon: KeyRound,
+        look: 'danger',
         onClick: () =>
           askToConfirm({
             title: t('twoFactor.account.confirmCodes.title'),
             message: t('twoFactor.account.confirmCodes.message'),
             label: t('twoFactor.account.confirmCodes.button'),
-            look: 'primary',
             proof: account.loginOnly ? { noPassword: true } : {},
             onConfirm: async proof => {
               const { recoveryCodes } = await newRecoveryCodes(proof)

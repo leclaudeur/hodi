@@ -161,7 +161,7 @@ interface PartProps {
   layout: 'desktop' | 'phone'
 }
 
-// Mon compte › Connexion: the e-mail, the password, the profile's lock, the second step, then the devices signed in.
+// Mon compte › Connexion: the e-mail, the password, the profile's lock, the second step, the devices, offline reading.
 export const SignInPart = ({ account, onAccount, layout }: PartProps) => {
   const { t } = useTranslation()
   const [editing, setEditing] = useState<'email' | 'password' | null>(null)
@@ -187,6 +187,10 @@ export const SignInPart = ({ account, onAccount, layout }: PartProps) => {
       <h2 className={styles.label}>{t('settings.account.devices')}</h2>
       <div className={styles.card}>
         <DeviceRows account={account} onAccount={onAccount} thisDevice={<ThisDevice />} />
+      </div>
+      {/* Its own section, so that the devices' « Voir les N autres » ends theirs. */}
+      <h2 className={styles.label}>{t('settings.account.offline')}</h2>
+      <div className={styles.card}>
         <OfflineRow />
       </div>
       {editing === 'email' && <EmailDialog {...dialogProps} />}

@@ -34,7 +34,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  padding: 20px 16px 16px;
+  padding: 20px 16px 0;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--column);
@@ -44,26 +44,33 @@
     background-color var(--duration) var(--ease);
 }
 
-/* Already in Mes sources, in the catalogue: the accent's border over a tint of it, a check in the corner. */
+/* Already in Mes sources, in the catalogue: only the accent's border; its footer says the rest. */
 .picked {
   border-color: var(--rust-border);
-  background: var(--rust-surface);
 }
 
-/* The check: a round in the accent. */
-.check {
+/* What is wrong with it, on its logo's edge: red for a feed that fails, grey for a source little read. */
+.badge {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--column);
   border-radius: 50%;
-  background: var(--rust);
-  color: var(--accent-ink);
+  background: var(--text-3);
+  color: var(--column);
 }
 
-/* What is wrong with a source of Mes sources: in the error's colour. */
-.warning {
-  color: var(--danger);
+.badgeError {
+  background: var(--destructive-border);
+  color: var(--on-topic);
+}
+
+.badge svg {
+  display: block;
 }
 
 .corner {
@@ -131,24 +138,45 @@
   font: 400 11px/1 var(--font-mono);
 }
 
-.actions {
+/* As a dialog's footer: a line across the card, the main action on the left, the others on the right. */
+.footer {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  align-self: stretch;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  margin-top: 6px;
+  margin: auto -16px 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
 }
 
-.moreMenu {
-  position: relative;
+/* Room between the content and the footer, which sits at the card's foot. */
+.card > :nth-last-child(2) {
+  margin-bottom: 8px;
+}
+
+.footerNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  color: var(--text-3);
+  font: 400 12px/1 var(--font-mono);
+}
+
+.footerSide {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* The logo in a round: the avatar's square corners rounded off. */
 .logo {
+  position: relative;
   display: flex;
 }
 
-.logo > * {
+.logo > :first-child {
   border-radius: 50%;
 }
 
@@ -158,11 +186,23 @@
   background: transparent;
 }
 
+.empty .footer {
+  border-top-style: dashed;
+}
+
 .emptyAvatar {
+  display: grid;
+  place-items: center;
   width: 44px;
   height: 44px;
   border: 1.5px dashed var(--border);
   border-radius: 50%;
+  color: var(--text-3);
+}
+
+/* The card still to fill has one button: in the middle. */
+.centred {
+  justify-content: center;
 }
 
 .emptyLine {

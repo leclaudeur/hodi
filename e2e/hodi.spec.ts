@@ -248,11 +248,11 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   await expect(page.getByRole('heading', { name: 'Mes enfants', level: 1 })).toBeVisible()
   await expect(page.getByRole('main').getByText('Sam', { exact: true })).toHaveCount(0)
 
-  // The server's admin opens the request, then makes the code: their own password first, and a wrong one stays in
-  // the question.
+  // The server's admin opens the request, which opens Sam's account with its notice, then makes the code: their own
+  // password first, and a wrong one stays in the question.
   await page.goto('/#/server/inbox')
   await request.click()
-  await page.getByRole('main').getByRole('link', { name: 'Ouvrir le compte' }).click()
+  await expect(page).toHaveURL(/#\/server\/accounts\/\d+$/)
   const askPassword = async (typed: string) => {
     await page.getByRole('main').getByRole('button', { name: 'Faire un code' }).first().click()
     const question = page.getByRole('dialog', { name: /^Nouveau mot de passe\s\?$/ })
@@ -276,9 +276,11 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
 
   // The code made, the request is handled, and Sam's account offers no other code until Sam asks again.
   await expect(page.getByRole('main').getByRole('button', { name: 'Faire un code' })).toHaveCount(0)
+  // It leaves À traiter for Traité, the last filter.
   await page.goto('/#/server/inbox')
-  await request.click()
-  await expect(page.getByRole('main').getByText(/^Traité le /)).toBeVisible()
+  await expect(request).toHaveCount(0)
+  await page.getByRole('button', { name: /^Traité/ }).click()
+  await expect(page.getByText(/^Traité le /)).toBeVisible()
 
   // Sam types it where the page waited, then the new password.
   await device.getByRole('textbox', { name: 'Code' }).fill(code)

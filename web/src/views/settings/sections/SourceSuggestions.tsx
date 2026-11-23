@@ -151,8 +151,7 @@ const SourceSuggestions = (props: SourceSuggestionsProps) => {
   const { loading, result, adding, added, addError, suggest, add } = useSuggestions(props)
 
   return (
-    // The tour's last step, when the topic has no proposal left.
-    <div className={suggestStyles.box} data-tour="add-sites">
+    <div className={suggestStyles.box}>
       {/* One line, as the reader's AI offers: mark, what it does, the violet button. */}
       <div className={aiStyles.offer}>
         <span className={`${aiStyles.mark} ${aiStyles.offerMark}`}>

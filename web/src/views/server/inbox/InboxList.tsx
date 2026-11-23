@@ -2,8 +2,17 @@ import { AlertCircle, ArrowRight, ChevronRight, Inbox, SlidersHorizontal } from 
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { InboxItem } from '../../../api.ts'
-import { timeAgo } from '../../../lib/format.ts'
-import { INBOX_KINDS, type InboxKind, inboxItemOf, inboxKindOf, isWaiting } from '../../../lib/server-inbox.ts'
+import { clockTime, numericDate, timeAgo } from '../../../lib/format.ts'
+import {
+  INBOX_KINDS,
+  type InboxFilter,
+  filterInbox,
+  firstOpen,
+  inboxHrefOf,
+  inboxItemOf,
+  inboxKindOf,
+  isWaiting
+} from '../../../lib/server-inbox.ts'
 import { SERVER_HREF, serverHref } from '../../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../../lib/use-media.ts'
 import Button from '../../../ui/Button.tsx'
@@ -14,7 +23,6 @@ import ListColumn from '../../ListColumn.tsx'
 import rowStyles from '../../MobileFilterRow.module.css'
 import MobilePage from '../../MobilePage.tsx'
 import navStyles from '../../settings/SettingsNav.module.css'
-import settingsStyles from '../../settings/Settings.module.css'
 import serverStyles from '../Server.module.css'
 import InboxIcon from './InboxIcon.tsx'
 import styles from './Inbox.module.css'
@@ -24,27 +32,27 @@ import { useInbox } from './use-inbox.ts'
 export const textsOf = (item: InboxItem, language: string) =>
   item.texts[language as 'fr' | 'en'] ?? item.texts.fr ?? item.texts.en ?? null
 
-// Tout, then a capsule for each kind the list holds.
+// Tout, a capsule for each kind still waiting, then Traité last.
 const KindFilters = ({ items, chosen, phone, onChoose }: KindFiltersProps) => {
   const { t } = useTranslation()
-  const kinds = INBOX_KINDS.filter(kind => items.some(item => inboxKindOf(item) === kind))
+  const waiting = filterInbox(items, null)
+  const kinds = INBOX_KINDS.filter(kind => waiting.some(item => inboxKindOf(item) === kind))
+  const handled = filterInbox(items, 'handled').length
+  const filters: InboxFilter[] = [null, ...kinds, ...(handled > 0 ? (['handled'] as const) : [])]
   return (
     <div
       className={`${phone ? rowStyles.row : followedStyles.filters} no-scrollbar edge-fade`}
       role="group"
       aria-label={t('server.inbox.filter')}
     >
-      <FilterChip selected={chosen === null} count={items.length} onClick={() => onChoose(null)}>
-        {t('server.inbox.kinds.all')}
-      </FilterChip>
-      {kinds.map(kind => (
+      {filters.map(filter => (
         <FilterChip
-          key={kind}
-          selected={chosen === kind}
-          count={items.filter(item => inboxKindOf(item) === kind).length}
-          onClick={() => onChoose(chosen === kind ? null : kind)}
+          key={filter ?? 'all'}
+          selected={chosen === filter}
+          count={filterInbox(items, filter).length}
+          onClick={() => onChoose(chosen === filter ? null : filter)}
         >
-          {t(`server.inbox.kinds.${kind}`)}
+          {t(`server.inbox.kinds.${filter ?? 'all'}`)}
         </FilterChip>
       ))}
     </div>
@@ -53,43 +61,71 @@ const KindFilters = ({ items, chosen, phone, onChoose }: KindFiltersProps) => {
 
 interface KindFiltersProps {
   items: InboxItem[]
-  chosen: InboxKind | null
+  chosen: InboxFilter
   phone: boolean
-  onChoose: (kind: InboxKind | null) => void
+  onChoose: (filter: InboxFilter) => void
 }
 
-// One row per item, as Comptes' rows: its kind's square, orange while it waits, its title, who and when.
-const Rows = ({ items, active, phone }: { items: InboxItem[]; active?: string; phone: boolean }) => {
-  const { i18n } = useTranslation()
+// « 21.11.2026 · 09:41 ».
+export const whenOf = (at: number) => `${numericDate(new Date(at).toISOString())} · ${clockTime(at)}`
+
+// A request's row, as Comptes' rows: its kind's square, its title, who and when. A waiting one opens where it is done;
+// a handled one only says when it was.
+const Row = ({ item, open, phone }: { item: InboxItem; open: boolean; phone: boolean }) => {
+  const { t, i18n } = useTranslation()
+  const texts = textsOf(item, i18n.language)
+  if (!texts) return null
+  const waiting = isWaiting(item)
+  const hint = waiting
+    ? `${texts.from} · ${timeAgo(new Date(item.createdAt).toISOString())}`
+    : t('server.inbox.handled', { date: whenOf(item.handledAt ?? item.createdAt) })
+  const content = (
+    <>
+      <span className={navStyles.icon} aria-hidden="true">
+        <InboxIcon kind={inboxKindOf(item)} size={18} />
+      </span>
+      <span className={navStyles.text}>
+        <span className={navStyles.label}>{texts.title}</span>
+        <span className={navStyles.hint}>{hint}</span>
+      </span>
+      {phone && waiting && <ChevronRight size={16} aria-hidden="true" className={navStyles.chevron} />}
+    </>
+  )
   return (
-    <ul className={`${navStyles.entries} ${phone ? '' : serverStyles.lined}`}>
-      {items.map(item => {
-        const texts = textsOf(item, i18n.language)
-        if (!texts) return null
-        const waiting = isWaiting(item)
-        const open = String(item.id) === active
-        return (
-          <li key={item.id}>
-            <a
-              className={`${navStyles.entry} ${open ? navStyles.active : ''}`}
-              href={`${serverHref('inbox')}/${item.id}`}
-              aria-current={open ? 'page' : undefined}
-            >
-              <span className={`${navStyles.icon} ${waiting ? settingsStyles.rustTile : ''}`} aria-hidden="true">
-                <InboxIcon kind={inboxKindOf(item)} size={18} />
-              </span>
-              <span className={navStyles.text}>
-                <span className={navStyles.label}>{texts.title}</span>
-                <span className={navStyles.hint}>
-                  {`${texts.from} · ${timeAgo(new Date(item.createdAt).toISOString())}`}
-                </span>
-              </span>
-              {phone && <ChevronRight size={16} aria-hidden="true" className={navStyles.chevron} />}
-            </a>
-          </li>
-        )
-      })}
-    </ul>
+    <li>
+      {waiting ? (
+        <a
+          className={`${navStyles.entry} ${open ? navStyles.active : ''}`}
+          href={inboxHrefOf(item)}
+          aria-current={open ? 'page' : undefined}
+        >
+          {content}
+        </a>
+      ) : (
+        <span className={`${navStyles.entry} ${styles.handled}`}>{content}</span>
+      )}
+    </li>
+  )
+}
+
+const Rows = ({ items, active, phone }: { items: InboxItem[]; active?: string; phone: boolean }) => (
+  <ul className={`${navStyles.entries} ${phone ? '' : serverStyles.lined}`}>
+    {items.map(item => (
+      <Row key={item.id} item={item} open={String(item.id) === active} phone={phone} />
+    ))}
+  </ul>
+)
+
+// Nothing waits, or nothing is handled.
+const Empty = ({ handled }: { handled: boolean }) => {
+  const { t } = useTranslation()
+  return (
+    <EmptyState
+      icon={<Inbox size={28} />}
+      title={t(handled ? 'server.inbox.handledEmptyTitle' : 'server.inbox.emptyTitle')}
+    >
+      {t(handled ? 'server.inbox.handledEmptyHint' : 'server.inbox.emptyHint')}
+    </EmptyState>
   )
 }
 
@@ -99,9 +135,9 @@ const InboxList = ({ active }: { active?: string }) => {
   const { t } = useTranslation()
   const phone = !useIsDesktop()
   const { items, failed } = useInbox()
-  const [chosen, setChosen] = useState<InboxKind | null>(null)
-  const shown = (items ?? []).filter(item => chosen === null || inboxKindOf(item) === chosen)
-  const waiting = (items ?? []).filter(isWaiting).length
+  const [chosen, setChosen] = useState<InboxFilter>(null)
+  const shown = filterInbox(items ?? [], chosen)
+  const waiting = filterInbox(items ?? [], null).length
   const title = t('server.titles.inbox')
   const meta = items ? t('server.inbox.meta', { count: waiting }).toUpperCase() : undefined
   const filters = items && items.length > 0 && (
@@ -113,8 +149,7 @@ const InboxList = ({ active }: { active?: string }) => {
       <ArrowRight size={16} aria-hidden="true" />
     </Button>
   )
-  // The open one: the address's, else on a computer the first, as Comptes.
-  const open = active && items ? inboxItemOf(items, active) : phone ? null : (items?.[0] ?? null)
+  const open = active && items ? inboxItemOf(items, active) : phone ? null : firstOpen(items ?? [])
   let list = <Rows items={shown} active={open ? String(open.id) : undefined} phone={phone} />
   if (failed)
     list = (
@@ -122,12 +157,7 @@ const InboxList = ({ active }: { active?: string }) => {
         {t('common.serverDown')}
       </EmptyState>
     )
-  else if (items?.length === 0)
-    list = (
-      <EmptyState icon={<Inbox size={28} />} title={t('server.inbox.emptyTitle')}>
-        {t('server.inbox.emptyHint')}
-      </EmptyState>
-    )
+  else if (items && shown.length === 0) list = <Empty handled={chosen === 'handled'} />
 
   return phone ? (
     <MobilePage title={title} meta={meta} backHref={SERVER_HREF} backLabel={t('server.backToServer')}>

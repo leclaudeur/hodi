@@ -1,0 +1,16 @@
+/* The row still to fill: dashed, its round empty, as Mes sources' first card. */
+.card {
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1.5px dashed var(--border);
+  border-radius: 50%;
+  color: var(--text-3);
+}

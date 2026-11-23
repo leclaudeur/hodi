@@ -1,7 +1,7 @@
-import { ChartColumn, KeyRound, Puzzle, Rss } from 'lucide-react'
+import { KeyRound, Puzzle, Rss } from 'lucide-react'
 import type { InboxKind } from '../../../lib/server-inbox.ts'
 
-const ICONS = { source: Rss, code: KeyRound, report: ChartColumn, plugin: Puzzle }
+const ICONS = { source: Rss, code: KeyRound, plugin: Puzzle }
 
 // An item's kind at a glance, in its tile.
 const InboxIcon = ({ kind, size = 20 }: { kind: InboxKind; size?: number }) => {
