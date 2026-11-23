@@ -140,24 +140,6 @@ export class ServerSettingsStore {
       .run(Number(monday.replace(/-/g, '')))
   }
 
-  // « Plus tard » at the setup's household step: the server runs with no household, its admin in /server only, until
-  // Serveur › Foyers creates one.
-  householdLater(): boolean {
-    const row = this.#db.prepare("SELECT value FROM server_settings WHERE key = 'householdLater'").get() as
-      { value: number } | undefined
-    return row?.value === 1
-  }
-
-  setHouseholdLater(later: boolean) {
-    if (later)
-      this.#db
-        .prepare(
-          "INSERT INTO server_settings (key, value) VALUES ('householdLater', 1) ON CONFLICT (key) DO UPDATE SET value = 1"
-        )
-        .run()
-    else this.#db.prepare("DELETE FROM server_settings WHERE key = 'householdLater'").run()
-  }
-
   // Serveur › Général: Hodi's own address and the public site, each null until the admin gives it.
   addresses(): { appUrl: string | null; publicHome: string | null } {
     const row = this.#db.prepare('SELECT app_url, public_home FROM server_addresses WHERE id = 1').get() as

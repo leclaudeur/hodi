@@ -2,7 +2,7 @@ import type express from 'express'
 import type { RequestHandler } from 'express'
 import { PROFILE_COOKIE, readCookie, readProfileToken } from '../auth/session.ts'
 import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
-import type { HouseholdStore } from '../db/household-store.ts'
+import type { InstallStore } from '../db/install-store.ts'
 import type { Profile, ProfileStore } from '../db/profile-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerStatsStore } from '../db/server-stats-store.ts'
@@ -17,7 +17,7 @@ export interface SessionGuardOptions {
   accounts?: UserAccountStore
   devices?: UserDeviceStore
   profiles?: ProfileStore
-  household: HouseholdStore
+  install: InstallStore
   serverSettings?: ServerSettingsStore
   serverStats?: ServerStatsStore
   presence: Presence
@@ -80,35 +80,17 @@ const accountOnly = (request: express.Request, response: express.Response, accou
   return true
 }
 
-const householdHelpers = ({
-  accounts,
-  household,
-  serverSettings,
-  sessionOf
-}: Pick<SessionGuardOptions, 'accounts' | 'household' | 'serverSettings' | 'sessionOf'>) => {
+const householdHelpers = ({ accounts }: Pick<SessionGuardOptions, 'accounts'>) => {
   // The household a signed-in device reads in: its account's own, the only one it has.
   const householdOfSession = ({ account }: { account: UserAccount }) =>
     accounts ? accounts.householdOf(account.id) : null
 
-  // Whether the household this request reads in is set up. isSetUp() reads the household of the scope, the first one
-  // here: a server whose first household was left for later still has the households a plugin made, set up from the
-  // start, and a session in one of them goes on as on any server.
-  const readsInSetUpHousehold = (request: express.Request) => {
-    if (household.isSetUp()) return true
-    if (!serverSettings?.householdLater()) return false
-    const session = sessionOf(request)
-    const householdId = session ? householdOfSession(session) : null
-    return (
-      householdId !== null && householdId !== DEFAULT_ACCOUNT_ID && inHousehold(householdId, () => household.isSetUp())
-    )
-  }
-
-  return { householdOfSession, readsInSetUpHousehold }
+  return { householdOfSession }
 }
 
-// Before the household this request reads in is set up: the server's admin alone, for /server and the setup steps.
+// Before the server is set up: the server's admin alone, for /server and the setup steps.
 const answerBeforeSetup = (
-  { accounts, serverSettings, sessionOf }: Pick<SessionGuardOptions, 'accounts' | 'serverSettings' | 'sessionOf'>,
+  { accounts, sessionOf }: Pick<SessionGuardOptions, 'accounts' | 'sessionOf'>,
   request: express.Request,
   response: express.Response,
   next: express.NextFunction
@@ -127,16 +109,6 @@ const answerBeforeSetup = (
     if (serverOnly(request, response, admin.account)) next()
     return
   }
-  // « Aller à l'espace Serveur » at the setup: no household yet, the server's admin signs in for /server alone.
-  if (serverSettings?.householdLater() && accounts?.any()) {
-    const session = sessionOf(request)
-    if (!session?.account.serverAdmin) {
-      response.status(401).json({ error: 'unauthenticated' })
-      return
-    }
-    if (serverOnly(request, response, session.account)) next()
-    return
-  }
   response.status(401).json({ error: 'setup_required' })
 }
 
@@ -150,9 +122,9 @@ const gateOf = (accounts: UserAccountStore | undefined, account: UserAccount, ho
 
 const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
   const { accounts, devices, sessionOf, cookieFor } = options
-  const { householdOfSession, readsInSetUpHousehold } = householdHelpers(options)
+  const { householdOfSession } = householdHelpers(options)
   return (request, response, next) => {
-    if (!readsInSetUpHousehold(request)) {
+    if (!options.install.isSetUp()) {
       answerBeforeSetup(options, request, response, next)
       return
     }

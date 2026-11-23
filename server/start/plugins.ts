@@ -1,6 +1,6 @@
 import type { Database } from '../db/database.ts'
 import type { ForgetRecord } from '../db/forget-log.ts'
-import type { HouseholdStore } from '../db/household-store.ts'
+import type { InstallStore } from '../db/install-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
@@ -31,7 +31,7 @@ interface PluginWiring {
   store: PluginStore
   news: NewsService
   accounts: UserAccountStore
-  household: HouseholdStore
+  install: InstallStore
   profiles: ProfileStore
   alerts: FollowedAlerts
   serverNotices: ServerNotifier
@@ -55,7 +55,7 @@ export const replayToPlugins = (plugins: PluginRegistry, forgottenAgain: ForgetR
 }
 
 export const startPlugins = async (wiring: PluginWiring) => {
-  const { db, news, accounts, household, profiles, store } = wiring
+  const { db, news, accounts, install, profiles, store } = wiring
   // A click on a signed plugin's AiButton: one question to the household's AI, in its 'plugin' caps.
   const pluginAiCalls = pluginAi({
     isOff: (householdId, pluginId) => store.aiOff(householdId).has(pluginId),
@@ -86,16 +86,12 @@ export const startPlugins = async (wiring: PluginWiring) => {
     // What a plugin tells the server's admin of (Serveur › Notifications).
     serverNotifier: pluginServerNotifier({ notifier: wiring.serverNotices }),
     serverSettings: () => publicServerSettings(wiring.serverSettings),
-    // A plugin's e-mail ends in the language of the recipient's household, when they have an account.
+    // A plugin's e-mail ends in the server's language.
     mail: pluginMailer({
       store: wiring.mailSettings,
       send: smtpSend,
       home: () => wiring.serverSettings.publicHome(),
-      languageOf: email => {
-        const account = accounts.byEmail(email)
-        const householdId = account ? accounts.householdOf(account.id) : null
-        return householdId === null ? 'fr' : inHousehold(householdId, () => household.get().language)
-      }
+      languageOf: () => install.get().language
     })
   })
   return { plugins, pluginAiCalls }

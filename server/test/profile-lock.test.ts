@@ -12,6 +12,7 @@ import type { Config } from '../config.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { migrate, versionBefore } from '../db/migrations.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
@@ -90,7 +91,7 @@ describe('opening a profile with a private profile, a Code parental or a trusted
       timeZone: 'UTC',
       vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
     }
-    new HouseholdStore(db).setUp({ name: 'Martin', timeZone: 'UTC', country: null, ai: null }, clock)
+    new InstallStore(db).setUp({ language: 'fr', timeZone: 'UTC' }, clock)
     const antho = accounts.createServerAdmin(ANTHO.email, await hashPassword(ANTHO.password, FAST), clock)!
     accounts.linkProfile(antho.id, 1)
     sophieId = profiles.create('Sophie', 'tech', clock)!.id
@@ -114,6 +115,7 @@ describe('opening a profile with a private profile, a Code parental or a trusted
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles,
       household: new HouseholdStore(db),
+      install: new InstallStore(db),
       accounts,
       devices,
       accountData: new AccountDataStore(db),

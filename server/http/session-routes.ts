@@ -1,19 +1,19 @@
 import express from 'express'
-import type { HouseholdStore } from '../db/household-store.ts'
+import type { InstallStore } from '../db/install-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
 import { accountAsking } from './proof.ts'
 
-// What the app reads as it starts: who reads, and how the household writes the time.
+// What the app reads as it starts: who reads, and how the server writes the time.
 export const sessionRoutes = ({
   accounts,
-  household,
+  install,
   serverSettings,
   twoFactor
 }: {
   accounts?: UserAccountStore
-  household: HouseholdStore
+  install: InstallStore
   serverSettings?: ServerSettingsStore
   twoFactor?: TwoFactorStore
 }) => {
@@ -24,8 +24,8 @@ export const sessionRoutes = ({
     response.json({
       authenticated: true,
       profileChosen: response.locals.profileChosen === true,
-      language: household.get().language,
-      hourCycle: household.get().hourCycle,
+      language: install.get().language,
+      hourCycle: install.get().hourCycle,
       // How long an article stays in the lists and a video in Vidéos, for the pages that say so.
       ...(serverSettings
         ? {

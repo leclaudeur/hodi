@@ -1432,6 +1432,30 @@ const MIGRATIONS: string[] = [
   // A young one signs in with the account its parents made: no device is linked to its profile by a code any more.
   `
   DROP TABLE profile_devices;
+  `,
+  // The server's own setup, its language and its clock, which were the first household's: the server has no household
+  // any more. A server whose setup went on without one counts as set up.
+  `
+  CREATE TABLE server_install (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    set_up_at INTEGER,
+    language TEXT NOT NULL DEFAULT 'fr',
+    time_zone TEXT,
+    hour_cycle INTEGER NOT NULL DEFAULT 24
+  );
+  INSERT INTO server_install (id, set_up_at, language, time_zone, hour_cycle)
+    SELECT 1,
+      COALESCE(
+        a.set_up_at,
+        CASE WHEN EXISTS (SELECT 1 FROM server_settings WHERE key = 'householdLater' AND value = 1)
+          THEN CAST(unixepoch('subsec') * 1000 AS INTEGER) END
+      ),
+      a.language, a.time_zone, a.hour_cycle
+    FROM accounts a WHERE a.id = 1;
+  INSERT OR IGNORE INTO server_install (id) VALUES (1);
+  DELETE FROM server_settings WHERE key = 'householdLater';
+  -- The setup no longer names it: a new server's says Hodi wherever it still shows.
+  UPDATE accounts SET name = 'Hodi' WHERE id = 1 AND set_up_at IS NULL;
   `
 ]
 

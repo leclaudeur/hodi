@@ -4,7 +4,7 @@ import { loadSetupDraft } from '../../lib/setup-draft.ts'
 import { useTwoFactorSetup } from '../../views/account/TwoFactorSetup.tsx'
 import LoginPage from '../LoginPage.tsx'
 import { SetupFrame } from '../SetupParts.tsx'
-import { accountActions, codeActions, finishAction, laterAction, pluginsAction, recheckOf } from './setup-actions.ts'
+import { accountActions, codeActions, finishAction, pluginsAction, recheckOf } from './setup-actions.ts'
 import { setupContent } from './setup-content.tsx'
 import { useAnswers, useFlow } from './setup-flow.ts'
 import { useDraftSaving, usePluginStepsLoading, useSetupLoad, useSetupPlugins } from './use-setup.ts'
@@ -42,7 +42,6 @@ const SetupPage = ({ onDone }: SetupPageProps) => {
     ...{ setup, flow, answers, plugins, code, twoFactor, provider, codeOrNull },
     createAccount: accountActions(wiring),
     savePlugins: pluginsAction(wiring, plugins.pluginsOn, plugins.registry.ready, plugins.setPluginStep),
-    later: laterAction(wiring),
     finish: finishAction(wiring, provider, language)
   }
   return <SetupFrame>{setupContent(s, flow.error)}</SetupFrame>

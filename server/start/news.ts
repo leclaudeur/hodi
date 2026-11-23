@@ -1,5 +1,6 @@
 import type { Config } from '../config.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
+import type { InstallStore } from '../db/install-store.ts'
 import type { NewsStore } from '../db/news-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import { type SourceStore, createPauseCheck } from '../db/source-store.ts'
@@ -28,6 +29,7 @@ interface NewsWiring {
   file: ReturnType<typeof loadCatalog>
   sources: SourceStore
   household: HouseholdStore
+  install: InstallStore
   profiles: ProfileStore
   usersOf: (profileId: number) => UserStore
   accounts: UserAccountStore
@@ -62,9 +64,9 @@ const hiddenByProfileOf =
   }
 
 export const createNews = (wiring: NewsWiring) => {
-  const { config, outside, catalog, file, sources, household, usersOf, serverSettings, store } = wiring
-  // The time zone of the household being served (household-scope.ts).
-  const householdTimeZone = () => household.get().timeZone ?? config.timeZone
+  const { config, outside, catalog, file, sources, household, install, usersOf, serverSettings, store } = wiring
+  // The time zone chosen at setup, else the install's.
+  const householdTimeZone = () => install.get().timeZone ?? config.timeZone
   const news = new NewsService(catalog, {
     fetchText: outside.fetchText,
     extractPage: createExtractPool().extract,
@@ -80,16 +82,16 @@ export const createNews = (wiring: NewsWiring) => {
     readerTimeZoneOf: profileId => wiring.accounts.timeZoneOfProfile(profileId),
     fetchVideoDuration: outside.fetchVideoDuration,
     isPaused: createPauseCheck({ hiddenByProfile: hiddenByProfileOf(wiring), now: Date.now }),
-    // The AI writes in the profile's language, else the household's.
+    // The AI writes in the profile's language, else the server's.
     languageOf: profileId => {
       const own = usersOf(profileId).preferences()?.language
-      return isLanguage(own) ? own : household.get().language
+      return isLanguage(own) ? own : install.get().language
     },
-    householdLanguage: () => household.get().language,
+    householdLanguage: () => install.get().language,
     windows: () => serverSettings.content(),
     store
   })
-  // The household's time zone, again whenever the admin changes it.
+  // The server's time zone, again whenever it changes.
   const applyHousehold = () => {
     news.setTimeZone(householdTimeZone())
   }

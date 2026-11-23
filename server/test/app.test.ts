@@ -12,6 +12,7 @@ import { LoginThrottle } from '../auth/login-throttle.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SourceStore } from '../db/source-store.ts'
 import { UserStore } from '../db/user-store.ts'
@@ -34,6 +35,7 @@ let accountStore: UserAccountStore
 let news: NewsService
 const db = openDatabase(':memory:')
 const household = new HouseholdStore(db)
+const install = new InstallStore(db)
 
 before(async () => {
   const webDir = mkdtempSync(path.join(tmpdir(), 'hodi-web-'))
@@ -62,12 +64,10 @@ before(async () => {
     timeZone: 'Europe/Brussels',
     vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
   }
-  household.setUp(
+  install.setUp(
     {
-      name: 'Foyer',
-      timeZone: null,
-      country: null,
-      ai: null
+      language: 'fr',
+      timeZone: null
     },
     clock
   )
@@ -122,6 +122,7 @@ listen:
     profiles,
     ...adminStores,
     household,
+    install,
     storage: {
       usage: () => ({ databaseBytes: 1, backupBytes: 0, backups: 0, articles: 0, texts: 0 }),
       clearTexts: () => {}

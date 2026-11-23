@@ -7,7 +7,6 @@ import {
   getSetup,
   setUpAccount,
   setUpHousehold,
-  setUpHouseholdLater,
   setUpPlugins,
   uploadProfilePhoto
 } from '../../api.ts'
@@ -175,28 +174,6 @@ export const pluginsAction =
       }
       flow.setError(textNow('setup.plugins.failed'))
     } finally {
-      flow.setBusy(false)
-    }
-  }
-
-// « Aller à l'espace Serveur »: no household for now, the server's admin goes to /server, where Serveur › Foyers
-// makes one, for them or for someone else.
-export const laterAction =
-  ({ flow, onDone }: Wiring) =>
-  async () => {
-    flow.setBusy(true)
-    flow.setError(null)
-    try {
-      await setUpHouseholdLater()
-      clearSetupDraft()
-      window.location.hash = '#/server'
-      onDone()
-    } catch (failure) {
-      if (handedBack(failure)) {
-        onDone()
-        return
-      }
-      flow.setError(textNow('setup.household.laterFailed'))
       flow.setBusy(false)
     }
   }

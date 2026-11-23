@@ -12,6 +12,7 @@ import type { Config } from '../config.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { ServerPeopleStore } from '../db/server-people-store.ts'
 import { ServerSettingsStore } from '../db/server-settings-store.ts'
@@ -56,6 +57,7 @@ const start = async ({ withTwoFactor = false }: { withTwoFactor?: boolean } = {}
     vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
   }
   const household = new HouseholdStore(db)
+  const install = new InstallStore(db)
   const accounts = new UserAccountStore(db)
   const profiles = new ProfileStore(db)
   const settings = new ServerSettingsStore(db)
@@ -67,6 +69,7 @@ const start = async ({ withTwoFactor = false }: { withTwoFactor?: boolean } = {}
     }),
     profiles,
     household,
+    install,
     accounts,
     devices: new UserDeviceStore(db),
     accountData: new AccountDataStore(db),

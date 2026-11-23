@@ -44,6 +44,7 @@ const mountAccount = (api: express.Router, wiring: Wiring) => {
       devices,
       profiles,
       household,
+      install: options.install,
       defaultTimeZone: config.timeZone,
       accountAi: options.accountAi,
       providers: options.aiProviders,
@@ -95,7 +96,7 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
 
 // "Demander une source": a teen asks, its parents answer in Réglages ("Demandes").
 const mountSourceRequests = (api: express.Router, { options, youthSources }: Wiring) => {
-  const { youth, profiles, sources, news, household, alerts, now } = options
+  const { youth, profiles, sources, news, install, alerts, now } = options
   if (!youth || !youthSources || !profiles || !sources) return
   api.use(
     '/me',
@@ -110,7 +111,7 @@ const mountSourceRequests = (api: express.Router, { options, youthSources }: Wir
       now,
       // Every parent's devices hear of it.
       onRequest: request => {
-        const t = textsIn(household.get().language)
+        const t = textsIn(install.get().language)
         const name = profiles.get(request.profileId)?.name ?? ''
         for (const parent of profiles.list().filter(profile => profile.kind === 'adult')) {
           void alerts?.notifyShare(parent.id, {
@@ -141,13 +142,13 @@ const invitationMail = ({ options }: Wiring): InvitationMail | undefined => {
 
 // The signed-in account's own routes: the session, the account, profiles and young profiles' rules.
 export const mountAccountSpace = (api: express.Router, wiring: Wiring) => {
-  const { youth, accounts, household, serverSettings, twoFactor, codes, profiles, now } = wiring.options
+  const { youth, accounts, install, serverSettings, twoFactor, codes, profiles, now } = wiring.options
   // A young profile reads within its parents' rules.
   if (youth) {
     api.use(youthGate(youth, now))
     api.use('/me', youthMeRoutes({ youth, now }))
   }
-  api.use(sessionRoutes({ accounts, household, serverSettings, twoFactor }))
+  api.use(sessionRoutes({ accounts, install, serverSettings, twoFactor }))
   mountAccount(api, wiring)
   if (codes && profiles)
     api.use(

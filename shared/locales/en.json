@@ -221,9 +221,8 @@
     },
     "ready": {
       "title": "The server is ready",
-      "intro": "Create the profile you’ll read Hodi with now, or go to the <i>Server</i> space first: you can create it later.",
-      "household": "Create my profile",
-      "server": "Later"
+      "intro": "Create the profile you’ll read Hodi with now. The <i>Server</i> space is right there afterwards.",
+      "household": "Create my profile"
     },
     "plugins": {
       "title": "Plugins found",
@@ -245,8 +244,7 @@
       "name": "Household",
       "namePlaceholder": "E.g. The Smiths",
       "confirm": "Confirm the password",
-      "mismatch": "The two passwords aren’t the same.",
-      "laterFailed": "Could not open the Server space. Try again in a moment."
+      "mismatch": "The two passwords aren’t the same."
     },
     "profile": {
       "title": "And who are you?",

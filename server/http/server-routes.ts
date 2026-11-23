@@ -143,10 +143,7 @@ const mountOverviewRoute = (
   })
 }
 
-const mountPeopleRoutes = (
-  router: express.Router,
-  { people, household, settings, codeRequests }: ServerRoutesOptions
-) => {
+const mountPeopleRoutes = (router: express.Router, { people, codeRequests }: ServerRoutesOptions) => {
   if (!people) return
   // Comptes: who has an account, in which household, and when it was last used. Nothing they read.
   router.get('/households', (_request, response) => {
@@ -154,15 +151,6 @@ const mountPeopleRoutes = (
       households: people.households(),
       maxProfiles: MAX_PROFILES
     })
-  })
-  // The setup left the household for later: its steps come back, for the server's admin.
-  router.post('/households', (_request, response) => {
-    if (!household || household.isSetUp()) {
-      response.status(409).json({ error: 'already_set_up' })
-      return
-    }
-    settings?.setHouseholdLater(false)
-    response.status(204).end()
   })
   router.get('/accounts', (_request, response) => {
     response.json({

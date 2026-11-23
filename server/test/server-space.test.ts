@@ -14,6 +14,7 @@ import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { migrate, versionBefore } from '../db/migrations.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { MailSettingsStore, mailDraftOf } from '../db/mail-settings-store.ts'
 import { copyTimeOf, isDatabaseFile, readRestoreTime } from '../db/maintenance.ts'
 import { ProfileStore } from '../db/profile-store.ts'
@@ -169,6 +170,7 @@ describe('server overview route', () => {
     }
     const catalog = parseCatalog('topics:\n  - id: monde\n    label: Monde\n    sources: []\n')
     const household = new HouseholdStore(db)
+    const install = new InstallStore(db)
     const accounts = new UserAccountStore(db)
     inbox = new ServerInboxStore(db)
     const server = createApp(config, {
@@ -176,6 +178,7 @@ describe('server overview route', () => {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles: new ProfileStore(db),
       household,
+      install,
       accounts,
       devices: new UserDeviceStore(db),
       serverStats: new ServerStatsStore(db, () => 'UTC'),
@@ -210,7 +213,6 @@ describe('server overview route', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', cookie: session },
       body: JSON.stringify({
-        name: 'Chez nous',
         profile: { name: 'Antho', color: 'tech' },
         timeZone: 'Europe/Brussels',
         country: 'BE',
@@ -255,8 +257,8 @@ describe('server overview route', () => {
     assert.equal(overview.days.at(-1)?.visits, 2)
     assert.equal(overview.days.at(-1)?.profiles, 2)
     assert.deepEqual(overview.online.map(entry => [entry.name, entry.household, entry.device]).sort(), [
-      ['Antho', 'Chez nous', 'phone'],
-      ['Sam', 'Chez nous', 'phone']
+      ['Antho', 'Hodi', 'phone'],
+      ['Sam', 'Hodi', 'phone']
     ])
     assert.equal((await call('/server/overview?days=12', adminCookie)).status, 400)
     assert.equal((await call('/server/overview?days=365', adminCookie)).status, 200)
@@ -279,7 +281,7 @@ describe('server overview route', () => {
     assert.equal(maxProfiles, 5)
     assert.deepEqual(
       households.map(({ name, admin, adults, young, accounts }) => ({ name, admin, adults, young, accounts })),
-      [{ name: 'Chez nous', admin: 'Antho', adults: 2, young: 0, accounts: 2 }]
+      [{ name: 'Hodi', admin: 'Antho', adults: 2, young: 0, accounts: 2 }]
     )
 
     const { accounts } = (await (await call('/server/accounts', adminCookie)).json()) as {
@@ -296,7 +298,7 @@ describe('server overview route', () => {
     assert.equal(byEmail['antho@example.com']?.serverAdmin, true)
     assert.equal(byEmail['antho@example.com']?.profile?.role, 'admin')
     assert.equal(byEmail['sam@example.com']?.profile?.name, 'Sam')
-    assert.equal(byEmail['sam@example.com']?.household?.name, 'Chez nous')
+    assert.equal(byEmail['sam@example.com']?.household?.name, 'Hodi')
 
     // An invitation into the household, then a new password for Sam: both are « J'ai un code » codes.
     const invite = await call(`/server/households/${households[0]!.id}/code`, adminCookie, 'POST')
@@ -332,8 +334,7 @@ describe('server overview route', () => {
   })
 
   it('no longer serves a household’s photo: the server has accounts, not households', async () => {
-    const household = new HouseholdStore(db)
-    const id = household.ids()[0]!
+    const id = new HouseholdStore(db).ids()[0]!
     assert.equal((await call(`/households/${id}/photo`, memberCookie)).status, 404)
     assert.equal((await call(`/server/households/${id}/photo`, adminCookie)).status, 404)
   })

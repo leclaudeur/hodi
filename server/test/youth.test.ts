@@ -8,6 +8,7 @@ import { createApp } from '../app.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SourceStore } from '../db/source-store.ts'
 import { UserStore } from '../db/user-store.ts'
@@ -152,6 +153,7 @@ describe('youth api', () => {
   const profiles = new ProfileStore(db)
   const youth = new YouthStore(db, () => ZONE)
   const household = new HouseholdStore(db)
+  const install = new InstallStore(db)
 
   const call = (method: string, route: string, profileId: number, body?: unknown) =>
     fetch(`${baseUrl}/api${route}`, {
@@ -178,12 +180,10 @@ describe('youth api', () => {
       timeZone: ZONE,
       vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
     }
-    household.setUp(
+    install.setUp(
       {
-        name: 'Foyer',
-        timeZone: ZONE,
-        country: null,
-        ai: null
+        language: 'fr',
+        timeZone: ZONE
       },
       clock
     )
@@ -197,6 +197,7 @@ describe('youth api', () => {
       users: profileId => new UserStore(db, profileId),
       youth,
       household,
+      install,
       now: () => clock
     }).listen(0)
     await new Promise(resolve => server.once('listening', resolve))
@@ -306,6 +307,7 @@ describe('youth sources api', () => {
   const profiles = new ProfileStore(db)
   const youth = new YouthStore(db, () => ZONE)
   const household = new HouseholdStore(db)
+  const install = new InstallStore(db)
   const users = (profileId: number) => new UserStore(db, profileId)
   const sent: string[] = []
   // One article from each news site: RTL info, which a teen may get, and Le Monde, which none has.
@@ -378,12 +380,10 @@ topics:
       timeZone: ZONE,
       vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
     }
-    household.setUp(
+    install.setUp(
       {
-        name: 'Foyer',
-        timeZone: ZONE,
-        country: null,
-        ai: null
+        language: 'fr',
+        timeZone: ZONE
       },
       clock
     )
@@ -429,6 +429,7 @@ listen:
       users,
       youth,
       household,
+      install,
       images: { file: async () => picture, inlineFile: async () => picture },
       sources: {
         store: sourceStore,

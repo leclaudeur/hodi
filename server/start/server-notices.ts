@@ -1,6 +1,5 @@
 import type { Config } from '../config.ts'
-import type { HouseholdStore } from '../db/household-store.ts'
-import { inHousehold } from '../db/household-scope.ts'
+import type { InstallStore } from '../db/install-store.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerInboxStore } from '../db/server-inbox-store.ts'
@@ -22,7 +21,7 @@ export const createServerNotifier = ({
   accounts,
   mailSettings,
   serverSettings,
-  household
+  install
 }: {
   config: Config
   outside: Outside
@@ -31,7 +30,7 @@ export const createServerNotifier = ({
   accounts: UserAccountStore
   mailSettings: MailSettingsStore
   serverSettings: ServerSettingsStore
-  household: HouseholdStore
+  install: InstallStore
 }) =>
   serverNotifier({
     store: serverNotices,
@@ -39,11 +38,8 @@ export const createServerNotifier = ({
     admins: () => accounts.serverAdmins(),
     mail: { settings: () => mailSettings.get(), send: smtpSend, home: () => serverSettings.publicHome() },
     push: (target, payload) => outside.sendPush(target, payload, config.vapid),
-    // The language of the admin's household; an admin outside any household reads French, Hodi's own.
-    languageOf: account => {
-      const householdId = accounts.householdOf(account.id)
-      return householdId === null ? 'fr' : inHousehold(householdId, () => household.get().language)
-    },
+    // The server's language, chosen at setup.
+    languageOf: () => install.get().language,
     log: console.warn
   })
 

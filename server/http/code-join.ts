@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { hashPassword, verifyPassword } from '../auth/password.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
+import type { InstallStore } from '../db/install-store.ts'
 import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
 import { MAX_PROFILES, type Profile, type ProfileStore, isYoung } from '../db/profile-store.ts'
 import { type SignInCode, type SignInCodeStore, signInCodeOf } from '../db/sign-in-code-store.ts'
@@ -21,6 +22,7 @@ export interface CodeJoinOptions {
   accounts: UserAccountStore
   profiles: ProfileStore
   household: HouseholdStore
+  install: InstallStore
   // Shared with the Connexion page: a wrong code counts as a wrong password from the same device.
   throttle: LoginThrottle
   secret: Buffer
@@ -62,6 +64,7 @@ export const codeHelpers = ({
   accounts,
   profiles,
   household,
+  install,
   throttle,
   now,
   resetPassword
@@ -91,7 +94,7 @@ export const codeHelpers = ({
       return null
     }
     const code = signInCodeOf(request.body?.code)
-    const found = code && household.isSetUp() ? codes.peek(code, now()) : null
+    const found = code && install.isSetUp() ? codes.peek(code, now()) : null
     const target = found?.profileId ? profiles.get(found.profileId) : null
     const waiting = target && waitsForCode(found!, target)
     if (!found || (found.profileId !== null && !waiting)) {
