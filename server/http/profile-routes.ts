@@ -250,8 +250,12 @@ const mountAdminRoutes = (
       return
     }
     if (!(await withProof(target, request, response))) return
-    // A teen's or a child's account goes with its profile.
+    // A teen's or a child's account goes with its profile; with two parents, once one has stepped back.
     const young = isYoung(target) ? accounts?.ofProfile(id) : null
+    if (young && accounts!.young.invitations.parentsOf(young.id).length > 1) {
+      response.status(409).json({ error: 'two_parents' })
+      return
+    }
     if (young) accounts!.young.delete(profiles, { accountId: young.id, profileId: id })
     else if (!profiles.delete(id)) {
       response.status(409).json({ error: 'admin_profile' })

@@ -1280,6 +1280,17 @@ const MIGRATIONS: string[] = [
     SELECT y.user_id, p.user_id, y.created_at FROM young_accounts y
     JOIN profiles p ON p.account_id = y.household_id AND p.kind = 'adult' AND p.user_id IS NOT NULL;
   DROP TABLE young_accounts;
+  `,
+  // « Inviter un parent »: a young account's parent asks another adult, by its @identifier, to be its parent too. One
+  // invitation at a time for each young account; it goes when it is answered, or with any of the three accounts.
+  `
+  CREATE TABLE parent_invitations (
+    child_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    from_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    to_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+  );
+  CREATE INDEX parent_invitations_to ON parent_invitations (to_id);
   `
 ]
 

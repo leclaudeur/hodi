@@ -1,7 +1,7 @@
 import { SlidersHorizontal, UserPlus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { type ChildAccount, getChildren } from '../../api.ts'
+import { type ChildAccount, type ParentInvitation, getChildren } from '../../api.ts'
 import { useProfiles } from '../../lib/profiles.ts'
 import { useHousehold } from '../../lib/settings-data.ts'
 import { showSaved } from '../../lib/toast.ts'
@@ -11,6 +11,7 @@ import EmptyState from '../../ui/EmptyState.tsx'
 import ProfileAvatar from '../../ui/ProfileAvatar.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
 import CreateChildDialog from '../../views/profiles/CreateChildDialog.tsx'
+import ParentInvitations from '../../views/profiles/ParentInvitations.tsx'
 import { RowButton } from '../../views/settings/SettingRow.tsx'
 import RowsSkeleton from '../../views/settings/SettingsSkeleton.tsx'
 import styles from '../../views/settings/Settings.module.css'
@@ -19,13 +20,17 @@ import profileStyles from '../../views/settings/sections/ProfilesSection.module.
 
 const useChildren = () => {
   const [children, setChildren] = useState<ChildAccount[] | null>(null)
+  const [invitations, setInvitations] = useState<ParentInvitation[]>([])
   const [failed, setFailed] = useState(false)
   useEffect(() => {
     getChildren()
-      .then(loaded => setChildren(loaded.children))
+      .then(loaded => {
+        setChildren(loaded.children)
+        setInvitations(loaded.invitations)
+      })
       .catch(() => setFailed(true))
   }, [])
-  return { children, setChildren, failed }
+  return { children, setChildren, invitations, setInvitations, failed }
 }
 
 const ChildRow = ({ child }: { child: ChildAccount }) => {
@@ -66,13 +71,20 @@ const ParentalCode = () => {
 // Mon compte › Mes enfants: the teens' and children's accounts this parent runs, a new one, and the parental code.
 const ChildrenPart = () => {
   const { t } = useTranslation()
-  const { children, setChildren, failed } = useChildren()
+  const { children, setChildren, invitations, setInvitations, failed } = useChildren()
   const [creating, setCreating] = useState(false)
   const serverAdmin = useProfiles()?.serverAdmin === true
   if (failed) return <StatusLine tone="error">{t('children.loadFailed')}</StatusLine>
   if (!children) return <RowsSkeleton rows={2} lead="round" end="button" />
   return (
     <>
+      <ParentInvitations
+        invitations={invitations}
+        onAnswered={(childId, child) => {
+          setInvitations(invitations.filter(invitation => invitation.childId !== childId))
+          if (child) setChildren([...children, child])
+        }}
+      />
       {children.length === 0 ? (
         <EmptyState icon={<Users size={28} />} title={t('children.empty.title')} compact>
           {t('children.empty.text')}

@@ -790,6 +790,7 @@ describe('the account and its data', () => {
       householdGoes: true,
       household: 'Chez nous',
       others: [],
+      children: [],
       heir: null,
       member: true,
       admin: true
