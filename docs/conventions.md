@@ -34,7 +34,7 @@ complexity stays under **15**, without counting blank lines and comments. The on
 - **API calls**: through `web/src/api.ts`, never a `fetch` in a component (plugins' `sdk.ts` apart)
 - **Refusals**: a public server's proxy (CrowdSec) bans an address after about ten 400, 403 or 404 on different paths,
   so using the app never answers one of those. A missing picture or icon answers 204, and a state of the device
-  (profile closed, outside a teen's hours, no household) answers 423. `e2e/probing.ts` fails any journey that gets a
+  (profile closed, outside a teen's hours) answers 423. `e2e/probing.ts` fails any journey that gets a
   GET refused or comes near a ban
 - **Shared code**: what both the server and the web app need lives in `shared/`
 - **Imports**: Node, packages, the project, then CSS, with no cycle (_planned_)

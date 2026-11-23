@@ -103,6 +103,28 @@ describe('the setup, to the end', () => {
   })
 })
 
+// A server whose setup went on without its admin's profile, as « Plus tard » left it: the profile comes at their next
+// sign-in.
+describe('a server set up without its admin’s profile', () => {
+  let env: Awaited<ReturnType<typeof startServer>>
+
+  before(async () => {
+    env = await startServer()
+    new InstallStore(env.db).setUp({ language: 'fr', timeZone: 'UTC' }, Date.now())
+  })
+  after(() => env.close())
+
+  it('gives the admin their profile, named after their e-mail', async () => {
+    const session = await env.call('/session', env.session)
+    assert.equal(session.status, 200)
+    const { profiles, serverAdmin } = (await (await env.call('/profiles', env.session)).json()) as {
+      profiles: { name: string }[]
+      serverAdmin: boolean
+    }
+    assert.deepEqual([profiles.map(profile => profile.name), serverAdmin], [['Antho'], true])
+  })
+})
+
 describe('an install from before', () => {
   it('keeps its first household’s setup, language and clock', () => {
     const db = new DatabaseSync(':memory:')

@@ -155,7 +155,7 @@ const argumentOf = (
   householdId: number | null
 ) => {
   const open = group === 'publicRoutes'
-  const serverOnly = response.locals.serverOnly === true || response.locals.noHousehold === true
+  const serverOnly = response.locals.serverOnly === true
   return {
     method,
     path: request.path,
@@ -254,17 +254,13 @@ const applySignIn = async (
 
 // Runs the plugin's handler and writes its answer: JSON, a 2xx or 4xx status, no header but Cache-Control; or a zip.
 const callRoute = (call: RouteCall) => async (request: express.Request, response: express.Response) => {
-  const inNone =
-    call.group === 'publicRoutes' || response.locals.serverOnly === true || response.locals.noHousehold === true
+  const inNone = call.group === 'publicRoutes' || response.locals.serverOnly === true
   const householdId = inNone ? null : currentHouseholdId()
   const argument = argumentOf(call, request, response, householdId)
   // Whatever the plugin answers, the browser reads it as data only.
   response.set('X-Content-Type-Options', 'nosniff')
   response.set('Content-Security-Policy', "default-src 'none'; sandbox")
   const context = callContext(householdId, clientAddressOf(request))
-  // An account in no household asks for itself, signed in by Hodi: the plugin may make it a household's admin.
-  if (response.locals.noHousehold === true && typeof argument.who?.accountId === 'number')
-    context.vouched.add(argument.who.accountId)
   const called = await answerOf(call, request, response, argument, context)
   if (!called) return
   const { answer } = called
@@ -300,18 +296,14 @@ export const sandboxRoutes = (
   // What runs once the request is known to come from Hodi's page, before the plugin's code.
   guards: express.RequestHandler[] = [],
   // routes and serverRoutes: the check of a route marked proof: true.
-  routeProof?: RouteProof,
-  // Only the routes marked noHousehold: true, for an account in no household.
-  noHouseholdOnly = false
+  routeProof?: RouteProof
 ) => {
   const own = express.Router()
   const { sandbox, shape } = plugin
   if (!sandbox || !shape) return own
   own.use(sameSiteOnly)
   if (guards.length > 0) own.use(...guards)
-  const opened = shape.noHouseholdRoutes ?? []
   for (const key of shape[group]) {
-    if (noHouseholdOnly && !opened.includes(`${group} ${key}`)) continue
     const [method, route] = key.split(' ') as [string, string]
     const maxBody = shape.rawRoutes[`${group} ${key}`]
     const limit = Math.min(maxBody ?? 0, MAX_RAW_BYTES)

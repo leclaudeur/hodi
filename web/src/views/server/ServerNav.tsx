@@ -10,16 +10,14 @@ import {
   Inbox,
   Mail,
   House,
-  LogOut,
   Puzzle,
   UserRound
 } from 'lucide-react'
 import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import { SUPPORT_URL, getServerInbox, logout } from '../../api.ts'
+import { SUPPORT_URL, getServerInbox } from '../../api.ts'
 import sidebarStyles from '../../app/Sidebar.module.css'
-import { isServerOnly } from '../../lib/server-only.ts'
 import { type ServerSection, SERVER_HREF, serverHref, serverPluginPageHref } from '../../lib/use-hash-route.ts'
 import { serverPluginGroups } from '../../plugins/menu.ts'
 import PluginSlot from '../../plugins/PluginSlot.tsx'
@@ -157,30 +155,13 @@ const useGroups = (): { id: string; label: string; entries: Entry[] }[] => {
 // A new tab for a page out of Hodi.
 const target = (external?: true) => (external ? { target: '_blank', rel: 'noreferrer' } : {})
 
-// Back to the app, or, with no household yet, the way out: there is no app to go back to.
 const BackToApp = () => {
   const { t } = useTranslation()
-  if (isServerOnly())
-    return (
-      <RoundButton
-        icon={LogOut}
-        label={t('server.logout')}
-        size={44}
-        onClick={() => {
-          void logout()
-            .catch(() => {})
-            .finally(() => {
-              window.location.replace('#/')
-              window.location.reload()
-            })
-        }}
-      />
-    )
   return <RoundButton icon={House} label={t('server.backToApp')} size={44} href="#/" />
 }
 
 // The server's own sidebar, built as the app's: the logo, then the house back to the app where the app has its search,
-// then the sections. No profile and no foot: the server's admin may read in no household of it.
+// then the sections. No profile and no foot: /server is the server's, not the admin's profile.
 export const ServerSidebar = ({ active }: { active: string }) => {
   const { t } = useTranslation()
   const groups = useGroups()

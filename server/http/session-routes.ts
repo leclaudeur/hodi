@@ -36,11 +36,6 @@ export const sessionRoutes = ({
             }
           }
         : {}),
-      // true: a young profile's own device, which opens that profile only (no "Qui lit ?", no Se déconnecter).
-      // true: no household yet, the app opens /server and nothing else.
-      ...(response.locals.serverOnly === true ? { serverOnly: true } : {}),
-      // true: an account whose profile was deleted from its household: the app shows its account alone.
-      ...(response.locals.noHousehold === true ? { noHousehold: true } : {}),
       // « Validation en deux étapes » of the account reading here: its code goes with its password at the moments
       // that ask for it, and /server opens only once it is on.
       ...(twoFactor && asking ? { twoFactor: twoFactor.isOn(asking.id) } : {}),

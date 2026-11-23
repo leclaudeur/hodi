@@ -1,7 +1,7 @@
 import { ChevronsUpDown, Lock, Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MAX_PROFILES, type Profile } from '../api.ts'
+import type { Profile } from '../api.ts'
 import { t as textNow } from '../lib/i18n.ts'
 import { switchProfile, useProfiles } from '../lib/profiles.ts'
 import { showError, showSaved } from '../lib/toast.ts'
@@ -96,7 +96,7 @@ const ProfileMenu = ({ open, onClose, profiles, current, onPick, onAdd }: Profil
           {profile.name}
         </MenuItem>
       ))}
-      {parent && profiles.length < MAX_PROFILES && (
+      {parent && (
         <MenuItem
           tone="quiet"
           lead={

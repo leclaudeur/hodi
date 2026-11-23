@@ -2,7 +2,7 @@ import { cleanHandle } from '../handle.ts'
 import express from 'express'
 import { hashPassword } from '../auth/password.ts'
 import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
-import { MAX_PROFILES, type ProfileStore, cleanName, isYoung, profileColorOf } from '../db/profile-store.ts'
+import { type ProfileStore, cleanName, isYoung, profileColorOf } from '../db/profile-store.ts'
 import { type SignInCodeStore, signInCodeOf } from '../db/sign-in-code-store.ts'
 import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
 import {
@@ -49,10 +49,6 @@ const completeJoin = (
   const { codes, accounts, profiles, now, cookieFor, onProfileCreated, signsInHere } = options
   if (existing ? accounts.householdOf(known!.id) !== null : accounts.byEmail(email)) {
     response.status(409).json({ error: existing ? 'already_member' : 'email_taken' })
-    return
-  }
-  if (valid.found.profileId === null && profiles.list().length >= MAX_PROFILES) {
-    response.status(409).json({ error: 'household_full' })
     return
   }
   const taken = codes.take(valid.code, now())
@@ -258,7 +254,7 @@ const profileCode = ({ codes, profiles, now }: CodeRoutesOptions, profileId: unk
 
 // After the session and profile checks: making a code.
 export const codeRoutes = (options: CodeRoutesOptions) => {
-  const { codes, profiles, now } = options
+  const { codes, now } = options
   const router = express.Router()
 
   // Without profileId, "Inviter un adulte": any adult's. With one, "Connecter un appareil": for an adult profile
@@ -271,10 +267,6 @@ export const codeRoutes = (options: CodeRoutesOptions) => {
     const profileId: unknown = request.body?.profileId
     if (profileId !== undefined && profileId !== null) {
       profileCode(options, profileId, response)
-      return
-    }
-    if (profiles.list().length >= MAX_PROFILES) {
-      response.status(409).json({ error: 'household_full' })
       return
     }
     const invite = inviteOf(request.body)

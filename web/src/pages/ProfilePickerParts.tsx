@@ -1,7 +1,7 @@
 import { Lock, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MAX_PROFILES, type Profile, type ProfileSecret, RequestError, UnauthorizedError } from '../api.ts'
+import { type Profile, type ProfileSecret, RequestError, UnauthorizedError } from '../api.ts'
 import { switchProfile, useProfiles } from '../lib/profiles.ts'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
 import StatusLine from '../ui/StatusLine.tsx'
@@ -136,7 +136,7 @@ export const Who = ({ opening, chosen, onAdd }: WhoProps) => {
             <Tile profile={profile} opening={opening} chosen={chosen} />
           </li>
         ))}
-        {value && profiles.length < MAX_PROFILES && (
+        {value && (
           <li>
             <button type="button" className={styles.tile} onClick={onAdd}>
               <span className={styles.avatar}>

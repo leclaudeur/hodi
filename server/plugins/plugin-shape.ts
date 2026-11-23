@@ -45,9 +45,4 @@ export const checkShape = (shape: SandboxShape) => {
     const [group, method, route] = entry.split(' ')
     if (group === 'publicRoutes') throw new Error(`${method} ${route}: a public route cannot ask for a password`)
   }
-  // An account with no household reaches a plugin from the app's pages alone, never the server's space.
-  for (const entry of shape.noHouseholdRoutes ?? []) {
-    const [group, method, route] = entry.split(' ')
-    if (group !== 'routes') throw new Error(`${method} ${route}: only a route of routes can be open with no household`)
-  }
 }

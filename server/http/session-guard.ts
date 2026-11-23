@@ -11,6 +11,7 @@ import type { UserDeviceStore } from '../db/user-device-store.ts'
 import type { accountSession } from './account-session.ts'
 import type { Presence } from './presence.ts'
 import { isHere } from './profile-current-routes.ts'
+import { giveOwnProfile } from './own-profile.ts'
 import { guardOf, youngHereOf } from './profile-guard.ts'
 
 export interface SessionGuardOptions {
@@ -27,6 +28,8 @@ export interface SessionGuardOptions {
   cookieFor: ReturnType<typeof accountSession>['cookieFor']
   secret: Buffer
   now: () => number
+  // Called with the profile an account without one gets as it signs in.
+  onProfileCreated?: (profileId: number) => void
 }
 
 // What "Qui lit ?" asks before a profile is open on the device.
@@ -38,8 +41,7 @@ const isQuiLit = (request: express.Request) =>
   (request.method === 'PUT' && request.path === '/profiles/current')
 
 // Everything registered after this middleware requires a valid session.
-// The server's admin with no profile in the household (none yet, or one made for others): /server alone, the
-// device is on no household. False when the refusal is sent.
+// The server's admin in the middle of the setup, before their profile: /server alone. False when the refusal is sent.
 const serverOnly = (request: express.Request, response: express.Response, account: UserAccount) => {
   const open =
     (request.method === 'GET' && request.path === '/session') ||
@@ -58,25 +60,6 @@ const serverOnly = (request: express.Request, response: express.Response, accoun
   }
   response.locals.accountId = account.id
   response.locals.serverOnly = true
-  return true
-}
-
-// An account whose last profile was deleted from its household: the account is still the person's, but no household
-// is theirs any more. Its own account alone (Réglages › Compte et données: a copy, deletion), the plugins' routes
-// marked noHousehold (the plugin routes refuse the others), and nothing of the household it left. False when the
-// refusal is sent.
-const accountOnly = (request: express.Request, response: express.Response, account: UserAccount) => {
-  const open =
-    (request.method === 'GET' && request.path === '/session') ||
-    request.path === '/account' ||
-    request.path.startsWith('/account/') ||
-    request.path.startsWith('/plugins/')
-  if (!open) {
-    response.status(423).json({ error: 'no_household' })
-    return false
-  }
-  response.locals.accountId = account.id
-  response.locals.noHousehold = true
   return true
 }
 
@@ -112,14 +95,6 @@ const answerBeforeSetup = (
   response.status(401).json({ error: 'setup_required' })
 }
 
-// A session with no profile in the household it reads in: the server's admin gets /server, any other account its own
-// account alone. Without accounts (older tests), every session reads in the one household.
-const gateOf = (accounts: UserAccountStore | undefined, account: UserAccount, householdId: number) => {
-  if (!accounts) return null
-  if (account.serverAdmin) return accounts.profileOf(account.id, householdId) === null ? serverOnly : null
-  return accounts.householdOf(account.id) === null ? accountOnly : null
-}
-
 const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
   const { accounts, devices, sessionOf, cookieFor } = options
   const { householdOfSession } = householdHelpers(options)
@@ -132,13 +107,10 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
     // From here on, the request is for one household: its account's. Every store of one household's data reads
     // that one (household-scope.ts).
     const session = sessionOf(request)
-    const householdId = (session && householdOfSession(session)) ?? DEFAULT_ACCOUNT_ID
-    const gate = session && gateOf(accounts, session.account, householdId)
-    if (session && gate) {
-      if (gate(request, response, session.account)) inHousehold(householdId, next)
-      return
-    }
     if (session) {
+      // Every account reads with a profile of its own: one made by a plugin, or whose profile was deleted, gets one now.
+      if (accounts && options.profiles) giveOwnProfile(accounts, options.profiles, session.account, options)
+      const householdId = householdOfSession(session) ?? DEFAULT_ACCOUNT_ID
       response.locals.accountId = session.account.id
       // A session from before devices were kept: this device gets its row in Appareils, and a cookie naming it.
       if (!session.device && devices) response.append('Set-Cookie', cookieFor(session.account, request))
@@ -150,17 +122,10 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
   }
 }
 
-// No household: no profile, the server's admin and nothing else.
+// Before the setup is over: no profile yet, the server's admin and nothing else.
 const serverOnlyLocals = (response: express.Response) => {
   response.locals.profileId = 0
   response.locals.serverAdmin = true
-  response.locals.profileChosen = false
-}
-
-// An account with no household left: no profile, no right in any household.
-const noHouseholdLocals = (response: express.Response) => {
-  response.locals.profileId = 0
-  response.locals.serverAdmin = false
   response.locals.profileChosen = false
 }
 
@@ -205,11 +170,6 @@ const chooseProfileOf = (options: SessionGuardOptions): RequestHandler => {
   return (request, response, next) => {
     if (response.locals.serverOnly === true) {
       serverOnlyLocals(response)
-      next()
-      return
-    }
-    if (response.locals.noHousehold === true) {
-      noHouseholdLocals(response)
       next()
       return
     }

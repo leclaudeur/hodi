@@ -88,14 +88,12 @@ export interface TestPlugin {
   admin: TestPerson
   // Someone else in the household. An adult gets an account (e-mail and password), a teen or a child does not.
   addPerson: (person: { name: string; kind?: ProfileKind; email?: string; password?: string }) => Promise<TestPerson>
-  // An account in no household, as one a sign-up page would make.
+  // An account with no profile yet, as one a sign-up page would make: Hodi gives it one as it signs in.
   addAccount: (account: { email: string; password?: string }) => Promise<number>
   // Its routes, as Hodi serves them: route('GET /notes'), publicRoute('POST /signup', { body }), serverRoute(…).
   route: (route: string, call?: TestCall) => Promise<TestAnswer>
   publicRoute: (route: string, call?: Omit<TestCall, 'as'>) => Promise<TestAnswer>
   serverRoute: (route: string, call?: Omit<TestCall, 'as'>) => Promise<TestAnswer>
-  // A route as an account in no household asks it (addAccount's): only those marked noHousehold: true answer it.
-  noHouseholdRoute: (route: string, accountId: number, call?: Omit<TestCall, 'as'>) => Promise<TestAnswer>
   // A click on its AiButton, by an adult of the household.
   click: (action: string, input?: unknown, as?: TestPerson) => Promise<TestAnswer>
   // What Hodi would start by itself.
@@ -151,7 +149,7 @@ const peopleOf = ({ db, accounts, profiles, householdId }: SmallHodi, now: () =>
   }
   const addPerson: TestPlugin['addPerson'] = async ({ name, kind = 'adult', email, password }) => {
     const profile = inHousehold(householdId, () => profiles.create(name, 'world', now(), { kind }))
-    if (!profile) throw new Error('The household is full')
+    if (!profile) throw new Error(`${name}: the profile could not be made`)
     let accountId: number | null = null
     const address = kind === 'adult' ? (email ?? `${name.toLowerCase().replace(/[^a-z0-9]/g, '')}@example.test`) : null
     if (address) {
@@ -228,8 +226,6 @@ export const testPlugin = async (folder = '.', options: TestPluginOptions = {}):
     route: (route, call = {}) => send('/plugins', route, call, asHeaders(call.as)),
     publicRoute: (route, call = {}) => send('/public/plugins', route, call, {}),
     serverRoute: (route, call = {}) => send('/server/plugins', route, call, { 'x-test-server-admin': '1' }),
-    noHouseholdRoute: (route, accountId, call = {}) =>
-      send('/plugins', route, call, { 'x-test-no-household': String(accountId) }),
     click: (action, input = null, as = admin) =>
       send('/plugins', `POST /ai/${action}`, { body: { input } }, asHeaders(as)),
     ...hooksOf(hodi, id, plugin.sandbox),

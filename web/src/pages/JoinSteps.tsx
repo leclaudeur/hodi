@@ -103,17 +103,6 @@ export const CodeStep = ({ join, onBack }: { join: Join; onBack: () => void }) =
   )
 }
 
-// An invitation to a household that has no room left.
-export const FullStep = ({ onBack }: { onBack: () => void }) => {
-  const { t } = useTranslation()
-  return (
-    <div className={styles.form}>
-      <StepHeader title={t('join.full.title')} intro={t('join.full.intro')} />
-      <Actions onBack={onBack}>{null}</Actions>
-    </div>
-  )
-}
-
 // The admin's code for an adult who forgot their password: "Nouveau mot de passe".
 export const ResetStep = ({ join, use }: { join: Join; use: Profiled }) => {
   const { t } = useTranslation()

@@ -27,7 +27,7 @@ and never touch `version`; a small release pull request raises `version` and mov
 ### Deprecated
 
 - **`ctx.households`.** Households are leaving Hodi: one account is one person's space. Use `ctx.accounts` instead;
-  `ctx.households`, `who.householdId`, `noHousehold` and the `noHouseholdActions` slot go in a later beta.
+  `who.householdId` goes in a later beta.
 
 ### Changed
 
@@ -42,6 +42,10 @@ and never touch `version`; a small release pull request raises `version` and mov
 - **`HouseholdAvatar`** is gone from `hodi:sdk`, with the household photo it showed (`/api/households/<id>/photo`).
 - **`who.householdAdmin`.** Hodi no longer has a household admin: what that role allowed is the server's admin's, so
   check `who.serverAdmin` instead.
+- **`noHousehold` routes and the `noHouseholdActions` slot.** Every account now has its own profile, given at its first
+  sign-in, so no account is ever left in no household: a route marked `noHousehold: true` is an ordinary route, and
+  `noHouseholdActions` draws nowhere. In the test kit, `noHouseholdRoute` is gone; `addAccount` makes an account with
+  no profile yet.
 
 ## [1.0.0-beta.5] - 2026-11-19
 

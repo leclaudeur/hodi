@@ -23,10 +23,6 @@ export interface Session {
   hourCycle: 12 | 24
   // How long an article stays in the lists and a video in Vidéos, in days (Serveur › Contenu).
   content: { articleDays: number; videoDays: number; backupCopies: number } | null
-  // No household yet (« Plus tard » at the setup): the server's admin, in /server only.
-  serverOnly: boolean
-  // An account whose profile was deleted from its household: its own account alone.
-  noHousehold: boolean
   // « Validation en deux étapes » of the account reading here.
   twoFactor: boolean
   // The account reading here has no password of its own (« Se connecter avec Google »).
@@ -58,8 +54,6 @@ export const getSession = async (fresh = false): Promise<Session | null | 'setup
     language: isLanguage(body.language) ? body.language : null,
     hourCycle: body.hourCycle === 12 ? 12 : 24,
     content: body.content ?? null,
-    serverOnly: body.serverOnly === true,
-    noHousehold: body.noHousehold === true,
     twoFactor: body.twoFactor === true,
     noPassword: body.noPassword === true
   }

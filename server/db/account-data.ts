@@ -2,7 +2,7 @@ import { ownerOf } from './stats-owner.ts'
 import { type Database, transaction } from './database.ts'
 import { recordForget, resetHousehold, rowKey } from './forget-log.ts'
 import { currentHouseholdId } from './household-scope.ts'
-import { accountStatRowsOf, accountStatsOf } from './account-stats.ts'
+import { accountStatRowsOf } from './account-stats.ts'
 import type { Profile, ProfileStore } from './profile-store.ts'
 import type { UserAccount, UserAccountStore } from './user-account-store.ts'
 
@@ -278,10 +278,6 @@ export class AccountDataStore {
 
   constructor(db: Database) {
     this.#db = db
-  }
-
-  stats(accountId: number) {
-    return accountStatsOf(this.#db, accountId)
   }
 
   copy(account: UserAccount, profileId: number | null, now: number) {

@@ -23,14 +23,6 @@ interface KitRoutes {
 const sessionStandIn =
   ({ profiles, accounts, householdId }: KitRoutes): express.RequestHandler =>
   (request, response, next) => {
-    // An account in no household: no profile, no right in any household, as Hodi's session guard sets it.
-    const alone = Number(request.get('x-test-no-household'))
-    if (Number.isInteger(alone) && alone > 0) {
-      Object.assign(response.locals, { noHousehold: true, accountId: alone, profileId: 0, admin: false })
-      Object.assign(response.locals, { serverAdmin: false, profileChosen: false })
-      next()
-      return
-    }
     const profileId = Number(request.get('x-test-profile'))
     const profile = profiles.get(profileId)
     Object.assign(response.locals, {

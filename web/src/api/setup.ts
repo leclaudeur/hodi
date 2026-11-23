@@ -125,15 +125,6 @@ export interface AccountView {
   } | null
   // « Validation en deux étapes »: on since then, or null. required: the server's admin cannot turn it off.
   twoFactor: { since: number | null; required: boolean; recoveryLeft: number }
-  // In no household: what it read and earned, its own wherever it reads; null when nothing yet.
-  stats?: AccountStats | null
-}
-
-export interface AccountStats {
-  articles: number
-  videos: number
-  minutes: number
-  points: number
 }
 
 // null: no account here (an install still on the household's password, or a young profile open on this device).
@@ -212,7 +203,7 @@ export const createSignInCode = (profileId?: number, proof?: AdminProof) =>
 export type CodeProfile = Pick<Profile, 'id' | 'name' | 'color' | 'kind' | 'avatar'>
 
 export type CodeUse =
-  | { kind: 'invite'; household: string; invitedBy: CodeProfile | null; full: boolean }
+  | { kind: 'invite'; household: string; invitedBy: CodeProfile | null }
   | { kind: 'profile'; household: string; profile: CodeProfile }
   | { kind: 'reset'; household: string; profile: CodeProfile }
 

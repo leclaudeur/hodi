@@ -42,7 +42,7 @@ export const CONFIG_SCHEMA = {
     userAgentMaxLength: 'count',
     onlineFor: 'duration'
   },
-  profiles: { max: 'count', nameMaxLength: 'count', photoMaxSize: 'size', photoSide: 'count' },
+  profiles: { nameMaxLength: 'count', photoMaxSize: 'size', photoSide: 'count' },
   children: { max: 'count', createsPerMinute: 'count', parents: 'count' },
   invitations: { nameMaxLength: 'count', mailsPerDay: 'count', serverMailsPerDay: 'count' },
   household: { nameMaxLength: 'count' },

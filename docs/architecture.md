@@ -89,9 +89,8 @@ password: the `hodi_trusted` cookie, checked against `user_devices.trusted`.
 Every sign-in of an existing account first asks `http/sign-in-check.ts`, which runs each plugin's `checkSignIn` hook.
 The server admin's sign-in is never asked, so a broken plugin cannot lock them out.
 
-An account belongs to one household. Leaving it is `POST /api/account/leave` (`http/account-leave-route.ts`), refused
-for the last adult with an account. An account with no household gets 423 `no_household` everywhere but its session
-and `/account*`, so it reaches only its own account.
+Every account has its own profile. One without (made by a plugin, or whose profile was deleted) gets it on its first
+request after signing in (`http/own-profile.ts`), with the name and colour it had, or the start of its e-mail.
 
 ### The Server space
 
