@@ -117,6 +117,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   person waits for one after _Forgot password_: _Make a code_ is in their request, and the account page has no button
   otherwise; a request waits a week. The server's admin can no longer make one for an account that did not ask.
 
+### Removed
+
+- **Plugins no longer make households.** `ctx.households` and the plugin permission _Create and manage households_ are
+  gone: a plugin makes accounts instead. A plugin that still makes households stops working on this version, so
+  update your plugins together with Hodi.
+
 ## [1.0.0-beta.13] - 2026-11-19
 
 One household per account, Who's in? keeps the accounts of the device, private profiles and a parental code, My
