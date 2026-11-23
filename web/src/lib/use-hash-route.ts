@@ -6,7 +6,7 @@ import { RENAMED_TOPICS } from './renamed-topics.ts'
 // #/saved (saved articles), #/search/<words> (search), #/followed (followed subjects), #/shares (sent by the household),
 // #/settings/<section>[/<item>] (settings; #/settings/requests/<id>, a teen's request), #/summary (Résumé du jour),
 // #/stories/<topic> (À la une, as stories), #/history (the last 7 days' reading), #/profiles ("Qui lit ?"),
-// #/account/<part> (Mon compte), #/server/<section>[/<item>] (the server's admin space; #/server/plugin/<id>/<section>[/<path>], a plugin's section).
+// #/account/<part> (Mon compte), #/catalogue/<official|topic> (the server's sources), #/server/<section>[/<item>] (the server's admin space; #/server/plugin/<id>/<section>[/<path>], a plugin's section).
 // The French addresses of earlier versions still open: see LEGACY_PATHS and RENAMED_TOPICS.
 export type Route =
   | { name: 'frontPage' }
@@ -28,6 +28,8 @@ export type Route =
   | { name: 'profiles' }
   // Mon compte, a page of its own with its sections (#/account/<part>). part null: its first one.
   | { name: 'account'; part: AccountPart | null }
+  // The catalogue, a page of its own: 'official' (sources.yml's) or a topic's id. part null: the first one.
+  | { name: 'catalogue'; part: string | null }
   // The server's admin space. section null: the list of its sections (phone), the first one (computer). item: one
   // thing of the section (#/server/plugins/<id>, a plugin's page). plugin: one of a plugin's own sections of the space,
   // and its screens under it.
@@ -206,6 +208,7 @@ export const parseRoute = (hash: string): Route => {
   if (first === 'server') return serverRoute(parts)
   // The site's « Mon compte » link (get-hodi.com/account) too, whether the account reads in a household or not.
   if (first === 'account') return { name: 'account', part: accountPartOf(second) }
+  if (first === 'catalogue') return { name: 'catalogue', part: second || null }
   const simple = SIMPLE_ROUTES.get(first)
   if (simple) return simple()
   if (first === 'stories' && second) return { name: 'story', topicId: second }
@@ -228,6 +231,7 @@ export const youngProfileHref = (id: number) => `${settingsHref('profiles')}/${i
 // A plugin's own page, the entry its manifest places in Réglages, or one of its screens under it (path 'week/3').
 export const pluginPageHref = (id: string, path = '') =>
   `${settingsHref('plugin')}/${encodeURIComponent(id)}${path ? `/${path.split('/').map(encodeURIComponent).join('/')}` : ''}`
+export const catalogueHref = (part?: string) => (part ? `#/catalogue/${encodeURIComponent(part)}` : '#/catalogue')
 export const SERVER_HREF = '#/server'
 export const serverHref = (section: ServerSection) => `${SERVER_HREF}/${section}`
 // A plugin's page in Serveur › Plugins, where its admin turns it on and off, sets it and removes it.

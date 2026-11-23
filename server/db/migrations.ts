@@ -1340,6 +1340,10 @@ const MIGRATIONS: string[] = [
     UPDATE OR IGNORE my_sources SET owner = 'a' || NEW.user_id WHERE owner = 'p' || NEW.id;
     DELETE FROM my_sources WHERE owner = 'p' || NEW.id;
   END;
+  `,
+  // A source's description, as its site gives it (og:description), read when it is added: the catalogue shows it.
+  `
+  ALTER TABLE sources ADD COLUMN description TEXT;
   `
 ]
 

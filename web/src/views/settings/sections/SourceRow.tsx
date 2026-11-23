@@ -1,14 +1,14 @@
-import { ArrowLeftRight, ExternalLink, MoreHorizontal, Tags, Trash2 } from 'lucide-react'
-import type { MouseEvent } from 'react'
+import { ArrowLeftRight, ExternalLink, Minus, MoreHorizontal, Tags, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { SourceStatus } from '../../../api.ts'
+import { readersCount } from '../../../lib/catalogue.ts'
 import { shortAgo } from '../../../lib/format.ts'
+import { getLanguage } from '../../../lib/i18n.ts'
 import { sourceState } from '../../../lib/settings-data.ts'
 import Chip from '../../../ui/Chip.tsx'
 import Menu, { MenuItem } from '../../../ui/Menu.tsx'
 import RoundButton from '../../../ui/RoundButton.tsx'
 import SourceAvatar from '../../../ui/SourceAvatar.tsx'
-import Toggle from '../../../ui/Toggle.tsx'
 import styles from '../Settings.module.css'
 import sourceStyles from './SourcesSection.module.css'
 import { hostOf } from './sources-model.ts'
@@ -115,40 +115,35 @@ const DesktopActions = ({ source, replace, retopic, deletable, removing, onRemov
 
 interface SourceRowProps extends PhoneActionsProps {
   phone: boolean
-  off: boolean
   // The profile that added it, when another one did.
   addedBy: string | null
-  onShow: (visible: boolean) => void
+  // Out of « Mes sources »: it stays in the catalogue.
+  onTakeOut: () => void
 }
 
-// One row per source, as Réglages' other lists: its avatar, its name over its site, its buttons and its switch.
-// The whole row shows or hides it.
-const SourceRow = ({ phone, off, addedBy, onShow, ...actions }: SourceRowProps) => {
+// One row per source of « Mes sources », as Réglages' other lists: its avatar, its name over its site, its buttons,
+// then − to take it out.
+const SourceRow = ({ phone, addedBy, onTakeOut, ...actions }: SourceRowProps) => {
   const { t } = useTranslation()
   const { source } = actions
   const ago = shortAgo(source.fetchedAt)
-  const error = sourceState(source) === 'error' && !off
+  const error = sourceState(source) === 'error'
   const errorTitle = error && source.error ? t('sources.errorTitle', { error: source.error }) : undefined
   const hint = [
     phone && error ? t('sources.status.error') : null,
     hostOf(source.site),
     addedBy && t('sources.by', { name: addedBy }),
-    source.readers !== undefined && t('sources.readers', { count: source.readers })
+    source.readers !== undefined &&
+      t('sources.readers', { count: source.readers, formatted: readersCount(source.readers, getLanguage()) })
   ]
     .filter(Boolean)
     .join(' · ')
-  // A click on the row, not on one of its buttons, flips its switch.
-  const flip = (event: MouseEvent) => {
-    if ((event.target as HTMLElement).closest('button, a, [role="menu"]')) return
-    onShow(off)
-  }
-
   return (
-    <li className={sourceStyles.row} onClick={flip}>
-      <span className={`${sourceStyles.avatar} ${off ? styles.dim : ''}`}>
+    <li className={sourceStyles.row}>
+      <span className={sourceStyles.avatar}>
         <SourceAvatar sourceId={source.id} sourceName={source.name} size={44} />
       </span>
-      <span className={`${styles.rowText} ${off ? styles.dim : ''}`}>
+      <span className={styles.rowText}>
         <span className={`${styles.rowLabel} ${sourceStyles.name}`}>{source.name}</span>
         <span
           className={`${styles.rowHint} ${sourceStyles.name} ${phone && error ? sourceStyles.errorHint : ''}`}
@@ -164,7 +159,13 @@ const SourceRow = ({ phone, off, addedBy, onShow, ...actions }: SourceRowProps) 
       )}
       <span className={sourceStyles.actions}>
         {phone ? <PhoneActions {...actions} /> : <DesktopActions {...actions} />}
-        <Toggle label={t('settings.themes.show', { name: source.name })} checked={!off} onChange={onShow} />
+        <RoundButton
+          size={38}
+          icon={Minus}
+          label={t('catalogue.remove', { name: source.name })}
+          title={t('catalogue.removeShort')}
+          onClick={onTakeOut}
+        />
       </span>
     </li>
   )

@@ -593,6 +593,9 @@ listen:
     assert.equal((await readersOf()).find(source => source.id === 'rtl')?.readers, undefined)
     db.exec(`INSERT INTO my_sources (owner, source_id, added_at) VALUES ('x9', 'rtl', 0)`)
     assert.equal((await readersOf()).find(source => source.id === 'rtl')?.readers, 10)
+    // sources.yml's sources are the catalogue's Officielles.
+    const listed = (await (await call('GET', '/sources', 1)).json()) as { sources: { id: string; official?: true }[] }
+    assert.equal(listed.sources.find(source => source.id === 'rtl')?.official, true)
     db.exec(`DELETE FROM my_sources WHERE owner LIKE 'x%'`)
   })
 

@@ -88,6 +88,7 @@ export class FeedCache {
         itemCount: entry?.items.length ?? 0,
         fetchedAt: entry?.fetchedAt ? new Date(entry.fetchedAt).toISOString() : null,
         error: entry?.error ?? null,
+        ...(source.description ? { description: source.description } : {}),
         ...(source.addedBy === undefined ? {} : { addedBy: source.addedBy })
       }
     })

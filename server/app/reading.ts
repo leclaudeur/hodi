@@ -11,6 +11,7 @@ import { sourceRoutes } from '../http/source-routes.ts'
 import { sourceViewRoutes } from '../http/source-view-routes.ts'
 import { userRoutes } from '../http/user-routes.ts'
 import { mySourcesRoutes } from '../http/my-sources-routes.ts'
+import { allSources } from '../news/catalog.ts'
 import { withPluginFeeds } from '../plugins/feeds.ts'
 import type { Wiring } from './wiring.ts'
 
@@ -91,7 +92,13 @@ const mountSources = (api: express.Router, { options }: Wiring) => {
 export const mountReading = (api: express.Router, wiring: Wiring) => {
   const { news, users, youth, icons, images, alerts, plugins, sources, now } = wiring.options
   mountProfileState(api, wiring)
-  api.use(sourceViewRoutes({ news, users, youth, icons, readers: sources && (() => sources.store.readers()), now }))
+  api.use(
+    sourceViewRoutes({
+      ...{ news, users, youth, icons, now },
+      readers: sources && (() => sources.store.readers()),
+      official: sources && (() => new Set(allSources(sources.file).map(source => source.id)))
+    })
+  )
   api.use(newsRoutes({ news, users, reader: wiring.reader, now }))
   api.use(pushRoutes({ alerts, publicKey: wiring.config.vapid.publicKey }))
   api.use(aiUsageRoutes({ news, plugins }))
