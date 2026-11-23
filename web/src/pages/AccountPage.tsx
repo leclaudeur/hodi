@@ -1,5 +1,6 @@
 import { ArrowLeft, ListTree, LogOut } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import type { AccountView } from '../api.ts'
 import { useTranslation } from 'react-i18next'
 import { useProfiles } from '../lib/profiles.ts'
 import { type AccountPart, accountHref, useHashRoute } from '../lib/use-hash-route.ts'
@@ -12,6 +13,7 @@ import RoundButton from '../ui/RoundButton.tsx'
 import { rich } from '../ui/rich.tsx'
 import RowsSkeleton from '../views/settings/SettingsSkeleton.tsx'
 import { useAccount } from '../views/settings/sections/AccountSection.tsx'
+import YoungProfileSection from '../views/settings/sections/YoungProfileSection.tsx'
 import { PART_ICONS, PartBody, introKeyOf, partsOf } from './account/account-parts.tsx'
 import { signOutHere } from './NoHouseholdPage.tsx'
 import styles from './AccountPage.module.css'
@@ -104,6 +106,52 @@ const Crumb = ({ parts, current }: { parts: AccountPart[]; current: AccountPart 
   )
 }
 
+const PageHead = ({ kicker, title, meta }: { kicker: string; title: string; meta?: string }) => (
+  <div className={styles.head}>
+    <span className={styles.kicker}>{kicker}</span>
+    <h1 className={styles.title}>
+      {title}
+      <span className={styles.dot} aria-hidden="true" />
+    </h1>
+    {meta && <span className={styles.meta}>{meta}</span>}
+  </div>
+)
+
+interface PartViewProps {
+  part: AccountPart
+  account: AccountView | null | undefined
+  onAccount: (account: AccountView) => void
+  inHousehold: boolean
+  meta: string
+  phone: boolean
+  onUnauthorized: () => void
+}
+
+// One section: its title, its intro, its body.
+const PartView = ({ part, account, onAccount, inHousehold, meta, phone, onUnauthorized }: PartViewProps) => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <PageHead kicker={t('accountPage.title')} title={t(`accountPage.sections.${part}`)} meta={meta} />
+      {account === undefined ? (
+        <RowsSkeleton rows={3} end="button" />
+      ) : (
+        <>
+          <p className={styles.intro}>{rich(t(introKeyOf(part, account, inHousehold)))}</p>
+          <PartBody
+            part={part}
+            account={account}
+            onAccount={onAccount}
+            inHousehold={inHousehold}
+            layout={phone ? 'phone' : 'desktop'}
+            onUnauthorized={onUnauthorized}
+          />
+        </>
+      )}
+    </>
+  )
+}
+
 interface AccountPageProps {
   // In a household, from Réglages; out of one, from the card that says so.
   inHousehold: boolean
@@ -121,37 +169,38 @@ const AccountPage = ({ inHousehold }: AccountPageProps) => {
   const parts = account === undefined ? [] : partsOf(account, inHousehold)
   const asked = route.name === 'account' ? route.part : null
   const current = asked && parts.includes(asked) ? asked : (parts[0] ?? 'sign-in')
+  // Mes enfants › Gérer: a young one's card, its name for title, back to the list.
+  const item = route.name === 'account' ? route.item : undefined
+  const youngId = current === 'children' && item && /^\d+$/.test(item) ? Number(item) : null
+  const young = youngId === null ? null : household?.profiles.find(profile => profile.id === youngId)
   const meta = [inHousehold ? own?.name : null, account?.email].filter(Boolean).join(' · ')
+  const home = inHousehold ? '#/settings' : '#/'
   return (
     <div className={styles.page}>
-      <Header back={inHousehold ? '#/settings' : '#/'} signOut={inHousehold ? undefined : () => void signOutHere()} />
+      <Header
+        back={youngId === null ? home : accountHref('children')}
+        signOut={inHousehold ? undefined : () => void signOutHere()}
+      />
       <div className={styles.frame}>
         <div className={styles.view}>
           <div className={styles.wrap}>
             <Side parts={parts} current={current} />
             <main className={styles.main}>
               <Crumb parts={parts} current={current} />
-              <div className={styles.head}>
-                <span className={styles.kicker}>{t('accountPage.title')}</span>
-                <h1 className={styles.title}>
-                  {t(`accountPage.sections.${current}`)}
-                  <span className={styles.dot} aria-hidden="true" />
-                </h1>
-                {meta && <span className={styles.meta}>{meta}</span>}
-              </div>
-              {account === undefined ? (
-                <RowsSkeleton rows={3} end="button" />
+              {youngId === null ? (
+                <PartView
+                  part={current}
+                  account={account}
+                  onAccount={setAccount}
+                  inHousehold={inHousehold}
+                  meta={meta}
+                  phone={phone}
+                  onUnauthorized={onUnauthorized}
+                />
               ) : (
                 <>
-                  <p className={styles.intro}>{rich(t(introKeyOf(current, account, inHousehold)))}</p>
-                  <PartBody
-                    part={current}
-                    account={account}
-                    onAccount={setAccount}
-                    inHousehold={inHousehold}
-                    layout={phone ? 'phone' : 'desktop'}
-                    onUnauthorized={onUnauthorized}
-                  />
+                  <PageHead kicker={t('accountPage.sections.children')} title={young?.name ?? t('young.manage')} />
+                  <YoungProfileSection id={youngId} />
                 </>
               )}
             </main>

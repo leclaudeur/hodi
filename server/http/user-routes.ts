@@ -77,8 +77,14 @@ const preferencesSchema = z.object({
   // "Partages": on unless turned off; the profiles whose shares are not wanted, by id.
   sharing: z.boolean().optional(),
   mutedSharers: z.array(z.int().positive()).max(MAX_LIST).optional(),
-  // The interface's language for this profile; null, the household's.
+  // The interface's language for this person; null, the browser's (the server's for e-mails and notifications).
   language: z.enum(LANGUAGES).nullable().optional(),
+  // How the time of day is written, and whether levels and badges show; null, the server's.
+  hourCycle: z
+    .union([z.literal(12), z.literal(24)])
+    .nullable()
+    .optional(),
+  game: z.boolean().nullable().optional(),
   textSize: z
     .int()
     .min(0)

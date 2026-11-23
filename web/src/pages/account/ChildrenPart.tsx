@@ -13,7 +13,7 @@ import ParentInvitations from '../../views/profiles/ParentInvitations.tsx'
 import { RowButton } from '../../views/settings/SettingRow.tsx'
 import RowsSkeleton from '../../views/settings/SettingsSkeleton.tsx'
 import styles from '../../views/settings/Settings.module.css'
-import profileStyles from '../../views/settings/sections/ProfilesSection.module.css'
+import profileStyles from '../../views/profiles/Profiles.module.css'
 import ParentalCodeCard from './ParentalCodeCard.tsx'
 
 const useChildren = () => {

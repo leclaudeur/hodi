@@ -4,7 +4,7 @@ import { updatePreferences } from '../../../lib/preferences.ts'
 import Segmented from '../../../ui/Segmented.tsx'
 import SettingRow from '../SettingRow.tsx'
 
-// The interface's language: an adult's in Mon compte, with their name and photo; a young profile's in Général.
+// The interface's language, among a person's own settings (PersonalRows).
 const LanguageRow = () => {
   const { t } = useTranslation()
   const language = useLanguage()

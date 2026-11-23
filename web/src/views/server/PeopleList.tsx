@@ -221,6 +221,8 @@ const PeopleList = ({ kind, active }: { kind: PeopleKind; active?: string }) => 
       }).toUpperCase()
     : undefined
   const search = <PeopleSearch phone={phone} label={label} query={query} onQuery={setQuery} />
+  // At the column's foot on a computer, as « Charger <jour> » under the articles; under the list on a phone.
+  const invite = kind === 'accounts' && loaded && !needle && !loadFailed ? <InviteButton loaded={loaded} /> : null
   // No household yet: nothing to search.
   const none = kind === 'households' && loaded?.canCreate === true && all.length === 0
   // As every list of the app that cannot load: an empty state in red, at the column's middle.
@@ -232,7 +234,7 @@ const PeopleList = ({ kind, active }: { kind: PeopleKind; active?: string }) => 
     <>
       {one && <OneNotice />}
       <Rows kind={kind} rows={rows} active={active} />
-      {kind === 'accounts' && loaded && !needle && <InviteButton loaded={loaded} />}
+      {phone && invite}
     </>
   )
 
@@ -245,7 +247,7 @@ const PeopleList = ({ kind, active }: { kind: PeopleKind; active?: string }) => 
     <ListColumn
       title={title}
       meta={meta}
-
+      footer={invite ?? undefined}
       pinned={!loaded || none ? undefined : search}
       busy={!loaded && !loadFailed}
     >

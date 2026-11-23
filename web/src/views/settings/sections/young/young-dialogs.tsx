@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { Profile, ProfileKind, YouthLimits } from '../../../../api.ts'
 import { editProfile } from '../../../../lib/profiles.ts'
 import { showSaved } from '../../../../lib/toast.ts'
-import { settingsHref } from '../../../../lib/use-hash-route.ts'
+import { accountHref } from '../../../../lib/use-hash-route.ts'
 import RichText from '../../../../ui/RichText.tsx'
 import ProfileForm from '../../../profiles/ProfileForm.tsx'
 import { DailyDialog, ExplainDialog, RangeDialog } from './RulesDialogs.tsx'
@@ -50,7 +50,7 @@ const readingDialogs = ({ t, id, profile, loaded, setLoaded, admin, close, remov
             close()
             showSaved(t('young.profileSaved'))
             // Made an adult: its page is gone.
-            if (kind === 'adult') window.location.hash = settingsHref('profiles')
+            if (kind === 'adult') window.location.hash = accountHref('children')
           }}
         />
       )

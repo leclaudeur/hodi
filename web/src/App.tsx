@@ -8,7 +8,8 @@ import { setServerOnly } from './lib/server-only.ts'
 import { setHouseholdLanguage, setProfileLanguage } from './lib/i18n.ts'
 import { setContentDays } from './lib/content-days.ts'
 import { setNoPassword, setTwoFactorOn } from './lib/two-factor.ts'
-import { setHourCycle } from './lib/format.ts'
+import { setHourCycle, setOwnHourCycle } from './lib/format.ts'
+import { setOwnGame } from './lib/game.ts'
 import { usePreferences } from './lib/preferences.ts'
 import { startLimits, useLimits, useLimitsReady } from './lib/limits.ts'
 import { PROFILE_SWITCHING } from './lib/profiles.ts'
@@ -198,7 +199,7 @@ const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: S
 const App = () => {
   const [status, setStatus] = useState<Status>('loading')
   const route = useHashRoute()
-  const { language } = usePreferences()
+  const { language, hourCycle, game } = usePreferences()
 
   const check = useCallback(() => {
     openingSession()
@@ -218,10 +219,13 @@ const App = () => {
     window.location.reload()
   }, [])
 
-  // The profile's own language, once its settings are in; until then (and without one) the household's.
+  // The person's own language, time format and game, once their settings are in; until then, the last ones here.
   useEffect(() => {
-    setProfileLanguage(status === 'authenticated' ? language : null)
-  }, [status, language])
+    if (status !== 'authenticated') return
+    setProfileLanguage(language)
+    setOwnHourCycle(hourCycle)
+    setOwnGame(game)
+  }, [status, language, hourCycle, game])
 
   // For preload.js on the next load of this tab: whether a profile is open here.
   useEffect(() => {
