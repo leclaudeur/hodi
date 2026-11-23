@@ -1509,12 +1509,15 @@ const MIGRATIONS: string[] = [
   // account keeps one profile, its first household's: any other goes, as left with no account it would open to the
   // server's admin with what was sent to it. What the account read is its own anyway (stats-owner.ts).
   `
-  DELETE FROM profiles WHERE id IN (
+  CREATE TEMP TABLE extra_profiles AS
     SELECT id FROM (
       SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY account_id, id) AS n
       FROM profiles WHERE user_id IS NOT NULL
-    ) WHERE n > 1
-  );
+    ) WHERE n > 1;
+  -- With no account first, so the forget triggers take any row still under its own 'p' owner.
+  UPDATE profiles SET user_id = NULL WHERE id IN (SELECT id FROM extra_profiles);
+  DELETE FROM profiles WHERE id IN (SELECT id FROM extra_profiles);
+  DROP TABLE extra_profiles;
   CREATE TEMP TABLE merged_positions AS
     SELECT id, ROW_NUMBER() OVER (ORDER BY account_id, position, id) - 1 AS n FROM profiles;
   UPDATE profiles SET

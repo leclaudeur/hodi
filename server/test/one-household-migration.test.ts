@@ -67,6 +67,7 @@ describe('the households merged into one', () => {
         (2, 2, 'Marc', 'world', 0, 0, 'admin', 7),
         (3, 2, 'Lina', 'music', 1, 0, 'member', NULL);
       INSERT INTO shares (profile_id, article_id, from_profile, item, shared_at) VALUES (2, 'a', 3, '{}', 0);
+      INSERT INTO profile_settings (owner, key, value, updated_at) VALUES ('p2', 'muted', '[]', 0), ('a7', 'muted', '[]', 0);
     `)
 
     migrate(db)
@@ -83,5 +84,13 @@ describe('the households merged into one', () => {
     )
     // Nothing of the profile that went stays for anyone to open: no account-less profile holds the person's shares.
     assert.equal((db.prepare('SELECT COUNT(*) AS n FROM shares').get() as { n: number }).n, 0)
+    // A row still under its own owner goes with it; the account's own stay.
+    assert.deepEqual(
+      db
+        .prepare('SELECT owner FROM profile_settings ORDER BY owner')
+        .all()
+        .map(row => row.owner),
+      ['a7']
+    )
   })
 })
