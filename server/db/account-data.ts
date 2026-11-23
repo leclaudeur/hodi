@@ -248,7 +248,7 @@ export const accountCopy = (
           sources: db
             .prepare(
               `SELECT s.id, s.name, s.url, s.kind, s.lang, h.created_at AS createdAt
-               FROM household_sources h JOIN sources s ON s.id = h.source_id WHERE h.added_by = ?`
+               FROM catalog_sources h JOIN sources s ON s.id = h.source_id WHERE h.added_by = ?`
             )
             .all(profileId),
           ...Object.fromEntries(

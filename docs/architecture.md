@@ -72,8 +72,8 @@ small hooks under `lib/`.
   module (`web/config-plugin.ts`), and the plugin SDK carries the values it was built with. The file is for developers
   and forks, and a change means a rebuild. A new limit goes there, never as a number in the code
 
-A feed is one row of `sources` for the whole server, fetched once whoever follows it. Which household follows it, and
-in which topics, is that household's row of `household_sources`. Which of them each person reads is their rows of
+A feed is one row of `sources` for the whole server, fetched once whoever reads it. The server has one catalogue: a
+feed's topics, order and adder are its row of `catalog_sources`. Which of them each person reads is their rows of
 `my_sources` (`db/my-sources.ts`, through `/api/me/sources/:id`); the app still gets the others as the preferences'
 `hiddenSources`. `server/test/household-isolation.test.ts` writes a second household in by hand, and checks that neither household ever sees what the other holds.
 

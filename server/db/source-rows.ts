@@ -1,6 +1,6 @@
 import type { Source } from '../news/catalog.ts'
 
-// A source as the database holds it: its feed's row (sources) and a household's (household_sources).
+// A source as the database holds it: its feed's row (sources) and its place in the catalogue (catalog_sources).
 
 export interface SourceRow {
   id: string
@@ -31,9 +31,9 @@ export const toSource = (row: SourceRow): Source => ({
   ...(row.added_by === null ? {} : { addedBy: row.added_by })
 })
 
-// A household's source: the feed, with that household's topics, order and adder.
+// A source of the catalogue: the feed, with its topics, order and adder.
 export const SELECT_FOLLOWED = `SELECT s.id, s.name, s.url, s.kind, s.lang, s.domains, s.reader, s.skip, s.description, h.section, h.section_id, h.topics,
-  h.added_by FROM household_sources h JOIN sources s ON s.id = h.source_id WHERE h.household_id = ?`
+  h.added_by FROM catalog_sources h JOIN sources s ON s.id = h.source_id`
 
 export const topicsOf = (row: SourceRow) =>
   row.section !== 'topic' ? [] : row.topics ? (JSON.parse(row.topics) as string[]) : [row.section_id]

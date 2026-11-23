@@ -19,11 +19,9 @@ import type {
   SearchResult,
   TopicFeed
 } from './news-types.ts'
-import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
 import { ArticleLoader } from './article-loader.ts'
 import { type NewsAi, createNewsAi } from './news-ai.ts'
 import { DAY_MS, MAX_TOPIC_LIMIT, TopicLister } from './topic-lister.ts'
-import { PerHousehold } from './per-household.ts'
 import { NewsSearch } from './news-search.ts'
 import { addToCatalog, moveToTopics, removeFromCatalog } from './catalog-edits.ts'
 import { frontSection } from './front-page.ts'
@@ -46,10 +44,9 @@ const BACKGROUND_INTERVAL_MS = CACHE_TTL_MS
 
 export class NewsService {
   // Each household's catalogue: the topics and the sources it follows.
-  readonly #catalogs: PerHousehold<Catalog>
-  readonly #households: () => number[]
+  readonly #catalogValue: Catalog
   readonly #videoLengths: VideoLengths | null
-  readonly #timeZones: PerHousehold<string>
+  #timeZone: string
   readonly #now: () => number
   readonly #store: NewsStore | undefined
   readonly #languageOf: (profileId: number) => Language
@@ -67,11 +64,9 @@ export class NewsService {
       fetchText,
       extractPage,
       readPluginFeed,
-      catalogOf,
       aiOf,
       timeZoneOf,
       readerTimeZoneOf,
-      households = () => [currentHouseholdId()],
       fetchVideoDuration,
       summarize,
       writeDailySummary,
@@ -87,11 +82,9 @@ export class NewsService {
       log = console.warn
     }: NewsServiceOptions
   ) {
-    this.#catalogs = new PerHousehold(() => (catalogOf ? catalogOf() : { topics: [], listen: [] }))
-    this.#catalogs.set(catalog)
-    this.#households = households
+    this.#catalogValue = catalog
     this.#videoLengths = store && fetchVideoDuration ? new VideoLengths({ store, fetchVideoDuration, now, log }) : null
-    this.#timeZones = new PerHousehold(() => (timeZoneOf ? timeZoneOf() : timeZone))
+    this.#timeZone = timeZoneOf ? timeZoneOf() : timeZone
     this.#now = now
     this.#checks = new CheckQueue(itemId => this.getArticle(itemId), now, log)
     this.#feeds = new FeedCache({ fetchText, readPluginFeed, store, isPaused, now, log })
@@ -126,7 +119,7 @@ export class NewsService {
       now
     })
     const tools = { summarize, writeDailySummary, answerQuestion, suggestSources }
-    const timeZones = (profileId: number) => readerTimeZoneOf?.(profileId) ?? this.#timeZones.get()
+    const timeZones = (profileId: number) => readerTimeZoneOf?.(profileId) ?? this.#timeZone
     const wiring = { tools, aiOf, store, languageOf, householdLanguage, now, log }
     this.#newsAi = createNewsAi({ ...wiring, timeZone: timeZones }, this)
   }
@@ -137,7 +130,7 @@ export class NewsService {
   }
 
   setTimeZone(timeZone: string) {
-    this.#timeZones.set(timeZone)
+    this.#timeZone = timeZone
   }
 
   // The blurred previews of the pictures the server made smaller (article-images.ts).
@@ -158,9 +151,9 @@ export class NewsService {
     return this.#newsAi.usage(profileId)
   }
 
-  // The catalogue of the household the request is for (household-scope.ts).
+  // The server's one catalogue.
   get #catalog(): Catalog {
-    return this.#catalogs.get()
+    return this.#catalogValue
   }
 
   get catalog() {
@@ -328,17 +321,8 @@ export class NewsService {
 
   // One pass: lists the whole window of every topic and queues what was never checked.
   async checkAllTopics() {
-    // Every household's topics: a feed several follow is fetched once, its articles shared.
     await this.#checks.pass(() =>
-      Promise.all(
-        this.#households().flatMap(id =>
-          inHousehold(id, () =>
-            this.#catalog.topics.map(topic =>
-              inHousehold(id, () => this.getTopic(topic.id, MAX_TOPIC_LIMIT, { background: true }))
-            )
-          )
-        )
-      )
+      Promise.all(this.#catalog.topics.map(topic => this.getTopic(topic.id, MAX_TOPIC_LIMIT, { background: true })))
     )
   }
 

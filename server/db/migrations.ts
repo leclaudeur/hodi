@@ -1456,6 +1456,27 @@ const MIGRATIONS: string[] = [
   DELETE FROM server_settings WHERE key = 'householdLater';
   -- The setup no longer names it: a new server's says Hodi wherever it still shows.
   UPDATE accounts SET name = 'Hodi' WHERE id = 1 AND set_up_at IS NULL;
+  `,
+  // One catalogue for the whole server: each feed once, in the topics, order and with the adder of the first household
+  // that followed it. Who reads it stays each person's own (my_sources).
+  `
+  CREATE TABLE catalog_sources (
+    source_id TEXT PRIMARY KEY REFERENCES sources (id) ON DELETE CASCADE,
+    section TEXT NOT NULL,
+    section_id TEXT NOT NULL,
+    topics TEXT,
+    position INTEGER NOT NULL,
+    added_by INTEGER REFERENCES profiles (id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+  );
+  CREATE INDEX catalog_sources_added_by ON catalog_sources (added_by);
+  INSERT OR IGNORE INTO catalog_sources (source_id, section, section_id, topics, position, added_by, created_at)
+    SELECT source_id, section, section_id, topics, position, added_by, created_at FROM household_sources
+    ORDER BY household_id, created_at, rowid;
+  DROP TABLE household_sources;
+  CREATE TRIGGER catalog_sources_forget_readers AFTER DELETE ON catalog_sources BEGIN
+    DELETE FROM my_sources WHERE source_id = OLD.source_id;
+  END;
   `
 ]
 
