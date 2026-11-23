@@ -638,11 +638,16 @@ describe('the account and its data', () => {
     assert.match(copy.headers.get('content-disposition') ?? '', /attachment; filename="hodi-\d{4}-\d{2}-\d{2}\.json"/)
     const body = (await copy.json()) as {
       account: { email: string; devices: unknown[] }
-      household: { name: string; profiles: { name: string }[] }
+      profiles: { name: string }[]
       you: { profile: { name: string }; saved_articles: unknown[] }
     }
     assert.equal(body.account.email, 'antho@example.org')
-    assert.equal(body.household.name, 'Hodi')
+    // Its own profile and its children's: never the other people of the server.
+    assert.deepEqual(
+      body.profiles.map(profile => profile.name),
+      ['Antho']
+    )
+    assert.equal('household' in body, false)
     assert.equal(body.you.profile.name, 'Antho')
     assert.deepEqual(body.you.saved_articles, [])
     assert.doesNotMatch(JSON.stringify(body), /passwordHash|password_hash|scrypt|ai_key/)
@@ -651,8 +656,8 @@ describe('the account and its data', () => {
   it('deletes an account: another adult takes over the household and the server', async () => {
     const { code } = (await (await post('/codes', {}, { cookie: antho })).json()) as { code: string }
     const sam = cookiesFrom(await post('/codes/join', { ...SAM, code }))
-    const plan = (await (await get(antho)).json()) as { deletion: { householdGoes: boolean } }
-    assert.equal(plan.deletion.householdGoes, false)
+    const plan = (await (await get(antho)).json()) as { deletion: { serverGoes: boolean } }
+    assert.equal(plan.deletion.serverGoes, false)
 
     // The red confirmation is not enough: a device left open, or a stolen cookie, does not know the password.
     const unproven = await post('/account', {}, { cookie: antho }, 'DELETE')
@@ -671,9 +676,9 @@ describe('the account and its data', () => {
     assert.equal(install.accounts.byEmail('sam@example.com')?.serverAdmin, true)
 
     // The last adult: the household goes with Sam's account, and the install waits for its first-run screens.
-    const last = (await (await get(sam)).json()) as { deletion: { householdGoes: boolean } }
+    const last = (await (await get(sam)).json()) as { deletion: { serverGoes: boolean } }
     assert.deepEqual(last.deletion, {
-      householdGoes: true,
+      serverGoes: true,
       others: [],
       children: [],
       heir: null,

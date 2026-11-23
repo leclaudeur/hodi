@@ -293,19 +293,17 @@ describe('FollowedAlerts subscriptions', () => {
   })
 })
 
-describe('followed alerts in two households', () => {
-  it("tells each device about its own household's sources only", async () => {
+describe('followed alerts on one server', () => {
+  it('lists the articles once for every device, and tells each device that follows the word', async () => {
     let clock = START
-    // Profile 1 reads in the Duponts' household, profile 10 in the Martins'.
-    const byHousehold: Record<number, FeedItem[]> = { 1: [], 2: [] }
-    const listed: number[] = []
+    const items: FeedItem[] = []
+    let listed = 0
     const sent: [string, string][] = []
     const alerts = new FollowedAlerts({
-      listItems: async householdId => {
-        listed.push(householdId)
-        return byHousehold[householdId] ?? []
+      listItems: async () => {
+        listed += 1
+        return items
       },
-      householdOf: profileId => (profileId === 10 ? 2 : 1),
       send: async (target, payload) => {
         sent.push([target.endpoint, payload.title])
       },
@@ -318,14 +316,13 @@ describe('followed alerts in two households', () => {
     )
 
     clock += MINUTE
-    byHousehold[1]!.push(article('GTA 6 : chez les Dupont', clock))
-    byHousehold[2]!.push(article('GTA 6 : chez les Martin', clock, 'other'))
+    items.push(article('GTA 6 : la date', clock))
     await alerts.check()
 
-    assert.deepEqual(listed.toSorted(), [1, 2])
+    assert.equal(listed, 1)
     assert.deepEqual(sent.toSorted(), [
-      ['https://web.push.apple.com/abc', 'GTA 6 : chez les Dupont'],
-      ['https://web.push.apple.com/martin', 'GTA 6 : chez les Martin']
+      ['https://web.push.apple.com/abc', 'GTA 6 : la date'],
+      ['https://web.push.apple.com/martin', 'GTA 6 : la date']
     ])
   })
 })

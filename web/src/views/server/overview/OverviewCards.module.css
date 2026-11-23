@@ -151,11 +151,6 @@
   font-weight: 500;
 }
 
-.who small {
-  color: var(--text-3);
-  font-size: 12px;
-}
-
 .device {
   flex-shrink: 0;
   color: var(--text-3);

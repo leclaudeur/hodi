@@ -1,30 +1,23 @@
 import type express from 'express'
 import { deletionPlan } from '../db/account-data.ts'
-import { inHousehold } from '../db/household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { type UserAccount, cleanEmail } from '../db/user-account-store.ts'
 import type { ServerHelpers, ServerRoutesOptions } from './server-routes.ts'
 
-// Serveur › Comptes and Foyers: what goes for good, each after the server admin's own password.
+// Serveur › Comptes: what goes for good, each after the server admin's own password.
 
-// An account gone from the server: its profile in each household it reads in, or the whole household with its last
-// adult who has an account, then the account and its devices. blocks: its e-mail makes no account again.
+// An account gone from the server: its profile, or everything with the last adult who has an account, then the
+// account and its devices. blocks: its e-mail makes no account again.
 // null when the routes have nothing to delete with (tests without accounts).
-export const accountRemover = ({ people, accounts, profiles, household, deletions, now }: ServerRoutesOptions) => {
-  if (!people || !accounts || !profiles || !household || !deletions) return null
+export const accountRemover = ({ people, accounts, profiles, deletions, now }: ServerRoutesOptions) => {
+  if (!people || !accounts || !profiles || !deletions) return null
   const { data, onProfileDeleted, onAccountDeleted, onHouseholdGone } = deletions
   return (account: UserAccount, blocks: boolean) => {
     if (blocks && account.email) accounts.blockEmail(account.email, now())
-    const plans = data.householdsOf(account.id).map(householdId => ({
-      householdId,
-      plan: inHousehold(householdId, () => deletionPlan(account, accounts, profiles, householdId))
-    }))
-    for (const { householdId, plan } of plans)
-      inHousehold(householdId, () =>
-        [...plan.profiles, ...plan.children].forEach(profile => onProfileDeleted(profile.id))
-      )
-    const { accounts: gone, households } = data.deleteFromServer(account, plans, now())
-    gone.forEach(onAccountDeleted)
-    households.forEach(onHouseholdGone)
+    const plan = deletionPlan(account, accounts, profiles)
+    ;[...plan.profiles, ...plan.children].forEach(profile => onProfileDeleted(profile.id))
+    data.deleteFromServer(account, plan, now()).forEach(onAccountDeleted)
+    if (plan.serverGoes) onHouseholdGone(DEFAULT_ACCOUNT_ID)
   }
 }
 

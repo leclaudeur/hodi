@@ -80,8 +80,7 @@
     "existing": "I already have an account",
     "newAccount": "Create a new account",
     "signIn": "Join",
-    "alreadyMember": "This account already has a profile on this server: sign in with it.",
-    "otherHousehold": "Your account <b>{{email}}</b> is already in <b>{{current}}</b>: leave that household first in <i>My account</i>."
+    "alreadyMember": "This account already has a profile on this server: sign in with it."
   },
   "password": {
     "show": "Show password",
@@ -334,7 +333,6 @@
       "title": "Add my account",
       "intro": "Sign in to add an account to this device. The accounts already added to <i>Who’s in?</i> stay as they are.",
       "submit": "Sign in",
-      "otherHousehold": "<b>{{email}}</b> is in the <b>{{household}}</b> household, and this device serves the <b>{{here}}</b> household.",
       "recovery": "Recovery code",
       "app": "App code"
     },
@@ -1714,8 +1712,8 @@
     "deleteAccount": {
       "title": "Delete your account?",
       "message": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. Backup copies forget it within {{days}}.",
-      "messageHousehold": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: every profile goes too.</b> Backup copies forget it within {{days}}.",
-      "messageHouseholdWith": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: the profiles of {{profiles}} go too.</b> Backup copies forget it within {{days}}.",
+      "messageServer": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: every profile goes too.</b> Backup copies forget it within {{days}}.",
+      "messageServerWith": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: the profiles of {{profiles}} go too.</b> Backup copies forget it within {{days}}.",
       "button": "Delete",
       "messageChildren": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>You are the only parent of {{children}}: their accounts go too.</b> Backup copies forget it within {{days}}."
     },
@@ -2006,8 +2004,7 @@
       "blocks": "Blocked sources, addresses"
     },
     "overview": {
-      "introOne": "The server in totals, beside the period before. The server counts, it doesn’t look: never what a person reads.",
-      "introSeveral": "Every household together, in totals, beside the period before. The server counts, it doesn’t look: never what a person reads.",
+      "intro": "The server in totals, beside the period before. The server counts, it doesn’t look: never what a person reads.",
       "period": "Period",
       "span": {
         "days": "{{count}} d",

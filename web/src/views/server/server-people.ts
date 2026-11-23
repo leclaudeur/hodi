@@ -1,13 +1,12 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import { type ServerAccount, type ServerHousehold, getServerAccounts, getServerHouseholds } from '../../api.ts'
+import { type ServerAccount, getServerAccounts } from '../../api.ts'
 import { numericDate } from '../../lib/format.ts'
 
 export interface People {
-  households: ServerHousehold[]
   accounts: ServerAccount[]
 }
 
-// Both lists, shared by the list column and the open page.
+// The accounts, shared by the list column and the open page.
 let people: People | null = null
 let failed = false
 const listeners = new Set<() => void>()
@@ -17,9 +16,9 @@ const subscribe = (listener: () => void) => {
 }
 let pending: Promise<void> | null = null
 export const load = () =>
-  (pending ??= Promise.all([getServerHouseholds(), getServerAccounts()])
-    .then(([{ households }, accounts]) => {
-      people = { households, accounts }
+  (pending ??= getServerAccounts()
+    .then(accounts => {
+      people = { accounts }
       failed = false
     })
     .catch(() => {

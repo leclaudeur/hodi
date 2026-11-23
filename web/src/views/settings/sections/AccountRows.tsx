@@ -28,11 +28,11 @@ export const confirmDelete = (account: AccountView, t: TFunction) => {
   const deletion = account.deletion
   const children = deletion?.children ?? []
   const alone = children.length ? 'confirm.deleteAccount.messageChildren' : 'confirm.deleteAccount.message'
-  const key = !deletion?.householdGoes
+  const key = !deletion?.serverGoes
     ? alone
     : deletion.others.length
-      ? 'confirm.deleteAccount.messageHouseholdWith'
-      : 'confirm.deleteAccount.messageHousehold'
+      ? 'confirm.deleteAccount.messageServerWith'
+      : 'confirm.deleteAccount.messageServer'
   askToConfirm({
     title: t('confirm.deleteAccount.title'),
     message: (

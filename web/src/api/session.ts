@@ -11,8 +11,6 @@ export type LoginResult =
   | { ok: false; reason: 'invalid_password' | 'error' | 'two_factor' | 'invalid_code' | 'blocked' }
   | { ok: false; reason: 'too_many_attempts'; retryAfterSeconds: number }
   | { ok: false; reason: 'refused'; refusal: SignInRefusal }
-  // An account of another household than the one this device serves: both their names.
-  | { ok: false; reason: 'other_household'; household: string | null; here: string | null }
 
 export interface Session {
   // False: the household's profiles are not picked on this device yet ("Qui lit ?").
@@ -80,11 +78,6 @@ export const login = async (email: string, password: string, code?: string): Pro
   if (response.status === 429) {
     const body = (await response.json()) as { retryAfterSeconds?: number }
     return { ok: false, reason: 'too_many_attempts', retryAfterSeconds: body.retryAfterSeconds ?? 900 }
-  }
-
-  if (response.status === 409) {
-    const body = (await response.json().catch(() => null)) as { household?: string; here?: string } | null
-    return { ok: false, reason: 'other_household', household: body?.household ?? null, here: body?.here ?? null }
   }
 
   if (response.status === 403) {

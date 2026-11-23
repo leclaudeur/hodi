@@ -110,7 +110,7 @@ describe('deletions done again after a restore', () => {
     data.delete(paulNow, deletionPlan(paulNow, accounts, profiles), clock)
     const marieNow = accounts.get(marie.id)!
     const plan = deletionPlan(marieNow, accounts, profiles)
-    assert.ok(plan.householdGoes)
+    assert.ok(plan.serverGoes)
     data.delete(marieNow, plan, clock)
 
     const restored = openDatabase(copy.file)

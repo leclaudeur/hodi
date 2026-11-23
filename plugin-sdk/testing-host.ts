@@ -1,7 +1,7 @@
 import { LoginThrottle } from '../server/auth/login-throttle.ts'
 import { AccountLoginStore } from '../server/db/account-login-store.ts'
 import { openDatabase } from '../server/db/database.ts'
-import { DEFAULT_ACCOUNT_ID } from '../server/db/household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from '../server/db/server-row.ts'
 import { HouseholdStore } from '../server/db/household-store.ts'
 import type { MailSettings } from '../server/db/mail-settings-store.ts'
 import { PluginStore } from '../server/db/plugin-store.ts'
@@ -104,7 +104,7 @@ const openHousehold = (options: TestPluginOptions, now: () => number) => {
     householdId,
     accounts: new UserAccountStore(db),
     store: new PluginStore(db),
-    profiles: new ProfileStore(db, householdId)
+    profiles: new ProfileStore(db)
   }
 }
 
@@ -197,7 +197,11 @@ export const startSmallHodi = async (
   })
   // ctx.accounts.remove: the account goes and the plugins hear of it, as in Hodi.
   removals.remove = account => {
-    new AccountDataStore(db).deleteFromServer(account, [], now())
+    new AccountDataStore(db).deleteFromServer(
+      account,
+      { serverGoes: false, profiles: [], heir: null, children: [] },
+      now()
+    )
     registry.accountDeleted(account.id)
   }
   return { db, householdId, accounts, store, profiles, ai, registry }

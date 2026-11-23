@@ -80,8 +80,7 @@
     "existing": "J’ai déjà un compte",
     "newAccount": "Créer un nouveau compte",
     "signIn": "Rejoindre",
-    "alreadyMember": "Ce compte a déjà un profil sur ce serveur : connecte-toi avec lui.",
-    "otherHousehold": "Le compte <b>{{email}}</b> est déjà dans <b>{{current}}</b> : quitte d’abord ce foyer dans <i>Mon compte</i>."
+    "alreadyMember": "Ce compte a déjà un profil sur ce serveur : connecte-toi avec lui."
   },
   "password": {
     "show": "Afficher le mot de passe",
@@ -334,7 +333,6 @@
       "title": "Ajouter mon compte",
       "intro": "Connecte-toi pour ajouter un compte à cet appareil. Les comptes déjà ajoutés à <i>Qui lit ?</i> restent comme ils sont.",
       "submit": "Se connecter",
-      "otherHousehold": "<b>{{email}}</b> est dans le foyer <b>{{household}}</b>, et cet appareil sert le foyer <b>{{here}}</b>.",
       "recovery": "Code de secours",
       "app": "Code de l’app"
     },
@@ -1714,8 +1712,8 @@
     "deleteAccount": {
       "title": "Supprimer le compte ?",
       "message": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-      "messageHousehold": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : tous les profils partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-      "messageHouseholdWith": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : les profils de {{profiles}} partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
+      "messageServer": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : tous les profils partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
+      "messageServerWith": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : les profils de {{profiles}} partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
       "button": "Supprimer",
       "messageChildren": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Tu es le seul parent de {{children}} : leurs comptes partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}."
     },
@@ -2006,8 +2004,7 @@
       "blocks": "Sources bloquées, adresses"
     },
     "overview": {
-      "introOne": "Le serveur en totaux, comparé à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
-      "introSeveral": "Tous les foyers ensemble, en totaux, comparés à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
+      "intro": "Le serveur en totaux, comparé à la période d’avant. Le serveur compte, il ne regarde pas : jamais ce qu’une personne lit.",
       "period": "Période",
       "span": {
         "days": "{{count}} j",

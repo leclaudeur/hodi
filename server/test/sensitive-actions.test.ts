@@ -296,11 +296,9 @@ describe('Serveur › Foyers, gone', () => {
   it('deletes no household, even with the server admin’s password', async () => {
     const { call, admin, sam, samAccount, accounts, close } = await start()
     try {
-      const { households } = (await (await call('/server/households', admin)).json()) as {
-        households: { id: number }[]
-      }
-      const url = `/server/households/${households[0]!.id}`
-      assert.equal((await call(url, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 404)
+      // Neither the list nor a household of its own is served any more.
+      assert.equal((await call('/server/households', admin)).status, 404)
+      assert.equal((await call('/server/households/1', admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 404)
       assert.notEqual(accounts.get(samAccount.id), null)
       assert.equal((await call('/session', sam)).status, 200)
     } finally {

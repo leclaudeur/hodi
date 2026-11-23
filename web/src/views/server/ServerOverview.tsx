@@ -61,7 +61,7 @@ const Board = ({ overview, topics, span }: { overview: Overview; topics: TopicIn
         span={span}
       />
       <div className={styles.side}>
-        <OnlineCard online={overview.online} households={overview.households} />
+        <OnlineCard online={overview.online} />
         <ProfilesCard profiles={overview.profiles} added={sum(days, day => day.profiles)} span={span} />
       </div>
       <PluginCards days={days} />
@@ -79,7 +79,7 @@ const ServerOverview = ({ layout }: { layout: 'desktop' | 'phone' }) => {
   const [period, setPeriod] = useState<Period>({ days: 7 })
   const { overview, topics } = useOverview(period)
   const title = t('server.titles.overview')
-  const intro = t((overview?.households ?? 1) > 1 ? 'server.overview.introSeveral' : 'server.overview.introOne')
+  const intro = t('server.overview.intro')
   const periods = <PeriodPicker period={period} onChange={setPeriod} />
   // Chosen dates count as their number of days: « +3 en 12 jours ».
   const span = 'days' in period ? period.days : (overview?.days.length ?? 0)

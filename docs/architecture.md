@@ -59,7 +59,8 @@ small hooks under `lib/`.
 - **Migrations**: a schema change is a new entry at the end of `db/migrations.ts`
 - **Outgoing requests**: through `news/fetch-text.ts`, and the SSRF guard for any URL a user gives
 - **AI**: through `news/ai-providers.ts`, only from a click, counted in each account's usage
-- **Households**: `db/household-scope.ts` keeps the request's household, so a route never sees another's
+- **One server, no household**: every profile reads on the server as one. `db/server-row.ts` names the one row of
+  server settings (time zone, language, AI, the game) that the first-run screens fill
 - **Profiles on a device**: `db/reader-scope.ts` keeps the accounts signed in on the device that asks, and
   `ProfileStore.list()` and `get()` give only their profiles and their children's. Outside a request (start-up,
   nightly jobs, a timer, a worker's callback) there is no such scope and they give every profile, so code that may run
@@ -75,7 +76,8 @@ small hooks under `lib/`.
 A feed is one row of `sources` for the whole server, fetched once whoever reads it. The server has one catalogue: a
 feed's topics, order and adder are its row of `catalog_sources`. Which of them each person reads is their rows of
 `my_sources` (`db/my-sources.ts`, through `/api/me/sources/:id`); the app still gets the others as the preferences'
-`hiddenSources`. `server/test/household-isolation.test.ts` writes a second household in by hand, and checks that neither household ever sees what the other holds.
+`hiddenSources`. `server/test/household-isolation.test.ts` puts two families on one server and checks that neither
+ever sees what the other holds.
 
 ### Accounts and sign-in
 

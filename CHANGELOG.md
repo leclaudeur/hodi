@@ -67,7 +67,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   plugin's AI turned off joins the first one. Invited people lists the invitations each adult made, and a plugin's AI
   turned off is off for the whole server. A code made by the server's admin sets a new password for anyone but
   themselves. Invitation e-mails, codes and Delete your account no longer name a household, and the Shared goal
-  of the week is each family's own: a person, their parents and their children.
+  of the week is each family's own: a person, their parents and their children. An account with a profile in two
+  households keeps the first one's.
+- **No household around anyone.** Any account can sign in on any device beside the others there. Server › Overview
+  shows who is online by first name and device, Server › Accounts lists the accounts alone with _Invite someone_
+  under them, and Delete your account warns when every profile goes with the last adult. Download a copy holds your
+  profile and your children's, never the other people of the server.
 - **One catalogue of sources for the server.** Every source added is in the one catalogue of the server, and each
   person still picks the ones they read in My sources. A server with several groups of people merges their lists once,
   each feed keeping the topics it had first; a source only one group saw waits in Server › To do. A source someone

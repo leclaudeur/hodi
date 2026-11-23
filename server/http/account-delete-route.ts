@@ -21,7 +21,7 @@ export const mountDeleteRoute = (
     const going = plan(session.account)!
     for (const profile of [...going.profiles, ...going.children]) onDeleteProfile?.(profile.id)
     for (const accountId of data.delete(session.account, going, now())) onAccountDeleted?.(accountId)
-    if (going.householdGoes) onHouseholdGone?.()
+    if (going.serverGoes) onHouseholdGone?.()
     const left = cookieWithout ? cookieWithout(session.account.id, request).cookie : clearedSessionCookie()
     response.set('Set-Cookie', [left, clearedProfileCookie()])
     response.status(204).end()

@@ -1,5 +1,5 @@
 import type express from 'express'
-import { currentHouseholdId } from '../db/household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { MAX_AI_INPUT_BYTES, type PluginAi, type PluginAiStatus } from '../plugins/ai.ts'
 import type { LoadedPlugin, PluginRegistry } from '../plugins/registry.ts'
 import { sameSiteOnly } from './plugin-sandbox-routes.ts'
@@ -45,7 +45,7 @@ const aiClickOf = (
     response.status(403).json({ error: 'young' })
     return null
   }
-  const householdId = currentHouseholdId()
+  const householdId = DEFAULT_ACCOUNT_ID
   const profileId = profileIdOf(response)
   if (typeof householdId !== 'number' || typeof profileId !== 'number') {
     response.status(403).json({ error: 'no_profile' })

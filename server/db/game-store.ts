@@ -1,5 +1,5 @@
 import { dayOf } from '../news/days.ts'
-import { currentHouseholdId } from './household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from './server-row.ts'
 import type { Language } from '../../shared/i18n.ts'
 import { type BadgeId, type GameRules, type LevelProgress, levelOf, nameIn } from '../game/rules.ts'
 import { type Database, transaction } from './database.ts'
@@ -340,13 +340,13 @@ export class GameStore {
 
   // false: the admin turned the game off for the household; nothing shows, points still count.
   enabled(): boolean {
-    const row = this.#db.prepare('SELECT game FROM accounts WHERE id = ?').get(currentHouseholdId()) as
+    const row = this.#db.prepare('SELECT game FROM accounts WHERE id = ?').get(DEFAULT_ACCOUNT_ID) as
       { game: number } | undefined
     return row?.game !== 0
   }
 
   setEnabled(enabled: boolean) {
-    this.#db.prepare('UPDATE accounts SET game = ? WHERE id = ?').run(enabled ? 1 : 0, currentHouseholdId())
+    this.#db.prepare('UPDATE accounts SET game = ? WHERE id = ?').run(enabled ? 1 : 0, DEFAULT_ACCOUNT_ID)
   }
 
   // The grades named in the reader's language.

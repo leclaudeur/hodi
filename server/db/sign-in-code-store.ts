@@ -1,6 +1,6 @@
 import { createHmac, randomInt } from 'node:crypto'
 import type { Database } from './database.ts'
-import { DEFAULT_ACCOUNT_ID } from './household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from './server-row.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 // "J'ai un code": eight letters and digits that let a person make their account on the server, from a device signed in

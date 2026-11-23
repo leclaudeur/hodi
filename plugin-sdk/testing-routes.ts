@@ -1,6 +1,5 @@
 import type { AddressInfo } from 'node:net'
 import express from 'express'
-import { inHousehold } from '../server/db/household-scope.ts'
 import type { ProfileStore } from '../server/db/profile-store.ts'
 import type { UserAccountStore } from '../server/db/user-account-store.ts'
 import { pluginRoutes, pluginPublicRoutes, pluginServerRoutes } from '../server/http/plugin-routes.ts'
@@ -19,9 +18,9 @@ interface KitRoutes {
   signedIn: number[]
 }
 
-// Behind a stand-in for Hodi's session: the person the call names, in the household.
+// Behind a stand-in for Hodi's session: the person the call names.
 const sessionStandIn =
-  ({ profiles, accounts, householdId }: KitRoutes): express.RequestHandler =>
+  ({ profiles, accounts }: KitRoutes): express.RequestHandler =>
   (request, response, next) => {
     const profileId = Number(request.get('x-test-profile'))
     const profile = profiles.get(profileId)
@@ -33,7 +32,7 @@ const sessionStandIn =
       // The account of the profile that calls, as a session would have it.
       accountId: profile ? (accounts.ofProfile(profile.id)?.id ?? undefined) : undefined
     })
-    inHousehold(householdId, () => next())
+    next()
   }
 
 export const serveKit = async (kit: KitRoutes) => {

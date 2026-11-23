@@ -46,6 +46,8 @@ and never touch `version`; a small release pull request raises `version` and mov
   sign-in, so no account is ever left in no household: a route marked `noHousehold: true` is an ordinary route, and
   `noHouseholdActions` draws nowhere. In the test kit, `noHouseholdRoute` is gone; `addAccount` makes an account with
   no profile yet.
+- **`useServerHouseholds()`**, with Serveur › Foyers, and `householdId` in `useServerAccounts()`: every account reads
+  on the server as one, with no household around it.
 
 ## [1.0.0-beta.5] - 2026-11-19
 

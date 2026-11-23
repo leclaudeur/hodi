@@ -15,7 +15,6 @@ const VISITS_KEPT_DAYS = CONFIG.retention.visitsDays
 const READINGS_DAYS = CONFIG.retention.readingDays
 
 export interface ServerOverview {
-  households: number
   profiles: { adults: number; young: number }
   // The first day with numbers: « Tout » starts there.
   since: string
@@ -170,15 +169,9 @@ export class ServerStatsStore {
     const before = datesBetween(dayOf(Date.parse(`${from}T12:00:00Z`) - days.length * DAY_MS, 'UTC'), from).slice(0, -1)
     const previous = before.length && before.at(-1)! >= since ? this.#days(before[0]!, before.at(-1)!, now).days : []
 
-    const kinds = this.#db
-      .prepare('SELECT p.kind FROM profiles p JOIN accounts a ON a.id = p.account_id WHERE a.set_up_at IS NOT NULL')
-      .all() as { kind: string }[]
-    const { count: households } = this.#db
-      .prepare('SELECT COUNT(*) AS count FROM accounts WHERE set_up_at IS NOT NULL')
-      .get() as { count: number }
+    const kinds = this.#db.prepare('SELECT kind FROM profiles').all() as { kind: string }[]
     const adults = kinds.filter(profile => profile.kind === 'adult').length
     return {
-      households,
       profiles: { adults, young: kinds.length - adults },
       since,
       days,

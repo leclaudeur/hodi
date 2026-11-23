@@ -3,7 +3,6 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { hashPassword } from '../server/auth/password.ts'
-import { inHousehold } from '../server/db/household-scope.ts'
 import type { ProfileKind } from '../server/db/profile-store.ts'
 import type { MailMessage } from '../server/mail/mailer.ts'
 import type { ServerNotice } from '../server/notices/server-notifier.ts'
@@ -140,15 +139,15 @@ const buildForTest = async (folder: string, options: TestPluginOptions) => {
 
 type SmallHodi = Awaited<ReturnType<typeof startSmallHodi>>
 
-// People: the household's admin first, then whoever the test adds.
-const peopleOf = ({ db, accounts, profiles, householdId }: SmallHodi, now: () => number) => {
+// People: the first admin, then whoever the test adds.
+const peopleOf = ({ db, accounts, profiles }: SmallHodi, now: () => number) => {
   const addAccount = async ({ email, password = DEFAULT_PASSWORD }: { email: string; password?: string }) => {
     const account = accounts.create(email, await hashPassword(password), now())
     if (!account) throw new Error(`${email} already has an account`)
     return account.id
   }
   const addPerson: TestPlugin['addPerson'] = async ({ name, kind = 'adult', email, password }) => {
-    const profile = inHousehold(householdId, () => profiles.create(name, 'world', now(), { kind }))
+    const profile = profiles.create(name, 'world', now(), { kind })
     if (!profile) throw new Error(`${name}: the profile could not be made`)
     let accountId: number | null = null
     const address = kind === 'adult' ? (email ?? `${name.toLowerCase().replace(/[^a-z0-9]/g, '')}@example.test`) : null

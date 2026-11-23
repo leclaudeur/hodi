@@ -2,7 +2,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { existsSync, rmSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
 import { type Database, transaction } from './database.ts'
-import { DEFAULT_ACCOUNT_ID } from './household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from './server-row.ts'
 import { migrate } from './migrations.ts'
 
 // Each installed plugin's state in the household: on or off, and the settings the admin chose. A plugin starts on: it

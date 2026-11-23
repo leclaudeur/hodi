@@ -3,7 +3,6 @@ import { DatabaseSync } from 'node:sqlite'
 import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
 import { migrate, versionBefore } from '../db/migrations.ts'
-import { inHousehold } from '../db/household-scope.ts'
 import { NewsStore } from '../db/news-store.ts'
 import { SourceStore, createPauseCheck } from '../db/source-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
@@ -341,26 +340,14 @@ describe("the server's catalogue", () => {
   const ids = (catalog: ReturnType<SourceStore['catalog']>) =>
     catalog.topics.map(topic => [topic.id, topic.sources.map(source => source.id)])
 
-  it('is the same catalogue for every request, each feed once', () => {
+  it('keeps each feed once', () => {
     const db = openDatabase(':memory:')
     const store = new SourceStore(db)
     store.load(file(BETA), NOW, 'fr')
-    db.prepare("INSERT INTO accounts (id, name, created_at, set_up_at) VALUES (2, 'Famille Martin', ?, ?)").run(
-      NOW,
-      NOW
-    )
-    const before = ids(store.catalog(file(BETA)))
-    assert.deepEqual(
-      inHousehold(2, () => ids(store.catalog(file(BETA)))),
-      before
-    )
     // Already in the catalogue: the same row, never a second one.
-    assert.equal(
-      inHousehold(2, () => store.has('alpha')),
-      true
-    )
+    assert.equal(store.has('alpha'), true)
     assert.equal(store.findByUrl('https://alpha.example/feed')?.id, 'alpha')
-    inHousehold(2, () => store.remove('alpha'))
+    store.remove('alpha')
     assert.equal(store.has('alpha'), false)
     assert.equal(count(db), 0)
   })
@@ -369,7 +356,7 @@ describe("the server's catalogue", () => {
     const db = openDatabase(':memory:')
     const store = new SourceStore(db)
     store.seed(file(BETA), 'fr', NOW)
-    inHousehold(2, () => store.seed(file(BETA), 'en', NOW))
+    store.seed(file(BETA), 'en', NOW)
     assert.deepEqual(ids(store.catalog(file(BETA))), [
       ['world', ['alpha']],
       ['tech', []]

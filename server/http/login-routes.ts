@@ -5,8 +5,7 @@ import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { NO_PASSWORD, hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
 import { SecondStepTickets } from '../auth/second-step-tickets.ts'
 import { clearedProfileCookie, clearedSessionCookie, profileCookie, profileToken } from '../auth/session.ts'
-import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
-import type { HouseholdStore } from '../db/household-store.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
@@ -29,8 +28,6 @@ interface LoginRoutesOptions {
   cookieFor: CookieFor
   // The accounts signed in on this device, and its cookie once one of them signs out.
   session?: Pick<ReturnType<typeof accountSession>, 'sessionOf' | 'sessionsOf' | 'cookieWithout'>
-  // The household's name, for an account of another one than the device's.
-  household?: HouseholdStore
   secret: Buffer
   now: () => number
 }
@@ -54,8 +51,6 @@ const signInHelpers = ({
   twoFactor,
   throttle,
   cookieFor,
-  session,
-  household,
   secret,
   now
 }: LoginRoutesOptions) => {
@@ -65,7 +60,10 @@ const signInHelpers = ({
     if (account.serverAdmin) return null
     if (account.suspendedBy) return { plugin: account.suspendedBy, message: 'signIn.suspended' }
     if (!plugins || !accounts) return null
-    return plugins.checkSignIn({ accountId: account.id, householdId: accounts.householdOf(account.id) })
+    return plugins.checkSignIn({
+      accountId: account.id,
+      householdId: accounts.profileOf(account.id) === null ? null : DEFAULT_ACCOUNT_ID
+    })
   }
 
   // With « Validation en deux étapes » on, a sign-in also takes the app's code or a recovery code: 403
@@ -84,30 +82,14 @@ const signInHelpers = ({
     return false
   }
 
-  // A device serves one household: an account of another one is refused there, with both names. false when sent.
-  const sameHousehold = (account: UserAccount, request: express.Request, response: express.Response) => {
-    const here = session?.sessionsOf(request).find(signedIn => signedIn.account.id !== account.id)
-    const mine = accounts?.householdOf(account.id) ?? null
-    const theirs = here ? (accounts?.householdOf(here.account.id) ?? null) : mine
-    if (mine === theirs) return true
-    const nameOf = (id: number | null) =>
-      id === null || !household ? null : inHousehold(id, () => household.get().name)
-    response.status(409).json({ error: 'other_household', household: nameOf(mine), here: nameOf(theirs) })
-    return false
-  }
-
   // The sign-ins a plugin vouched for that wait for the app's code.
   const secondStepTickets = new SecondStepTickets()
 
-  // The cookie that opens an account's own profile, in the household it reads in, once its password was given
-  // (Connexion, a new password). Before any session, so the household comes from the account.
+  // The cookie that opens an account's own profile once its password was given (Connexion, a new password).
   const ownProfileCookie = (accountId: number) => {
-    if (!accounts || !profiles) return null
-    return inHousehold(accounts.householdOf(accountId) ?? DEFAULT_ACCOUNT_ID, () => {
-      const profileId = accounts.profileOf(accountId)
-      if (profileId === null) return null
-      return profileCookie(profileToken(profileId, profiles.lock(profileId)?.version ?? 0, secret))
-    })
+    const profileId = accounts?.profileOf(accountId) ?? null
+    if (profileId === null || !profiles) return null
+    return profileCookie(profileToken(profileId, profiles.lock(profileId)?.version ?? 0, secret))
   }
 
   // A forgotten password may be known to someone else: every device of the account signs in again.
@@ -120,7 +102,7 @@ const signInHelpers = ({
     return cookieFor(accounts!.get(account.id)!, request)
   }
 
-  return { checkSignIn, secondStepOk, sameHousehold, ownProfileCookie, resetAccountPassword, secondStepTickets }
+  return { checkSignIn, secondStepOk, ownProfileCookie, resetAccountPassword, secondStepTickets }
 }
 
 type SignInHelpers = ReturnType<typeof signInHelpers>
@@ -142,7 +124,7 @@ const isBlocked = (accounts: UserAccountStore | undefined, typed: unknown) => {
 const mountLoginRoute = (
   router: express.Router,
   { accounts, throttle, cookieFor, now }: LoginRoutesOptions,
-  { checkSignIn, secondStepOk, sameHousehold, ownProfileCookie }: SignInHelpers
+  { checkSignIn, secondStepOk, ownProfileCookie }: SignInHelpers
 ) => {
   // Compared with when no account has the e-mail typed, so that a wrong address takes as long as a wrong password.
   let decoyHash: Promise<string> | null = null
@@ -193,7 +175,6 @@ const mountLoginRoute = (
     }
     // « Validation en deux étapes »: the password was right, the app's code (or a recovery code) comes next.
     if (!secondStepOk(account, request, response, client)) return
-    if (!sameHousehold(account, request, response)) return
     if (needsRehash(account.passwordHash)) accounts?.upgradePassword(account.id, await hashPassword(password))
     const cookies = [cookieFor(account, request)]
     // Its own profile opens at once: the password proved who reads, a PIN of its own included.
@@ -220,7 +201,7 @@ const mountLogoutRoute = (router: express.Router, { devices, session }: LoginRou
 const mountSecondStepRoute = (
   router: express.Router,
   { accounts, twoFactor, throttle, cookieFor, now }: LoginRoutesOptions,
-  { checkSignIn, sameHousehold, ownProfileCookie, secondStepTickets }: SignInHelpers
+  { checkSignIn, ownProfileCookie, secondStepTickets }: SignInHelpers
 ) => {
   // The app's code after a plugin's sign-in, typed in Hodi's dialog: the ticket the plugin's answer carried stands for
   // the first step. A wrong code counts as a wrong password at Connexion.
@@ -247,13 +228,12 @@ const mountSecondStepRoute = (
         return
       }
       secondStepTickets.use(ticket)
-      // A plugin may have suspended or removed the household since the first step: asked again, as at Connexion.
+      // A plugin may have suspended the account since the first step: asked again, as at Connexion.
       const refusal = await checkSignIn(account)
       if (refusal) {
         refuseSignIn(response, refusal)
         return
       }
-      if (!sameHousehold(account, request, response)) return
       const cookies = [cookieFor(account, request)]
       const own = ownProfileCookie(account.id)
       if (own) cookies.push(own)

@@ -46,7 +46,7 @@ const completeJoin = (
   response: express.Response
 ) => {
   const { codes, accounts, profiles, now, cookieFor, onProfileCreated, signsInHere } = options
-  if (existing ? accounts.householdOf(known!.id) !== null : accounts.byEmail(email)) {
+  if (existing ? accounts.profileOf(known!.id) !== null : accounts.byEmail(email)) {
     response.status(409).json({ error: existing ? 'already_member' : 'email_taken' })
     return
   }

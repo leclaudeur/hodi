@@ -1,6 +1,5 @@
 import { handleCheckRoutes } from '../http/handle-routes.ts'
 import type express from 'express'
-import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
 import { publicServerSettings } from '../db/server-settings-store.ts'
 import { codeJoinRoutes } from '../http/code-routes.ts'
 import { setupRoutes } from '../http/setup-routes.ts'
@@ -13,15 +12,11 @@ import type { Wiring } from './wiring.ts'
 
 type Login = ReturnType<typeof loginRoutes>
 
-// « Demander un code »: the server's admins hear of it, for an account with a profile in a household.
+// « Demander un code »: the server's admins hear of it, for an account with a profile.
 const askAdmin = ({ serverInbox, accounts, profiles, now }: Wiring['options'], account: UserAccount) => {
-  const householdId = accounts?.householdOf(account.id) ?? null
-  if (!serverInbox || !profiles || householdId === null) return
-  const name = inHousehold(householdId, () => {
-    const profileId = accounts?.profileOf(account.id)
-    return profileId == null ? null : (profiles.get(profileId)?.name ?? null)
-  })
-  if (name === null) return
+  const profileId = accounts?.profileOf(account.id) ?? null
+  const name = profileId === null ? null : (profiles?.find(profileId)?.name ?? null)
+  if (!serverInbox || name === null) return
   // A request past its time is closed, so this one is told and counted from now.
   const key = codeRequestKey(account.id)
   const asked = serverInbox.store.waiting(key)
@@ -44,11 +39,10 @@ const mountPassword = (api: express.Router, { options }: Wiring, login: Login) =
       send: serverMail.send,
       resets: passwordResets,
       accounts,
-      languageOf: account =>
-        inHousehold(accounts.householdOf(account.id) ?? DEFAULT_ACCOUNT_ID, () => {
-          const profileId = accounts.profileOf(account.id)
-          return profileId === null ? install.get().language : news.languageOf(profileId)
-        }),
+      languageOf: account => {
+        const profileId = accounts.profileOf(account.id)
+        return profileId === null ? install.get().language : news.languageOf(profileId)
+      },
       checkSignIn: login.checkSignIn,
       askAdmin: account => askAdmin(options, account),
       home: () => options.serverSettings?.publicHome() ?? null,
@@ -67,7 +61,7 @@ const mountPassword = (api: express.Router, { options }: Wiring, login: Login) =
 
 // "J'ai un code", from a device signed in with nothing.
 const mountCodeJoin = (api: express.Router, wiring: Wiring, login: Login) => {
-  const { accounts, codes, profiles, household, install, throttle, now, devices, twoFactor } = wiring.options
+  const { accounts, codes, profiles, install, throttle, now, devices, twoFactor } = wiring.options
   if (!accounts || !codes || !profiles) return
   api.use(
     '/codes',
@@ -75,7 +69,6 @@ const mountCodeJoin = (api: express.Router, wiring: Wiring, login: Login) => {
       codes,
       accounts,
       profiles,
-      household,
       install,
       throttle,
       secret: wiring.config.sessionSecret,
@@ -134,7 +127,6 @@ export const mountSignedOut = (api: express.Router, wiring: Wiring) => {
     throttle,
     cookieFor: wiring.session.cookieFor,
     session: wiring.session,
-    household: options.household,
     secret: config.sessionSecret,
     now
   })

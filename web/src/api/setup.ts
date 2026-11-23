@@ -112,9 +112,9 @@ export interface AccountView {
   ai: AiKey | null
   providers: AiProviderInfo[]
   devices: AccountDevice[]
-  // householdGoes: no other adult has an account; others: the other profiles that go with it.
+  // serverGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: {
-    householdGoes: boolean
+    serverGoes: boolean
     others: string[]
     // The teens and children it is the only parent of: they go too.
     children: string[]

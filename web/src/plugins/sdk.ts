@@ -195,6 +195,6 @@ export { navigate, usePluginLinks, usePluginPath } from './links.ts'
 export { useServerSettings } from './server-settings.ts'
 export type { ServerSettings } from './server-settings.ts'
 // Serveur › Foyers and Comptes, read only, for the server's admin: households, accounts and when each was last used.
-export { useServerAccounts, useServerHouseholds } from './server-people.ts'
-export type { ServerAccountSummary, ServerHouseholdSummary } from './server-people.ts'
+export { useServerAccounts } from './server-people.ts'
+export type { ServerAccountSummary } from './server-people.ts'
 export type { PluginLinks } from './links.ts'

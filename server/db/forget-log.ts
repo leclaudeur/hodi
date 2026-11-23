@@ -1,7 +1,7 @@
 import { appendFileSync, existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { type Database, transaction } from './database.ts'
-import { DEFAULT_ACCOUNT_ID } from './household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from './server-row.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 // What was deleted of people, kept outside Hodi's database (data/forgotten.jsonl) so that « Restaurer » cannot bring it

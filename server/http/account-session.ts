@@ -99,18 +99,12 @@ export const accountSession = (
 
   const accountOf: AccountOf = request => sessionOf(request)?.account ?? null
 
-  // The device's cookie with this token of the account in place of any it had. The others of another household go:
-  // a device serves one household. An account in no household is alone on its device: nothing else would tell which
-  // of two such accounts asks.
+  // The device's cookie with this token of the account in place of any it had. An account with no profile yet is alone
+  // on its device: nothing else would tell which of two such accounts asks.
   const cookieWith = (account: UserAccount, token: string, request: express.Request) => {
-    const household = accounts?.householdOf(account.id) ?? null
+    const hasProfile = (id: number) => (accounts?.profileOf(id) ?? null) !== null
     const others = sessionsOf(request)
-      .filter(
-        session =>
-          household !== null &&
-          session.account.id !== account.id &&
-          accounts?.householdOf(session.account.id) === household
-      )
+      .filter(session => hasProfile(account.id) && session.account.id !== account.id && hasProfile(session.account.id))
       .map(session => session.token)
     return sessionCookie([...others, token].slice(-MAX_SESSIONS).join('~'))
   }

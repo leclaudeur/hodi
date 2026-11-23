@@ -3,7 +3,7 @@ import { AlertCircle, ChevronRight, Search, SearchX, UserPlus } from 'lucide-rea
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { type ServerAccount, createHouseholdCode } from '../../api.ts'
+import { type ServerAccount, createInviteCode } from '../../api.ts'
 import { SERVER_HREF, serverHref } from '../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../lib/use-media.ts'
 import Button from '../../ui/Button.tsx'
@@ -111,22 +111,15 @@ const PeopleSearch = ({ phone, label, query, onQuery }: SearchProps) => (
 )
 
 // Under the accounts, full width: a code for someone to make an account on this server.
-const InviteButton = ({ loaded }: { loaded: People }) => {
+const InviteButton = () => {
   const { t } = useTranslation()
   const [inviting, setInviting] = useState(false)
-  // Everyone reads in the server's one space.
-  const space = loaded.households[0]
-  if (!space) return null
   return (
     <div className={serverStyles.invite}>
       <Button icon={UserPlus} wide onClick={() => setInviting(true)}>
         {t('profiles.code.invite')}
       </Button>
-      <CodeDialog
-        target={inviting ? null : undefined}
-        onClose={() => setInviting(false)}
-        make={() => createHouseholdCode(space.id)}
-      />
+      <CodeDialog target={inviting ? null : undefined} onClose={() => setInviting(false)} make={createInviteCode} />
     </div>
   )
 }
@@ -172,7 +165,7 @@ const PeopleList = ({ active }: { active?: string }) => {
   const meta = loaded ? t('server.people.accountsMeta', { count: all.length }).toUpperCase() : undefined
   const search = <PeopleSearch phone={phone} label={label} query={query} onQuery={setQuery} />
   // At the column's foot on a computer, as « Charger <jour> » under the articles; under the list on a phone.
-  const invite = loaded && !needle && !loadFailed ? <InviteButton loaded={loaded} /> : null
+  const invite = loaded && !needle && !loadFailed ? <InviteButton /> : null
   const list = listOf(
     { failed: loadFailed, empty: loaded !== null && rows.length === 0 && needle !== '', query },
     t

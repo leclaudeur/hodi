@@ -8,7 +8,6 @@ import { createApp } from '../app.ts'
 import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { inHousehold } from '../db/household-scope.ts'
 import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
@@ -31,9 +30,9 @@ const cookiesFrom = (response: Response) =>
     .map(cookie => cookie.split(';')[0])
     .join('; ')
 
-// The core makes one household; a plugin may add others. Here a second one is written in by hand, as a plugin would,
-// and nothing the Martins do reaches the Duponts, or the other way round.
-describe('two households on one server', () => {
+// One server, no household: the Duponts and the Martins are accounts side by side, and nothing the Martins do reaches
+// the Duponts, or the other way round.
+describe('two families on one server', () => {
   const db = openDatabase(':memory:')
   let baseUrl = ''
   let close = () => {}
@@ -95,14 +94,10 @@ describe('two households on one server', () => {
     dupont = `${cookiesFrom(account)}; ${cookiesFrom(done)}`
     dupontAdmin = (await profileIds(dupont))[0]!
 
-    // The Martins: a second household, its admin with an account, and a teen.
+    // The Martins: Marc with his account, and his teen.
     const now = Date.now()
-    db.prepare(
-      `INSERT INTO accounts (id, name, created_at, set_up_at, time_zone, language) VALUES (2, 'Famille Martin', ?, ?, 'Europe/Paris', 'fr')`
-    ).run(now, now)
-    const martins = new ProfileStore(db, 2)
+    const martins = new ProfileStore(db)
     const marc = martins.create('Marc', 'world', now)!
-    db.prepare("UPDATE profiles SET role = 'admin' WHERE id = ?").run(marc.id)
     martinAdmin = marc.id
     martinTeen = martins.create('Léo', 'sport', now, { kind: 'teen' })!.id
     const user = accounts.create(MARTIN, await hashPassword(PASSWORD), now)!
@@ -198,7 +193,7 @@ describe('two households on one server', () => {
     )
   })
 
-  it("refuses an account of the other household with the Duponts' code, and names its household", async () => {
+  it("refuses the Duponts' code to Marc, who already reads with his own profile", async () => {
     const made = await call('/codes', dupont, 'POST', {})
     const { code } = (await made.json()) as { code: string }
     const joined = await call('/codes/join', '', 'POST', {
@@ -209,7 +204,7 @@ describe('two households on one server', () => {
       profile: { name: 'Marc', color: 'world' }
     })
     assert.equal(joined.status, 409)
-    assert.deepEqual(await joined.json(), { error: 'other_household', household: 'Famille Martin' })
+    assert.deepEqual(await joined.json(), { error: 'already_member' })
     assert.equal(joined.headers.getSetCookie().length, 0)
     assert.deepEqual(
       (await json<{ profiles: { name: string }[] }>('/profiles', dupont)).profiles.map(p => p.name),
@@ -217,33 +212,16 @@ describe('two households on one server', () => {
     )
   })
 
-  it('refuses on a device of the Duponts an account of the Martins, and keeps the Duponts signed in there', async () => {
+  it('adds Marc to a device of the Duponts, where each reads with their own profiles only', async () => {
     const added = await call('/login', dupont, 'POST', { email: MARTIN, password: PASSWORD })
-    assert.equal(added.status, 409)
-    assert.deepEqual(await added.json(), {
-      error: 'other_household',
-      household: 'Famille Martin',
-      here: 'Hodi'
-    })
-    assert.equal(added.headers.getSetCookie().length, 0)
-    assert.equal((await call('/profiles', dupont)).status, 200)
-  })
-})
-
-describe("the server's one catalogue in the news service", () => {
-  const catalogOf = (sourceId: string) =>
-    parseCatalog(
-      `topics:\n  - id: monde\n    label: Monde\n    sources:\n      - id: ${sourceId}\n        name: ${sourceId}\n        url: https://${sourceId}.example/feed\n        domains: [${sourceId}.example]\nlisten: []\n`
-    )
-  const sourceIds = (news: NewsService) => news.catalog.topics.flatMap(topic => topic.sources.map(source => source.id))
-
-  it('lists, adds and removes the same catalogue whichever request asks', () => {
-    const news = new NewsService(catalogOf('dupont'), { fetchText: fakeFetch({}).fetchText, log: () => {} })
-    assert.deepEqual(
-      inHousehold(2, () => sourceIds(news)),
-      ['dupont']
-    )
-    inHousehold(2, () => news.removeSource('dupont'))
-    assert.deepEqual(sourceIds(news), [])
+    assert.equal(added.status, 204)
+    // The new session cookie holds both accounts: it takes the place of the device's.
+    const fresh = cookiesFrom(added).split('; ')
+    const names = new Set(fresh.map(part => part.split('=')[0]))
+    const both = [...dupont.split('; ').filter(part => !names.has(part.split('=')[0])), ...fresh].join('; ')
+    // Qui lit ? on that device: Claire's, Marc's and his teen's, as both accounts are signed in there.
+    assert.deepEqual((await profileIds(both)).sort(), [dupontAdmin, martinAdmin, martinTeen].sort())
+    // Claire's own device, without Marc, still shows Claire only.
+    assert.deepEqual(await profileIds(dupont), [dupontAdmin])
   })
 })

@@ -12,9 +12,9 @@ const DEVICES = {
   tablet: { colour: 'var(--topic-tech)', Icon: Tablet }
 } as const
 
-// Who has Hodi open now, by kind of device, then by first name (and household, when there are several). The list
+// Who has Hodi open now, by kind of device, then by first name. The list
 // takes the card's free height and scrolls: the card never grows with the people online.
-const OnlineCard = ({ online, households }: { online: ServerOverview['online']; households: number }) => {
+const OnlineCard = ({ online }: { online: ServerOverview['online'] }) => {
   const { t } = useTranslation()
   const parts = (['computer', 'phone', 'tablet'] as const).map(device => ({
     key: device,
@@ -46,13 +46,12 @@ const OnlineCard = ({ online, households }: { online: ServerOverview['online']; 
           {online.map(row => {
             const { colour, Icon } = DEVICES[row.device]
             return (
-              <li key={`${row.name}-${row.household}-${row.device}`}>
+              <li key={`${row.name}-${row.device}-${row.since}`}>
                 <span className={styles.avatar} style={{ background: colour }}>
                   {row.name.slice(0, 1)}
                 </span>
                 <span className={styles.who}>
                   <b>{row.name}</b>
-                  {households > 1 && <small>{row.household}</small>}
                 </span>
                 <Icon size={16} className={styles.device} aria-label={t(`server.overview.device.${row.device}`)} />
               </li>

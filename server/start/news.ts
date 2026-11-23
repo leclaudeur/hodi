@@ -7,7 +7,6 @@ import { type SourceStore, createPauseCheck } from '../db/source-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
 import type { UserStore } from '../db/user-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
-import { inHousehold } from '../db/household-scope.ts'
 import { pluginFeedReader } from '../plugins/feeds.ts'
 import type { PluginRegistry } from '../plugins/registry.ts'
 import type { Catalog, loadCatalog } from '../news/catalog.ts'
@@ -41,11 +40,9 @@ interface NewsWiring {
 
 // A source every profile turned off is not fetched.
 const hiddenByProfileOf =
-  ({ household, profiles, usersOf }: NewsWiring) =>
+  ({ profiles, usersOf }: NewsWiring) =>
   () =>
-    household
-      .ids()
-      .flatMap(id => inHousehold(id, () => profiles.everyone().map(profile => usersOf(profile.id).hiddenSources())))
+    profiles.everyone().map(profile => usersOf(profile.id).hiddenSources())
 
 export const createNews = (wiring: NewsWiring) => {
   const { config, outside, catalog, install, usersOf, serverSettings, store } = wiring
