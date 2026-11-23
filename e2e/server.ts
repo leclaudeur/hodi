@@ -7,6 +7,24 @@ import { startHodi } from '../server/start.ts'
 // depend on the internet or on what a news site published today.
 
 const HOUR = 60 * 60 * 1000
+const ZONE = 'Europe/Brussels'
+
+// Le fil shows one calendar day in the browser's zone: early in the night, "7 hours ago" would be yesterday. The
+// articles keep their order but fit in the time since midnight then, so a run at 01:00 sees the same fil.
+const step = () => {
+  const [hours, minutes, seconds] = new Intl.DateTimeFormat('en-GB', {
+    timeZone: ZONE,
+    hourCycle: 'h23',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+    .format(Date.now())
+    .split(':')
+    .map(Number)
+  const sinceMidnight = ((hours ?? 0) * 3600 + (minutes ?? 0) * 60 + (seconds ?? 0)) * 1000
+  return Math.min(HOUR, Math.floor(sinceMidnight / 8))
+}
 
 // Long enough for the reader to keep it (short pages are hidden as not readable).
 const body = (title: string, paragraphs = 8) =>
@@ -39,12 +57,13 @@ const page = (title: string, paragraphs?: number) =>
   `${body(title, paragraphs)}</article></main></body></html>`
 
 const feed = (site: string) => {
+  const unit = step()
   const items = articles
     .filter(article => article.site === site)
     .map(
       article =>
         `<item><title>${article.title}</title><link>https://${site}.example/${article.slug}</link>` +
-        `<pubDate>${new Date(Date.now() - article.hoursAgo * HOUR).toUTCString()}</pubDate>` +
+        `<pubDate>${new Date(Date.now() - article.hoursAgo * unit).toUTCString()}</pubDate>` +
         `<description>${article.title}, le résumé.</description></item>`
     )
     .join('')
