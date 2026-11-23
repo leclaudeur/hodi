@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   SERVER_HREF,
   SETTINGS_SECTIONS,
+  accountHref,
   articleHref,
   englishHash,
   parseRoute,
@@ -83,10 +84,21 @@ describe('hash routes', () => {
   })
 
   it('opens each Réglages section from its English name', () => {
-    for (const section of SETTINGS_SECTIONS) {
+    // Mon compte and its Statistiques are a page of their own: Réglages only links to it.
+    const ownPage = new Set(['account', 'stats'])
+    for (const section of SETTINGS_SECTIONS.filter(section => !ownPage.has(section))) {
       expect(parseRoute(settingsHref(section))).toEqual({ name: 'settings', section })
     }
     expect(parseRoute('#/settings/unknown')).toEqual({ name: 'settings', section: null })
+  })
+
+  it('opens Mon compte on its section', () => {
+    expect(parseRoute('#/account')).toEqual({ name: 'account', part: null })
+    expect(parseRoute(accountHref('region'))).toEqual({ name: 'account', part: 'region' })
+    expect(parseRoute('#/account/unknown')).toEqual({ name: 'account', part: null })
+    expect(parseRoute('#/settings/account')).toEqual({ name: 'account', part: null })
+    expect(parseRoute('#/settings/account/sign-in')).toEqual({ name: 'account', part: 'sign-in' })
+    expect(parseRoute('#/settings/stats')).toEqual({ name: 'account', part: 'stats' })
   })
 
   it('links to English addresses only', () => {
@@ -126,7 +138,7 @@ describe('hash routes', () => {
     expect(parseRoute('#/plus-tard')).toEqual({ name: 'saved' })
     expect(parseRoute('#/ecouter')).toEqual({ name: 'listen', itemId: null })
     expect(parseRoute('#/sources')).toEqual({ name: 'settings', section: 'sources' })
-    expect(parseRoute('#/stats')).toEqual({ name: 'settings', section: 'stats' })
+    expect(parseRoute('#/stats')).toEqual({ name: 'account', part: 'stats' })
   })
 
   it("opens Réglages, or a plugin's own page, from the addresses of Réglages › Plugins", () => {

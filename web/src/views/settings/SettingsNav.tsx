@@ -1,4 +1,4 @@
-import { ChevronRight, LogOut } from 'lucide-react'
+import { ChevronRight, ExternalLink, LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { usePendingRequests } from '../../lib/requests.ts'
 import { useSourceAnswers } from '../../lib/source-answers.ts'
@@ -29,6 +29,12 @@ const EntryIcon = ({ icon }: { icon: Entry['icon'] }) => {
   )
 }
 
+// A line that opens a page outside Réglages says so on every size; the others show the phone's chevron.
+const EntryEnd = ({ leaves, isPhone }: { leaves?: boolean; isPhone: boolean }) => {
+  if (leaves) return <ExternalLink size={16} aria-hidden="true" className={styles.chevron} />
+  return isPhone ? <ChevronRight size={16} aria-hidden="true" className={styles.chevron} /> : null
+}
+
 interface NavGroupProps {
   group: Group
   current: string | null
@@ -57,7 +63,7 @@ const NavGroup = ({ group, current, isPhone, logout }: NavGroupProps) => {
                   <span className={styles.label}>{entry.label}</span>
                   <span className={styles.hint}>{entry.hint}</span>
                 </span>
-                {isPhone && <ChevronRight size={16} aria-hidden="true" className={styles.chevron} />}
+                <EntryEnd leaves={entry.leaves} isPhone={isPhone} />
               </a>
             </li>
           ))}
