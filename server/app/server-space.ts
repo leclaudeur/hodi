@@ -1,5 +1,5 @@
 import { serverInboxRoutes } from '../http/server-inbox-routes.ts'
-import { codeRequestKey } from '../notices/code-request.ts'
+import { codeRequestKey, freshRequest } from '../notices/code-request.ts'
 import type express from 'express'
 import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
 import { mailRoutes } from '../http/mail-routes.ts'
@@ -123,7 +123,7 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
       ...(inbox
         ? {
             codeRequests: {
-              askedAt: (id: number) => inbox.waiting(codeRequestKey(id)),
+              askedAt: (id: number) => freshRequest(inbox.waiting(codeRequestKey(id)), now()),
               handled: (id: number) => inbox.handle(codeRequestKey(id), now())
             }
           }

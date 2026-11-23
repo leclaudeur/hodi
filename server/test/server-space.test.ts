@@ -16,6 +16,7 @@ import { HouseholdStore } from '../db/household-store.ts'
 import { MailSettingsStore, mailDraftOf } from '../db/mail-settings-store.ts'
 import { copyTimeOf, isDatabaseFile, readRestoreTime } from '../db/maintenance.ts'
 import { ProfileStore } from '../db/profile-store.ts'
+import { ServerInboxStore } from '../db/server-inbox-store.ts'
 import { ServerPeopleStore } from '../db/server-people-store.ts'
 import { ServerSettingsStore } from '../db/server-settings-store.ts'
 import { ServerStatsStore } from '../db/server-stats-store.ts'
@@ -26,6 +27,8 @@ import { deviceKindOf } from '../http/presence.ts'
 import { MailError, type MailMessage, smtpSend } from '../mail/mailer.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
+import { codeRequestKey } from '../notices/code-request.ts'
+import type { ServerNotifier } from '../notices/server-notifier.ts'
 import { fakeFetch } from './helpers/news.ts'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -119,6 +122,7 @@ describe('server overview route', () => {
   let baseUrl: string
   let close: () => void
   let adminCookie = ''
+  let inbox: ServerInboxStore
   let memberCookie = ''
   let backupDir = ''
   let pendingRestore = ''
@@ -165,7 +169,9 @@ describe('server overview route', () => {
     const catalog = parseCatalog('topics:\n  - id: monde\n    label: Monde\n    sources: []\n')
     const household = new HouseholdStore(db)
     const accounts = new UserAccountStore(db)
+    inbox = new ServerInboxStore(db)
     const server = createApp(config, {
+      serverInbox: { store: inbox, notifier: {} as ServerNotifier },
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles: new ProfileStore(db),
       household,
@@ -299,6 +305,15 @@ describe('server overview route', () => {
     assert.equal(((await checked.json()) as { kind: string }).kind, 'invite')
 
     const samCode = `/server/accounts/${byEmail['sam@example.com']!.id}/code`
+    // Only once Sam asked for one.
+    assert.equal(
+      (await call(samCode, adminCookie, 'POST', { password: 'une phrase de passe assez longue' })).status,
+      409
+    )
+    inbox.add(
+      { type: 'core:code-request', texts: {}, url: '', key: codeRequestKey(byEmail['sam@example.com']!.id) },
+      Date.now()
+    )
     // It opens Sam's account: the server admin's own password first.
     assert.equal((await call(samCode, adminCookie, 'POST')).status, 403)
     const reset = await call(samCode, adminCookie, 'POST', { password: 'une phrase de passe assez longue' })

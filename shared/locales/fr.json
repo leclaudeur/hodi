@@ -2226,7 +2226,7 @@
         "created": "Créé le",
         "reset": "Mot de passe oublié",
         "resetLabel": "Faire un code",
-        "resetHint": "La personne le tape dans « J’ai un code », puis choisit un nouveau mot de passe. Ses appareils se déconnectent.",
+        "resetOnRequest": "Seulement quand la personne en demande un.",
         "own": "Le tien se change dans Réglages › Mon compte",
         "deleteSection": "Supprimer",
         "delete": "Supprimer ce compte",
