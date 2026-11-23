@@ -2,11 +2,12 @@ import { isIP } from 'node:net'
 import type express from 'express'
 import type { AiProvider } from '../news/ai-providers.ts'
 import { isTimeZone } from '../news/days.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // What the first-run screens and Réglages > Foyer accept: passwords, region, the AI's key.
 
-export const MIN_PASSWORD_LENGTH = 8
-export const MAX_PASSWORD_LENGTH = 256
+export const MIN_PASSWORD_LENGTH = CONFIG.passwords.minLength
+export const MAX_PASSWORD_LENGTH = CONFIG.passwords.maxLength
 const MAX_KEY_LENGTH = 300
 
 export const isPassword = (value: unknown): value is string =>

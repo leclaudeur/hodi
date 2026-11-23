@@ -1,12 +1,13 @@
 import express from 'express'
 import { rateLimit } from 'express-rate-limit'
-import { cleanHandle } from '../../shared/handle.ts'
+import { cleanHandle } from '../handle.ts'
 import type { HandleStore } from '../db/handle-store.ts'
 import { type SignInCodeStore, signInCodeOf } from '../db/sign-in-code-store.ts'
 import type { UserAccount } from '../db/user-account-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // How many identifiers a client may check in a minute, typing included.
-const CHECKS_PER_MINUTE = 60
+const CHECKS_PER_MINUTE = CONFIG.accounts.handleChecksPerMinute
 
 type SessionOf = (request: express.Request) => { account: UserAccount } | null
 

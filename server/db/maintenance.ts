@@ -14,10 +14,11 @@ import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import type { Database } from './database.ts'
 import { type PluginSnapshots, backupPluginData, pluginCopyBytes, pluginCopyDir } from './plugin-backup.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Serveur › Sauvegardes changes it (1 to 30 copies).
 export const BACKUPS_KEPT = 7
-const CHECK_INTERVAL_MS = 60 * 60 * 1000
+const CHECK_INTERVAL_MS = CONFIG.backups.checkEvery
 const BACKUP_PREFIX = 'hodi-'
 export const BACKUP_FILE = /^hodi-[\d-]+\.db$/
 

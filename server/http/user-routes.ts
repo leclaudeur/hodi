@@ -11,16 +11,17 @@ import {
   type SavedItem,
   type UserStore
 } from '../db/user-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A profile's state, shared by every device it is open on: preferences, "Enregistrés", read articles and stats.
 
 const ITEM_ID_PATTERN = /^[\w-]{16}$/
-const MAX_LIST = 300
-const MAX_STRING = 300
-const MAX_IMPORT_SAVED = 500
-const MAX_IMPORT_READ = 5000
-const MAX_IMPORT_READINGS = 5000
-const MAX_ARTICLE_HTML = 400_000
+const MAX_LIST = CONFIG.myData.listMax
+const MAX_STRING = CONFIG.myData.stringMax
+const MAX_IMPORT_SAVED = CONFIG.myData.importSaved
+const MAX_IMPORT_READ = CONFIG.myData.importRead
+const MAX_IMPORT_READINGS = CONFIG.myData.importReadings
+const MAX_ARTICLE_HTML = CONFIG.myData.importArticleSize
 // Poudré was named poudre before every id was English: devices that have not updated yet still send it.
 const THEMES = ['system', 'light', 'dark', 'powder', 'poudre'] as const
 // The accent colour: the theme's own, or one of the profile colours. The names before them (and before the topics'

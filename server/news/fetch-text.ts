@@ -1,5 +1,6 @@
 import { Agent, fetch } from 'undici'
 import { type IsAllowedUrl, PrivateAddressError, isPublicAddressUrl, publicOnlyLookup } from './address-guard.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Outgoing HTTP for feeds, article pages and source icons: short timeout, size cap, identifiable user agent, and
 // never an address on the server's own network, at the first request or after any redirect.
@@ -34,7 +35,7 @@ export interface FetchTextOptions {
   isAllowed?: IsAllowedUrl
 }
 
-const MAX_REDIRECTS = 5
+const MAX_REDIRECTS = CONFIG.fetch.redirects
 
 export class BlockedAddressError extends Error {
   constructor(url: string) {
@@ -140,8 +141,8 @@ const fetchBytes = async (
 
 export const createFetchText =
   ({
-    timeoutMs = 5000,
-    maxBytes = 5 * 1024 * 1024,
+    timeoutMs = CONFIG.fetch.defaultTimeout,
+    maxBytes = CONFIG.fetch.defaultMaxSize,
     isAllowed = isPublicAddressUrl
   }: FetchTextOptions = {}): FetchText =>
   async (url, { userAgent, headers } = {}) => {
@@ -173,7 +174,11 @@ export type FetchHttp = (
 ) => Promise<HttpAnswer>
 
 export const createFetchHttp =
-  ({ timeoutMs = 10_000, maxBytes = 1024 * 1024, isAllowed = isPublicAddressUrl }: FetchTextOptions = {}): FetchHttp =>
+  ({
+    timeoutMs = CONFIG.fetch.pluginTimeout,
+    maxBytes = CONFIG.fetch.pluginMaxSize,
+    isAllowed = isPublicAddressUrl
+  }: FetchTextOptions = {}): FetchHttp =>
   async (url, { method, headers = {}, body }) => {
     // A body or a token is never sent on to another address: the redirect comes back as the answer.
     const carriesSecret = Object.keys(headers).some(name => name.toLowerCase() === 'authorization')
@@ -211,8 +216,8 @@ export const createFetchHttp =
 
 export const createFetchBytes =
   ({
-    timeoutMs = 5000,
-    maxBytes = 5 * 1024 * 1024,
+    timeoutMs = CONFIG.fetch.defaultTimeout,
+    maxBytes = CONFIG.fetch.defaultMaxSize,
     isAllowed = isPublicAddressUrl
   }: FetchTextOptions = {}): FetchBytes =>
   (url, options = {}) =>
@@ -224,4 +229,4 @@ export const YOUTUBE_PAGE = {
   userAgent: BROWSER_USER_AGENT,
   headers: { 'Accept-Language': 'fr-BE,fr;q=0.9,en;q=0.8', Cookie: 'SOCS=CAI' }
 }
-export const YOUTUBE_PAGE_BYTES = 8 * 1024 * 1024
+export const YOUTUBE_PAGE_BYTES = CONFIG.fetch.youtubePageMaxSize

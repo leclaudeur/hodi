@@ -1,5 +1,6 @@
 import { getJson, sendJson } from './http.ts'
 import type { FeedItem } from './news.ts'
+import { CONFIG } from '../lib/config.ts'
 
 // A young profile's rules, set by its parents (Réglages > Profils > Gérer). Times are "HH:MM" in the household's
 // time zone.
@@ -18,8 +19,13 @@ export interface YouthRules {
   explainPerDay: number
 }
 
-export const DAILY_MINUTES = { min: 5, max: 240, step: 5, fastSteps: [15, 30] } as const
-export const MAX_EXPLAIN_PER_DAY = 20
+export const DAILY_MINUTES = {
+  min: CONFIG.young.dailyMinutesMin,
+  max: CONFIG.young.dailyMinutesMax,
+  step: CONFIG.young.dailyMinutesStep,
+  fastSteps: [15, 30]
+}
+export const MAX_EXPLAIN_PER_DAY = CONFIG.young.explainPerDayMax
 
 // open: it reads; before / after: outside its hours; time_up: today's minutes are spent.
 export interface YouthLimits {
@@ -105,7 +111,7 @@ export const seeMySourceAnswers = (ids: number[]) => sendJson<void>('POST', '/me
 // Refused with the reason: 'following' (it reads it already), 'pending' (asked already), 'full' (three waiting), or the finder's ('none',
 // 'invalid', 'blocked', 'empty', 'failed', 'reddit', 'unavailable').
 // As the server: a teen waits for this many answers at most.
-export const MAX_PENDING_REQUESTS = 3
+export const MAX_PENDING_REQUESTS = CONFIG.young.pendingRequests
 
 export const askForSource = (url: string) => sendJson<SourceRequest>('POST', '/me/source-requests', { url })
 

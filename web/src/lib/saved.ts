@@ -1,11 +1,12 @@
 import { useSyncExternalStore } from 'react'
 import type { Article, TopicItem } from '../api.ts'
 import { type StoredSavedEntry, changeUserState, getUserState, subscribeUserState } from './user-state.ts'
+import { CONFIG } from './config.ts'
 
 // "Enregistrés": kept on the server and shared by every device. The server also keeps the text of a saved
 // article for good. This device keeps the texts it opened, so a saved article still opens offline.
 const TEXTS_KEY = 'hodi:saved-texts'
-const MAX_TEXTS = 100
+const MAX_TEXTS = CONFIG.app.savedTexts
 
 export interface SavedEntry {
   item: TopicItem

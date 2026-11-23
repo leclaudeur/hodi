@@ -1,5 +1,6 @@
 import type { PluginQuestion } from '../news/summarizer.ts'
 import { HOUR_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // ctx.ai: a plugin asks the household's AI, only in answer to a click on its AiButton (hodi:sdk). Hodi makes sure of it
 // in the main thread: the click reaches /api/plugins/<id>/ai/<action>, which runs the plugin's aiActions[action]
@@ -7,16 +8,16 @@ import { HOUR_MS } from '../../shared/time.ts'
 // The question counts against the household's 'plugin' caps (news-service.ts), against an hourly cap of its own per
 // plugin, and a household's admin can turn a plugin's AI off in Réglages › IA et crédits.
 
-export const MAX_PROMPT = 8000
-export const MAX_SYSTEM = 2000
-export const MAX_ANSWER_TOKENS = 1024
-export const DEFAULT_ANSWER_TOKENS = 512
+export const MAX_PROMPT = CONFIG.pluginAi.promptMaxLength
+export const MAX_SYSTEM = CONFIG.pluginAi.systemMaxLength
+export const MAX_ANSWER_TOKENS = CONFIG.pluginAi.answerTokensMax
+export const DEFAULT_ANSWER_TOKENS = CONFIG.pluginAi.answerTokensDefault
 // What the plugin gets back, at most: an answer of MAX_ANSWER_TOKENS fits.
-export const MAX_ANSWER = 8000
+export const MAX_ANSWER = CONFIG.pluginAi.answerMaxLength
 // What a click may hand the plugin's action, as JSON.
-export const MAX_AI_INPUT_BYTES = 16 * 1024
+export const MAX_AI_INPUT_BYTES = CONFIG.pluginAi.inputMaxSize
 // One plugin's questions in a household, in an hour: a plugin cannot use the day's caps up at once.
-export const PLUGIN_AI_PER_HOUR = 10
+export const PLUGIN_AI_PER_HOUR = CONFIG.pluginAi.perHour
 
 // Why a click gets no answer: Hodi has no AI, the household's admin turned the plugin's off, a cap is reached, the
 // AI declined the question, or the call failed.

@@ -5,9 +5,10 @@ import type { UserAccount } from '../db/user-account-store.ts'
 import type { AiProvider } from '../news/ai-providers.ts'
 import type { AccountHelpers, AccountRoutesOptions } from './account-routes.ts'
 import { aiOf, keyHint, providersList } from './household-input.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Each check asks the provider: an account cannot use the server to try keys in a loop.
-export const KEY_CHECKS_PER_MINUTE = 5
+export const KEY_CHECKS_PER_MINUTE = CONFIG.ai.keyChecksPerMinute
 
 export interface AccountAiOptions {
   // Each account's own AI key, and the providers it may come from.

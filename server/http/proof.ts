@@ -6,17 +6,18 @@ import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import type { UserDevice } from '../db/user-device-store.ts'
 import { clientAddressOf } from './client-address.ts'
 import { profileIdOf } from './profile-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The moments that cannot be undone ask the person for their own password first, whatever session the device holds:
 // deleting an account or another adult's profile, a new password for another adult, handing over the admin role,
 // the server's plugins, deleting in Serveur › Comptes and Foyers, a copy of the server. Someone who finds a device
 // left open, or who took its cookie, cannot do any of it.
 
-const MAX_PASSWORD_LENGTH = 256
+const MAX_PASSWORD_LENGTH = CONFIG.passwords.maxLength
 
 // How long after a sign-in an account without a password of its own (« Se connecter avec Google ») may make such a
 // change: having just signed in on this device is its proof.
-export const RECENT_SIGN_IN_MS = 5 * 60 * 1000
+export const RECENT_SIGN_IN_MS = CONFIG.signIn.recentSignIn
 
 export type Session = { account: UserAccount; device: UserDevice | null }
 

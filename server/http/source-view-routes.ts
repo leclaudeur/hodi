@@ -6,6 +6,21 @@ import type { NewsService } from '../news/news-service.ts'
 import type { SourceStatus } from '../news/news-types.ts'
 import type { SourceIcons } from '../news/source-icons.ts'
 import { kindOf, profileIdOf } from './profile-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
+
+// A source's readers show from READERS_SHOWN on: below that, a count would point at the few people reading it.
+export const READERS_SHOWN = CONFIG.sources.readersShownFrom
+
+// Its readers, once there are enough of them, and whether it comes from sources.yml (the catalogue's Officielles).
+const withReaders = (sources: SourceStatus[], counts: Map<string, number> | undefined, official: Set<string>) =>
+  sources.map(source => {
+    const readers = counts?.get(source.id) ?? 0
+    return {
+      ...source,
+      ...(readers >= READERS_SHOWN ? { readers } : {}),
+      ...(official.has(source.id) ? { official: true } : {})
+    }
+  })
 
 // A source's readers show from READERS_SHOWN on: below that, a count would point at the few people reading it.
 export const READERS_SHOWN = 10

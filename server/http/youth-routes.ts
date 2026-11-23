@@ -15,10 +15,11 @@ import {
 import type { YouthSources } from '../news/youth-sources.ts'
 import { kindOf, profileIdOf } from './profile-routes.ts'
 import { WEEK_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const MAX_IDS = 300
+const MAX_IDS = CONFIG.young.idsMax
 // A teen waits for its parents' answers past this many: a short list for them, and no flood.
-export const MAX_PENDING_REQUESTS = 3
+export const MAX_PENDING_REQUESTS = CONFIG.young.pendingRequests
 
 export const idList = (value: unknown) =>
   Array.isArray(value) &&

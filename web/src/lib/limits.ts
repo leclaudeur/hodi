@@ -3,13 +3,14 @@ import { type MyLimits, type YouthLimits, getMyLimits, sendHeartbeat } from '../
 import { t } from './i18n.ts'
 import { showInfo } from './toast.ts'
 import { HEARTBEAT_MS } from '../../../shared/time.ts'
+import { CONFIG } from './config.ts'
 
 // A young profile's time a day and hours, set by its parents. The server counts the time and knows the household's
 // clock: the app only says it is on screen, every 30 seconds while it is visible, and shows "À demain" when the
 // server says it is closed. Changing the device's clock or reloading changes nothing.
 
 // "Plus que 5 minutes": once a day, when the time left goes under it.
-const WARNING_SECONDS = 5 * 60
+const WARNING_SECONDS = CONFIG.young.warningBefore / 1000
 
 interface LimitsState {
   limits: YouthLimits

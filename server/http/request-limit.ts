@@ -2,9 +2,10 @@ import type express from 'express'
 import { ipKeyGenerator, rateLimit } from 'express-rate-limit'
 import ipaddr from 'ipaddr.js'
 import { clientAddressOf } from './client-address.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Far above what a household's devices send (a page of cards asks for its pictures at once), far below a flood.
-export const REQUESTS_PER_MINUTE = 3000
+export const REQUESTS_PER_MINUTE = CONFIG.requests.perMinute
 
 const isLoopback = (address: string) => ipaddr.isValid(address) && ipaddr.process(address).range() === 'loopback'
 

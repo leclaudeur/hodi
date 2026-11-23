@@ -1,10 +1,16 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { defineConfig } from 'tsdown'
+import { parseConfig } from '../shared/config-file.ts'
 
 // The npm package @hodi-app/plugin-sdk, built from Hodi's own code so it never drifts from it:
 //   dist/bin.mjs, dist/build.mjs  the build command, with the bits of Hodi it needs (manifest checks, digest) inside
 //   dist/testing.mjs, dist/worker.mjs  the test kit: Hodi's sandbox (its worker beside it) and its plugin routes
 //   dist/server.d.mts           the server part's types
 //   dist/web.d.mts              hodi:sdk's types: Hodi's components and hooks as the page hands them to web.js
+// Hodi's fixed settings, built in: a plugin's folder has no config.yml (server/fixed-config.ts).
+const config = parseConfig(readFileSync(path.join(import.meta.dirname, '..', 'config.yml'), 'utf8'))
+
 export default defineConfig([
   {
     entry: { bin: 'bin.ts', build: 'build.ts', testing: 'testing.ts', worker: '../server/plugins/sandbox/worker.ts' },
@@ -27,6 +33,7 @@ export default defineConfig([
         /^@jitl\//
       ]
     },
+    define: { __HODI_CONFIG__: JSON.stringify(config) },
     tsconfig: '../tsconfig.server.json'
   },
   {

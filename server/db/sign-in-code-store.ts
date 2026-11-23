@@ -1,6 +1,7 @@
 import { createHmac, randomInt } from 'node:crypto'
 import type { Database } from './database.ts'
 import { currentHouseholdId } from './household-scope.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // "J'ai un code": eight letters and digits that let a person make their account in the household, from a device signed in with
 // nothing. An invitation (no profile) adds them as a new adult; a code for a profile gives that profile its person.
@@ -11,7 +12,7 @@ import { currentHouseholdId } from './household-scope.ts'
 // even for many devices sharing the throttle's global allowance. No 0, O, 1, I or L, which read alike.
 export const SIGN_IN_CODE_LENGTH = 8
 export const SIGN_IN_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
-export const SIGN_IN_CODE_LIFETIME = 24 * 60 * 60 * 1000
+export const SIGN_IN_CODE_LIFETIME = CONFIG.codes.signInLifetime
 
 export interface SignInCode {
   householdId: number

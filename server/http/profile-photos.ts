@@ -1,10 +1,11 @@
 import express from 'express'
 import { MAX_PHOTO_BYTES, PHOTO_TYPES, type PhotoType, type ProfileStore } from '../db/profile-store.ts'
 import { pictureMaker } from '../news/picture-maker.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The app makes a photo 256 pixels square; a header that declares far more is refused, since a few kilobytes could
 // unpack into gigabytes in every browser that shows it.
-const MAX_PHOTO_SIDE = 1024
+const MAX_PHOTO_SIDE = CONFIG.profiles.photoSide
 
 // The type an uploaded picture really has, read from its header by sharp; null when it is none of the three, larger
 // than MAX_PHOTO_SIDE, or on a processor sharp cannot run on, since its size cannot be checked there.

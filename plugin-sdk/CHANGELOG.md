@@ -10,6 +10,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+### Changed
+
+- **Hodi's limits built in.** The SDK carries the limits of the Hodi it was built with (Hodi's `config.yml`): the test
+  kit and `hodi-plugin build` follow that SDK version's values, and a plugin's folder needs no config file.
+
 ## [1.0.0-beta.5] - 2026-11-19
 
 Plugins can show Hodi's − / + number picker and its multi-select of a source's topics, offer a way on to an account

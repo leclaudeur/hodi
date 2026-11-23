@@ -63,6 +63,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **One file for the fixed settings.** Every limit, duration, rate and size that Server does not let the admin
+  change is now in `config.yml`, with a comment for each: change a value and restart Hodi (the web app's values need a
+  new build). A missing or wrong value stops Hodi at start, saying which.
 - **My sources.** Each person's sources are now their own list, kept with their account: a source someone adds goes
   into their list only, and the others add it from the server's sources when they want it. A new adult starts with the
   base sources. A source read by 10 people or more shows how many. Each person keeps the sources they read before.

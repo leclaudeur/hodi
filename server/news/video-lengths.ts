@@ -1,10 +1,11 @@
 import type { NewsStore } from '../db/news-store.ts'
 import type { FeedItem } from './feed-parser.ts'
 import type { FetchVideoDuration } from './video-durations.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const MAX_SHORT_SECONDS = 60
+const MAX_SHORT_SECONDS = CONFIG.videos.shortMaxSeconds
 // A video page that gave no length is read again after this.
-const DURATION_RETRY_MS = 60 * 60 * 1000
+const DURATION_RETRY_MS = CONFIG.videos.durationRetry
 
 const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error))
 

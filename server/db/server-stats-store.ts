@@ -2,6 +2,7 @@ import { dayOf } from '../news/days.ts'
 import type { Database } from './database.ts'
 import { type DayCounts, type ServerDay, countDays, datesBetween, emptyDay } from './server-day-counts.ts'
 import { DAY_MS } from '../../shared/time.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 export type { ServerDay } from './server-day-counts.ts'
 
@@ -9,9 +10,9 @@ export type { ServerDay } from './server-day-counts.ts'
 // here, never what one profile read.
 
 // The different profiles that opened Hodi on a day are kept a month, for the 30 days' chart.
-const VISITS_KEPT_DAYS = 31
+const VISITS_KEPT_DAYS = CONFIG.retention.visitsDays
 // Readings are kept a little over a year: the first nightly rows are filled from them.
-const READINGS_DAYS = 400
+const READINGS_DAYS = CONFIG.retention.readingDays
 
 export interface ServerOverview {
   households: number

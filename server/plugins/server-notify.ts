@@ -2,16 +2,17 @@ import type { ServerNotifier } from '../notices/server-notifier.ts'
 import { DAY_MS } from '../../shared/time.ts'
 import type { ServerNoticeSpec } from './manifest-notices.ts'
 import { type Written, writtenIn, writtenOf } from './written.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // ctx.notifyServerAdmin: a plugin tells the server's admin of an event of one of its kinds (manifest
 // serverNotifications), which reaches them as they chose in Serveur › Notifications. The core builds the e-mail and
 // the push from short plain text and counts each plugin's notices here, in the main thread.
 
 // How many notices one plugin may send the server's admin in a day.
-export const SERVER_NOTICES_PER_DAY = 50
+export const SERVER_NOTICES_PER_DAY = CONFIG.pluginNotices.serverPerDay
 
-const MAX_TITLE = 80
-const MAX_TEXT = 240
+const MAX_TITLE = CONFIG.pluginNotices.titleMaxLength
+const MAX_TEXT = CONFIG.pluginNotices.textMaxLength
 // A path under the plugin's sections of /server: letters, digits and a few signs, never "..".
 const PATH = /^(?!.*\.\.)[A-Za-z0-9._~/-]{1,200}$/
 // A plugin's own key for a notice that waits (« waitlist:12 »).

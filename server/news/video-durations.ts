@@ -1,10 +1,11 @@
 import { YOUTUBE_PAGE, YOUTUBE_PAGE_BYTES, createFetchText } from './fetch-text.ts'
+import { CONFIG } from '../fixed-config.ts'
 // A YouTube video's length, which its feed doesn't give: read once from its page, then kept.
 
 export type FetchVideoDuration = (videoId: string) => Promise<number | null>
 
 const VIDEO_ID = /^[\w-]{11}$/
-const MAX_PAGE_BYTES = 4 * 1024 * 1024
+const MAX_PAGE_BYTES = CONFIG.fetch.videoPageMaxSize
 
 // The player's data ("lengthSeconds":"754"), or the page's microdata (<meta itemprop="duration" content="PT12M34S">).
 export const parseVideoDuration = (html: string): number | null => {
@@ -19,7 +20,7 @@ export const parseVideoDuration = (html: string): number | null => {
 
 // The consent cookie skips the cookie wall YouTube shows in Europe; nothing else is sent. The page comes through the
 // address guard, size cap and timeout of every other request.
-export const createFetchVideoDuration = ({ timeoutMs = 8000 } = {}): FetchVideoDuration => {
+export const createFetchVideoDuration = ({ timeoutMs = CONFIG.fetch.findTimeout } = {}): FetchVideoDuration => {
   const fetchPage = createFetchText({ timeoutMs, maxBytes: YOUTUBE_PAGE_BYTES })
   return async videoId => {
     if (!VIDEO_ID.test(videoId)) return null

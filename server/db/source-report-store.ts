@@ -1,4 +1,5 @@
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // « Signaler » a source: any account tells the server's admin why it should not be there. The admin sees how many
 // and why, never who.
@@ -11,7 +12,7 @@ export const isReportReason = (value: unknown): value is ReportReason =>
   typeof value === 'string' && (REPORT_REASONS as readonly string[]).includes(value)
 
 // After « Ignorer », the accounts that reported keep quiet that long on that source: no loop of notices.
-export const IGNORED_MS = 30 * 24 * 60 * 60 * 1000
+export const IGNORED_MS = CONFIG.sources.reportIgnoredFor
 
 const DAY_MS = 24 * 60 * 60 * 1000
 

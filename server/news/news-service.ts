@@ -27,18 +27,19 @@ import { PerHousehold } from './per-household.ts'
 import { NewsSearch } from './news-search.ts'
 import { addToCatalog, moveToTopics, removeFromCatalog } from './catalog-edits.ts'
 import { frontSection } from './front-page.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Feeds and checks are cached in memory for a short time; the store, when given, keeps articles,
 // verdicts, reader text and AI output beyond a restart.
 // Older articles are left out: the news would be outdated.
-const TOPIC_WINDOW_MS = 72 * 60 * 60 * 1000
+const TOPIC_WINDOW_MS = CONFIG.lists.topicWindow
 // Videos and episodes older than this are left out of "Écouter et regarder".
-const LISTEN_WINDOW_MS = 60 * 24 * 60 * 60 * 1000
+const LISTEN_WINDOW_MS = CONFIG.lists.listenWindow
 // Articles per page of a topic: the app asks for more with "Charger plus".
-export const TOPIC_PAGE_SIZE = 30
+export const TOPIC_PAGE_SIZE = CONFIG.lists.topicPageSize
 export { MAX_TOPIC_LIMIT }
 // "À la une": taken from the last day when a topic has enough stories there.
-const FRONT_PAGE_WINDOW_MS = 24 * 60 * 60 * 1000
+const FRONT_PAGE_WINDOW_MS = CONFIG.lists.frontPageWindow
 // The profile of a call made without one (tests, and the server before profiles).
 const DEFAULT_PROFILE_ID = 1
 const BACKGROUND_INTERVAL_MS = CACHE_TTL_MS

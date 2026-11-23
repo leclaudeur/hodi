@@ -3,13 +3,14 @@ import type { FetchBytes, FetchText } from '../news/fetch-text.ts'
 import { PLUGIN_API, VERSION } from './manifest.ts'
 import type { ManifestTranslations } from './manifest-texts.ts'
 import { MAX_PACKAGE_BYTES } from './package.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Hodi's plugin registry (github.com/leclaudeur/hodi-plugin-registry): an index of plugins, each pinned to one release
 // file by its sha256. The maintainer reviews every entry before it is listed.
-export const CATALOG_URL = 'https://raw.githubusercontent.com/leclaudeur/hodi-plugin-registry/main/plugins.json'
+export const CATALOG_URL = CONFIG.plugins.catalogUrl
 
 // The registry changes a few times a month: one read per ten minutes is plenty.
-const CACHE_MS = 10 * 60 * 1000
+const CACHE_MS = CONFIG.plugins.catalogCacheFor
 
 export interface CatalogEntry {
   id: string

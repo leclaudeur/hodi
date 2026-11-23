@@ -1,7 +1,9 @@
+import { CONFIG } from '../fixed-config.ts'
+
 // Who has Hodi open right now, for Serveur › Vue d'ensemble: kept in memory only, gone at the next restart, never
 // written anywhere. A profile counts as online for a few minutes after its last request.
 
-const ONLINE_MS = 5 * 60 * 1000
+const ONLINE_MS = CONFIG.accounts.onlineFor
 
 export type DeviceKind = 'phone' | 'tablet' | 'computer'
 

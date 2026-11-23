@@ -13,6 +13,7 @@ import {
 import { listPushSubscriptions, removePushSubscription, savePushSubscription } from './push-subscriptions.ts'
 import { type ImportedState, importStateRows } from './state-import.ts'
 import { markReactionsSeen, react, reactions, sharedWith, shareTo, shares } from './share-queries.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A profile's own state, shared by every device it is open on. The household has one password and up to
 // five profiles (see profile-store.ts); until the app chooses one, everything is the first profile's.
@@ -77,14 +78,14 @@ export interface UserState {
   readings: Reading[]
 }
 
-export const MAX_SAVED = 500
-export const MAX_READ = 5000
-const READ_RETENTION_MS = 365 * 24 * 60 * 60 * 1000
-export const READINGS_RETENTION_MS = 400 * 24 * 60 * 60 * 1000
+export const MAX_SAVED = CONFIG.myData.savedMax
+export const MAX_READ = CONFIG.myData.readMax
+const READ_RETENTION_MS = CONFIG.retention.read
+export const READINGS_RETENTION_MS = CONFIG.retention.readings
 // "Partages" keeps what was sent for a week.
-export const SHARES_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
+export const SHARES_RETENTION_MS = CONFIG.retention.shares
 // "À la une" covers a day: a seen story is kept a little longer, for the stories that last.
-export const SEEN_STORIES_RETENTION_MS = 3 * 24 * 60 * 60 * 1000
+export const SEEN_STORIES_RETENTION_MS = CONFIG.retention.seenStories
 
 export class UserStore {
   readonly #db: Database

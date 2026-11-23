@@ -44,6 +44,7 @@ export {
   sandboxBudget,
   threadCostMb
 } from './sandbox-limits.ts'
+import { CONFIG } from '../../fixed-config.ts'
 export type { SandboxHost, SandboxOptions, SandboxRequest } from './sandbox-limits.ts'
 
 export { runningThreads }
@@ -164,7 +165,7 @@ export class PluginSandbox {
       const startTimer = setTimeout(() => {
         reject(new SandboxError('timeout', 'start'))
         this.#end(worker, new SandboxError('timeout'))
-      }, this.#options.timeoutMs + 5_000)
+      }, this.#options.timeoutMs + CONFIG.pluginSandbox.startExtra)
       worker.on('message', (message: FromSandbox) => {
         switch (message.type) {
           case 'ready':

@@ -5,11 +5,12 @@ import type { DailySummaryStory, WriteDailySummary, WrittenPoint } from './daily
 import { dayOf } from './days.ts'
 import type { DailySummaryPoint, DailySummaryResult, FrontPageSection } from './news-types.ts'
 import { SummaryRefusedError } from './summarizer.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A request this soon after the last one gets that one back.
-const MIN_AGE_MS = 30 * 60 * 1000
+const MIN_AGE_MS = CONFIG.ai.dailySummaryMinAge
 // The front page must have this many stories before the daily summary is written, unless every topic is checked.
-const MIN_STORIES = 12
+const MIN_STORIES = CONFIG.ai.dailySummaryMinStories
 
 interface Written {
   createdAt: number

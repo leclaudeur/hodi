@@ -1,5 +1,5 @@
 import type express from 'express'
-import { cleanHandle } from '../../shared/handle.ts'
+import { cleanHandle } from '../handle.ts'
 import type { UserAccount } from '../db/user-account-store.ts'
 import { MAX_PARENTS } from '../db/parent-invitation-store.ts'
 import type { YoungAccountRoutesOptions } from './young-account-routes.ts'

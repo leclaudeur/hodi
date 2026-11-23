@@ -4,15 +4,16 @@ import type { Source } from './catalog.ts'
 import type { FetchText } from './fetch-text.ts'
 import { type FeedEntry, type FeedItem, parseFeedEntries } from './feed-parser.ts'
 import type { SourceStatus } from './news-types.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Feeds are cached in memory for a short time, a failed one for less.
-export const CACHE_TTL_MS = 15 * 60 * 1000
-export const ERROR_TTL_MS = 60 * 1000
+export const CACHE_TTL_MS = CONFIG.feeds.cacheFor
+export const ERROR_TTL_MS = CONFIG.feeds.errorCacheFor
 // "Tirer pour rafraîchir" fetches the feeds again, at most this often.
-const FORCED_REFRESH_MIN_MS = 60 * 1000
+const FORCED_REFRESH_MIN_MS = CONFIG.feeds.forcedRefreshEvery
 // Feeds fetched at the same time. A hundred at once wait for one another (name lookups, parsing), and the quick ones
 // ran out of their time before their turn came: they were logged as timeouts at every refresh.
-export const MAX_PARALLEL_FEEDS = 10
+export const MAX_PARALLEL_FEEDS = CONFIG.feeds.atOnce
 
 export interface SourceEntry {
   startedAt: number

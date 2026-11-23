@@ -54,6 +54,7 @@ The full conventions (names, file and function sizes, comments) are in [docs/con
 - Prettier decides formatting (no semicolons, single quotes, 120 columns). Run `npm run format` rather than formatting by hand.
 - Comments explain why, in one or two plain lines above the line they concern. Never what the code already says, never the history of a change.
 - At most 300 lines of code per file and 80 per function or component, with a cognitive complexity under 15: split before you go over. `npm run lint` fails on any warning.
+- Limits, durations, rates and sizes go in `config.yml` (and `shared/config-schema.ts`), read through `CONFIG`: never a bare number in the code. Settings an admin chooses go in Serveur instead.
 - Small modules with one job. Server: one `*-store.ts` per kind of data, route groups in `server/http/`. Web: shared hooks in `web/src/lib/`, shared components in `web/src/ui/`.
 - Server changes come with tests in `server/test/` (see `household.test.ts` for a full API test with a fake AI provider).
 - Web utilities (`web/src/lib/`, the sanitizer, rules such as when an article counts as read) come with tests in `web/test/`. Components and screens have no unit tests.

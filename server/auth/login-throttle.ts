@@ -1,13 +1,14 @@
 import ipaddr from 'ipaddr.js'
+import { CONFIG } from '../fixed-config.ts'
 
 // Limits on failed logins. Each client has its own small allowance, so bots trying passwords from the internet
 // do not lock the household out of signing in on a new device; a much larger limit shared by every client still
 // caps a guessing attempt spread over many addresses. Existing sessions keep working either way.
-export const DEFAULT_MAX_FAILURES = 10
-export const DEFAULT_WINDOW_MS = 15 * 60 * 1000
-export const DEFAULT_GLOBAL_MAX_FAILURES = 100
+export const DEFAULT_MAX_FAILURES = CONFIG.signIn.failuresPerClient
+export const DEFAULT_WINDOW_MS = CONFIG.signIn.failureWindow
+export const DEFAULT_GLOBAL_MAX_FAILURES = CONFIG.signIn.failuresServerWide
 // Past this many clients with recent failures, the oldest are forgotten (their failures still count globally).
-const MAX_CLIENTS = 10_000
+const MAX_CLIENTS = CONFIG.signIn.trackedClients
 
 // An IPv6 address counts by its /64: one connection usually holds a whole /64, and each of its addresses must not get
 // an allowance of its own.

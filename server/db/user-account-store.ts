@@ -3,12 +3,13 @@ import { type Database, transaction } from './database.ts'
 import { HandleStore } from './handle-store.ts'
 import { currentHouseholdId } from './household-scope.ts'
 import { YoungAccountStore } from './young-account-store.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Personal accounts: a person's own e-mail and password, which sign them in on any device. Not to be mixed up with
 // UserStore, which keeps a profile's reading state, nor with the accounts table, which holds the household.
 // The first account, made in the first-run screens, is the server's admin.
 
-export const MAX_EMAIL_LENGTH = 254
+export const MAX_EMAIL_LENGTH = CONFIG.accounts.emailMaxLength
 
 export interface UserAccount {
   id: number

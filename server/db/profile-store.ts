@@ -1,15 +1,16 @@
 import { type Database, transaction } from './database.ts'
 import { recordForget, rowKey } from './forget-log.ts'
 import { currentHouseholdId } from './household-scope.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Netflix-style profiles: one household (the password), up to five readers, each with their own
 // preferences, "Enregistrés", reads, stats and alerts (UserStore, by profile). Articles, their texts and
 // what the AI wrote stay shared.
 
-export const MAX_PROFILES = 5
-export const MAX_NAME_LENGTH = 24
+export const MAX_PROFILES = CONFIG.profiles.max
+export const MAX_NAME_LENGTH = CONFIG.profiles.nameMaxLength
 // A square picture made small on the device: well under this.
-export const MAX_PHOTO_BYTES = 200_000
+export const MAX_PHOTO_BYTES = CONFIG.profiles.photoMaxSize
 export const PHOTO_TYPES = ['image/webp', 'image/jpeg', 'image/png'] as const
 export type PhotoType = (typeof PHOTO_TYPES)[number]
 

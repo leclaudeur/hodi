@@ -12,8 +12,9 @@ import type { CookieFor } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
 import { type CheckSignIn, refuseSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
+import { CONFIG } from '../fixed-config.ts'
 
-const MAX_PASSWORD_LENGTH = 256
+const MAX_PASSWORD_LENGTH = CONFIG.passwords.maxLength
 
 export interface CodeJoinOptions {
   codes: SignInCodeStore

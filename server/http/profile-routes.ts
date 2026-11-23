@@ -28,10 +28,11 @@ const isKind = (value: unknown): value is ProfileKind => PROFILE_KINDS.includes(
 const isAvatar = (value: unknown): value is ProfileAvatar => PROFILE_AVATARS.includes(value as ProfileAvatar)
 
 // A password or code typed in "Qui lit ?": see profile-current-routes.ts.
-export const PIN_MAX_FAILURES = 5
-export const PIN_GLOBAL_MAX_FAILURES = 50
+export const PIN_MAX_FAILURES = CONFIG.profilePin.failures
+export const PIN_GLOBAL_MAX_FAILURES = CONFIG.profilePin.failuresServerWide
 
 import { isAdminOf, isParentOf, kindOf, profileIdOf } from './request-locals.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 export { isAdminOf, isParentOf, kindOf, profileIdOf }
 

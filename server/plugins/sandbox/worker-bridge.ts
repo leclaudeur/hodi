@@ -3,11 +3,12 @@ import type { QuickJSContext, QuickJSDeferredPromise, QuickJSHandle } from 'quic
 import { SqlRefused, checkPluginSql } from './sql-guard.ts'
 import type { FromSandbox, SandboxData } from './protocol.ts'
 import { type PluginDatabase, plainParams } from './worker-database.ts'
+import { CONFIG } from '../../fixed-config.ts'
 
 // The bridge the prelude takes off globalThis (worker-scripts.ts): the few functions through which the plugin's code
 // reaches its database, its log, Hodi's main thread and random bytes.
 
-const LOG_LINES = 200
+const LOG_LINES = CONFIG.plugins.logLines
 
 // The values going in and out of the engine, for one plugin's engine and database.
 const valuesOf = (vm: QuickJSContext) => {

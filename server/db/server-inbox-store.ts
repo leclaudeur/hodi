@@ -1,5 +1,6 @@
 import type { Language } from '../../shared/i18n.ts'
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // Serveur › À traiter: the requests the server's admins are asked to act on (a code asked for, a source to judge),
 // whatever way each chose to hear of them. Each carries a key, and waits until what it asks for is done; the same
@@ -32,10 +33,10 @@ interface InboxRow {
 }
 
 // The most notices kept: the oldest handled ones go first.
-const MAX_ITEMS = 200
+const MAX_ITEMS = CONFIG.inbox.items
 
 // How long a handled request stays under « Traité ».
-export const HANDLED_KEPT = 7 * 24 * 60 * 60 * 1000
+export const HANDLED_KEPT = CONFIG.inbox.handledKeptFor
 
 const toItem = (row: InboxRow): InboxItem => ({
   id: row.id,
@@ -72,7 +73,7 @@ export class ServerInboxStore {
   }
 
   // The newest first, without the requests handled more than a week ago.
-  list(now: number, limit = 50): InboxItem[] {
+  list(now: number, limit = CONFIG.inbox.pageSize): InboxItem[] {
     return (
       this.#db
         .prepare(

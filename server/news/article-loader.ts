@@ -8,14 +8,15 @@ import { removeSiteTemplate } from './site-template.ts'
 import type { NewsStore, StoredItem, StoredVerdict } from '../db/news-store.ts'
 import { CACHE_TTL_MS, ERROR_TTL_MS, type FeedCache } from './feed-cache.ts'
 import type { ArticleResult, TopicItem } from './news-types.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The reader's side of the news: an article's page fetched and its text extracted once, kept for a while, and the
 // verdict on whether it opens in the reader.
 
-const MAX_CACHED_ARTICLES = 400
+const MAX_CACHED_ARTICLES = CONFIG.reader.articlesCached
 // The source's other articles compared with one, to find the site's own blocks in it.
-const TEMPLATE_SAMPLE = 5
-const MAX_VERDICTS = 5000
+const TEMPLATE_SAMPLE = CONFIG.reader.templateSample
+const MAX_VERDICTS = CONFIG.reader.verdictsKept
 
 type Verdict = StoredVerdict
 

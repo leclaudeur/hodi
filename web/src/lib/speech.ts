@@ -1,5 +1,6 @@
 import { type RefObject, useEffect, useRef, useState } from 'react'
 import type { Language } from '../api.ts'
+import { CONFIG } from './config.ts'
 
 // loading is kept for a voice that takes time to start; the browser's voices start at once.
 export type SpeechState = 'idle' | 'loading' | 'playing' | 'paused'
@@ -43,7 +44,7 @@ const releasePlaybackChannel = () => {
 // where a pause ends the voice.
 const NEEDS_KEEP_ALIVE =
   typeof navigator !== 'undefined' && /Chrome\//.test(navigator.userAgent) && !/Android/.test(navigator.userAgent)
-const KEEP_ALIVE_MS = 10_000
+const KEEP_ALIVE_MS = CONFIG.app.speechKeepAlive
 
 // Kept until spoken: some browsers lose the events of an utterance nothing refers to any more.
 const queued: SpeechSynthesisUtterance[] = []

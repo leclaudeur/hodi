@@ -1,4 +1,5 @@
 import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
+import { CONFIG } from '../fixed-config.ts'
 
 // Stored format: scrypt:<N>:<r>:<p>:<salt>:<hash>, salt and hash in base64url.
 // No "$" separators, so the value survives Docker Compose variable interpolation.
@@ -19,7 +20,7 @@ export interface ScryptParams {
 export const DEFAULT_PARAMS: ScryptParams = { N: 2 ** 15, r: 8, p: 3 }
 // Checks running at once, whoever asks: more wait their turn, so that a flood of sign-ins (the decoy for an unknown
 // e-mail hashes too) never takes more than 64 MiB of the server's memory.
-export const MAX_RUNNING = 2
+export const MAX_RUNNING = CONFIG.signIn.hashingAtOnce
 
 interface ParsedHash {
   params: ScryptParams

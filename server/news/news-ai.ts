@@ -16,13 +16,14 @@ import type {
   SummaryResult
 } from './news-types.ts'
 import { errorMessage } from './article-loader.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The news' AI buttons: a summary, a question, sources to suggest, the Résumé du jour and a plugin's question. Each
 // is one call to the API after a click, within its daily cap (ai-ledger.ts).
 
-const MAX_CACHED_SUMMARIES = 200
+const MAX_CACHED_SUMMARIES = CONFIG.ai.summariesCached
 // A summary is kept as long as its article is listed.
-const SUMMARY_TTL_MS = 72 * 60 * 60 * 1000
+const SUMMARY_TTL_MS = CONFIG.ai.summaryKeptFor
 const DEFAULT_PROFILE_ID = 1
 
 interface SummaryEntry {

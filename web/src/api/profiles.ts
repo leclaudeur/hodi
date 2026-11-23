@@ -1,5 +1,6 @@
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
+import { CONFIG } from '../lib/config.ts'
 
 // Profiles. Mirrors server/db/profile-store.ts.
 
@@ -38,8 +39,8 @@ export const PROFILE_AVATARS = [
 ] as const
 export type ProfileAvatarName = (typeof PROFILE_AVATARS)[number]
 
-export const MAX_PROFILES = 5
-export const MAX_PROFILE_NAME_LENGTH = 24
+export const MAX_PROFILES = CONFIG.profiles.max
+export const MAX_PROFILE_NAME_LENGTH = CONFIG.profiles.nameMaxLength
 
 // admin: manages every profile and the household's shared data. member: its own profile and settings.
 export type ProfileRole = 'admin' | 'member'

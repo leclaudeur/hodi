@@ -2,6 +2,7 @@ import { XMLParser } from 'fast-xml-parser'
 import type { Language, Source, SourceKind } from './catalog.ts'
 import { guessLanguage } from './language.ts'
 import { canonicalLink, decodeEntities, firstImageInHtml, htmlToText, itemId, summaryText, truncate } from './text.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // channelId: the channel's page opens from the player. Missing on videos fetched before it was read.
 // durationSeconds: a video's is added from its page once known (see video-durations.ts).
@@ -32,7 +33,7 @@ export interface FeedEntry {
 
 type Node = Record<string, unknown>
 
-const SUMMARY_LENGTH = 280
+const SUMMARY_LENGTH = CONFIG.feeds.summaryLength
 
 const parser = new XMLParser({
   ignoreAttributes: false,

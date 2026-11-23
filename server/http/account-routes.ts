@@ -18,11 +18,12 @@ import { mountLeaveRoute } from './account-leave-route.ts'
 import { mountLockRoutes, mountParentalCodeRoutes } from './account-lock-routes.ts'
 import { mountRegionRoutes } from './account-region-routes.ts'
 import { type AccountAiOptions, accountAiView, mountAiRoutes } from './account-ai-routes.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The person's own account, after the session and profile checks: Réglages > Compte et données.
 
 // « Télécharger une copie »: how many an account may ask in a minute.
-export const COPIES_PER_MINUTE = 5
+export const COPIES_PER_MINUTE = CONFIG.accounts.copiesPerMinute
 
 export interface AccountRoutesOptions extends AccountAiOptions {
   data: AccountDataStore

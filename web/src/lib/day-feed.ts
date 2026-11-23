@@ -2,16 +2,17 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { type DayFeed, UnauthorizedError, getDay } from '../api.ts'
 import { keepForOffline } from './offline.ts'
 import { rememberRelated } from './related.ts'
+import { CONFIG } from './config.ts'
 
 // "Le fil" and each topic, one day at a time: today first, then each earlier day on "Charger <jour>".
 // Kept for the visit, so going back from the reader or switching views shows them at once.
 
 // The server checks new articles in the background: today is asked again until it is done, a few times
 // at most, never while the app is hidden.
-const POLL_INTERVAL_MS = 3000
-const MAX_POLLS = 12
+const POLL_INTERVAL_MS = CONFIG.app.dayFeedPollEvery
+const MAX_POLLS = CONFIG.app.dayFeedPolls
 // Coming back to a list after this long fetches today again.
-const STALE_AFTER_MS = 5 * 60 * 1000
+const STALE_AFTER_MS = CONFIG.app.dayFeedStaleAfter
 
 export interface DayFeedState {
   days: DayFeed[]

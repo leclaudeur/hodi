@@ -1,4 +1,5 @@
 import { type Database, transaction } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The sites the server's admin blocked (« Bloquer » a source, for illegal content): no feed of theirs is added again, by
 // anyone. Not a list kept apart from the sources: a source is in the catalogue, refused, or blocked.
@@ -19,29 +20,7 @@ export const domainOf = (link: string) => {
 
 // Hosts that carry the feeds of many unrelated people: blocking one of their sources blocks that feed alone, never
 // the whole host (a YouTube channel, not YouTube).
-const SHARED_HOSTS = [
-  'youtube.com',
-  'medium.com',
-  'substack.com',
-  'feedburner.com',
-  'blogspot.com',
-  'wordpress.com',
-  'tumblr.com',
-  'github.io',
-  'reddit.com',
-  'google.com',
-  'apple.com',
-  'spotify.com',
-  'soundcloud.com',
-  'anchor.fm',
-  'podbean.com',
-  'libsyn.com',
-  'buzzsprout.com',
-  'acast.com',
-  'ausha.co',
-  'rss.app',
-  'feedly.com'
-]
+const SHARED_HOSTS = CONFIG.blocks.sharedHosts
 
 // The host itself, or any of its subdomains: blocking rfi.fr blocks www.rfi.fr and podcasts.rfi.fr.
 const isUnder = (host: string, domain: string) => host === domain || host.endsWith(`.${domain}`)

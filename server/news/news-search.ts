@@ -11,16 +11,17 @@ import { type ReaderFilter, filtered } from './reader-filter.ts'
 import { MAX_TOPIC_LIMIT, type TopicLister, byNewest } from './topic-lister.ts'
 import type { SearchItem, SearchResult } from './news-types.ts'
 import { currentHouseholdId } from '../db/household-scope.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // The search page: articles found by words, "Historique" and "Tendances · 48 h".
 
-const MAX_SEARCH_RESULTS = 60
+const MAX_SEARCH_RESULTS = CONFIG.search.results
 // Older articles the store finds for a search, before they are filtered like the feeds' ones.
-const MAX_STORED_SEARCH_ROWS = 300
-const MAX_SEARCH_CHECKS = 20
+const MAX_STORED_SEARCH_ROWS = CONFIG.search.storedRows
+const MAX_SEARCH_CHECKS = CONFIG.search.checks
 // "Tendances · 48 h": from the titles of the last two days, worked out again every ten minutes at most.
-const TRENDS_WINDOW_MS = 48 * 60 * 60 * 1000
-const TRENDS_TTL_MS = 10 * 60 * 1000
+const TRENDS_WINDOW_MS = CONFIG.trends.window
+const TRENDS_TTL_MS = CONFIG.trends.cacheFor
 
 interface TrendTitle {
   title: string

@@ -13,6 +13,7 @@ import TextField from '../../ui/TextField.tsx'
 import RichText from '../../ui/RichText.tsx'
 import { HandleAdder, PersonPicks } from './SharePicks.tsx'
 import styles from './ShareToButton.module.css'
+import { CONFIG } from '../../lib/config.ts'
 
 interface ShareToButtonProps {
   articleId: string
@@ -20,7 +21,7 @@ interface ShareToButtonProps {
 }
 
 // As the server takes it.
-const MAX_NOTE_LENGTH = 140
+const MAX_NOTE_LENGTH = CONFIG.shares.noteMaxLength
 
 // "Léa, Tom et Max", in the interface language.
 const names = (list: string[]) => new Intl.ListFormat(getLanguage(), { type: 'conjunction' }).format(list)

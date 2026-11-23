@@ -5,16 +5,17 @@ import { getListenFeed, subscribeListen, useListen } from './listen.ts'
 import { followedWordOf, isHidden, usePreferences, type Preferences } from './preferences.ts'
 import { isRead, useReadState } from './read-state.ts'
 import { rememberRelated } from './related.ts'
+import { CONFIG } from './config.ts'
 
 // "Suivis": the articles of every topic about the subjects followed in the settings, newest first.
 // The list and the counter beside "Suivis" share one result, so they always agree.
 
 // The server checks matching articles it has not opened yet: search again until it is done, a few times.
-const POLL_INTERVAL_MS = 3000
-const MAX_POLLS = 6
+const POLL_INTERVAL_MS = CONFIG.app.followedPollEvery
+const MAX_POLLS = CONFIG.app.followedPolls
 
 // Videos and episodes about a subject show as long as articles do.
-const VIDEO_WINDOW_MS = 3 * 24 * 60 * 60 * 1000
+const VIDEO_WINDOW_MS = CONFIG.app.followedVideoWindow
 
 const byNewest = (a: TopicItem, b: TopicItem) => (b.publishedAt ?? '').localeCompare(a.publishedAt ?? '')
 

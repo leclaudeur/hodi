@@ -3,11 +3,12 @@ import { useEffect, useRef } from 'react'
 import type { FeedItem } from '../../api.ts'
 import { type ReadingProgress, getReadings, recordReading, updateReading } from '../../lib/reading-stats.ts'
 import { forgetResumePosition, resumePositionOf } from '../../lib/resume.ts'
+import { CONFIG } from '../../lib/config.ts'
 
 // Seen for good once this much of it played by, or once it played to its end.
-const DONE_PROGRESS = 0.8
+const DONE_PROGRESS = CONFIG.reading.doneAt
 // Time counted no more than twice the length: a video left playing in a corner.
-const MAX_TIME = 2
+const MAX_TIME = CONFIG.reading.maxTime
 const MINUTE_S = 60
 
 const hundredths = (fraction: number) => Math.round(fraction * 100) / 100

@@ -1,4 +1,4 @@
-import { cleanHandle } from '../../shared/handle.ts'
+import { cleanHandle } from '../handle.ts'
 import express from 'express'
 import { hashPassword } from '../auth/password.ts'
 import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'

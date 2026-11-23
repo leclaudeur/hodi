@@ -1,6 +1,7 @@
 import { type ComponentType, useSyncExternalStore } from 'react'
 import i18next from 'i18next'
 import type { PluginTranslations } from './plugin-texts.ts'
+import { CONFIG } from '../lib/config.ts'
 
 // The plugins this profile sees, as GET /api/plugins describes them, and what their web.js registered. Loaded once
 // signed in, in the background: the app never waits for a plugin to draw its first screen, and without plugins
@@ -255,7 +256,7 @@ const loadOne = async (plugin: PluginInfo) => {
 }
 
 // A plugin's files that do not come within this time are given up: the screen after sign-in waits for the plugins.
-const PLUGIN_LOAD_MS = 5000
+const PLUGIN_LOAD_MS = CONFIG.plugins.loadTimeout
 const withinTime = (loading: Promise<void>) =>
   new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`no answer in ${PLUGIN_LOAD_MS} ms`)), PLUGIN_LOAD_MS)

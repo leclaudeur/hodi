@@ -1,11 +1,12 @@
 import type { Database } from './database.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // À traiter's sources: those added while the server validates them, until its admin accepts or refuses each. Who
 // added one is never kept here: the admin judges the source, not the person.
 
 // A refused source is asked about again once a month at most, so that adding its link over and over never floods the
 // admin with requests.
-export const ASK_AGAIN_AFTER = 30 * 24 * 60 * 60 * 1000
+export const ASK_AGAIN_AFTER = CONFIG.sources.reviewAskAgainAfter
 
 export type ReviewState = 'pending' | 'accepted' | 'refused'
 

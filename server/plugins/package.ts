@@ -3,15 +3,16 @@ import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync 
 import path from 'node:path'
 import { extract } from 'tar'
 import { type Manifest, parseManifest } from './manifest.ts'
+import { CONFIG } from '../fixed-config.ts'
 
 // A plugin package (.hodi-plugin) is a gzipped tar of the plugin's folder: plugin.json at its root, then server.js,
 // web.js, locales/ and assets/ as the plugin needs. A package from the catalogue, or one of the maintainer's
 // private plugins, also holds a `signature` file over everything else.
 
 // Generous enough for a plugin with pictures (the kids' island), small enough for the data volume.
-export const MAX_PACKAGE_BYTES = 50 * 1024 * 1024
-export const MAX_UNPACKED_BYTES = 150 * 1024 * 1024
-const MAX_FILES = 2000
+export const MAX_PACKAGE_BYTES = CONFIG.plugins.packageMaxSize
+export const MAX_UNPACKED_BYTES = CONFIG.plugins.unpackedMaxSize
+const MAX_FILES = CONFIG.plugins.packageFiles
 const SIGNATURE_FILE = 'signature'
 
 // code: what the interface says (too_big, not_a_package, invalid_manifest); detail: why, for the admin and the log.

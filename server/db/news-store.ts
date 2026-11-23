@@ -16,6 +16,8 @@ import {
 } from './ai-queries.ts'
 
 import { type StoredIcon, getIcon, getVideoDurations, saveIcon, saveVideoDuration } from './media-queries.ts'
+import { CONFIG } from '../fixed-config.ts'
+import { CONTENT_SETTINGS } from './server-settings-store.ts'
 
 // Readability verdict of an article, as NewsService keeps it, with what its card shows once it is read.
 export interface StoredVerdict {
@@ -31,10 +33,10 @@ export interface StoredItem {
 }
 
 // The reader mode text and the feed's full HTML are dropped after this; the article row stays.
-export const CONTENT_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
-const AI_CALL_RETENTION_MS = 2 * 24 * 60 * 60 * 1000
-const VIDEO_DURATION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000
-const DAILY_SUMMARY_RETENTION = 30
+export const CONTENT_RETENTION_MS = CONTENT_SETTINGS.textDays.byDefault * 24 * 60 * 60 * 1000
+const AI_CALL_RETENTION_MS = CONFIG.retention.aiCalls
+const VIDEO_DURATION_RETENTION_MS = CONFIG.retention.videoDurations
+const DAILY_SUMMARY_RETENTION = CONFIG.retention.dailySummaries
 
 interface ArticleRow {
   id: string
