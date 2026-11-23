@@ -35,11 +35,13 @@ describe('a person’s name, colour and photo', () => {
     assert.deepEqual(profiles.photo(again.id), photo)
   })
 
-  it('let an account join another household without saying who it is again', async () => {
+  it('let an account whose profile went join again without saying who it is again', async () => {
     const env = await startHousehold()
     try {
       const before = env.profiles.get(env.samId)!
-      assert.equal((await env.call('/account/leave', env.sam, 'POST', { password: SAM_PASSWORD })).status, 204)
+      // As Réglages › Profils › « Supprimer » does; leaving the household on one's own is no longer a way.
+      assert.ok(env.profiles.delete(env.samId))
+      assert.equal((await env.call('/account/leave', env.sam, 'POST', { password: SAM_PASSWORD })).status, 404)
       const { code } = (await (await env.call('/codes', env.admin, 'POST', {})).json()) as { code: string }
       const joined = await env.call('/codes/join', '', 'POST', {
         code,

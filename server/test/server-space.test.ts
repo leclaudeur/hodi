@@ -330,35 +330,11 @@ describe('server overview route', () => {
     assert.equal((await call('/server/accounts/999/code', adminCookie, 'POST')).status, 404)
   })
 
-  it('shows the household’s photo to its people and to the server’s admin', async () => {
-    const png = await sharp({ create: { width: 8, height: 8, channels: 3, background: '#c06040' } })
-      .png()
-      .toBuffer()
-    // A plugin sets it now: the core has no screen for it.
+  it('no longer serves a household’s photo: the server has accounts, not households', async () => {
     const household = new HouseholdStore(db)
-    household.setPhoto({ data: png, type: 'image/png' }, NOW)
     const id = household.ids()[0]!
-    const photo = `/api/households/${id}/photo?v=${NOW}`
-
-    // Its people see it, as a plugin's household picker would.
-    const seen = await fetch(`${baseUrl}${photo}`, { headers: { cookie: memberCookie } })
-    assert.equal(seen.status, 200)
-    assert.equal(seen.headers.get('content-type'), 'image/png')
-    assert.deepEqual(Buffer.from(await seen.arrayBuffer()), png)
-    // Nobody else: no session, or another household's address.
-    assert.equal((await fetch(`${baseUrl}${photo}`)).status, 401)
-    assert.equal((await call(`/households/${id + 1}/photo`, memberCookie)).status, 404)
-
-    // The server's admin, for Serveur › Foyers.
-    const listed = (await (await call('/server/households', adminCookie)).json()) as {
-      households: { id: number; photoVersion: number | null }[]
-    }
-    assert.notEqual(listed.households.find(entry => entry.id === id)?.photoVersion, null)
-    assert.equal((await call(`/server/households/${id}/photo`, adminCookie)).status, 200)
-    assert.equal((await call(`/server/households/${id}/photo`, memberCookie)).status, 403)
-
-    household.setPhoto(null, NOW + 1)
-    assert.equal((await fetch(`${baseUrl}${photo}`, { headers: { cookie: memberCookie } })).status, 404)
+    assert.equal((await call(`/households/${id}/photo`, memberCookie)).status, 404)
+    assert.equal((await call(`/server/households/${id}/photo`, adminCookie)).status, 404)
   })
 
   it('shows an account’s profile photo to the server’s admin, in Serveur › Comptes', async () => {

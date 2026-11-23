@@ -120,11 +120,8 @@ describe('a server whose household is left for later', () => {
     }
     assert.equal(overview.households, 0)
     assert.deepEqual(overview.profiles, { adults: 0, young: 0 })
-    const people = (await (await call('/server/households', signedIn)).json()) as {
-      households: unknown[]
-      canCreate: boolean
-    }
-    assert.deepEqual([people.households, people.canCreate], [[], true])
+    const people = (await (await call('/server/households', signedIn)).json()) as { households: unknown[] }
+    assert.deepEqual(people.households, [])
 
     // Nothing of the app: there is no household to read in.
     const feed = await call('/profiles', signedIn)
@@ -144,7 +141,7 @@ describe('a server whose household is left for later', () => {
     assert.equal(sent.at(-1)?.to, EMAIL)
   })
 
-  it('brings the household steps back from Serveur › Foyers, then works as any server', async () => {
+  it('brings the household steps back, then works as any server', async () => {
     assert.equal((await call('/server/households', session, 'POST', { for: 'me' })).status, 204)
     const setup = (await (await call('/setup', session)).json()) as {
       needed: boolean
@@ -163,143 +160,34 @@ describe('a server whose household is left for later', () => {
     const cookie = `${session}; ${cookiesFrom(done)}`
     const current = (await (await call('/session', cookie)).json()) as { serverOnly?: boolean; profileChosen: boolean }
     assert.deepEqual([current.serverOnly, current.profileChosen], [undefined, true])
-    const people = (await (await call('/server/households', cookie)).json()) as {
-      households: { name: string }[]
-      canCreate: boolean
-    }
-    assert.deepEqual([people.households.map(entry => entry.name), people.canCreate], [['Chez nous'], false])
+    const people = (await (await call('/server/households', cookie)).json()) as { households: { name: string }[] }
+    assert.deepEqual(
+      people.households.map(entry => entry.name),
+      ['Chez nous']
+    )
     assert.equal((await call('/server/households', cookie, 'POST')).status, 409)
   })
 })
 
-// « Créer un foyer » for someone else: the server's admin names it and its admin, and hands that person a code. The
-// server's admin stays out of it, unless invited.
-describe('a household made for someone else', () => {
-  let call: Awaited<ReturnType<typeof startServer>>['call']
-  let close: () => void
-  let session = ''
-  let code = ''
-
-  before(async () => {
-    ;({ call, close, session } = await startServer())
-    assert.equal((await call('/setup/later', session, 'POST')).status, 204)
-  })
-
-  after(() => close())
-
-  it('sets the household up with a profile that waits for its admin', async () => {
-    const refused = await call('/server/households', session, 'POST', { for: 'other', name: 'Famille Dupont' })
-    assert.equal(refused.status, 400)
-    const made = await call('/server/households', session, 'POST', {
-      for: 'other',
-      name: 'Famille Dupont',
-      admin: 'Claire',
-      language: 'fr'
-    })
-    assert.equal(made.status, 201)
-    const body = (await made.json()) as { profile: { name: string }; code: string; expiresAt: string }
-    assert.equal(body.profile.name, 'Claire')
-    assert.match(body.code, /^[A-HJKMNP-Z2-9]{8}$/)
-    code = body.code
-
-    // The server's admin has no profile in it: still /server alone.
-    const current = (await (await call('/session', session)).json()) as { serverOnly?: boolean }
-    assert.equal(current.serverOnly, true)
-    assert.equal((await call('/profiles', session)).status, 423)
-    const people = (await (await call('/server/households', session)).json()) as {
-      households: { name: string }[]
-      canCreate: boolean
+// « Créer un foyer » for someone else went with Serveur › Foyers: the server makes no household for anyone.
+describe('a household made for someone else, gone', () => {
+  it('makes no household and no code for anyone', async () => {
+    const { call, close, session } = await startServer()
+    try {
+      assert.equal((await call('/setup/later', session, 'POST')).status, 204)
+      const made = await call('/server/households', session, 'POST', {
+        for: 'other',
+        name: 'Famille Dupont',
+        admin: 'Claire',
+        language: 'fr'
+      })
+      // Read as « Créer mon foyer »: the household steps come back for the server's admin, no code for anyone.
+      assert.equal(made.status, 204)
+      assert.equal(((await (await call('/setup', session)).json()) as { stage: string }).stage, 'household')
+      assert.equal((await call('/server/households/1/admin-code', session, 'POST')).status, 404)
+    } finally {
+      close()
     }
-    assert.deepEqual([people.households.map(entry => entry.name), people.canCreate], [['Famille Dupont'], false])
-    assert.equal((await call('/setup', '')).status, 200)
-    const setup = (await (await call('/setup', '')).json()) as { needed: boolean; name: string }
-    assert.deepEqual([setup.needed, setup.name], [false, 'Famille Dupont'])
-  })
-
-  it('makes its admin a new code, which replaces the first', async () => {
-    const { households } = (await (await call('/server/households', session)).json()) as {
-      households: { id: number }[]
-    }
-    const id = households[0]!.id
-    assert.equal((await call(`/server/households/${id + 1}/admin-code`, session, 'POST')).status, 404)
-    const remade = await call(`/server/households/${id}/admin-code`, session, 'POST')
-    assert.equal(remade.status, 201)
-    const body = (await remade.json()) as { profile: { name: string }; code: string }
-    assert.equal(body.profile.name, 'Claire')
-    assert.notEqual(body.code, code)
-    const old = await call('/codes/join', '', 'POST', {
-      email: 'x@example.com',
-      password: PASSWORD,
-      ageConfirmed: true,
-      code
-    })
-    assert.notEqual(old.status, 200)
-    code = body.code
-  })
-
-  it('lets its admin make an account with the code, and sign in to the household', async () => {
-    const joined = await call('/codes/join', '', 'POST', {
-      email: 'claire@example.com',
-      password: PASSWORD,
-      ageConfirmed: true,
-      code
-    })
-    assert.equal(joined.status, 200)
-    const cookie = cookiesFrom(joined)
-    const current = (await (await call('/session', cookie)).json()) as { serverOnly?: boolean; profileChosen: boolean }
-    assert.deepEqual([current.serverOnly, current.profileChosen], [undefined, true])
-    const list = (await (await call('/profiles', cookie)).json()) as {
-      profiles: { id: number; name: string; role: string }[]
-      current: number
-    }
-    const opened = list.profiles.find(profile => profile.id === list.current)
-    assert.deepEqual([opened?.name, opened?.role], ['Claire', 'admin'])
-
-    // Claire has her account: no more code for her from the server.
-    const { households } = (await (await call('/server/households', session)).json()) as {
-      households: { id: number }[]
-    }
-    assert.equal((await call(`/server/households/${households[0]!.id}/admin-code`, session, 'POST')).status, 409)
-  })
-})
-
-// « J'ai déjà un compte » on a code's page: the account that exists joins the household, without a second one.
-describe('a code taken with an account that exists', () => {
-  let call: Awaited<ReturnType<typeof startServer>>['call']
-  let close: () => void
-  let session = ''
-
-  before(async () => {
-    ;({ call, close, session } = await startServer())
-    assert.equal((await call('/setup/later', session, 'POST')).status, 204)
-  })
-
-  after(() => close())
-
-  it("brings the server's admin into a household that invited it", async () => {
-    const made = (await (
-      await call('/server/households', session, 'POST', { for: 'other', name: 'Famille Dupont', admin: 'Claire' })
-    ).json()) as { code: string }
-    const join = (body: Record<string, unknown>) =>
-      call('/codes/join', '', 'POST', { existing: true, code: made.code, ...body })
-
-    assert.equal((await join({ email: EMAIL })).status, 400)
-    const wrong = await join({ email: EMAIL, password: 'pas le bon mot de passe' })
-    assert.equal(wrong.status, 401)
-    assert.equal(((await wrong.json()) as { error: string }).error, 'invalid_credentials')
-    assert.equal((await join({ email: 'nobody@example.com', password: PASSWORD })).status, 401)
-
-    const joined = await join({ email: EMAIL, password: PASSWORD })
-    assert.equal(joined.status, 200)
-    const cookie = cookiesFrom(joined)
-    const list = (await (await call('/profiles', cookie)).json()) as {
-      profiles: { id: number; name: string }[]
-      current: number
-    }
-    assert.equal(list.profiles.find(profile => profile.id === list.current)?.name, 'Claire')
-    // The same account on the device that made it: now in the household too.
-    const before = (await (await call('/session', session)).json()) as { serverOnly?: boolean }
-    assert.equal(before.serverOnly, undefined)
   })
 })
 

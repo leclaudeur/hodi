@@ -1,28 +1,26 @@
 import Chip from '../../ui/Chip.tsx'
-import { AlertCircle, ChevronRight, Home, Search, SearchX, UserPlus } from 'lucide-react'
+import { AlertCircle, ChevronRight, Search, SearchX, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { type ServerAccount, type ServerHousehold, createHouseholdCode } from '../../api.ts'
+import { type ServerAccount, createHouseholdCode } from '../../api.ts'
 import { SERVER_HREF, serverHref } from '../../lib/use-hash-route.ts'
 import { useIsDesktop } from '../../lib/use-media.ts'
 import Button from '../../ui/Button.tsx'
 import EmptyState from '../../ui/EmptyState.tsx'
-import Notice from '../../ui/Notice.tsx'
 import TextField from '../../ui/TextField.tsx'
 import ListColumn from '../ListColumn.tsx'
 import toolStyles from '../ListTools.module.css'
 import MobilePage from '../MobilePage.tsx'
 import navStyles from '../settings/SettingsNav.module.css'
 import CodeDialog from '../profiles/CodeDialog.tsx'
-import NoHousehold from './NoHousehold.tsx'
 import serverStyles from './Server.module.css'
-import { type People, type PeopleKind, usePeople } from './server-people.ts'
+import { type People, usePeople } from './server-people.ts'
 
 interface ListRow {
   id: string
   mark: string
-  // A household's or an account's photo, in the initial's place.
+  // The account's photo, in the initial's place.
   photo?: string | null
   name: string
   hint: string
@@ -34,7 +32,7 @@ interface ListRow {
 
 // The rows of Réglages' list, as they are: the initial, the name, one line under it; the chevron on a phone; a line
 // between rows on a computer, as between articles.
-const Rows = ({ kind, rows, active }: { kind: PeopleKind; rows: ListRow[]; active?: string }) => {
+const Rows = ({ rows, active }: { rows: ListRow[]; active?: string }) => {
   const phone = !useIsDesktop()
   return (
     <div className={`${navStyles.nav} ${phone ? navStyles.phone : navStyles.desktop}`}>
@@ -45,7 +43,7 @@ const Rows = ({ kind, rows, active }: { kind: PeopleKind; rows: ListRow[]; activ
               <li key={row.id}>
                 <a
                   className={`${navStyles.entry} ${row.id === active ? navStyles.active : ''}`}
-                  href={`${serverHref(kind)}/${row.id}`}
+                  href={`${serverHref('accounts')}/${row.id}`}
                   aria-current={row.id === active ? 'page' : undefined}
                 >
                   <span className={`${navStyles.icon} ${serverStyles.mark}`} aria-hidden="true">
@@ -71,30 +69,6 @@ const Rows = ({ kind, rows, active }: { kind: PeopleKind; rows: ListRow[]; activ
   )
 }
 
-// No account in it yet: made for someone else, whose admin has not used the code.
-const householdHint = (household: ServerHousehold, count: number, maxProfiles: number, t: TFunction) => {
-  if (household.accounts === 0 && household.admin) {
-    return t('server.people.householdRowWaiting', { count, name: household.admin })
-  }
-  if (count >= maxProfiles) return t('server.people.householdRowFull', { count })
-  return t('server.people.householdRow', { count })
-}
-
-const householdRow = (household: ServerHousehold, maxProfiles: number, t: TFunction): ListRow => {
-  const count = household.adults + household.young
-  return {
-    id: String(household.id),
-    mark: household.name.charAt(0).toUpperCase(),
-    photo:
-      household.photoVersion === null
-        ? null
-        : `/api/server/households/${household.id}/photo?v=${household.photoVersion}`,
-    name: household.name,
-    hint: householdHint(household, count, maxProfiles, t),
-    search: `${household.name} ${household.admin ?? ''}`
-  }
-}
-
 const accountRow = (account: ServerAccount, t: TFunction): ListRow => ({
   id: String(account.id),
   mark: (account.profile?.name ?? account.email).charAt(0).toUpperCase(),
@@ -108,11 +82,8 @@ const accountRow = (account: ServerAccount, t: TFunction): ListRow => ({
   ...(account.codeAskedAt ? { flag: t('server.people.account.codeAsked') } : {})
 })
 
-const rowsOf = (kind: PeopleKind, loaded: People | null, t: TFunction): ListRow[] => {
-  if (!loaded) return []
-  if (kind === 'households') return loaded.households.map(household => householdRow(household, loaded.maxProfiles, t))
-  return loaded.accounts.map(account => accountRow(account, t))
-}
+const rowsOf = (loaded: People | null, t: TFunction): ListRow[] =>
+  loaded ? loaded.accounts.map(account => accountRow(account, t)) : []
 
 interface SearchProps {
   phone: boolean
@@ -138,18 +109,6 @@ const PeopleSearch = ({ phone, label, query, onQuery }: SearchProps) => (
     </div>
   </div>
 )
-
-// The server has its household and the admin cannot make another: why there is no « Créer ».
-const OneNotice = () => {
-  const { t } = useTranslation()
-  return (
-    <div className={serverStyles.oneNote}>
-      <Notice icon={Home} title={t('server.people.oneTitle')}>
-        {t('server.people.oneText')}
-      </Notice>
-    </div>
-  )
-}
 
 // Under the accounts, full width: a code for someone to make an account on this server.
 const InviteButton = ({ loaded }: { loaded: People }) => {
@@ -177,13 +136,11 @@ const InviteButton = ({ loaded }: { loaded: People }) => {
 // What the list shows in place of its rows, if anything.
 interface ListState {
   failed: boolean
-  none: boolean
   empty: boolean
-  kind: PeopleKind
   query: string
 }
 
-const listOf = ({ failed, none, empty, kind, query }: ListState, t: TFunction) => {
+const listOf = ({ failed, empty, query }: ListState, t: TFunction) => {
   // As every list of the app that cannot load: an empty state in red, at the column's middle.
   if (failed)
     return (
@@ -191,56 +148,46 @@ const listOf = ({ failed, none, empty, kind, query }: ListState, t: TFunction) =
         {t('common.serverDown')}
       </EmptyState>
     )
-  if (none) return <NoHousehold />
   if (empty)
     return (
       <EmptyState icon={<SearchX size={28} />} title={t('lists.nothingFor', { query: query.trim() })}>
-        {t(kind === 'households' ? 'server.people.noMatchHouseholds' : 'server.people.noMatchAccounts')}
+        {t('server.people.noMatchAccounts')}
       </EmptyState>
     )
   return null
 }
 
-// Comptes (or Foyers, from an older link): the app's list column on a computer, its list page on a phone, with its search on top as
+// Comptes: the app's list column on a computer, its list page on a phone, with its search on top as
 // Enregistrés and Historique have theirs.
-const PeopleList = ({ kind, active }: { kind: PeopleKind; active?: string }) => {
+const PeopleList = ({ active }: { active?: string }) => {
   const { t } = useTranslation()
   const phone = !useIsDesktop()
   const { people: loaded, failed: loadFailed } = usePeople()
   const [query, setQuery] = useState('')
   const needle = query.trim().toLowerCase()
 
-  const all = rowsOf(kind, loaded, t)
+  const all = rowsOf(loaded, t)
   const rows = needle ? all.filter(row => row.search.toLowerCase().includes(needle)) : all
 
-  const title = t(`server.titles.${kind}`)
-  const label = t(kind === 'households' ? 'server.people.searchHouseholds' : 'server.people.searchAccounts')
-  const meta = loaded
-    ? t(kind === 'households' ? 'server.people.householdsMeta' : 'server.people.accountsMeta', {
-        count: all.length
-      }).toUpperCase()
-    : undefined
+  const title = t('server.titles.accounts')
+  const label = t('server.people.searchAccounts')
+  const meta = loaded ? t('server.people.accountsMeta', { count: all.length }).toUpperCase() : undefined
   const search = <PeopleSearch phone={phone} label={label} query={query} onQuery={setQuery} />
   // At the column's foot on a computer, as « Charger <jour> » under the articles; under the list on a phone.
-  const invite = kind === 'accounts' && loaded && !needle && !loadFailed ? <InviteButton loaded={loaded} /> : null
-  // No household yet: nothing to search.
-  const none = kind === 'households' && loaded?.canCreate === true && all.length === 0
-  // As every list of the app that cannot load: an empty state in red, at the column's middle.
-  const one = kind === 'households' && loaded !== null && loaded.households.length > 0 && loaded.canCreate !== true
+  const invite = loaded && !needle && !loadFailed ? <InviteButton loaded={loaded} /> : null
   const list = listOf(
-    { failed: loadFailed, none, empty: loaded !== null && rows.length === 0 && needle !== '', kind, query },
+    { failed: loadFailed, empty: loaded !== null && rows.length === 0 && needle !== '', query },
     t
   ) ?? (
     <>
-      {one && <OneNotice />}
-      <Rows kind={kind} rows={rows} active={active} />
+      <Rows rows={rows} active={active} />
       {phone && invite}
     </>
   )
 
   return phone ? (
     <MobilePage title={title} meta={meta} backHref={SERVER_HREF} backLabel={t('server.backToServer')}>
-      {loaded && !none && search}
+      {loaded && search}
       <div className={serverStyles.phoneRows}>{list}</div>
     </MobilePage>
   ) : (
@@ -248,7 +195,7 @@ const PeopleList = ({ kind, active }: { kind: PeopleKind; active?: string }) => 
       title={title}
       meta={meta}
       footer={invite ?? undefined}
-      pinned={!loaded || none ? undefined : search}
+      pinned={loaded ? search : undefined}
       busy={!loaded && !loadFailed}
     >
       {list}

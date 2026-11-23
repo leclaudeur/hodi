@@ -295,30 +295,17 @@ describe('a blocked e-mail at Connexion', () => {
   })
 })
 
-describe('Serveur › Foyers › « Supprimer »', () => {
-  it('empties the household and the accounts that read only there; the server admin goes on in /server', async () => {
-    const { call, admin, sam, samAccount, accounts, settings, close } = await start()
+describe('Serveur › Foyers, gone', () => {
+  it('deletes no household, even with the server admin’s password', async () => {
+    const { call, admin, sam, samAccount, accounts, close } = await start()
     try {
       const { households } = (await (await call('/server/households', admin)).json()) as {
         households: { id: number }[]
       }
       const url = `/server/households/${households[0]!.id}`
-      assert.equal((await call(url, sam, 'DELETE', { password: SAM_PASSWORD })).status, 403)
-      assert.equal((await call(url, admin, 'DELETE', {})).status, 403)
-      assert.equal((await call('/server/households/999', admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 404)
-
-      assert.equal((await call(url, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 204)
-      assert.equal(accounts.get(samAccount.id), null)
-      assert.equal((await call('/session', sam)).status, 401)
-      // Antho keeps the account, in no household: /server alone, where « Créer un foyer » starts one again.
-      assert.equal(settings.householdLater(), true)
-      const session = (await (await call('/session', admin)).json()) as { serverOnly?: boolean }
-      assert.equal(session.serverOnly, true)
-      const after = (await (await call('/server/households', admin)).json()) as {
-        households: unknown[]
-        canCreate: boolean
-      }
-      assert.deepEqual([after.households, after.canCreate], [[], true])
+      assert.equal((await call(url, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 404)
+      assert.notEqual(accounts.get(samAccount.id), null)
+      assert.equal((await call('/session', sam)).status, 200)
     } finally {
       close()
     }

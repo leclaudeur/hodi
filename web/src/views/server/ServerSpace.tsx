@@ -31,17 +31,16 @@ import ServerNotifications from './ServerNotifications.tsx'
 import ServerOverview from './ServerOverview.tsx'
 import ServerBlocks from './ServerBlocks.tsx'
 import AccountPage from './AccountPage.tsx'
-import HouseholdPage from './HouseholdPage.tsx'
 import PeopleList from './PeopleList.tsx'
-import { type People, type PeopleKind, firstOf, titleOf, usePeople } from './server-people.ts'
+import { type People, firstOf, titleOf, usePeople } from './server-people.ts'
 import { useTwoFactorOn } from '../../lib/two-factor.ts'
 import ServerTwoFactor from './ServerTwoFactor.tsx'
 import { pluginName } from '../../plugins/plugin-texts.ts'
 
 type Layout = 'desktop' | 'phone'
 
-// The sections that list things: a column of them beside the open one on a computer.
-const isList = (section: ServerSection): section is PeopleKind => section === 'households' || section === 'accounts'
+// The section that lists things: a column of them beside the open one on a computer.
+const isList = (section: ServerSection): section is 'accounts' => section === 'accounts'
 
 const Page = ({ section, item, layout }: { section: ServerSection; item?: string; layout: Layout }) => {
   switch (section) {
@@ -61,8 +60,6 @@ const Page = ({ section, item, layout }: { section: ServerSection; item?: string
       return <ServerMail layout={layout} />
     case 'notifications':
       return <ServerNotifications layout={layout} />
-    case 'households':
-      return item ? <HouseholdPage id={item} layout={layout} /> : null
     case 'accounts':
       return item ? <AccountPage id={item} layout={layout} /> : null
     default:
@@ -146,11 +143,11 @@ const pluginSpace = (route: PluginSectionRoute, isDesktop: boolean, ready: boole
 const desktopSpace = (section: ServerSection | null, item: string | undefined, people: People | null) => {
   const open = section ?? SERVER_SECTIONS[0]
   // A list opens its first entry beside it until another is chosen.
-  const shown = isList(open) ? (item ?? firstOf(open, people)) : item
+  const shown = isList(open) ? (item ?? firstOf(people)) : item
   return (
     <div className={homeStyles.desktop}>
       <ServerSidebar active={open} />
-      {isList(open) && <PeopleList kind={open} active={shown} />}
+      {isList(open) && <PeopleList active={shown} />}
       {open === 'inbox' && <InboxList active={item} />}
       <main className={homeStyles.main}>
         <ScrollArea className={homeStyles.panel}>
@@ -177,12 +174,12 @@ const phoneSpace = (
       </MobilePage>
     )
   if (isList(section)) {
-    if (!item) return <PeopleList kind={section} />
+    if (!item) return <PeopleList />
     return (
       <MobilePage
-        title={titleOf(section, item, people)}
+        title={titleOf(item, people)}
         backHref={serverHref(section)}
-        backLabel={t(section === 'households' ? 'server.people.backToHouseholds' : 'server.people.backToAccounts')}
+        backLabel={t('server.people.backToAccounts')}
       >
         <Page section={section} item={item} layout="phone" />
       </MobilePage>

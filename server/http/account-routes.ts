@@ -14,7 +14,6 @@ import type { HandleStore } from '../db/handle-store.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { RECENT_SIGN_IN_MS, proofCheck } from './proof.ts'
 import { mountDeleteRoute } from './account-delete-route.ts'
-import { mountLeaveRoute } from './account-leave-route.ts'
 import { mountLockRoutes, mountParentalCodeRoutes } from './account-lock-routes.ts'
 import { mountRegionRoutes } from './account-region-routes.ts'
 import { type AccountAiOptions, accountAiView, mountAiRoutes } from './account-ai-routes.ts'
@@ -85,7 +84,6 @@ export const accountRoutes = (options: AccountRoutesOptions) => {
   mountCredentialRoutes(router, options, helpers)
   mountCopyRoute(router, options, helpers)
   mountDeleteRoute(router, options, helpers)
-  mountLeaveRoute(router, options, helpers)
   return router
 }
 

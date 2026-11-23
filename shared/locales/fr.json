@@ -2103,57 +2103,16 @@
       "pluginFailed": "Ce plugin n’a pas pu s’afficher."
     },
     "people": {
-      "searchHouseholds": "Chercher un foyer",
       "searchAccounts": "Chercher un compte",
-      "householdsMeta_one": "{{count}} foyer",
-      "householdsMeta_other": "{{count}} foyers",
       "accountsMeta_one": "{{count}} compte",
       "accountsMeta_other": "{{count}} comptes",
-      "householdRow_one": "{{count}} profil",
-      "householdRow_other": "{{count}} profils",
-      "householdRowFull": "{{count}} profils, complet",
-      "householdRowWaiting_one": "{{count}} profil · en attente de {{name}}",
-      "householdRowWaiting_other": "{{count}} profils · en attente de {{name}}",
       "noHousehold": "Sans foyer",
       "noProfile": "Sans profil",
-      "noMatchHouseholds": "Aucun foyer ne correspond.",
       "noMatchAccounts": "Aucun compte ne correspond.",
-      "backToHouseholds": "Retour aux foyers",
       "backToAccounts": "Retour aux comptes",
       "failed": "Impossible de charger la liste.",
       "household": {
-        "intro": "Créé le {{date}}. Le serveur voit ses comptes et ses nombres, jamais ce qu’on y lit. Seul l’admin du foyer passe son rôle, dans <i>Réglages › Profils</i>.",
-        "this": "Ce foyer",
-        "admin": "Admin du foyer",
-        "waiting": "{{name}} · en attente de son compte",
-        "adminCode": "Refaire son code",
-        "adminCodeLabel": "Refaire le code de {{name}}",
-        "profiles": "Profils",
-        "profilesValue": "{{count}} sur {{max}}",
-        "adults_one": "{{count}} adulte",
-        "adults_other": "{{count}} adultes",
-        "young_one": "{{count}} jeune",
-        "young_other": "{{count}} jeunes",
-        "invite": "Inviter",
-        "inviteLabel": "Inviter un adulte",
-        "inviteHint": "Un code et son QR, valable 24 h et une seule fois",
-        "full": "Complet",
-        "serverFull": "Serveur complet",
-        "fullHint": "Complet : un profil doit partir avant d’inviter quelqu’un",
-        "accounts": "Comptes",
-        "noAccounts": "Aucun compte pour l’instant",
-        "see": "Voir",
-        "seeLabel": "Voir {{email}}",
-        "more_one": "Voir l’autre",
-        "more_other": "Voir les {{count}} autres",
-        "deleteSection": "Supprimer",
-        "delete": "Supprimer ce foyer",
-        "deleteHint": "Ses profils, leurs lectures et ses sources partent avec lui",
-        "deleteButton": "Supprimer",
-        "confirmDelete": {
-          "title": "Supprimer ce foyer ?",
-          "message": "<b>{{name}}</b> est effacé tout de suite avec ses {{count}} profils, leurs enregistrés, leurs lectures et ses sources. Les comptes qui n’ont pas d’autre foyer partent aussi. Les copies de sauvegarde l’oublient au plus tard dans {{days}}. <b>Il n’y a pas de retour en arrière.</b>"
-        }
+        "serverFull": "Serveur complet"
       },
       "account": {
         "intro": "Le serveur voit le compte, jamais ce qui y est lu ni ses réglages.",
@@ -2193,18 +2152,7 @@
           "title": "Bloquer ce compte ?",
           "message": "<b>{{email}}</b> est effacé tout de suite, comme avec <i>Supprimer</i>, et cette adresse ne pourra plus créer de compte sur ce serveur. À la connexion, la personne lit <i>Ce compte a été bloqué sur ce serveur</i>. <b>Il n’y a pas de retour en arrière.</b>"
         }
-      },
-      "emptyTitle": "Aucun foyer",
-      "emptyText": "Crée le foyer où tu liras, ou un foyer pour quelqu’un d’autre, qui en sera l’admin.",
-      "createFailed": "Impossible de créer le foyer. Réessaie dans un instant.",
-      "createMine": "Créer mon foyer",
-      "createOther": "Créer un foyer",
-      "otherIntro": "Pour quelqu’un d’autre : son profil attend cette personne, qui en devient l’admin avec le code. Tu n’entres pas dans ce foyer, sauf si on t’y invite.",
-      "otherAdmin": "Prénom de son admin",
-      "otherAdminPlaceholder": "Ex. Sophie",
-      "otherSubmit": "Créer et faire le code",
-      "oneTitle": "Un seul foyer par serveur",
-      "oneText": "Ce serveur a déjà le sien. Pour y lire, demande à son admin de t’inviter."
+      }
     },
     "general": {
       "intro": "L’adresse de Hodi, que les liens des e-mails ouvrent, et la page d’accueil publique. Un navigateur qui n’a jamais ouvert Hodi arrive sur ce site, par exemple une page de présentation ; les autres arrivent sur <i>Connexion</i>.",

@@ -39,6 +39,7 @@ and never touch `version`; a small release pull request raises `version` and mov
 - **`ctx.households` and `permissions.households`.** Hodi no longer has households a plugin makes or runs: a plugin makes
   accounts (`ctx.accounts.create`) and suspends, resumes or removes them. A manifest that still asks for `households`
   loads, and the permission is ignored.
+- **`HouseholdAvatar`** is gone from `hodi:sdk`, with the household photo it showed (`/api/households/<id>/photo`).
 
 ## [1.0.0-beta.5] - 2026-11-19
 

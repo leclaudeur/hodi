@@ -127,6 +127,8 @@ const start = async () => {
     admin,
     sam,
     samAccount,
+    profiles: new ProfileStore(db),
+    samId,
     close: async () => {
       server.close()
       await plugins.stop()
@@ -138,7 +140,8 @@ describe('plugin routes open with no household', () => {
   it('lets an account in no household reach the routes marked noHousehold, and those alone', async () => {
     const env = await start()
     try {
-      assert.equal((await env.call('/account/leave', env.sam, 'POST', { password: SAM_PASSWORD })).status, 204)
+      // Its profile went, as Réglages › Profils › « Supprimer » does: the account reads in no household.
+      assert.ok(env.profiles.delete(env.samId))
       const mine = await env.call('/plugins/club/mine', env.sam, 'POST', {})
       assert.equal(mine.status, 201)
       assert.deepEqual(((await mine.json()) as { who: unknown }).who, {

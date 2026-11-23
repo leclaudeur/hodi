@@ -36,10 +36,9 @@ export const mountDeletionRoutes = (
   options: ServerRoutesOptions,
   { proven }: ServerHelpers
 ) => {
-  const { people, accounts, profiles, deletions, now } = options
+  const { people, accounts, profiles, deletions } = options
   const removeAccount = accountRemover(options)
   if (!people || !accounts || !profiles || !deletions || !removeAccount) return
-  const { data, onProfileDeleted, onAccountDeleted, onHouseholdGone } = deletions
 
   // « Supprimer » an account, never the server's admin's own: Compte et données. « Bloquer » does the same and keeps
   // its e-mail from making an account again.
@@ -70,19 +69,5 @@ export const mountDeletionRoutes = (
     }
     if (!(await proven(request, response))) return
     response.status(accounts.unblockEmail(email) ? 204 : 404).end()
-  })
-
-  // « Supprimer » a household: its profiles and all they read and kept, and the accounts that read nowhere else.
-  router.delete('/households/:id', async (request, response) => {
-    const id = Number(request.params.id)
-    if (!people.households().some(entry => entry.id === id)) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    if (!(await proven(request, response))) return
-    inHousehold(id, () => profiles.list().forEach(profile => onProfileDeleted(profile.id)))
-    data.deleteHousehold(id, now()).forEach(onAccountDeleted)
-    onHouseholdGone(id)
-    response.status(204).end()
   })
 }
