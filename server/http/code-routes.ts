@@ -237,13 +237,14 @@ const profileCode = ({ codes, profiles, now }: CodeRoutesOptions, profileId: unk
     response.status(400).json({ error: 'bad_request' })
     return
   }
+  // The admin first, so no one else learns from the answer which profiles are young.
+  if (!isAdminOf(response)) {
+    response.status(403).json({ error: 'admin_only' })
+    return
+  }
   // A young one signs in with the account its parents made: no code for it.
   if (isYoung(target)) {
     response.status(400).json({ error: 'young_account' })
-    return
-  }
-  if (!isAdminOf(response)) {
-    response.status(403).json({ error: 'admin_only' })
     return
   }
   // An adult's password is theirs: no one in the household gives them a new one. A forgotten one goes through

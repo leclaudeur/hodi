@@ -176,6 +176,13 @@ describe('a row that goes never lets its cookie open the next one given its id',
     const lea = install.profiles.create('Léa', 'music', clock, { kind: 'teen' })!.id
     const made = await install.call('/codes', { method: 'POST', cookie: install.admin, body: { profileId: lea } })
     assert.equal(made.status, 400)
+    // Someone else gets the same answer for a young profile as for an adult's: no way to tell them apart.
+    const ana = await invite('ana@example.com', 'Ana')
+    const adult = install.profiles.list().find(profile => profile.name === 'Antho')!.id
+    for (const profileId of [lea, adult]) {
+      const refused = await install.call('/codes', { method: 'POST', cookie: ana, body: { profileId } })
+      assert.deepEqual([refused.status, await refused.json()], [403, { error: 'admin_only' }])
+    }
     assert.equal((await install.call('/codes/link', { method: 'POST', body: { code: 'ABCDEFGH' } })).status, 401)
     // Signed as those devices' cookies were: the server no longer reads them.
     const key = createHmac('sha256', SECRET).update('profile-device').digest()
