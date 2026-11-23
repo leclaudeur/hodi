@@ -12,6 +12,7 @@ import type { ServerPeopleStore } from './db/server-people-store.ts'
 import type { ServerSettingsStore } from './db/server-settings-store.ts'
 import type { ServerStatsStore } from './db/server-stats-store.ts'
 import type { SignInCodeStore } from './db/sign-in-code-store.ts'
+import type { SourceReviewStore } from './db/source-review-store.ts'
 import type { SourceStore } from './db/source-store.ts'
 import type { TwoFactorStore } from './db/two-factor-store.ts'
 import type { HandleStore } from './db/handle-store.ts'
@@ -54,7 +55,13 @@ export interface AppOptions {
   storage?: { usage: () => StorageUsage; clearTexts: () => void }
   // "Ajouter une source": the catalogue in the database and the feed finder; absent in tests that do not need them.
   // file: sources.yml's catalogue, whose sources not yet added are offered ("Sources proposées").
-  sources?: { store: SourceStore; find: (link: string) => Promise<FindResult>; file: Catalog }
+  // reviews: À traiter's sources, when the server validates them.
+  sources?: {
+    store: SourceStore
+    find: (link: string) => Promise<FindResult>
+    file: Catalog
+    reviews?: SourceReviewStore
+  }
   // The household game's points (gamification.yml); absent in tests that do not need it.
   game?: GameStore
   // The young profiles' rules and time; absent in tests that do not need them.

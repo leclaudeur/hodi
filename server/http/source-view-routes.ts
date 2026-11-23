@@ -29,6 +29,7 @@ export const sourceViewRoutes = ({
   icons,
   readers,
   official,
+  unlisted,
   now
 }: {
   news: NewsService
@@ -38,6 +39,8 @@ export const sourceViewRoutes = ({
   readers?: () => Map<string, number>
   // The ids of sources.yml's sources.
   official?: () => Set<string>
+  // Out of the catalogue (À traiter, refused): listed only for those who read them.
+  unlisted?: () => Set<string>
   now: () => number
 }) => {
   const router = express.Router()
@@ -71,7 +74,13 @@ export const sourceViewRoutes = ({
   router.get('/sources', (_request, response) => {
     const all = withReaders(news.getSourceStatuses(), readers?.(), official?.() ?? new Set())
     const allowed = kindOf(response) === 'adult' || !youth ? null : new Set(youth.allowedSources(profileIdOf(response)))
-    response.json({ sources: allowed ? all.filter(source => allowed.has(source.id)) : all })
+    if (allowed) {
+      response.json({ sources: all.filter(source => allowed.has(source.id)) })
+      return
+    }
+    const out = unlisted?.()
+    const mine = out?.size && users ? new Set(users(profileIdOf(response)).sources.mine()) : null
+    response.json({ sources: mine ? all.filter(source => !out?.has(source.id) || mine.has(source.id)) : all })
   })
 
   // Nor does it add, change or remove one: a teen asks its parents ("Demander une source"), a child asks nothing.

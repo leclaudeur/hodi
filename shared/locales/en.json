@@ -2021,7 +2021,7 @@
       "mail": "E-mail",
       "plugins": "Plugins",
       "notifications": "Alerts",
-      "inbox": "Notifications"
+      "inbox": "To do"
     },
     "pluginsIntro": "More features, for the whole server, from Hodi’s registry or a file. Each plugin runs apart, with its own data. Only verified plugins add pages to Hodi.",
     "hints": {
@@ -2262,6 +2262,11 @@
         "toggle": "Limit sources",
         "toggleHint": "Otherwise each household adds as many as it likes.",
         "unlimited": "Unlimited"
+      },
+      "validation": {
+        "label": "Review sources",
+        "hint": "A source added waits in To do before it enters the catalogue",
+        "failed": "The setting couldn’t be saved. Try again in a moment."
       }
     },
     "backups": {
@@ -2370,17 +2375,58 @@
       "codeRequest": {
         "label": "Code requests",
         "hint": "When someone forgot their password"
+      },
+      "sourceReview": {
+        "label": "Sources to review",
+        "hint": "When a source added waits for a decision"
       }
     },
     "inbox": {
       "intro": "What the server tells you. Requests to handle stay at the top, in orange, until you deal with them.",
-      "waiting": "To handle",
-      "earlier": "Earlier",
-      "open": "See",
-      "openName": "See: {{title}}",
+      "open": {
+        "code": "Open the account",
+        "report": "See the overview",
+        "plugin": "Open",
+        "source": "Open"
+      },
       "emptyTitle": "Nothing yet",
       "emptyHint": "What the server tells you lands here.",
-      "choose": "Choose how you’re told"
+      "choose": "Choose how you’re told",
+      "meta_one": "{{count}} to handle",
+      "meta_other": "{{count}} to handle",
+      "filter": "Filter by kind",
+      "kinds": {
+        "all": "All",
+        "source": "Sources",
+        "code": "Passwords",
+        "report": "Reports",
+        "plugin": "Plugins"
+      },
+      "failed": "Couldn’t load To do",
+      "back": "Back to To do",
+      "noneTitle": "Nothing to handle",
+      "noneHint": "What the server tells you lands here.",
+      "handled": "Handled on {{date}}",
+      "source": {
+        "kinds": {
+          "article": "Articles",
+          "video": "Videos",
+          "podcast": "Podcasts"
+        },
+        "topics": "{{name}}’s topics",
+        "teen": "OK for teens",
+        "teenHint": "Parents may give it to a teen",
+        "child": "OK for children",
+        "childHint": "Parents may give it to a child",
+        "refuse": "Refuse",
+        "accept": "Accept",
+        "accepted": "{{name}} accepted into the catalogue",
+        "refused": "{{name}} refused",
+        "failed": "The decision couldn’t be saved. Try again in a moment.",
+        "what": "The source",
+        "topicsLabel": "Its topics",
+        "young": "For young readers"
+      }
     }
   },
   "mail": {
@@ -2431,6 +2477,11 @@
       "code": "Your code: {{code}}",
       "button": "Create my account",
       "note": "If you don’t know this person, ignore this e-mail: without the code, nothing happens."
+    },
+    "sourceReview": {
+      "eyebrow": "Server",
+      "title": "Source to review: {{name}}",
+      "text": "{{name}} was just added. It stays out of the catalogue until it is accepted in To do."
     }
   },
   "forgot": {

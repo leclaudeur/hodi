@@ -239,8 +239,8 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   await device.getByRole('button', { name: 'Demander', exact: true }).click()
   await expect(device.getByRole('heading', { name: 'Entre le code' })).toBeVisible()
   await page.goto('/#/server/inbox')
-  const waiting = page.getByRole('main').locator('h2:text-is("À traiter") + ul')
-  await expect(waiting.getByText('Sam demande un code')).toBeVisible()
+  const request = page.getByRole('link', { name: /^Sam demande un code/ })
+  await expect(request).toBeVisible()
 
   // Sam's password is Sam's: Mon compte › Mes enfants lists the young ones only, never another adult.
   await page.goto('/#/account/children')
@@ -251,7 +251,8 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   // The server's admin opens the request, then makes the code: their own password first, and a wrong one stays in
   // the question.
   await page.goto('/#/server/inbox')
-  await waiting.getByRole('link', { name: 'Voir' }).click()
+  await request.click()
+  await page.getByRole('main').getByRole('link', { name: 'Ouvrir le compte' }).click()
   const askPassword = async (typed: string) => {
     await page.getByRole('main').getByRole('button', { name: 'Faire un code' }).first().click()
     const question = page.getByRole('dialog', { name: /^Nouveau mot de passe\s\?$/ })
@@ -276,7 +277,8 @@ test('gives Sam, who forgot their password, a new one with a code from the serve
   // The code made, the request is handled, and Sam's account offers no other code until Sam asks again.
   await expect(page.getByRole('main').getByRole('button', { name: 'Faire un code' })).toHaveCount(0)
   await page.goto('/#/server/inbox')
-  await expect(page.getByRole('main').getByRole('heading', { name: 'À traiter' })).toHaveCount(0)
+  await request.click()
+  await expect(page.getByRole('main').getByText(/^Traité le /)).toBeVisible()
 
   // Sam types it where the page waited, then the new password.
   await device.getByRole('textbox', { name: 'Code' }).fill(code)

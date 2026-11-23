@@ -1,13 +1,3 @@
-/* The requests someone waits on: their card in orange, as their squares, until each is handled. */
-.waiting {
-  border-color: var(--rust-border);
-  background: var(--rust-surface);
-}
-
-.more {
-  width: 100%;
-}
-
 /* The sidebar's count of requests to handle, orange as their squares. */
 .count {
   display: flex;
