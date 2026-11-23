@@ -56,15 +56,7 @@ export const withProfileCookie = (
   profileId: number
 ) => [sessionCookie, profileCookie(profileToken(profileId, profiles.lock(profileId)?.version ?? 0, secret))]
 
-export const codeHelpers = ({
-  codes,
-  accounts,
-  profiles,
-  install,
-  throttle,
-  now,
-  resetPassword
-}: CodeJoinOptions) => {
+export const codeHelpers = ({ codes, accounts, profiles, install, throttle, now, resetPassword }: CodeJoinOptions) => {
   // Checked again when the code is used: the account may have become the server's admin since the code was made.
   const resettable = (profileId: number) => {
     const account = accounts.ofProfile(profileId)
