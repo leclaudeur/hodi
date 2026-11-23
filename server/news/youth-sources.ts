@@ -102,8 +102,8 @@ export class YouthSources {
     this.sync(profile)
   }
 
-  // Its parents' choice. A source of the file not yet in the household's catalogue comes in, off for everyone
-  // else. byId: the parent who turned it on, who may remove it later as one it added.
+  // Its parents' choice. A source of the file not yet in the household's catalogue comes in, in nobody else's
+  // « Mes sources ». byId: the parent who turned it on, who may remove it later as one it added.
   setSources(profile: Profile, ids: string[], byId: number | null) {
     const { youth } = this.#options
     const before = new Set(youth.allowedSources(profile.id))
@@ -146,28 +146,26 @@ export class YouthSources {
     }
   }
 
-  // Writes the lock into its preferences, keeping what it turned off itself; opened and openedTopics: the sources and
-  // themes just turned on by its parents, shown again even if it had hidden them.
+  // Its parents' choice in « Mes sources », keeping what it removed itself; opened and openedTopics: the sources and
+  // themes just turned on by its parents, shown again even if it had removed them.
   sync(profile: Profile, opened: string[] = [], openedTopics: string[] = []) {
     const lock = this.lock(profile)
     if (!lock) return
     const { youth, users, now } = this.#options
     const user = users(profile.id)
-    const preferences = user.preferences() ?? {}
     const allowed = new Set(youth.allowedSources(profile.id))
-    const ownSources = ((preferences.hiddenSources as string[] | undefined) ?? []).filter(
-      id => allowed.has(id) && !opened.includes(id)
-    )
-    const ownTopics = ((preferences.hiddenTopics as string[] | undefined) ?? []).filter(
-      id => !lock.hiddenTopics.includes(id) && !openedTopics.includes(id)
-    )
-    user.setPreferences(
-      {
-        hiddenSources: [...new Set([...ownSources, ...lock.hiddenSources])],
-        hiddenTopics: [...new Set([...ownTopics, ...lock.hiddenTopics])]
-      },
+    user.sources.add(
+      opened.filter(id => allowed.has(id)),
       now()
     )
+    user.sources
+      .mine()
+      .filter(id => !allowed.has(id))
+      .forEach(id => user.sources.remove(id, now()))
+    const ownTopics = ((user.preferences()?.hiddenTopics as string[] | undefined) ?? []).filter(
+      id => !lock.hiddenTopics.includes(id) && !openedTopics.includes(id)
+    )
+    user.setPreferences({ hiddenTopics: [...new Set([...ownTopics, ...lock.hiddenTopics])] }, now())
   }
 
   // Every young profile again, after the household's catalogue changed.
@@ -192,7 +190,7 @@ export class YouthSources {
       const added = { ...source, id, addedBy: byId }
       if (!news.addSource(added, section, sectionIds)) return false
       store.add(added, section, sectionIds, this.#options.now())
-      this.#hideForOthers(id, profile.id)
+      this.#tellOthers(profile.id)
     }
     this.setSources(profile, [...this.#options.youth.allowedSources(profile.id), id], byId)
     return true
@@ -208,18 +206,15 @@ export class YouthSources {
     const added = { ...source, addedBy: byId }
     if (!news.addSource(added, 'topic', [topic.id])) return false
     store.add(added, 'topic', [topic.id], now())
-    this.#hideForOthers(id, null)
+    this.#tellOthers(null)
     return true
   }
 
-  // A source brought in for a young profile is off for every other one (adults turn it on if they want it).
-  #hideForOthers(id: string, exceptId: number | null) {
+  // A source brought in for a young profile is in nobody else's « Mes sources »: their devices hear it is off.
+  #tellOthers(exceptId: number | null) {
     const { users, profiles, now } = this.#options
     for (const profile of profiles()) {
-      if (profile.id === exceptId) continue
-      const user = users(profile.id)
-      const hidden = user.hiddenSources()
-      if (!hidden.includes(id)) user.setPreferences({ hiddenSources: [...hidden, id] }, now())
+      if (profile.id !== exceptId) users(profile.id).sources.catalogueChanged(now())
     }
   }
 

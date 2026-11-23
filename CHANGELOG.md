@@ -25,6 +25,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **My sources.** Each person's sources are now their own list, kept with their account: a source someone adds goes
+  into their list only, and the others add it from the server's sources when they want it. A new adult starts with the
+  base sources. A source read by 10 people or more shows how many. Each person keeps the sources they read before.
 - **Only a young one's parents manage them.** Their card, rules, devices and deletion are their parents' only: the
   server's admin no longer has a say over other people's children. The Parental code moves to My account › My
   children, and teens and children no longer have AI settings of their own.

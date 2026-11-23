@@ -10,6 +10,7 @@ import { shareRoutes } from '../http/share-routes.ts'
 import { sourceRoutes } from '../http/source-routes.ts'
 import { sourceViewRoutes } from '../http/source-view-routes.ts'
 import { userRoutes } from '../http/user-routes.ts'
+import { mySourcesRoutes } from '../http/my-sources-routes.ts'
 import { withPluginFeeds } from '../plugins/feeds.ts'
 import type { Wiring } from './wiring.ts'
 
@@ -23,16 +24,26 @@ const mountProfileState = (api: express.Router, { options, youthSources, session
   api.use(shareRoutes({ users, profiles, accounts, signedInHere, news, game, alerts, now }))
   if (game) api.use(gameRoutes({ game, news, profiles, now }))
   const readFacts = readFactsOf(news)
+  const lock = (response: express.Response) => {
+    const profile = profiles?.get(profileIdOf(response))
+    return profile && youthSources ? youthSources.lock(profile) : null
+  }
+  api.use(
+    '/me/sources',
+    mySourcesRoutes({
+      users: response => users(profileIdOf(response)),
+      listed: id => news.getSourceStatuses().some(source => source.id === id),
+      lock,
+      now
+    })
+  )
   api.use(
     '/me',
     userRoutes({
       users: response => users(profileIdOf(response)),
       now,
       onRead: (response, ids, readAt) => game?.recordReads(profileIdOf(response), ids, now(), readAt, readFacts),
-      lock: response => {
-        const profile = profiles?.get(profileIdOf(response))
-        return profile && youthSources ? youthSources.lock(profile) : null
-      }
+      lock
     })
   )
 }
@@ -51,8 +62,8 @@ const mountStorage = (api: express.Router, { options }: Wiring) => {
 }
 
 // "Ajouter une source".
-const mountSources = (api: express.Router, { options, profileHooks }: Wiring) => {
-  const { sources, news, plugins, serverSettings, profiles, now } = options
+const mountSources = (api: express.Router, { options }: Wiring) => {
+  const { sources, news, plugins, serverSettings, users, profiles, now } = options
   if (!sources) return
   api.use(
     '/sources',
@@ -63,12 +74,14 @@ const mountSources = (api: express.Router, { options, profileHooks }: Wiring) =>
       // A plugin's feeds are offered with sources.yml's.
       proposals: () => sources.store.proposals(withPluginFeeds(sources.file, plugins)),
       maxSources: () => serverSettings?.maxSources() ?? null,
-      // The other profiles find it off: each one turns on what it wants to read.
-      onAdded: (sourceId, profileId) =>
+      // In its adder's « Mes sources » only: the others add it from the catalogue if they want it.
+      onAdded: (sourceId, profileId) => {
+        users?.(profileId).sources.add([sourceId], now())
         profiles
           ?.list()
           .filter(profile => profile.id !== profileId)
-          .forEach(profile => profileHooks.hideSources(profile.id, [sourceId])),
+          .forEach(profile => users?.(profile.id).sources.catalogueChanged(now()))
+      },
       now
     })
   )
@@ -76,9 +89,9 @@ const mountSources = (api: express.Router, { options, profileHooks }: Wiring) =>
 
 // The reading itself: feeds, articles, sources, alerts and the AI's usage.
 export const mountReading = (api: express.Router, wiring: Wiring) => {
-  const { news, users, youth, icons, images, alerts, plugins, now } = wiring.options
+  const { news, users, youth, icons, images, alerts, plugins, sources, now } = wiring.options
   mountProfileState(api, wiring)
-  api.use(sourceViewRoutes({ news, users, youth, icons, now }))
+  api.use(sourceViewRoutes({ news, users, youth, icons, readers: sources && (() => sources.store.readers()), now }))
   api.use(newsRoutes({ news, users, reader: wiring.reader, now }))
   api.use(pushRoutes({ alerts, publicKey: wiring.config.vapid.publicKey }))
   api.use(aiUsageRoutes({ news, plugins }))

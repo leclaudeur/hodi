@@ -1,13 +1,14 @@
 import type { Catalog, Language, Source } from '../news/catalog.ts'
 import { type Database, transaction } from './database.ts'
 import { currentHouseholdId } from './household-scope.ts'
+import { readerCounts } from './my-sources.ts'
 import { followFileReaderOff, ownOldBaseSources, ownOldChannels, tidyOldSourceNames } from './source-upkeep.ts'
 
 // The sources' catalogue in the database, which holds them for good. sources.yml's base sources for the household's
 // language fill it once, when the household is set up (no "Vidéos" channel is a base one); its other sources are only offered ("Sources proposées") until a
 // profile adds one. Then the admin removes any source and profiles add theirs, each in one topic or more (the
-// topics and their labels stay in the file). Each profile turns sources off in its preferences
-// (hiddenSources); a profile only starts with the base sources, and sources nobody reads are paused.
+// topics and their labels stay in the file). Each person reads their own list of them (my-sources.ts);
+// a new adult only starts with the base sources, and sources nobody reads are paused.
 //
 // A feed is one row of sources for the whole server, fetched once. Which household follows it, in which topics and
 // added by whom is that household's row of household_sources: every method here is for the household of the request
@@ -49,6 +50,8 @@ const topicsOf = (row: SourceRow) =>
 
 export class SourceStore {
   readonly #db: Database
+  // How many people have each source in « Mes sources ».
+  readonly readers = () => readerCounts(this.#db)
 
   constructor(db: Database) {
     this.#db = db

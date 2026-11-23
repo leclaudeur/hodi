@@ -62,7 +62,9 @@ small hooks under `lib/`.
 - **Households**: `db/household-scope.ts` keeps the request's household, so a route never sees another's
 
 A feed is one row of `sources` for the whole server, fetched once whoever follows it. Which household follows it, and
-in which topics, is that household's row of `household_sources`. `server/test/household-isolation.test.ts` writes a second household in by hand, and checks that neither household ever sees what the other holds.
+in which topics, is that household's row of `household_sources`. Which of them each person reads is their rows of
+`my_sources` (`db/my-sources.ts`, through `/api/me/sources/:id`); the app still gets the others as the preferences'
+`hiddenSources`. `server/test/household-isolation.test.ts` writes a second household in by hand, and checks that neither household ever sees what the other holds.
 
 ### Accounts and sign-in
 

@@ -3,8 +3,18 @@ import type { UserStore } from '../db/user-store.ts'
 import type { YouthStore } from '../db/youth-store.ts'
 import { CHANNEL_LIMITS, ENGAGEMENT_WINDOW_MS, MIN_HISTORY_MS, sourceEngagement } from '../news/engagement.ts'
 import type { NewsService } from '../news/news-service.ts'
+import type { SourceStatus } from '../news/news-types.ts'
 import type { SourceIcons } from '../news/source-icons.ts'
 import { kindOf, profileIdOf } from './profile-routes.ts'
+
+// A source's readers show from READERS_SHOWN on: below that, a count would point at the few people reading it.
+export const READERS_SHOWN = 10
+
+const withReaders = (sources: SourceStatus[], counts: Map<string, number> | undefined) =>
+  sources.map(source => {
+    const readers = counts?.get(source.id) ?? 0
+    return readers >= READERS_SHOWN ? { ...source, readers } : source
+  })
 
 // The sources as a profile sees them: the list, how much each is opened, and their icons.
 export const sourceViewRoutes = ({
@@ -12,12 +22,14 @@ export const sourceViewRoutes = ({
   users,
   youth,
   icons,
+  readers,
   now
 }: {
   news: NewsService
   users?: (profileId: number) => UserStore
   youth?: YouthStore
   icons?: SourceIcons
+  readers?: () => Map<string, number>
   now: () => number
 }) => {
   const router = express.Router()
@@ -49,7 +61,7 @@ export const sourceViewRoutes = ({
 
   // A young profile sees only the sources its parents gave it.
   router.get('/sources', (_request, response) => {
-    const all = news.getSourceStatuses()
+    const all = withReaders(news.getSourceStatuses(), readers?.())
     const allowed = kindOf(response) === 'adult' || !youth ? null : new Set(youth.allowedSources(profileIdOf(response)))
     response.json({ sources: allowed ? all.filter(source => allowed.has(source.id)) : all })
   })
