@@ -271,8 +271,8 @@ export class GameStore {
   // The badge shown on this profile's avatar and its tier, while it still holds it (the rules may have changed).
   wornBadge(profileId: number, topicIds: string[]): { id: BadgeId; tier: BadgeProgress['tier'] } | null {
     const row = this.#db
-      .prepare("SELECT value FROM profile_settings WHERE profile_id = ? AND key = 'game_badge'")
-      .get(profileId) as { value: string } | undefined
+      .prepare("SELECT value FROM profile_settings WHERE owner = ? AND key = 'game_badge'")
+      .get(ownerOf(this.#db, profileId)) as { value: string } | undefined
     if (!row) return null
     const badge = this.badges(profileId, topicIds).find(candidate => candidate.id === row.value && candidate.tier > 0)
     return badge ? { id: badge.id, tier: badge.tier } : null
@@ -281,16 +281,18 @@ export class GameStore {
   // false: not a badge this profile has earned.
   wear(profileId: number, id: string | null, topicIds: string[], now: number): boolean {
     if (id === null) {
-      this.#db.prepare("DELETE FROM profile_settings WHERE profile_id = ? AND key = 'game_badge'").run(profileId)
+      this.#db
+        .prepare("DELETE FROM profile_settings WHERE owner = ? AND key = 'game_badge'")
+        .run(ownerOf(this.#db, profileId))
       return true
     }
     if (!this.badges(profileId, topicIds).some(badge => badge.id === id && badge.tier > 0)) return false
     this.#db
       .prepare(
-        `INSERT INTO profile_settings (profile_id, key, value, updated_at) VALUES (?, 'game_badge', ?, ?)
-         ON CONFLICT (profile_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+        `INSERT INTO profile_settings (owner, key, value, updated_at) VALUES (?, 'game_badge', ?, ?)
+         ON CONFLICT (owner, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
       )
-      .run(profileId, id, now)
+      .run(ownerOf(this.#db, profileId), id, now)
     return true
   }
 
@@ -298,8 +300,8 @@ export class GameStore {
   // earned before this existed is not celebrated.
   news(profileId: number, topicIds: string[], now: number): GameNews {
     const row = this.#db
-      .prepare("SELECT value, updated_at FROM profile_settings WHERE profile_id = ? AND key = 'game_seen'")
-      .get(profileId) as { value: string; updated_at: number } | undefined
+      .prepare("SELECT value, updated_at FROM profile_settings WHERE owner = ? AND key = 'game_seen'")
+      .get(ownerOf(this.#db, profileId)) as { value: string; updated_at: number } | undefined
     const badges = this.badges(profileId, topicIds)
     const { level } = this.summary(profileId, now)
     if (!row) {
@@ -325,10 +327,10 @@ export class GameStore {
     const seen: Seen = { level, badges: Object.fromEntries(badges.map(badge => [badge.id, badge.tier])) }
     this.#db
       .prepare(
-        `INSERT INTO profile_settings (profile_id, key, value, updated_at) VALUES (?, 'game_seen', ?, ?)
-         ON CONFLICT (profile_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+        `INSERT INTO profile_settings (owner, key, value, updated_at) VALUES (?, 'game_seen', ?, ?)
+         ON CONFLICT (owner, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
       )
-      .run(profileId, JSON.stringify(seen), now)
+      .run(ownerOf(this.#db, profileId), JSON.stringify(seen), now)
   }
 
   // false: the admin turned the game off for the household; nothing shows, points still count.

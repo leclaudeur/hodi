@@ -1,3 +1,4 @@
+import { ownerOf } from './stats-owner.ts'
 import type { Database } from './database.ts'
 import type { SavedItem } from './user-store.ts'
 
@@ -37,10 +38,10 @@ export const shares = (
     .prepare(
       `SELECT item, from_profile, shared_at, note, reaction FROM shares
        WHERE profile_id = ? AND shared_at >= ?
-         AND article_id NOT IN (SELECT article_id FROM read_articles WHERE profile_id = ? AND hidden = 1)
+         AND article_id NOT IN (SELECT article_id FROM read_articles WHERE owner = ? AND hidden = 1)
        ORDER BY shared_at DESC`
     )
-    .all(profile, since, profile) as {
+    .all(profile, since, ownerOf(db, profile)) as {
     item: string
     from_profile: number
     shared_at: number

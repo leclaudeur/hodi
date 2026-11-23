@@ -169,10 +169,11 @@ describe('profiles', () => {
     const state = new UserStore(db, lea.id)
     state.save(item('a'), null, NOW, NOW)
     state.markRead(['a'], NOW)
+    state.markStoriesSeen(['b'], NOW)
 
     profiles.delete(lea.id)
-    for (const table of ['saved_articles', 'read_articles', 'profile_settings']) {
-      const { count } = db.prepare(`SELECT COUNT(*) AS count FROM ${table} WHERE profile_id = ?`).get(lea.id) as {
+    for (const table of ['saved_articles', 'read_articles', 'profile_settings', 'seen_stories']) {
+      const { count } = db.prepare(`SELECT COUNT(*) AS count FROM ${table} WHERE owner = ?`).get(`p${lea.id}`) as {
         count: number
       }
       assert.equal(count, 0, table)
