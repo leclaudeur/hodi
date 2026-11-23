@@ -7,6 +7,7 @@ import { accountHandleRoutes } from '../http/handle-routes.ts'
 import type { InvitationMail } from '../http/invitation-routes.ts'
 import { profileDeviceRoutes } from '../http/profile-device-routes.ts'
 import { profileRoutes } from '../http/profile-routes.ts'
+import { sharePeople } from '../http/share-people.ts'
 import { sessionRoutes } from '../http/session-routes.ts'
 import { sourceRequestMeRoutes, sourceRequestRoutes } from '../http/source-request-routes.ts'
 import { youngAccountRoutes } from '../http/young-account-routes.ts'
@@ -68,6 +69,11 @@ const mountAccount = (api: express.Router, wiring: Wiring) => {
 const mountProfiles = (api: express.Router, wiring: Wiring) => {
   const { profiles, devices, youth, users, accounts, pinThrottle, now } = wiring.options
   if (!profiles) return
+  const people = users ? sharePeople({ users, profiles, accounts }) : null
+  const knows = (profileId: number, otherId: number) => {
+    const [me, other] = [profiles.find(profileId), profiles.find(otherId)]
+    return people !== null && me !== null && other !== null && people.knows(me, other)
+  }
   api.use('/profiles', profileDeviceRoutes({ profiles, accounts, accountDevices: devices }))
   api.use(
     '/profiles',
@@ -82,7 +88,8 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
       trust: wiring.trust ?? undefined,
       onCreate: wiring.profileHooks.created,
       onChange: profile => wiring.youthSources?.start(profile),
-      onDelete: wiring.profileHooks.deleted
+      onDelete: wiring.profileHooks.deleted,
+      knows
     })
   )
   if (youth) {

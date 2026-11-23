@@ -48,6 +48,8 @@ interface ProfileRoutesOptions extends CurrentRoutesOptions {
   onDelete?: (profileId: number) => void
   // A profile changed (its kind among others).
   onChange?: (profile: Profile) => void
+  // Whether a profile has a tie with another account's (a share, family), which shows that one's photo.
+  knows?: (profileId: number, otherId: number) => boolean
 }
 
 export const profileRoutes = (options: ProfileRoutesOptions) => {
