@@ -199,7 +199,7 @@ export const startSmallHodi = async (
   removals.remove = account => {
     new AccountDataStore(db).deleteFromServer(
       account,
-      { serverGoes: false, profiles: [], heir: null, children: [] },
+      { serverGoes: false, handOverFirst: false, profiles: [], children: [] },
       now()
     )
     registry.accountDeleted(account.id)

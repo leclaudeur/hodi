@@ -117,8 +117,8 @@ describe('an account with no profile', () => {
   })
 })
 
-describe('the deletion plan of an account with no profile in the household', () => {
-  it('never takes the household, even with no other adult account in it', async () => {
+describe('the deletion plan of an account with no profile', () => {
+  it('never takes the server, even with no other adult account on it', async () => {
     const db = openDatabase(':memory:')
     const clock = Date.UTC(2026, 10, 18, 12)
     new InstallStore(db).setUp({ language: 'fr', timeZone: 'UTC' }, clock)
@@ -126,6 +126,6 @@ describe('the deletion plan of an account with no profile in the household', () 
     const profiles = new ProfileStore(db)
     const leftAlone = accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!
     const plan = deletionPlan(leftAlone, accounts, profiles)
-    assert.deepEqual(plan, { serverGoes: false, profiles: [], heir: null, children: [] })
+    assert.deepEqual(plan, { serverGoes: false, handOverFirst: false, profiles: [], children: [] })
   })
 })

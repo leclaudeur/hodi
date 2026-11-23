@@ -44,7 +44,13 @@ export interface ServerAccount {
   serverAdmin: boolean
   createdAt: number
   // photoVersion: null when it has no photo, the initial shows.
-  profile: { id: number; name: string; role: 'admin' | 'member'; photoVersion: number | null } | null
+  profile: {
+    id: number
+    name: string
+    role: 'admin' | 'member'
+    kind: 'adult' | 'teen' | 'child'
+    photoVersion: number | null
+  } | null
   lastSeenAt: number | null
   devices: number
   // « Mot de passe oublié » on a server without e-mail: when the person asked for a code, until one is made.
@@ -73,6 +79,10 @@ export const createInviteCode = () => sendJson<{ code: string; expiresAt: number
 // It opens that person's account: with the server admin's own password and app code.
 export const createAccountCode = (id: number, proof: AdminProof) =>
   sendJson<{ code: string; expiresAt: number }>('POST', `/server/accounts/${id}/code`, proof)
+
+// « Nommer admin du serveur », with the admin's own password and app code.
+export const makeServerAdmin = (id: number, proof: AdminProof) =>
+  sendJson<null>('POST', `/server/accounts/${id}/server-admin`, proof)
 
 // Serveur › Contenu: how long the server keeps what it fetches, in days, with each one's bounds.
 export type ContentKey = 'articleDays' | 'videoDays' | 'textDays'

@@ -50,6 +50,25 @@ export const mountDeletionRoutes = (
   router.delete('/accounts/:id', remove(false))
   router.post('/accounts/:id/block', remove(true))
 
+  // « Nommer admin du serveur »: an adult with a profile, chosen by an admin with their own password. The only way
+  // one becomes it, so that the last admin can leave (account-delete-route.ts).
+  router.post('/accounts/:id/server-admin', async (request, response) => {
+    const account = accounts.get(Number(request.params.id))
+    const profileId = account ? accounts.profileOf(account.id) : null
+    const profile = profileId === null ? null : profiles.find(profileId)
+    if (!account || !profile) {
+      response.status(404).json({ error: 'not_found' })
+      return
+    }
+    if (account.serverAdmin || profile.kind !== 'adult' || account.suspendedBy) {
+      response.status(409).json({ error: 'not_allowed' })
+      return
+    }
+    if (!(await proven(request, response))) return
+    accounts.makeServerAdmin(account.id)
+    response.status(204).end()
+  })
+
   // « Débloquer une adresse »: a block made by mistake. The address is typed, as the server no longer has it.
   router.post('/accounts/unblock', async (request, response) => {
     const email = cleanEmail(request.body?.email)

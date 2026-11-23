@@ -11,7 +11,13 @@ export interface ServerAccount {
   createdAt: number
   // Its profile; null for an account with none yet.
   // photoVersion: null when it has no photo, the initial shows.
-  profile: { id: number; name: string; role: 'admin' | 'member'; photoVersion: number | null } | null
+  profile: {
+    id: number
+    name: string
+    role: 'admin' | 'member'
+    kind: 'adult' | 'teen' | 'child'
+    photoVersion: number | null
+  } | null
   // The last request of any of its signed-in devices, and how many there are.
   lastSeenAt: number | null
   devices: number
@@ -27,7 +33,7 @@ export class ServerPeopleStore {
   accounts(): ServerAccount[] {
     const rows = this.#db
       .prepare(
-        `SELECT u.id, u.email, u.server_admin, u.created_at, p.id AS profile_id, p.name AS profile_name, p.role,
+        `SELECT u.id, u.email, u.server_admin, u.created_at, p.id AS profile_id, p.name AS profile_name, p.role, p.kind,
            CASE WHEN p.photo IS NULL THEN NULL ELSE p.photo_version END AS photo_version,
            (SELECT MAX(last_seen_at) FROM user_devices d WHERE d.user_id = u.id) AS last_seen_at,
            (SELECT COUNT(*) FROM user_devices d WHERE d.user_id = u.id) AS devices
@@ -44,6 +50,7 @@ export class ServerPeopleStore {
       profile_id: number | null
       profile_name: string | null
       role: 'admin' | 'member' | null
+      kind: 'adult' | 'teen' | 'child' | null
       photo_version: number | null
       last_seen_at: number | null
       devices: number
@@ -60,6 +67,7 @@ export class ServerPeopleStore {
               id: row.profile_id,
               name: row.profile_name ?? '',
               role: row.role ?? 'member',
+              kind: row.kind ?? 'adult',
               photoVersion: row.photo_version
             },
       lastSeenAt: row.last_seen_at,

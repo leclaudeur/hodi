@@ -66,21 +66,21 @@ const dupont = (db: Database) => {
 }
 
 describe('deletions done again after a restore', () => {
-  it('deletes again a profile and an account deleted after the copy, and tells who took over', async () => {
+  it('deletes again a profile and an account deleted after the copy, and hands no role to anyone', async () => {
     const { dir, db, log } = server()
     const { profiles, accounts, marie, paul, paulProfile, lea } = dupont(db)
     const copy = copyOf(db, dir)
 
     clock += HOUR
     assert.ok(profiles.delete(lea.id))
-    // Marie deletes her account: Paul takes over the household and the server.
-    db.prepare('UPDATE users SET server_admin = 1 WHERE id = ?').run(marie.id)
+    // Marie deletes her account once she made Paul server admin too: nothing passes to anyone on its own.
+    db.prepare('UPDATE users SET server_admin = 1 WHERE id IN (?, ?)').run(marie.id, paul.id)
     const data = new AccountDataStore(db)
     const marieNow = accounts.get(marie.id)!
     data.delete(marieNow, deletionPlan(marieNow, accounts, profiles), clock)
     assert.deepEqual(
       log.all().map(entry => entry.kind),
-      ['profile', 'admin', 'profile', 'serverAdmin', 'account']
+      ['profile', 'profile', 'account']
     )
 
     // The copy comes back: Léa and Marie are in it.
@@ -91,12 +91,11 @@ describe('deletions done again after a restore', () => {
     assert.equal(count(restored, 'SELECT count(*) AS n FROM profiles WHERE id = ?', lea.id), 0)
     assert.equal(count(restored, 'SELECT count(*) AS n FROM users WHERE id = ?', marie.id), 0)
     assert.equal(count(restored, 'SELECT count(*) AS n FROM users WHERE email = ?', 'marie@example.com'), 0)
-    // Paul holds the roles Marie handed over.
+    // Paul's profile keeps the role it had in the copy: no one took over.
     assert.equal(
       count(restored, "SELECT count(*) AS n FROM profiles WHERE id = ? AND role = 'admin'", paulProfile.id),
-      1
+      0
     )
-    assert.equal(count(restored, 'SELECT server_admin AS n FROM users WHERE id = ?', paul.id), 1)
   })
 
   it('empties the household again when its last adult’s account went', () => {

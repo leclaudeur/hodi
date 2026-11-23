@@ -1309,6 +1309,7 @@
       "download": "Télécharger",
       "delete": "Supprimer mon compte",
       "deleteHint": "Effacé tout de suite, avec tout ce qu’il contient",
+      "deleteHandOver": "Nomme d’abord un autre admin du serveur dans Serveur › Comptes",
       "deleteButton": "Supprimer",
       "deleteFailed": "Le compte n’a pas pu être supprimé. Réessaie dans un instant.",
       "emailTitle": "Changer d’e-mail",
@@ -1712,8 +1713,8 @@
     "deleteAccount": {
       "title": "Supprimer le compte ?",
       "message": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-      "messageServer": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : tous les profils partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-      "messageServerWith": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : les profils de {{profiles}} partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
+      "messageServer": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : tout le serveur est effacé, avec tous les profils, et repart de zéro.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
+      "messageServerWith": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : tout le serveur est effacé, avec les profils de {{profiles}}, et repart de zéro.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
       "button": "Supprimer",
       "messageChildren": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Tu es le seul parent de {{children}} : leurs comptes partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}."
     },
@@ -1738,6 +1739,11 @@
       "failed": "Ça n’a pas marché. Réessaie dans un instant.",
       "code": "Code de l’app d’authentification",
       "wrongCode": "Ce code ne marche pas : prends celui que l’app affiche maintenant."
+    },
+    "makeServerAdmin": {
+      "title": "Nommer {{name}} admin du serveur ?",
+      "message": "<b>{{name}}</b> gérera tout <i>Serveur</i> comme toi : les comptes, les sauvegardes, les plugins et l’e-mail. Confirme avec ton mot de passe.",
+      "button": "Nommer"
     },
     "resetPassword": {
       "title": "Nouveau mot de passe ?",
@@ -2108,6 +2114,10 @@
         "resetOnRequest": "Seulement quand la personne en demande un.",
         "own": "Le tien se change dans Réglages › Mon compte",
         "deleteSection": "Supprimer ou bloquer",
+        "serverAdminSection": "Admin du serveur",
+        "serverAdmin": "Nommer admin du serveur",
+        "serverAdminHint": "Gère Serveur comme toi : les comptes, les sauvegardes, les plugins",
+        "serverAdminButton": "Nommer",
         "delete": "Supprimer ce compte",
         "deleteHint": "Son profil et tout ce qu’il contient partent avec lui",
         "deleteButton": "Supprimer",

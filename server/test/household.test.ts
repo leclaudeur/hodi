@@ -653,11 +653,24 @@ describe('the account and its data', () => {
     assert.doesNotMatch(JSON.stringify(body), /passwordHash|password_hash|scrypt|ai_key/)
   })
 
-  it('deletes an account: another adult takes over the household and the server', async () => {
+  it('deletes an account once another adult was made server admin, and never makes one unchosen', async () => {
     const { code } = (await (await post('/codes', {}, { cookie: antho })).json()) as { code: string }
     const sam = cookiesFrom(await post('/codes/join', { ...SAM, code }))
-    const plan = (await (await get(antho)).json()) as { deletion: { serverGoes: boolean } }
-    assert.equal(plan.deletion.serverGoes, false)
+    const samId = install.accounts.byEmail('sam@example.com')!.id
+    const plan = (await (await get(antho)).json()) as { deletion: { serverGoes: boolean; handOverFirst: boolean } }
+    assert.deepEqual([plan.deletion.serverGoes, plan.deletion.handOverFirst], [false, true])
+
+    // Antho runs the server alone, and Sam is on it: Sam is not made its admin by Antho leaving.
+    const refused = await post('/account', { password: PASSWORD }, { cookie: antho }, 'DELETE')
+    assert.equal(refused.status, 409)
+    assert.deepEqual(await refused.json(), { error: 'hand_over_first' })
+    assert.equal(await sessionOf(antho), 200)
+    assert.equal(install.accounts.byEmail('sam@example.com')?.serverAdmin, false)
+
+    // Antho makes Sam an admin of the server too (Serveur › Comptes, tested in server-space.test.ts).
+    install.accounts.makeServerAdmin(samId)
+    const now = (await (await get(antho)).json()) as { deletion: { handOverFirst: boolean } }
+    assert.equal(now.deletion.handOverFirst, false)
 
     // The red confirmation is not enough: a device left open, or a stolen cookie, does not know the password.
     const unproven = await post('/account', {}, { cookie: antho }, 'DELETE')
@@ -670,21 +683,14 @@ describe('the account and its data', () => {
     assert.equal(await sessionOf(antho), 401)
     assert.equal((await login({ email: 'antho@example.org', password: PASSWORD })).status, 401)
     assert.deepEqual(
-      profiles.list().map(profile => [profile.name, profile.role]),
-      [['Sam', 'admin']]
+      profiles.list().map(profile => profile.name),
+      ['Sam']
     )
     assert.equal(install.accounts.byEmail('sam@example.com')?.serverAdmin, true)
 
-    // The last adult: the household goes with Sam's account, and the install waits for its first-run screens.
+    // The last adult: the whole server goes with Sam's account, and the install waits for its first-run screens.
     const last = (await (await get(sam)).json()) as { deletion: { serverGoes: boolean } }
-    assert.deepEqual(last.deletion, {
-      serverGoes: true,
-      others: [],
-      children: [],
-      heir: null,
-      member: true,
-      admin: true
-    })
+    assert.deepEqual(last.deletion, { serverGoes: true, handOverFirst: false, others: [], children: [] })
     assert.equal((await post('/account', { password: PASSWORD }, { cookie: sam }, 'DELETE')).status, 204)
     const setup = (await (await fetch(`${baseUrl}/api/setup`)).json()) as { needed: boolean; stage: string }
     assert.deepEqual([setup.needed, setup.stage], [true, 'account'])

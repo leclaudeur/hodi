@@ -152,6 +152,11 @@ export class UserAccountStore {
     return (rows as unknown as UserAccountRow[]).map(toAccount)
   }
 
+  // Serveur › Comptes › « Nommer admin du serveur »: one more account runs the server.
+  makeServerAdmin(id: number) {
+    this.#db.prepare('UPDATE users SET server_admin = 1 WHERE id = ?').run(id)
+  }
+
   // The server's first account, its admin; null when another device made one first.
   createServerAdmin(email: string, passwordHash: string, now: number): UserAccount | null {
     return transaction(this.#db, () => this.#insertServerAdmin(email, passwordHash, now))

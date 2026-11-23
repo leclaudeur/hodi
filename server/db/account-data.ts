@@ -14,8 +14,9 @@ export interface DeletionPlan {
   serverGoes: boolean
   // The profiles deleted, the person's own first.
   profiles: Pick<Profile, 'id' | 'name' | 'kind'>[]
-  // Who takes over the admin role and the server's, when the person held them.
-  heir: Profile | null
+  // The account is the server's last admin and other people still have accounts: nobody is made the server's admin
+  // without being chosen, so another admin is named in Serveur › Comptes first, and nothing is deleted until then.
+  handOverFirst: boolean
   // The teens and children the person is the only parent of: their accounts go too. With the server, they are among
   // its profiles already.
   children: { accountId: number; id: number; name: string }[]
@@ -27,25 +28,18 @@ export const deletionPlan = (
   profiles: ProfileStore
 ): DeletionPlan => {
   const own = accounts.profileOf(account.id)
-  // No profile any more (deleted by an admin): the account goes alone. The server's admin still hands /server over to
-  // an heir.
-  // Its children still go with it: no one would run them any more.
-  if (own === null && !account.serverAdmin)
-    return {
-      serverGoes: false,
-      profiles: [],
-      heir: null,
-      children: onlyChildren(account, accounts, profiles)
-    }
   const all = profiles.everyone()
   const others = all.filter(profile => profile.kind === 'adult' && profile.hasAccount && profile.id !== own)
-  const serverGoes = others.length === 0
+  // An account with no profile (deleted by an admin) never takes the others with it.
+  const serverGoes = others.length === 0 && (own !== null || account.serverAdmin)
   const going = serverGoes ? all : all.filter(profile => profile.id === own)
   going.sort((a, b) => Number(b.id === own) - Number(a.id === own))
+  const lastAdmin = account.serverAdmin && accounts.serverAdmins().every(admin => admin.id === account.id)
   return {
     serverGoes,
+    handOverFirst: lastAdmin && !serverGoes,
     profiles: going.map(({ id, name, kind }) => ({ id, name, kind })),
-    heir: serverGoes ? null : (others.find(profile => profile.role === 'admin') ?? others[0]!),
+    // Its children go with it: no one would run them any more.
     children: serverGoes ? [] : onlyChildren(account, accounts, profiles)
   }
 }
@@ -101,35 +95,15 @@ const wipeServer = (db: Database, account: UserAccount, now: number): number[] =
 
 // What the plan takes, the account itself left: the ids of the other accounts that went with it.
 const leaveServer = (db: Database, account: UserAccount, plan: DeletionPlan, now: number): number[] => {
-  const householdId = DEFAULT_ACCOUNT_ID
   // What goes is written down before it commits, outside the database: a backup restored later does it again
   // (forget-log.ts).
-  const keyOf = (table: 'profiles' | 'users' | 'accounts', id: number) => rowKey(db, table, id)
   if (plan.serverGoes) return wipeServer(db, account, now)
   const children = forgetChildren(db, plan)
   const own = plan.profiles[0]
-  // No profile is the account's: it goes alone.
-  if (!plan.heir) return children
-  const heir = plan.heir
-  const heirKey = keyOf('profiles', heir.id)
   if (own) {
-    const row = db.prepare('SELECT role FROM profiles WHERE id = ?').get(own.id) as { role: string } | undefined
-    if (row?.role === 'admin') {
-      if (heirKey) recordForget({ kind: 'admin', ...heirKey })
-      db.prepare("UPDATE profiles SET role = 'admin' WHERE id = ?").run(heir.id)
-    }
-    const ownKey = keyOf('profiles', own.id)
-    if (ownKey) recordForget({ kind: 'profile', ...ownKey, householdId })
+    const ownKey = rowKey(db, 'profiles', own.id)
+    if (ownKey) recordForget({ kind: 'profile', ...ownKey, householdId: DEFAULT_ACCOUNT_ID })
     db.prepare('DELETE FROM profiles WHERE id = ?').run(own.id)
-  }
-  if (account.serverAdmin) {
-    // Keyed on the heir's account: its profile may have had no account yet in an older copy.
-    const heirUserId = (
-      db.prepare('SELECT user_id AS id FROM profiles WHERE id = ?').get(heir.id) as { id: number | null } | undefined
-    )?.id
-    const heirUser = heirUserId ? keyOf('users', heirUserId) : null
-    if (heirUser) recordForget({ kind: 'serverAdmin', ...heirUser })
-    db.prepare('UPDATE users SET server_admin = 1 WHERE id = (SELECT user_id FROM profiles WHERE id = ?)').run(heir.id)
   }
   return children
 }

@@ -1309,6 +1309,7 @@
       "download": "Download",
       "delete": "Delete your account",
       "deleteHint": "Erased at once, with everything in it",
+      "deleteHandOver": "First make someone else a server admin in Server › Accounts",
       "deleteButton": "Delete",
       "deleteFailed": "Your account could not be deleted. Try again in a moment.",
       "emailTitle": "Change e-mail",
@@ -1712,8 +1713,8 @@
     "deleteAccount": {
       "title": "Delete your account?",
       "message": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. Backup copies forget it within {{days}}.",
-      "messageServer": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: every profile goes too.</b> Backup copies forget it within {{days}}.",
-      "messageServerWith": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: the profiles of {{profiles}} go too.</b> Backup copies forget it within {{days}}.",
+      "messageServer": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: the whole server is erased, every profile with it, and starts again from scratch.</b> Backup copies forget it within {{days}}.",
+      "messageServerWith": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: the whole server is erased, the profiles of {{profiles}} with it, and starts again from scratch.</b> Backup copies forget it within {{days}}.",
       "button": "Delete",
       "messageChildren": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>You are the only parent of {{children}}: their accounts go too.</b> Backup copies forget it within {{days}}."
     },
@@ -1738,6 +1739,11 @@
       "failed": "That didn’t work. Try again in a moment.",
       "code": "Code from your authenticator app",
       "wrongCode": "That code doesn’t work: use the one your app shows now."
+    },
+    "makeServerAdmin": {
+      "title": "Make {{name}} a server admin?",
+      "message": "<b>{{name}}</b> will run all of <i>Server</i> as you do: accounts, backups, plugins and e-mail. Confirm with your password.",
+      "button": "Make admin"
     },
     "resetPassword": {
       "title": "New password?",
@@ -2108,6 +2114,10 @@
         "resetOnRequest": "Only once the person asks for one.",
         "own": "Yours changes in Settings › My account",
         "deleteSection": "Delete or block",
+        "serverAdminSection": "Server admin",
+        "serverAdmin": "Make server admin",
+        "serverAdminHint": "Runs Server as you do: accounts, backups, plugins",
+        "serverAdminButton": "Make admin",
         "delete": "Delete this account",
         "deleteHint": "Its profile and all it holds go with it",
         "deleteButton": "Delete",

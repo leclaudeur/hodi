@@ -118,9 +118,8 @@ export interface AccountView {
     others: string[]
     // The teens and children it is the only parent of: they go too.
     children: string[]
-    heir: string | null
-    member: boolean
-    admin: boolean
+    // The server's last admin, with other people on it: another admin is named in Serveur › Comptes first.
+    handOverFirst: boolean
   } | null
   // « Validation en deux étapes »: on since then, or null. required: the server's admin cannot turn it off.
   twoFactor: { since: number | null; required: boolean; recoveryLeft: number }
