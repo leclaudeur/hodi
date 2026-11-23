@@ -22,20 +22,6 @@ const withReaders = (sources: SourceStatus[], counts: Map<string, number> | unde
     }
   })
 
-// A source's readers show from READERS_SHOWN on: below that, a count would point at the few people reading it.
-export const READERS_SHOWN = 10
-
-// Its readers, once there are enough of them, and whether it comes from sources.yml (the catalogue's Officielles).
-const withReaders = (sources: SourceStatus[], counts: Map<string, number> | undefined, official: Set<string>) =>
-  sources.map(source => {
-    const readers = counts?.get(source.id) ?? 0
-    return {
-      ...source,
-      ...(readers >= READERS_SHOWN ? { readers } : {}),
-      ...(official.has(source.id) ? { official: true } : {})
-    }
-  })
-
 // The sources as a profile sees them: the list, how much each is opened, and their icons.
 export const sourceViewRoutes = ({
   news,
