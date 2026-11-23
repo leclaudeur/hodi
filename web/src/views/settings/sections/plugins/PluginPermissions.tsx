@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { PluginPermissions as Permissions } from '../../../../api.ts'
+import { rich } from '../../../../ui/rich.tsx'
 import SettingRow from '../../SettingRow.tsx'
 import styles from '../../Settings.module.css'
 import own from './Plugins.module.css'
@@ -49,7 +50,7 @@ const PluginPermissions = ({
         </span>
       }
       label={String(t(`plugins.permissions.${key}` as never, values as never))}
-      hint={String(t(`plugins.permissions.${key}Hint` as never, values as never))}
+      hint={rich(String(t(`plugins.permissions.${key}Hint` as never, values as never)))}
     />
   )
   const hosts = permissions.network

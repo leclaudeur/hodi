@@ -90,7 +90,7 @@
     "newAccount": "Create a new account",
     "signIn": "Join",
     "alreadyMember": "This account already has a profile on this server: sign in with it.",
-    "otherHousehold": "Your account {{email}} is already in {{current}}. To join {{household}}, leave your household first in Settings › My account."
+    "otherHousehold": "Your account <b>{{email}}</b> is already in <b>{{current}}</b>. To join <b>{{household}}</b>, leave your household first in <i>My account</i>."
   },
   "password": {
     "show": "Show password",
@@ -1418,7 +1418,7 @@
       "noSubject": "You follow no subject yet.",
       "subjects": "A new article on a subject with an alert: {{alerts}} of {{total}}. One per subject every 3 hours, 12 a day at most.",
       "shares": "Shared articles",
-      "sharesHint": "When someone sends you an article or video with “For…”.",
+      "sharesHint": "When someone sends you an article or video with <i>For…</i>.",
       "reactions": "Reactions to your shares",
       "reactionsHint": "When someone reacts with an emoji to an article you sent them.",
       "badge": "Badge on the icon",
@@ -1958,7 +1958,7 @@
       "aiHint": "A click on its violet button asks the AI one question, paid from the household’s credits. Only if it is Verified.",
       "feeds_one": "Offer {{count}} source",
       "feeds_other": "Offer {{count}} sources",
-      "feedsHint": "In “Add a source”: {{names}}"
+      "feedsHint": "In <i>Add a source</i>: {{names}}"
     },
     "aiButton": {
       "unavailable": "AI isn’t turned on for this household.",

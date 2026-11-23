@@ -20,6 +20,7 @@ import Notice from '../../../ui/Notice.tsx'
 import StatusLine from '../../../ui/StatusLine.tsx'
 import TimeRangeField from '../../../ui/TimeRangeField.tsx'
 import Toggle from '../../../ui/Toggle.tsx'
+import { rich } from '../../../ui/rich.tsx'
 import SectionPage from '../SectionPage.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
@@ -68,7 +69,7 @@ const Triggers = ({ settings, notifies }: { settings: Settings; notifies: boolea
           </span>
         </a>
         {preferences.sharing && (
-          <SettingRow label={t('settings.notifications.shares')} hint={t('settings.notifications.sharesHint')}>
+          <SettingRow label={t('settings.notifications.shares')} hint={rich(t('settings.notifications.sharesHint'))}>
             <Toggle
               label={t('settings.notifications.shares')}
               checked={settings.shares}
