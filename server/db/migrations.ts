@@ -1424,6 +1424,10 @@ const MIGRATIONS: string[] = [
     WHERE profiles.user_id = users.id AND profiles.role = 'admin' AND accounts.made_by_plugin IS NOT NULL
     ORDER BY profiles.id LIMIT 1
   ) WHERE server_admin = 0 AND email IS NOT NULL;
+  `,
+  // Nothing shows, copies or deletes a household's photo any more: none is kept out of reach.
+  `
+  UPDATE accounts SET photo = NULL, photo_type = NULL, photo_version = NULL;
   `
 ]
 

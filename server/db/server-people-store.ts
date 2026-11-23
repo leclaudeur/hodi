@@ -13,8 +13,6 @@ export interface ServerHousehold {
   adults: number
   young: number
   accounts: number
-  // null: no photo, the initial shows.
-  photoVersion: number | null
 }
 
 export interface ServerAccount {
@@ -45,8 +43,7 @@ export class ServerPeopleStore {
            (SELECT name FROM profiles WHERE account_id = a.id AND role = 'admin' ORDER BY id LIMIT 1) AS admin,
            (SELECT COUNT(*) FROM profiles WHERE account_id = a.id AND kind = 'adult') AS adults,
            (SELECT COUNT(*) FROM profiles WHERE account_id = a.id AND kind <> 'adult') AS young,
-           (SELECT COUNT(*) FROM profiles WHERE account_id = a.id AND user_id IS NOT NULL) AS accounts,
-           CASE WHEN a.photo IS NULL THEN NULL ELSE a.photo_version END AS photoVersion
+           (SELECT COUNT(*) FROM profiles WHERE account_id = a.id AND user_id IS NOT NULL) AS accounts
          FROM accounts a WHERE a.set_up_at IS NOT NULL ORDER BY a.id`
       )
       .all() as unknown as ServerHousehold[]

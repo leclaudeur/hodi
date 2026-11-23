@@ -1,6 +1,5 @@
 import { type Language, isLanguage } from '../../shared/i18n.ts'
 import { type Database, transaction } from './database.ts'
-import type { PhotoType } from './profile-store.ts'
 import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -29,8 +28,6 @@ export interface Household {
   // 24: "21:00"; 12: "9:00 PM".
   hourCycle: HourCycle
   ai: HouseholdAi | null
-  // Changes with the photo, so a browser asks again for the new one; null: no photo, the initial shows.
-  photoVersion: number | null
 }
 
 export type HourCycle = 12 | 24
@@ -45,7 +42,6 @@ interface HouseholdRow {
   ai_provider: string | null
   ai_key: string | null
   ai_model: string | null
-  photo_version: number | null
 }
 
 export interface HouseholdSetup {
@@ -89,8 +85,7 @@ export class HouseholdStore {
   get(): Household {
     const row = this.#db
       .prepare(
-        `SELECT name, set_up_at, time_zone, country, language, hour_cycle, ai_provider, ai_key, ai_model,
-         CASE WHEN photo IS NULL THEN NULL ELSE photo_version END AS photo_version
+        `SELECT name, set_up_at, time_zone, country, language, hour_cycle, ai_provider, ai_key, ai_model
          FROM accounts WHERE id = ?`
       )
       .get(this.#account) as HouseholdRow | undefined
@@ -102,23 +97,8 @@ export class HouseholdStore {
       country: row.country,
       language: isLanguage(row.language) ? row.language : 'fr',
       hourCycle: row.hour_cycle === 12 ? 12 : 24,
-      ai: row.ai_provider && row.ai_key ? { provider: row.ai_provider, key: row.ai_key, model: row.ai_model } : null,
-      photoVersion: row.photo_version
+      ai: row.ai_provider && row.ai_key ? { provider: row.ai_provider, key: row.ai_key, model: row.ai_model } : null
     }
-  }
-
-  // null photo: back to the initial.
-  setPhoto(photo: { data: Buffer; type: PhotoType } | null, now: number) {
-    this.#db
-      .prepare('UPDATE accounts SET photo = ?, photo_type = ?, photo_version = ? WHERE id = ?')
-      .run(photo?.data ?? null, photo?.type ?? null, photo ? now : null, this.#account)
-  }
-
-  photo(): { data: Buffer; type: PhotoType } | null {
-    const row = this.#db
-      .prepare('SELECT photo, photo_type FROM accounts WHERE id = ? AND photo IS NOT NULL')
-      .get(this.#account) as { photo: Uint8Array; photo_type: PhotoType } | undefined
-    return row ? { data: Buffer.from(row.photo), type: row.photo_type } : null
   }
 
   isSetUp() {

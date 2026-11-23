@@ -12,6 +12,7 @@ import { createApp } from '../app.ts'
 import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
+import { migrate, versionBefore } from '../db/migrations.ts'
 import { HouseholdStore } from '../db/household-store.ts'
 import { MailSettingsStore, mailDraftOf } from '../db/mail-settings-store.ts'
 import { copyTimeOf, isDatabaseFile, readRestoreTime } from '../db/maintenance.ts'
@@ -676,6 +677,21 @@ describe('mail', () => {
         { to: 'a@example.com', subject: 'Essai', text: 'Essai' }
       ),
       (error: unknown) => error instanceof MailError && error.reason === 'unreachable'
+    )
+  })
+})
+
+describe('the household photo migration', () => {
+  it('keeps no household photo, which nothing shows any more', () => {
+    const db = new DatabaseSync(':memory:')
+    migrate(db, versionBefore('UPDATE accounts SET photo = NULL'))
+    db.prepare("UPDATE accounts SET photo = ?, photo_type = 'image/png', photo_version = 1 WHERE id = 1").run(
+      Buffer.from('png')
+    )
+    migrate(db)
+    assert.deepEqual(
+      { ...(db.prepare('SELECT photo, photo_type, photo_version FROM accounts WHERE id = 1').get() as object) },
+      { photo: null, photo_type: null, photo_version: null }
     )
   })
 })

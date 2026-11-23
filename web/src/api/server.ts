@@ -47,7 +47,6 @@ export interface ServerHousehold {
   adults: number
   young: number
   accounts: number
-  photoVersion: number | null
 }
 
 export interface ServerAccount {
