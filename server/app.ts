@@ -3,7 +3,7 @@ import compression from 'compression'
 import express from 'express'
 import type { AppOptions } from './app-options.ts'
 import type { Config } from './config.ts'
-import { mountHousehold } from './app/household-space.ts'
+import { mountAccountSpace } from './app/account-space.ts'
 import { mountReading } from './app/reading.ts'
 import { mountServerSpace } from './app/server-space.ts'
 import { mountSignedOut } from './app/signed-out.ts'
@@ -42,7 +42,7 @@ const apiRouter = (config: Config, appOptions: AppOptions) => {
   api.use(requireSession)
   api.use(chooseProfile)
 
-  mountHousehold(api, wiring)
+  mountAccountSpace(api, wiring)
   mountServerSpace(api, wiring)
   mountReading(api, wiring)
 

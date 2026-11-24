@@ -40,6 +40,8 @@ and never touch `version`; a small release pull request raises `version` and mov
   accounts (`ctx.accounts.create`) and suspends, resumes or removes them. A manifest that still asks for `households`
   loads, and the permission is ignored.
 - **`HouseholdAvatar`** is gone from `hodi:sdk`, with the household photo it showed (`/api/households/<id>/photo`).
+- **`who.householdAdmin`.** Hodi no longer has a household admin: what that role allowed is the server's admin's, so
+  check `who.serverAdmin` instead.
 
 ## [1.0.0-beta.5] - 2026-11-19
 

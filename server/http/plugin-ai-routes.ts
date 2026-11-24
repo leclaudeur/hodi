@@ -3,11 +3,11 @@ import { currentHouseholdId } from '../db/household-scope.ts'
 import { MAX_AI_INPUT_BYTES, type PluginAi, type PluginAiStatus } from '../plugins/ai.ts'
 import type { LoadedPlugin, PluginRegistry } from '../plugins/registry.ts'
 import { sameSiteOnly } from './plugin-sandbox-routes.ts'
-import { isAdminOf, kindOf, profileIdOf } from './profile-routes.ts'
+import { isServerAdminOf, kindOf, profileIdOf } from './profile-routes.ts'
 
 // A plugin is for this profile when it is meant for everyone, or for the admin and this is the admin.
 export const isFor = (plugin: LoadedPlugin, response: express.Response) =>
-  plugin.manifest?.audience === 'all' || isAdminOf(response)
+  plugin.manifest?.audience === 'all' || isServerAdminOf(response)
 
 // How a click on an AiButton that gets no answer is told.
 const AI_STATUS: Record<PluginAiStatus, number> = {

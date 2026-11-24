@@ -159,8 +159,6 @@ export interface PluginCaller {
   // every household on the server from one database: it keeps their data apart with this.
   householdId: number | null
   kind: 'adult' | 'teen' | 'child'
-  // The household's admin.
-  householdAdmin: boolean
   // The server's admin.
   serverAdmin: boolean
   // The account signed in on the device, which may differ from the open profile's own on a shared device; null

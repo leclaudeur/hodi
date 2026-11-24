@@ -222,7 +222,7 @@ describe('a row that goes never lets its cookie open the next one given its id',
   })
 })
 
-// A household's admin never gives another adult a new password: their password is theirs. A reset code comes from
+// No one gives another adult a new password: their password is theirs. A reset code comes from
 // the server's admin only (Serveur › Comptes), and even then never opens the server's admin account, nor an account
 // that also reads in another household.
 describe('codes for a new password', () => {
@@ -248,7 +248,7 @@ describe('codes for a new password', () => {
     const joined = await join('marie@example.com', 'Marie')
     await join('sophie@example.com', 'Sophie')
     await join('paul@example.com', 'Paul')
-    // Antho, the server's admin, hands the household over to Marie.
+    // Marie, once the household's admin as an older install had it: a role that no longer gives any right.
     install.db.prepare("UPDATE profiles SET role = 'member' WHERE id = ?").run(anthoProfile)
     install.db.prepare("UPDATE profiles SET role = 'admin' WHERE id = ?").run(joined.profileId)
     marie = joined.cookie
@@ -265,10 +265,19 @@ describe('codes for a new password', () => {
   const reset = (code: string) =>
     install.call('/codes/reset', { method: 'POST', body: { code, password: 'une autre phrase de passe assez longue' } })
 
-  it('never lets the household admin make one, for anyone with an account', async () => {
+  it('never lets anyone make one in a profile, for anyone with an account', async () => {
     const before = install.db.prepare('SELECT COUNT(*) AS n FROM sign_in_codes').get() as { n: number }
     for (const profileId of [anthoProfile, profileOf('Sophie'), profileOf('Paul')]) {
       const refused = await askCode(profileId)
+      assert.deepEqual([refused.status, await refused.json()], [403, { error: 'admin_only' }])
+    }
+    // Not even the server's admin: theirs comes from Serveur › Comptes.
+    for (const profileId of [profileOf('Sophie'), profileOf('Paul')]) {
+      const refused = await install.call('/codes', {
+        method: 'POST',
+        cookie: install.admin,
+        body: { profileId, password: PASSWORD }
+      })
       assert.deepEqual([refused.status, await refused.json()], [403, { error: 'own_password' }])
     }
     assert.deepEqual(install.db.prepare('SELECT COUNT(*) AS n FROM sign_in_codes').get(), before)

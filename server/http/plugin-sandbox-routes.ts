@@ -7,7 +7,7 @@ import type { LoadedPlugin, PluginRegistry, SignInRefusal } from '../plugins/reg
 import { type PluginSandbox, SandboxError } from '../plugins/sandbox/sandbox.ts'
 import { clientAddressOf } from './client-address.ts'
 import { refuseSignIn } from './sign-in-check.ts'
-import { isAdminOf, isServerAdminOf, kindOf, profileIdOf } from './profile-routes.ts'
+import { isServerAdminOf, kindOf, profileIdOf } from './profile-routes.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 // The cookies that sign this device in with the account, the plugins' refusal, or, for an account with « Validation en
@@ -168,7 +168,6 @@ const argumentOf = (
           profileId: serverOnly ? null : profileIdOf(response),
           householdId,
           kind: kindOf(response),
-          householdAdmin: isAdminOf(response),
           serverAdmin: isServerAdminOf(response),
           accountId: typeof response.locals.accountId === 'number' ? response.locals.accountId : null
         }

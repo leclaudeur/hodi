@@ -2,7 +2,7 @@ import express from 'express'
 import { currentHouseholdId } from '../db/household-scope.ts'
 import { type NewsService } from '../news/news-service.ts'
 import type { PluginRegistry } from '../plugins/registry.ts'
-import { profileIdOf, requireAdmin } from './profile-routes.ts'
+import { profileIdOf, requireServerAdmin } from './profile-routes.ts'
 
 // Mon compte › IA et crédits, and the household's plugins that may use AI (the admin's).
 export const aiUsageRoutes = ({ news, plugins }: { news: NewsService; plugins?: PluginRegistry }) => {
@@ -36,10 +36,10 @@ export const aiUsageRoutes = ({ news, plugins }: { news: NewsService; plugins?: 
           calls: calls[plugin.id] ?? 0
         }))
     }
-    router.get('/ai-usage/plugins', requireAdmin, (_request, response) => {
+    router.get('/ai-usage/plugins', requireServerAdmin, (_request, response) => {
       response.json({ plugins: aiPlugins(profileIdOf(response)) })
     })
-    router.put('/ai-usage/plugins/:id', requireAdmin, (request: express.Request<{ id: string }>, response) => {
+    router.put('/ai-usage/plugins/:id', requireServerAdmin, (request: express.Request<{ id: string }>, response) => {
       const { on } = (request.body ?? {}) as { on?: unknown }
       const plugin = plugins.get(request.params.id)
       if (typeof on !== 'boolean' || !plugin?.manifest) {

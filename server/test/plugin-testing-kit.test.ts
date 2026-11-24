@@ -93,7 +93,6 @@ describe('the plugin test kit', () => {
       profileId: null,
       householdId: null,
       kind: 'adult',
-      householdAdmin: false,
       serverAdmin: false,
       accountId: alone
     })

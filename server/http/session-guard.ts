@@ -181,7 +181,6 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
 // No household: no profile, the server's admin and nothing else.
 const serverOnlyLocals = (response: express.Response) => {
   response.locals.profileId = 0
-  response.locals.admin = false
   response.locals.serverAdmin = true
   response.locals.profileChosen = false
 }
@@ -189,7 +188,6 @@ const serverOnlyLocals = (response: express.Response) => {
 // An account with no household left: no profile, no right in any household.
 const noHouseholdLocals = (response: express.Response) => {
   response.locals.profileId = 0
-  response.locals.admin = false
   response.locals.serverAdmin = false
   response.locals.profileChosen = false
 }
@@ -245,17 +243,13 @@ const chooseProfileOf = (options: SessionGuardOptions): RequestHandler => {
     }
     const { chosen, profile, locked } = profileOfRequest(options, request)
     response.locals.profileId = profile?.id ?? 1
-    const householdAdmin = locked ? false : profile ? profile.role === 'admin' : true
     // The server's admin is an account: the profile opened here must be that account's, so another adult opening
-    // their own profile on the same device never gets it. Without accounts (older tests), the first admin stands for it.
+    // their own profile on the same device never gets it. Without accounts (older tests), the first profile stands for it.
     response.locals.serverAdmin = locked
       ? false
       : accounts
         ? profile !== undefined && accounts.ofProfile(profile.id)?.serverAdmin === true
-        : householdAdmin
-    // The household is no longer shown: what its admin did (profiles, the game, other people's sources) is the server
-    // admin's too.
-    response.locals.admin = householdAdmin || response.locals.serverAdmin === true
+        : (profile?.role ?? 'admin') === 'admin'
     response.locals.kind = profile?.kind ?? 'adult'
     // false: this device has not chosen yet, the app asks "Qui lit ?".
     response.locals.profileChosen = chosen !== undefined

@@ -3,7 +3,7 @@ import { aiUsageRoutes } from '../http/ai-usage-routes.ts'
 import { articleRoutes } from '../http/article-routes.ts'
 import { gameRoutes, readFactsOf } from '../http/game-routes.ts'
 import { newsRoutes } from '../http/news-routes.ts'
-import { profileIdOf, requireAdmin } from '../http/profile-routes.ts'
+import { profileIdOf, requireServerAdmin } from '../http/profile-routes.ts'
 import { pushRoutes } from '../http/push-routes.ts'
 import { readingRoutes } from '../http/reading-routes.ts'
 import { shareReportRoutes } from '../http/share-report-routes.ts'
@@ -61,10 +61,10 @@ const mountProfileState = (api: express.Router, { options, youthSources, session
 const mountStorage = (api: express.Router, { options }: Wiring) => {
   const { storage } = options
   if (!storage) return
-  api.get('/storage', requireAdmin, (_request, response) => {
+  api.get('/storage', requireServerAdmin, (_request, response) => {
     response.json(storage.usage())
   })
-  api.delete('/storage/texts', requireAdmin, (_request, response) => {
+  api.delete('/storage/texts', requireServerAdmin, (_request, response) => {
     storage.clearTexts()
     response.json(storage.usage())
   })

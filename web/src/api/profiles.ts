@@ -97,8 +97,6 @@ export const updateProfile = (id: number, changes: ProfileChanges) =>
 // An adult's profile with its account goes with the proof of the admin deleting it.
 export const deleteProfile = (id: number, proof?: AdminProof) => sendJson<null>('DELETE', `/profiles/${id}`, proof)
 
-// « Passer le rôle d'admin »: that adult becomes the household's admin, this profile a member. With the admin's proof.
-
 // This device now reads as that profile, with the password it asks for, if any.
 // What « Qui lit ? » typed: a private profile's password (trust: « Ne plus demander sur cet appareil »), or the
 // household's Code parental.

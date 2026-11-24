@@ -139,8 +139,8 @@ const invitationMail = ({ options }: Wiring): InvitationMail | undefined => {
   }
 }
 
-// The signed-in household's own routes: the session, the account, profiles and young profiles' rules.
-export const mountHousehold = (api: express.Router, wiring: Wiring) => {
+// The signed-in account's own routes: the session, the account, profiles and young profiles' rules.
+export const mountAccountSpace = (api: express.Router, wiring: Wiring) => {
   const { youth, accounts, household, serverSettings, twoFactor, codes, profiles, now } = wiring.options
   // A young profile reads within its parents' rules.
   if (youth) {

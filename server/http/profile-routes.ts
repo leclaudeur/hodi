@@ -31,20 +31,12 @@ const isAvatar = (value: unknown): value is ProfileAvatar => PROFILE_AVATARS.inc
 export const PIN_MAX_FAILURES = CONFIG.profilePin.failures
 export const PIN_GLOBAL_MAX_FAILURES = CONFIG.profilePin.failuresServerWide
 
-import { isAdminOf, isParentOf, kindOf, profileIdOf } from './request-locals.ts'
+import { isParentOf, isServerAdminOf, kindOf, profileIdOf } from './request-locals.ts'
 import { CONFIG } from '../fixed-config.ts'
 
-export { isAdminOf, isParentOf, kindOf, profileIdOf }
+export { isParentOf, isServerAdminOf, kindOf, profileIdOf }
 
-// The household's shared things (its profiles, its stored texts) are the admin's to change.
-export const requireAdmin: express.RequestHandler = (_request, response, next) => {
-  if (isAdminOf(response)) next()
-  else response.status(403).json({ error: 'admin_only' })
-}
-
-// The whole server's things (its plugins, its settings) are its admin's: the account that set Hodi up.
-export const isServerAdminOf = (response: express.Response) => response.locals.serverAdmin === true
-
+// The whole server's things (its plugins, its settings, its stored texts, other people's profiles) are its admin's.
 export const requireServerAdmin: express.RequestHandler = (_request, response, next) => {
   if (isServerAdminOf(response)) next()
   else response.status(403).json({ error: 'server_admin_only' })
@@ -80,7 +72,7 @@ const profileHelpers = ({ profiles, accounts, checkProof }: ProfileRoutesOptions
 
   // A member changes its own name, colour and photo; the admin every profile's; a parent the young profiles'.
   const mayManage = (target: Profile, response: express.Response) =>
-    isYoung(target) ? isParentOfYoung(response, accounts, target) : isAdminOf(response)
+    isYoung(target) ? isParentOfYoung(response, accounts, target) : isServerAdminOf(response)
   const mayChange = (id: number, response: express.Response) => {
     if (id === profileIdOf(response) || mayManage(profiles.get(id)!, response)) return true
     response.status(403).json({ error: 'admin_only' })
@@ -89,7 +81,7 @@ const profileHelpers = ({ profiles, accounts, checkProof }: ProfileRoutesOptions
 
   // An adult's, the admin's to delete; a teen's or a child's, its parents'.
   const mayDelete = (target: Profile, response: express.Response) => {
-    if (isYoung(target) ? isParentOfYoung(response, accounts, target) : isAdminOf(response)) return true
+    if (isYoung(target) ? isParentOfYoung(response, accounts, target) : isServerAdminOf(response)) return true
     response.status(403).json({ error: isYoung(target) ? 'parents_only' : 'admin_only' })
     return false
   }
@@ -146,7 +138,7 @@ const mountListRoutes = (router: express.Router, options: ProfileRoutesOptions) 
       response.status(400).json({ error: 'bad_request' })
       return
     }
-    if (!isAdminOf(response) && !(isParentOf(response) && kind !== 'adult')) {
+    if (!isServerAdminOf(response) && !(isParentOf(response) && kind !== 'adult')) {
       response.status(403).json({ error: 'admin_only' })
       return
     }
@@ -195,7 +187,7 @@ const mountEditRoutes = (
     const kindChange = kind !== undefined && kind !== target.kind
     if (
       (selfOnly && isYoung(target) && (name !== undefined || kindChange)) ||
-      (kindChange && !isAdminOf(response) && (!isParentOf(response) || !isYoung(target) || kind === 'adult'))
+      (kindChange && !isServerAdminOf(response) && (!isParentOf(response) || !isYoung(target) || kind === 'adult'))
     ) {
       response.status(403).json({ error: 'parents_only' })
       return
@@ -233,7 +225,7 @@ const mountEditRoutes = (
 
 const mountAdminRoutes = (
   router: express.Router,
-  { profiles, accounts, checkProof, onDelete }: ProfileRoutesOptions,
+  { profiles, accounts, onDelete }: ProfileRoutesOptions,
   { idOf, mayDelete, withProof }: ProfileHelpers
 ) => {
   // An adult's, the admin's; a teen's or a child's, its parents'.
@@ -265,29 +257,6 @@ const mountAdminRoutes = (
     onDelete?.(id)
     // Deleted from the device it was open on: back to "Qui lit ?".
     if (id === profileIdOf(response)) response.set('Set-Cookie', clearedProfileCookie())
-    response.status(204).end()
-  })
-
-  // « Passer le rôle d'admin »: another adult with an account becomes the household's admin, and this one a member.
-  router.put('/:id/admin', requireAdmin, async (request, response) => {
-    const id = idOf(request)
-    const target = id === null ? null : profiles.get(id)
-    if (!target || target.id === profileIdOf(response)) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    if (isYoung(target) || !target.hasAccount) {
-      response.status(409).json({ error: 'no_account' })
-      return
-    }
-    if (!accounts || !checkProof || !(await askingWithProof(checkProof, accounts, request, response))) {
-      if (!response.headersSent) response.status(403).json({ error: 'account_only' })
-      return
-    }
-    if (!profiles.handOverAdmin(target.id)) {
-      response.status(409).json({ error: 'no_account' })
-      return
-    }
     response.status(204).end()
   })
 }

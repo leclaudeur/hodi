@@ -811,7 +811,6 @@ describe('plugin routes', () => {
       profileId: 2,
       householdId: 1,
       kind: 'adult',
-      householdAdmin: false,
       serverAdmin: false,
       accountId: 2
     })

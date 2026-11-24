@@ -125,32 +125,18 @@ const start = async ({ withTwoFactor = false }: { withTwoFactor?: boolean } = {}
   }
 }
 
-describe('« Passer le rôle d’admin »', () => {
-  it('makes another adult with an account the admin, with the admin’s own password only', async () => {
+describe('no household admin role', () => {
+  it('hands nothing over: the route is gone and the roles stay as they were', async () => {
     const { call, admin, sam, samId, leaId, profiles, close } = await start()
     try {
-      // Sam is no admin, and Léa has no account to manage the household with.
-      assert.equal((await call(`/profiles/${samId}/admin`, sam, 'PUT', { password: SAM_PASSWORD })).status, 403)
-      assert.equal((await call(`/profiles/${leaId}/admin`, admin, 'PUT', { password: ADMIN_PASSWORD })).status, 409)
-      assert.equal((await call('/profiles/1/admin', admin, 'PUT', { password: ADMIN_PASSWORD })).status, 404)
-
-      // A device left open on Antho's profile hands nothing over.
-      const unproven = await call(`/profiles/${samId}/admin`, admin, 'PUT', {})
-      assert.equal(unproven.status, 403)
-      assert.deepEqual(await unproven.json(), { error: 'invalid_password' })
-      const wrong = await call(`/profiles/${samId}/admin`, admin, 'PUT', { password: SAM_PASSWORD })
-      assert.deepEqual([wrong.status, await wrong.json()], [403, { error: 'invalid_password' }])
-
-      assert.equal((await call(`/profiles/${samId}/admin`, admin, 'PUT', { password: ADMIN_PASSWORD })).status, 204)
+      const before = profiles.list().map(profile => [profile.name, profile.role])
+      assert.equal((await call(`/profiles/${samId}/admin`, admin, 'PUT', { password: ADMIN_PASSWORD })).status, 404)
       assert.deepEqual(
         profiles.list().map(profile => [profile.name, profile.role]),
-        [
-          ['Antho', 'member'],
-          ['Sam', 'admin'],
-          ['Léa', 'member']
-        ]
+        before
       )
-      // Antho is a member now, but still the server's admin: the household is no longer shown, so its things stay his.
+      // Sam, an adult of the same space, manages no one else's profile: only the server's admin does.
+      assert.equal((await call(`/profiles/${leaId}`, sam, 'DELETE')).status, 403)
       assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 204)
     } finally {
       close()
@@ -177,10 +163,10 @@ describe('the admin’s password before what cannot be undone for another adult'
     const fromAfar = { 'X-Forwarded-For': '203.0.113.7' }
     try {
       for (let attempt = 0; attempt < 5; attempt += 1) {
-        const wrong = await call(`/profiles/${samId}/admin`, admin, 'PUT', { password: `faux ${attempt}` }, fromAfar)
+        const wrong = await call(`/profiles/${samId}`, admin, 'DELETE', { password: `faux ${attempt}` }, fromAfar)
         assert.equal(wrong.status, 403)
       }
-      const blocked = await call(`/profiles/${samId}/admin`, admin, 'PUT', { password: ADMIN_PASSWORD }, fromAfar)
+      const blocked = await call(`/profiles/${samId}`, admin, 'DELETE', { password: ADMIN_PASSWORD }, fromAfar)
       assert.equal(blocked.status, 429)
     } finally {
       close()
@@ -219,9 +205,10 @@ describe('Serveur › Comptes › « Supprimer »', () => {
   })
 
   it('hands the household’s admin role to the next adult with an account when its admin goes', async () => {
-    const { call, admin, samId, samAccount, profiles, close } = await start()
+    const { call, admin, samId, samAccount, profiles, db, close } = await start()
     try {
-      assert.equal((await call(`/profiles/${samId}/admin`, admin, 'PUT', { password: ADMIN_PASSWORD })).status, 204)
+      // Sam, its admin as an older install could have it.
+      db.prepare("UPDATE profiles SET role = CASE id WHEN ? THEN 'admin' ELSE 'member' END").run(samId)
       const url = `/server/accounts/${samAccount.id}`
       assert.equal((await call(url, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 204)
       assert.deepEqual(

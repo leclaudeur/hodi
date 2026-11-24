@@ -4,7 +4,7 @@ import type { Source } from '../news/catalog.ts'
 import type { NewsService } from '../news/news-service.ts'
 import type { FindResult } from '../news/source-finder.ts'
 import { isPluginFeed } from '../plugins/feeds.ts'
-import { isAdminOf, profileIdOf } from './profile-routes.ts'
+import { isServerAdminOf, profileIdOf } from './profile-routes.ts'
 import { newSuggestions } from './source-suggestions.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -317,7 +317,7 @@ const mountEditRoutes = (
       response.status(400).json({ error: 'bad_request' })
       return
     }
-    if (source.addedBy !== profileIdOf(response) && !isAdminOf(response)) {
+    if (source.addedBy !== profileIdOf(response) && !isServerAdminOf(response)) {
       response.status(403).json({ error: 'not_yours' })
       return
     }
@@ -340,7 +340,7 @@ const mountEditRoutes = (
       response.status(403).json({ error: 'base_source' })
       return
     }
-    if (source.addedBy !== profileIdOf(response) && !isAdminOf(response)) {
+    if (source.addedBy !== profileIdOf(response) && !isServerAdminOf(response)) {
       response.status(403).json({ error: 'not_yours' })
       return
     }
