@@ -121,9 +121,6 @@ invitations:
   mails_per_day: 10
   server_mails_per_day: 300
 
-household:
-  name_max_length: 40
-
 # The mail server settings (Serveur › E-mail): field lengths, and how long sending may take.
 mail:
   host_max_length: 253
@@ -666,9 +663,10 @@ plugin_mail:
   note_max_length: 1000
   url_max_length: 2000
 
-# Notifications a plugin sends: a day to one person and to the server's admins, and their length.
+# Notifications a plugin sends: a day and an hour to one person, a day to the server's admins, and their length.
 plugin_notices:
   per_day: 10
+  per_hour: 3
   server_per_day: 50
   title_max_length: 80
   text_max_length: 240

@@ -179,6 +179,35 @@ describe('deletions done again after a restore', () => {
     assert.equal(count(restored, 'SELECT count(*) AS n FROM users WHERE id = ?', paul.id), 0)
   })
 
+  it('reads a log written before households went, and skips a kind it does not know', () => {
+    const { db, dir, log, logs } = server()
+    const { accounts, paul, paulProfile, lea } = dupont(db)
+    const copy = copyOf(db, dir)
+    const at = clock + HOUR
+    const leaKey = db.prepare('SELECT created_at AS createdAt FROM profiles WHERE id = ?').get(lea.id) as {
+      createdAt: number
+    }
+    const lines = [
+      // A profile's line still carried its household, and a plugin could remove a household.
+      { kind: 'profile', id: lea.id, createdAt: leaKey.createdAt, householdId: 1, at },
+      { kind: 'household', id: 9, createdAt: 1, at },
+      { kind: 'account', id: paul.id, createdAt: accounts.get(paul.id)!.createdAt, at },
+      { kind: 'someday', id: 1, createdAt: 1, at }
+    ]
+    appendFileSync(path.join(dir, 'forgotten.jsonl'), lines.map(line => `${JSON.stringify(line)}\n`).join(''))
+    assert.deepEqual(
+      log.all().map(entry => entry.kind),
+      ['profile', 'household', 'account']
+    )
+    assert.deepEqual(logs, ['A line of forgotten.jsonl cannot be read: it is skipped'])
+    const restored = openDatabase(copy.file)
+    replayForgotten(restored, log.since(copy.at), at)
+    assert.equal(count(restored, 'SELECT count(*) AS n FROM profiles WHERE id = ?', lea.id), 0)
+    assert.equal(count(restored, 'SELECT count(*) AS n FROM users WHERE id = ?', paul.id), 0)
+    // Paul's profile stays, unlinked: only what the log names goes.
+    assert.equal(count(restored, 'SELECT count(*) AS n FROM profiles WHERE id = ?', paulProfile.id), 1)
+  })
+
   it('keeps only ids and times, skips a line it cannot read, and forgets what no copy can bring back', () => {
     let oldest: number | null = clock
     const { db, log, logs, dir } = server(() => oldest)

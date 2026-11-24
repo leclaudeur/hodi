@@ -49,8 +49,7 @@ const deletionsOf = ({ options, profileHooks }: Wiring) => {
     deletions: {
       data: accountData,
       onProfileDeleted: profileHooks.deleted,
-      onAccountDeleted: (id: number) => plugins?.accountDeleted(id),
-      onHouseholdGone: (id: number) => plugins?.householdRemoved(id)
+      onAccountDeleted: (id: number) => plugins?.accountDeleted(id)
     }
   }
 }

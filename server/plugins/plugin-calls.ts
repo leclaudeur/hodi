@@ -39,7 +39,7 @@ export const dueTasks = ({ loaded, store, enabled, now, log }: CallDeps) => {
         running.add(key)
         due.push(
           sandbox
-            .call('task', name, null, callContext(null))
+            .call('task', name, null, callContext(false))
             .then(
               () => {},
               (error: unknown) => log(`[plugin ${plugin.id}] task ${name} failed: ${message(error)}`)
@@ -77,14 +77,14 @@ export const articleTeller = ({ loaded, enabled, log }: CallDeps) => {
 // Asks every active plugin with permissions.signIn and a checkSignIn: the first refusal in the plugins' order.
 export const signInChecker =
   ({ loaded, enabled, log }: CallDeps) =>
-  async (who: { accountId: number; householdId: number | null }) => {
+  async (who: { accountId: number }) => {
     const asked = loaded.filter(
       plugin => plugin.manifest?.permissions.signIn && plugin.shape?.hooks.includes('checkSignIn') && enabled(plugin.id)
     )
     const answers = await Promise.all(
       asked.map(async (plugin): Promise<SignInRefusal | null> => {
         try {
-          const answer = await plugin.sandbox!.call('hook', 'checkSignIn', who, callContext(who.householdId))
+          const answer = await plugin.sandbox!.call('hook', 'checkSignIn', who, callContext(false))
           if (answer === null) return null
           // Anything but null refuses: a key of its locales shows its message, anything else Hodi's neutral one.
           return { plugin: plugin.id, message: typeof answer === 'string' && MESSAGE_KEY.test(answer) ? answer : null }
@@ -101,12 +101,17 @@ export const signInChecker =
 // « Télécharger une copie »: what each plugin with exportData keeps of this person, by plugin id.
 export const dataExporter =
   ({ loaded, log }: CallDeps) =>
-  async (who: { accountId: number; profileId: number | null; householdId: number }) => {
+  async (who: { accountId: number; profileId: number | null }) => {
     const asked = loaded.filter(plugin => plugin.sandbox && plugin.shape?.hooks.includes('exportData'))
     const copies = await Promise.all(
       asked.map(async plugin => {
         try {
-          const data = await plugin.sandbox!.call('hook', 'exportData', who, callContext(who.householdId))
+          const data = await plugin.sandbox!.call(
+            'hook',
+            'exportData',
+            who,
+            callContext(true, undefined, who.profileId ?? undefined)
+          )
           if (Buffer.byteLength(JSON.stringify(data) ?? 'null') > MAX_EXPORT_BYTES) {
             log(`[plugin ${plugin.id}] exportData answered more than ${MAX_EXPORT_BYTES} bytes`)
             return [plugin.id, { error: 'too_large' }] as const
@@ -131,7 +136,7 @@ export const weeklyReporter =
     const tables = await Promise.all(
       asked.map(async plugin => {
         try {
-          const rows = pluginReportRows(await plugin.sandbox!.call('hook', 'weeklyReport', week, callContext(null)))
+          const rows = pluginReportRows(await plugin.sandbox!.call('hook', 'weeklyReport', week, callContext(false)))
           if (!rows) log(`[plugin ${plugin.id}] weeklyReport answered something else than one to eight rows`)
           return rows ? [{ name: plugin.manifest!.name, rows }] : []
         } catch (error) {
@@ -146,12 +151,7 @@ export const weeklyReporter =
 // A click on an active, signed plugin's AiButton: its aiActions[action] with a ticket for one ctx.ai question.
 export const aiActionRunner =
   ({ loaded, enabled, log }: CallDeps) =>
-  async (
-    id: string,
-    action: string,
-    input: unknown,
-    who: { householdId: number; profileId: number }
-  ): Promise<AiActionResult> => {
+  async (id: string, action: string, input: unknown, who: { profileId: number }): Promise<AiActionResult> => {
     const plugin = loaded.find(candidate => candidate.id === id)
     if (
       !plugin?.sandbox ||
@@ -164,12 +164,7 @@ export const aiActionRunner =
     }
     const ticket: AiTicket = { ...who, used: false, outcome: null }
     try {
-      const answer = await plugin.sandbox.call(
-        'aiAction',
-        action,
-        { input, who },
-        { ...callContext(who.householdId), ai: ticket }
-      )
+      const answer = await plugin.sandbox.call('aiAction', action, { input, who }, { ...callContext(), ai: ticket })
       return { ok: true, answer, asked: ticket.used }
     } catch (error) {
       log(`[plugin ${id}] aiAction ${action} failed: ${message(error)}`)

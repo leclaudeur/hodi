@@ -106,7 +106,7 @@ describe('Mode développeur and « npx hodi-plugin dev »', () => {
     const hello = restarted.plugins.get('hello')!
     assert.deepEqual([hello.signed, hello.dev, hello.web.script], [false, true, true])
     assert.equal((await fetch(`${base}/plugins/hello/files/web.js`)).status, 200)
-    await hello.sandbox!.call('routes', 'GET /hi', {}, { householdId: null })
+    await hello.sandbox!.call('routes', 'GET /hi', {}, { forReader: false })
     const log = (await (
       await fetch(`${base}/dev/plugins/hello/log?after=0`, { headers: { Authorization: `Bearer ${code}` } })
     ).json()) as { lines: string[]; next: number }
@@ -118,7 +118,7 @@ describe('Mode développeur and « npx hodi-plugin dev »', () => {
     assert.equal((await fetch(`${base}/dev/plugins/hello/log`)).status, 401)
 
     // Its data belongs to the plugin in development, not to these exact files: the next build keeps it.
-    await hello.sandbox!.call('routes', 'GET /hi', {}, { householdId: null })
+    await hello.sandbox!.call('routes', 'GET /hi', {}, { forReader: false })
     assert.equal(store.dataOwner('hello'), 'dev:hello')
 
     // Off: the code stops working, Hodi restarts, and the plugin is a plain unsigned one again.

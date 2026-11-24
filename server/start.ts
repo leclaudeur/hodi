@@ -106,7 +106,6 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
       restart: () => restart('a plugin change'),
       catalog: new PluginCatalog({ fetchText: outside.fetchText, fetchBytes: outside.fetchPackages })
     },
-    household: stores.household,
     install: stores.install,
     shareReports: stores.shareReports,
     setupCode: drawSetupCode(stores),

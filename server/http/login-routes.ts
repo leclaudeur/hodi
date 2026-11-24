@@ -5,7 +5,6 @@ import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { NO_PASSWORD, hashPassword, needsRehash, verifyPassword } from '../auth/password.ts'
 import { SecondStepTickets } from '../auth/second-step-tickets.ts'
 import { clearedProfileCookie, clearedSessionCookie, profileCookie, profileToken } from '../auth/session.ts'
-import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
@@ -59,11 +58,8 @@ const signInHelpers = ({
   const checkSignIn: CheckSignIn = async account => {
     if (account.serverAdmin) return null
     if (account.suspendedBy) return { plugin: account.suspendedBy, message: 'signIn.suspended' }
-    if (!plugins || !accounts) return null
-    return plugins.checkSignIn({
-      accountId: account.id,
-      householdId: accounts.profileOf(account.id) === null ? null : DEFAULT_ACCOUNT_ID
-    })
+    if (!plugins) return null
+    return plugins.checkSignIn({ accountId: account.id })
   }
 
   // With « Validation en deux étapes » on, a sign-in also takes the app's code or a recovery code: 403

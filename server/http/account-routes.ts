@@ -3,7 +3,6 @@ import { rateLimit } from 'express-rate-limit'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword } from '../auth/password.ts'
 import { type AccountDataStore, deletionPlan } from '../db/account-data.ts'
-import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import type { InstallStore } from '../db/install-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
@@ -45,7 +44,6 @@ export interface AccountRoutesOptions extends AccountAiOptions {
   // What else goes with a deleted profile (its sources, its devices' alerts), before it goes.
   onDeleteProfile?: (profileId: number) => void
   // The household went with its last adult's account: the install waits for its first-run screens again.
-  onHouseholdGone?: () => void
   // The account is gone: the plugins forget it.
   onAccountDeleted?: (accountId: number) => void
   // What each plugin keeps of the person, by plugin id, for the copy.
@@ -53,11 +51,7 @@ export interface AccountRoutesOptions extends AccountAiOptions {
   twoFactor?: TwoFactorStore
   // The @identifier's next change, for Mon compte.
   handles?: HandleStore
-  pluginCopies?: (who: {
-    accountId: number
-    profileId: number | null
-    householdId: number
-  }) => Promise<Record<string, unknown>>
+  pluginCopies?: (who: { accountId: number; profileId: number | null }) => Promise<Record<string, unknown>>
 }
 
 export const accountRoutes = (options: AccountRoutesOptions) => {
@@ -330,11 +324,7 @@ const mountCopyRoute = (
       // What the plugins keep of the person, each in its own part.
       ...(pluginCopies
         ? {
-            plugins: await pluginCopies({
-              accountId: session.account.id,
-              profileId,
-              householdId: DEFAULT_ACCOUNT_ID
-            })
+            plugins: await pluginCopies({ accountId: session.account.id, profileId })
           }
         : {})
     }

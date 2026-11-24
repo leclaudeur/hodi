@@ -3,11 +3,12 @@ import type { ForgetRecord } from '../db/forget-log.ts'
 import type { InstallStore } from '../db/install-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
+import type { UserStore } from '../db/user-store.ts'
+import { sharePeople } from '../http/share-people.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import type { PluginStore } from '../db/plugin-store.ts'
 import { AccountLoginStore } from '../db/account-login-store.ts'
 import { type ServerSettingsStore, publicServerSettings } from '../db/server-settings-store.ts'
-import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { smtpSend } from '../mail/mailer.ts'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import type { FollowedAlerts } from '../news/followed-alerts.ts'
@@ -33,6 +34,7 @@ interface PluginWiring {
   accounts: UserAccountStore
   install: InstallStore
   profiles: ProfileStore
+  usersOf: (profileId: number) => UserStore
   alerts: FollowedAlerts
   serverNotices: ServerNotifier
   accountHooks: AccountHooks
@@ -44,23 +46,31 @@ interface PluginWiring {
 // The plugins hear again of the deletions done again: their own data went back to the copy too.
 export const replayToPlugins = (plugins: PluginRegistry, forgottenAgain: ForgetRecord[]) => {
   for (const entry of forgottenAgain) {
-    if (entry.kind === 'profile') plugins.profileDeleted(entry.id, entry.householdId)
+    if (entry.kind === 'profile') plugins.profileDeleted(entry.id)
     if (entry.kind === 'account') plugins.accountDeleted(entry.id)
-    if (entry.kind === 'household' || entry.kind === 'householdReset') plugins.householdRemoved(entry.id)
     if (entry.kind === 'householdReset') {
       for (const { id } of entry.accounts) plugins.accountDeleted(id)
-      for (const { id } of entry.profiles) plugins.profileDeleted(id, entry.id)
+      for (const { id } of entry.profiles) plugins.profileDeleted(id)
     }
+  }
+}
+
+// Whether a reader has a tie with another profile, as « Envoyer à… » sees it: family, or a share either way.
+const knowsOf = ({ usersOf, profiles, accounts }: PluginWiring) => {
+  const people = sharePeople({ users: usersOf, profiles, accounts })
+  return (reader: number, profileId: number) => {
+    const [me, other] = [profiles.find(reader), profiles.find(profileId)]
+    return me !== null && other !== null && people.knows(me, other)
   }
 }
 
 export const startPlugins = async (wiring: PluginWiring) => {
   const { db, news, accounts, install, profiles, store } = wiring
-  // A click on a signed plugin's AiButton: one question to the household's AI, in its 'plugin' caps.
+  // A click on a signed plugin's AiButton: one question to the AI, in its 'plugin' caps.
   const pluginAiCalls = pluginAi({
-    isOff: (_householdId, pluginId) => store.aiOff().has(pluginId),
-    left: (_householdId, profileId) => news.pluginAiLeft(profileId),
-    ask: (_householdId, pluginId, profileId, question) => news.askForPlugin(pluginId, profileId, question)
+    isOff: pluginId => store.aiOff().has(pluginId),
+    left: profileId => news.pluginAiLeft(profileId),
+    ask: (pluginId, profileId, question) => news.askForPlugin(pluginId, profileId, question)
   })
   const plugins = await loadPlugins({
     dir: wiring.dir,
@@ -78,8 +88,9 @@ export const startPlugins = async (wiring: PluginWiring) => {
     }),
     // A plugin's notification, on the devices of a profile that want it (Réglages › Notifications › Plugins).
     notifier: pluginNotifier({
-      householdOf: profileId => (profiles.find(profileId) ? DEFAULT_ACCOUNT_ID : null),
-      profilesOf: accountId => accounts.profilesOf(accountId),
+      hasProfile: profileId => profiles.find(profileId) !== null,
+      profileOf: accountId => accounts.profileOf(accountId),
+      knows: knowsOf(wiring),
       push: (profileId, payload) => wiring.alerts.notifyShare(profileId, payload, 'plugins')
     }),
     // What a plugin tells the server's admin of (Serveur › Notifications).

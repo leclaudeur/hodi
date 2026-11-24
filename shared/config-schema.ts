@@ -45,7 +45,6 @@ export const CONFIG_SCHEMA = {
   profiles: { nameMaxLength: 'count', photoMaxSize: 'size', photoSide: 'count' },
   children: { max: 'count', createsPerMinute: 'count', parents: 'count' },
   invitations: { nameMaxLength: 'count', mailsPerDay: 'count', serverMailsPerDay: 'count' },
-  household: { nameMaxLength: 'count' },
   mail: { hostMaxLength: 'count', userMaxLength: 'count', passwordMaxLength: 'count', timeout: 'duration' },
   requests: { perMinute: 'count' },
   database: { busyTimeout: 'duration' },

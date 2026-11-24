@@ -1,5 +1,4 @@
 import type express from 'express'
-import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
 import { accountRoutes } from '../http/account-routes.ts'
 import { codeRoutes } from '../http/code-routes.ts'
@@ -56,8 +55,6 @@ const mountAccount = (api: express.Router, wiring: Wiring) => {
       now,
       onDeleteProfile: id => profileHooks.deleted(id),
       onAccountDeleted: id => plugins?.accountDeleted(id),
-      // Deleting the last adult's account empties the household: the plugins forget it as a removed one.
-      onHouseholdGone: () => plugins?.householdRemoved(DEFAULT_ACCOUNT_ID),
       pluginCopies: plugins ? who => plugins.exportData(who) : undefined,
       twoFactor,
       handles

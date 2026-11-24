@@ -7,7 +7,6 @@ import { after, before, describe, it } from 'node:test'
 import { createApp } from '../app.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { PasswordResetStore, RESET_CODE_INTERVAL, RESET_CODE_LIFETIME } from '../db/password-reset-store.ts'
@@ -90,7 +89,6 @@ describe('Mot de passe oublié', () => {
     const server = createApp(config, {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles: new ProfileStore(db),
-      household: new HouseholdStore(db),
       install: new InstallStore(db),
       accounts: new UserAccountStore(db),
       devices: new UserDeviceStore(db),

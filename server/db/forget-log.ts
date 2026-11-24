@@ -15,8 +15,8 @@ export interface RowKey {
 }
 
 export type ForgetEntry =
-  // A profile deleted, with its household (its sources, readings and the rest go with it).
-  | ({ kind: 'profile'; householdId: number } & RowKey)
+  // A profile deleted (its sources, readings and the rest go with it).
+  | ({ kind: 'profile' } & RowKey)
   // An account deleted (users row).
   | ({ kind: 'account' } & RowKey)
   // A household a plugin removed, with all of it.
@@ -162,8 +162,6 @@ const parseRecord = (line: string): ForgetRecord | null => {
   if (!isKey(value) || !isInteger((value as { at?: unknown }).at)) return null
   const entry = value as ForgetRecord
   switch (entry.kind) {
-    case 'profile':
-      return isInteger(entry.householdId) ? entry : null
     case 'householdReset':
       return Array.isArray(entry.profiles) &&
         entry.profiles.every(isKey) &&
@@ -171,6 +169,7 @@ const parseRecord = (line: string): ForgetRecord | null => {
         entry.accounts.every(isKey)
         ? entry
         : null
+    case 'profile':
     case 'account':
     case 'household':
     case 'admin':

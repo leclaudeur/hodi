@@ -65,7 +65,7 @@ describe('scheduled tasks of plugins', () => {
     return { registry, lines }
   }
   const runs = async (registry: PluginRegistry) =>
-    (await registry.get('counter')!.sandbox!.call('routes', 'GET /runs', {}, { householdId: null })) as {
+    (await registry.get('counter')!.sandbox!.call('routes', 'GET /runs', {}, { forReader: false })) as {
       body: number
     }
 
@@ -92,7 +92,7 @@ describe('scheduled tasks of plugins', () => {
     registry.store.setEnabled('counter', true)
     assert.equal((await runs(registry)).body, 0)
 
-    await registry.get('counter')!.sandbox!.call('routes', 'POST /fail', {}, { householdId: null })
+    await registry.get('counter')!.sandbox!.call('routes', 'POST /fail', {}, { forReader: false })
     await registry.runDueTasks()
     assert.ok(lines.some(line => line.startsWith('[plugin counter] task purge failed')))
     const failures = lines.length
@@ -116,7 +116,7 @@ describe('scheduled tasks of plugins', () => {
     assert.match(registry.get('empty')?.error ?? '', /must have a run function/)
   })
 
-  it('runs a task for no household: what belongs to one is refused', async () => {
+  it('runs a task for no reader: ctx.articles is refused', async () => {
     const clock = { now: 10 * 24 * 60 * MINUTE }
     const { registry, lines } = await setUp(
       {

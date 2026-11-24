@@ -19,7 +19,7 @@ import { sendTo, serveKit } from './testing-routes.ts'
 
 // @hodi-app/plugin-sdk/testing: a plugin's server part run as Hodi runs it, for its own tests (node:test, Vitest…).
 // The plugin is built from its folder, signed with a key made for the test, and loaded in Hodi's own sandbox, with
-// Hodi's own routes in front of it. Around it, a small Hodi in memory: one household, the people a test adds, and
+// Hodi's own routes in front of it. Around it, a small Hodi in memory: one server, the people a test adds, and
 // fakes for what leaves the server (sites, e-mails, notifications, the AI), which the test sets and reads.
 
 // A site's answer for ctx.fetchText and ctx.http: its text, or the whole answer.
@@ -39,19 +39,19 @@ export interface TestPluginOptions {
   sites?: Record<string, TestSite>
   // The articles Hodi listed, for ctx.articles: by id.
   articles?: Record<string, PluginArticle & { html?: string }>
-  // The household's AI: the answer to each question of ctx.ai (none: the household has no AI).
+  // Hodi's AI: the answer to each question of ctx.ai (none: Hodi has no AI).
   ai?: (question: PluginQuestion) => string
   // Serveur › E-mail set up (true, the default) or not, for ctx.mail.available().
   mail?: boolean
   // Serveur › Général's public site, for ctx.serverSettings().publicHome (none: not given yet).
   publicHome?: string
-  // The household's name and language.
-  household?: { name?: string; language?: 'fr' | 'en' }
+  // The server's language.
+  language?: 'fr' | 'en'
   // Built unsigned: Hodi then refuses accounts, signIn, mail, notify and ai, as it would.
   unsigned?: boolean
 }
 
-// Someone of the test household.
+// Someone on the test server.
 export interface TestPerson {
   profileId: number
   // Their account; null for a teen's or a child's profile, which has none.
@@ -69,7 +69,7 @@ export interface TestAnswer {
 }
 
 export interface TestCall {
-  // Who calls: a person of the household (the household's admin when absent).
+  // Who calls: a person of the test (its admin when absent).
   as?: TestPerson
   query?: Record<string, string>
   body?: unknown
@@ -81,11 +81,9 @@ export interface TestCall {
 
 export interface TestPlugin {
   id: string
-  // The household every call is for.
-  householdId: number
-  // The household's admin, an adult with an account, made first.
+  // The server's admin, an adult with an account, made first.
   admin: TestPerson
-  // Someone else in the household. An adult gets an account (e-mail and password), a teen or a child does not.
+  // Someone else on the server. An adult gets an account (e-mail and password), a teen or a child does not.
   addPerson: (person: { name: string; kind?: ProfileKind; email?: string; password?: string }) => Promise<TestPerson>
   // An account with no profile yet, as one a sign-up page would make: Hodi gives it one as it signs in.
   addAccount: (account: { email: string; password?: string }) => Promise<number>
@@ -93,16 +91,15 @@ export interface TestPlugin {
   route: (route: string, call?: TestCall) => Promise<TestAnswer>
   publicRoute: (route: string, call?: Omit<TestCall, 'as'>) => Promise<TestAnswer>
   serverRoute: (route: string, call?: Omit<TestCall, 'as'>) => Promise<TestAnswer>
-  // A click on its AiButton, by an adult of the household.
+  // A click on its AiButton, by an adult.
   click: (action: string, input?: unknown, as?: TestPerson) => Promise<TestAnswer>
   // What Hodi would start by itself.
   runTask: (name: string) => Promise<unknown>
   readFeed: (key: string) => Promise<unknown>
   tellArticle: (article: PluginArticle) => Promise<unknown>
-  checkSignIn: (who: { accountId: number; householdId: number | null }) => Promise<unknown>
+  checkSignIn: (who: { accountId: number }) => Promise<unknown>
   profileDeleted: (profileId: number) => Promise<void>
   accountDeleted: (accountId: number) => Promise<void>
-  householdRemoved: (householdId: number) => Promise<void>
   exportData: (person: TestPerson) => Promise<unknown>
   // Its table of the weekly report, as it answers, for a week from Monday to Sunday (YYYY-MM-DD).
   weeklyReport: (week: { from: string; to: string }) => Promise<unknown>
@@ -169,24 +166,24 @@ const peopleOf = ({ db, accounts, profiles }: SmallHodi, now: () => number) => {
 
 // What Hodi would start by itself, and what it tells the plugin of people's deletions.
 const hooksOf = (hodi: SmallHodi, id: string, sandbox: PluginSandbox) => {
-  const { registry, householdId } = hodi
-  const hook = (name: string, payload: unknown, forHousehold: number | null = householdId) =>
-    sandbox.call('hook', name, payload, callContext(forHousehold))
+  const { registry } = hodi
+  // As in Hodi: onArticle and exportData run for a reader, the other hooks for none.
+  const hook = (name: string, payload: unknown, forReader = false) =>
+    sandbox.call('hook', name, payload, callContext(forReader))
   const erased = async (tell: () => void) => {
     tell()
     await registry.runErasures()
   }
   return {
-    runTask: (name: string) => sandbox.call('task', name, null, callContext(null)),
+    runTask: (name: string) => sandbox.call('task', name, null, callContext(false)),
     readFeed: (key: string) => registry.readFeed(id, key),
-    tellArticle: (article: PluginArticle) => hook('onArticle', article),
-    checkSignIn: (who: { accountId: number; householdId: number | null }) => hook('checkSignIn', who, who.householdId),
-    profileDeleted: (profileId: number) => erased(() => registry.profileDeleted(profileId, householdId)),
+    tellArticle: (article: PluginArticle) => hook('onArticle', article, true),
+    checkSignIn: (who: { accountId: number }) => hook('checkSignIn', who),
+    profileDeleted: (profileId: number) => erased(() => registry.profileDeleted(profileId)),
     accountDeleted: (accountId: number) => erased(() => registry.accountDeleted(accountId)),
-    householdRemoved: (removed: number) => erased(() => registry.householdRemoved(removed)),
     exportData: (person: TestPerson) =>
-      hook('exportData', { accountId: person.accountId, profileId: person.profileId, householdId }),
-    weeklyReport: (week: { from: string; to: string }) => hook('weeklyReport', week, null)
+      hook('exportData', { accountId: person.accountId, profileId: person.profileId }, true),
+    weeklyReport: (week: { from: string; to: string }) => hook('weeklyReport', week)
   }
 }
 
@@ -202,7 +199,7 @@ export const testPlugin = async (folder = '.', options: TestPluginOptions = {}):
     log: []
   }
   const hodi = await startSmallHodi({ dir, dataDir: path.join(work, 'data'), trustedKey }, options, recorded, now)
-  const { db, registry, store, householdId } = hodi
+  const { db, registry, store } = hodi
   const plugin = registry.get(id)
   if (!plugin?.sandbox) {
     await registry.stop()
@@ -218,7 +215,6 @@ export const testPlugin = async (folder = '.', options: TestPluginOptions = {}):
 
   return {
     id,
-    householdId,
     admin,
     addPerson,
     addAccount,

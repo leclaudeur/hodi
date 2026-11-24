@@ -70,32 +70,22 @@ export interface PluginRegistry {
   // A click on an active, signed plugin's AiButton: runs its aiActions[action] with a ticket for one ctx.ai question.
   // Refuses with 'plugin_unavailable' when the plugin cannot take it; otherwise what the action answered, or why it
   // failed, with what became of its question (null when it asked none).
-  runAiAction: (
-    id: string,
-    action: string,
-    input: unknown,
-    who: { householdId: number; profileId: number }
-  ) => Promise<AiActionResult>
+  runAiAction: (id: string, action: string, input: unknown, who: { profileId: number }) => Promise<AiActionResult>
   // The plugin's log lines written after the first `after` ones since Hodi started (the last 200 at most), and the
   // number to ask after next time.
   recentLog: (id: string, after: number) => { lines: string[]; next: number }
   // Asks every active plugin with permissions.signIn and a checkSignIn whether this sign-in may go on: null when all
   // let it, otherwise the first refusal in the plugins' order. A plugin that fails or runs out of time refuses too.
-  checkSignIn: (who: { accountId: number; householdId: number | null }) => Promise<SignInRefusal | null>
-  // A profile, an account or a household deleted: every plugin with the matching hook (onProfileDeleted,
-  // onAccountDeleted, onHouseholdRemoved) is told, now and again until it answered, so that it deletes what it kept.
-  profileDeleted: (profileId: number, householdId: number) => void
+  checkSignIn: (who: { accountId: number }) => Promise<SignInRefusal | null>
+  // A profile or an account deleted: every plugin with the matching hook (onProfileDeleted, onAccountDeleted) is told,
+  // now and again until it answered, so that it deletes what it kept.
+  profileDeleted: (profileId: number) => void
   accountDeleted: (accountId: number) => void
-  householdRemoved: (householdId: number) => void
   // Asks the plugins still waiting to forget someone, again. Hodi asks every minute and once started.
   runErasures: () => Promise<void>
   // « Télécharger une copie »: what each plugin with exportData keeps of this person, by plugin id. A plugin that
   // fails, or answers more than MAX_EXPORT_BYTES, is listed with an error in place of its data.
-  exportData: (who: {
-    accountId: number
-    profileId: number | null
-    householdId: number
-  }) => Promise<Record<string, unknown>>
+  exportData: (who: { accountId: number; profileId: number | null }) => Promise<Record<string, unknown>>
   // The weekly report's table of each plugin with a weeklyReport hook.
   weeklyReports: (week: { from: string; to: string }) => Promise<{ name: string; rows: ReportRow[] }[]>
   // A plugin's log line, as Hodi writes it.
@@ -269,14 +259,13 @@ export const loadPlugins = async (options: LoadPluginsOptions): Promise<PluginRe
       if (!plugin?.sandbox || !declared || !plugin.shape?.feeds.includes(key) || !enabled(id)) {
         throw new Error('plugin_unavailable')
       }
-      // For no household: one read serves every household that follows the feed.
-      return plugin.sandbox.call('feed', key, null, callContext(null))
+      // For no reader: one read serves everyone who follows the feed.
+      return plugin.sandbox.call('feed', key, null, callContext(false))
     },
     runAiAction: aiActionRunner(calls),
     checkSignIn: signInChecker(calls),
-    profileDeleted: (profileId, householdId) => erase('onProfileDeleted', { profileId, householdId }, householdId),
-    accountDeleted: accountId => erase('onAccountDeleted', { accountId }, null),
-    householdRemoved: householdId => erase('onHouseholdRemoved', { householdId }, householdId),
+    profileDeleted: profileId => erase('onProfileDeleted', { profileId }),
+    accountDeleted: accountId => erase('onAccountDeleted', { accountId }),
     runErasures,
     exportData: dataExporter(calls),
     weeklyReports: weeklyReporter(calls),

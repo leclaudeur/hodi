@@ -15,7 +15,6 @@ export const SUPPORT_URL = 'https://www.patreon.com/cw/LeClaudeur'
 export const MIN_PASSWORD_LENGTH = CONFIG.passwords.minLength
 // The setup code printed in the server's log, asked away from the server.
 export const SETUP_CODE_LENGTH = 8
-export const MAX_HOUSEHOLD_NAME_LENGTH = CONFIG.household.nameMaxLength
 
 export interface AiProviderInfo {
   id: string

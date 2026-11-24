@@ -70,26 +70,26 @@ const forgetAccount = (db: Database, accountId: number) => {
 
 // Everything goes with the last adult's account: the other accounts too. Their ids.
 const wipeServer = (db: Database, account: UserAccount, now: number): number[] => {
-  const householdId = DEFAULT_ACCOUNT_ID
+  const serverRow = DEFAULT_ACCOUNT_ID
   const keyOf = (table: 'profiles' | 'users' | 'accounts', id: number) => rowKey(db, table, id)
   const others = (
     db
       .prepare('SELECT DISTINCT user_id AS id FROM profiles WHERE account_id = ? AND user_id IS NOT NULL')
-      .all(householdId) as { id: number }[]
+      .all(serverRow) as { id: number }[]
   )
     .map(row => row.id)
     .filter(id => id !== account.id)
   const profiles = (
-    db.prepare('SELECT id, created_at AS createdAt FROM profiles WHERE account_id = ?').all(householdId) as {
+    db.prepare('SELECT id, created_at AS createdAt FROM profiles WHERE account_id = ?').all(serverRow) as {
       id: number
       createdAt: number
     }[]
   ).map(({ id, createdAt }) => ({ id, createdAt }))
   const accounts = [account.id, ...others].flatMap(id => keyOf('users', id) ?? [])
-  const household = keyOf('accounts', householdId)
-  if (household) recordForget({ kind: 'householdReset', ...household, profiles, accounts })
+  const server = keyOf('accounts', serverRow)
+  if (server) recordForget({ kind: 'householdReset', ...server, profiles, accounts })
   for (const id of others) db.prepare('DELETE FROM users WHERE id = ?').run(id)
-  resetHousehold(db, householdId, now)
+  resetHousehold(db, serverRow, now)
   return others
 }
 
@@ -102,7 +102,7 @@ const leaveServer = (db: Database, account: UserAccount, plan: DeletionPlan, now
   const own = plan.profiles[0]
   if (own) {
     const ownKey = rowKey(db, 'profiles', own.id)
-    if (ownKey) recordForget({ kind: 'profile', ...ownKey, householdId: DEFAULT_ACCOUNT_ID })
+    if (ownKey) recordForget({ kind: 'profile', ...ownKey })
     db.prepare('DELETE FROM profiles WHERE id = ?').run(own.id)
   }
   return children
@@ -112,7 +112,7 @@ const leaveServer = (db: Database, account: UserAccount, plan: DeletionPlan, now
 const forgetChildren = (db: Database, plan: DeletionPlan) =>
   plan.children.map(child => {
     const key = rowKey(db, 'profiles', child.id)
-    if (key) recordForget({ kind: 'profile', ...key, householdId: DEFAULT_ACCOUNT_ID })
+    if (key) recordForget({ kind: 'profile', ...key })
     db.prepare('DELETE FROM profiles WHERE id = ?').run(child.id)
     forgetAccount(db, child.accountId)
     return child.accountId

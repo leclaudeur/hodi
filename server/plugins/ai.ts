@@ -2,11 +2,11 @@ import type { PluginQuestion } from '../news/summarizer.ts'
 import { HOUR_MS } from '../../shared/time.ts'
 import { CONFIG } from '../fixed-config.ts'
 
-// ctx.ai: a plugin asks the household's AI, only in answer to a click on its AiButton (hodi:sdk). Hodi makes sure of it
+// ctx.ai: a plugin asks the server's AI, only in answer to a click on its AiButton (hodi:sdk). Hodi makes sure of it
 // in the main thread: the click reaches /api/plugins/<id>/ai/<action>, which runs the plugin's aiActions[action]
 // with a ticket for one question; a route, a task, a hook or a feed has no ticket, and a second question is refused.
-// The question counts against the household's 'plugin' caps (news-service.ts), against an hourly cap of its own per
-// plugin, and a household's admin can turn a plugin's AI off in Réglages › IA et crédits.
+// The question counts against the profile's 'plugin' caps (news-service.ts) and against an hourly cap of its own per
+// plugin and profile, and the server's admin can turn a plugin's AI off.
 
 export const MAX_PROMPT = CONFIG.pluginAi.promptMaxLength
 export const MAX_SYSTEM = CONFIG.pluginAi.systemMaxLength
@@ -16,10 +16,10 @@ export const DEFAULT_ANSWER_TOKENS = CONFIG.pluginAi.answerTokensDefault
 export const MAX_ANSWER = CONFIG.pluginAi.answerMaxLength
 // What a click may hand the plugin's action, as JSON.
 export const MAX_AI_INPUT_BYTES = CONFIG.pluginAi.inputMaxSize
-// One plugin's questions in a household, in an hour: a plugin cannot use the day's caps up at once.
+// One plugin's questions for one profile, in an hour: a plugin cannot use the day's caps up at once.
 export const PLUGIN_AI_PER_HOUR = CONFIG.pluginAi.perHour
 
-// Why a click gets no answer: Hodi has no AI, the household's admin turned the plugin's off, a cap is reached, the
+// Why a click gets no answer: Hodi has no AI, the server's admin turned the plugin's off, a cap is reached, the
 // AI declined the question, or the call failed.
 export type PluginAiStatus = 'unavailable' | 'off' | 'limited' | 'refused' | 'failed'
 
@@ -57,9 +57,9 @@ export interface PluginAskAnswer {
 
 export interface PluginAi {
   // Before the plugin runs: whether a click of this profile may ask anything now. null when it may.
-  check: (pluginId: string, householdId: number, profileId: number) => PluginAiStatus | null
+  check: (pluginId: string, profileId: number) => PluginAiStatus | null
   // The question, once: the answer's text, or a PluginAiError.
-  ask: (pluginId: string, householdId: number, profileId: number, question: PluginQuestion) => Promise<string>
+  ask: (pluginId: string, profileId: number, question: PluginQuestion) => Promise<string>
 }
 
 // No AI at all (tests that do not need it): every click is answered 'unavailable'.
@@ -76,35 +76,35 @@ export const pluginAi = ({
   ask,
   now = Date.now
 }: {
-  // Whether the household's admin turned this plugin's AI off.
-  isOff: (householdId: number, pluginId: string) => boolean
-  // Whether the household has AI and its 'plugin' caps leave this profile a call.
-  left: (householdId: number, profileId: number) => boolean
-  // One call to the household's AI, counted in its caps (NewsService.askForPlugin, in the household).
-  ask: (householdId: number, pluginId: string, profileId: number, question: PluginQuestion) => Promise<PluginAskAnswer>
+  // Whether the server's admin turned this plugin's AI off.
+  isOff: (pluginId: string) => boolean
+  // Whether Hodi has AI and its 'plugin' caps leave this profile a call.
+  left: (profileId: number) => boolean
+  // One call to the AI, counted in the profile's caps (NewsService.askForPlugin).
+  ask: (pluginId: string, profileId: number, question: PluginQuestion) => Promise<PluginAskAnswer>
   now?: () => number
 }): PluginAi => {
-  // The times of each plugin's questions in each household, in the last hour. Kept in the main thread: a restart of
+  // The times of each plugin's questions for each profile, in the last hour. Kept in the main thread: a restart of
   // the plugin's thread cannot reset them. They live in memory, so a restart of Hodi does: the daily caps, counted in
   // the database (ai_calls), are what really holds.
   const asked = new Map<string, number[]>()
   const recent = (key: string, at: number) => (asked.get(key) ?? []).filter(time => at - time < HOUR_MS)
 
-  const check = (pluginId: string, householdId: number, profileId: number): PluginAiStatus | null => {
-    if (isOff(householdId, pluginId)) return 'off'
-    if (recent(`${pluginId}|${householdId}`, now()).length >= PLUGIN_AI_PER_HOUR) return 'limited'
-    return left(householdId, profileId) ? null : 'limited'
+  const check = (pluginId: string, profileId: number): PluginAiStatus | null => {
+    if (isOff(pluginId)) return 'off'
+    if (recent(`${pluginId}|${profileId}`, now()).length >= PLUGIN_AI_PER_HOUR) return 'limited'
+    return left(profileId) ? null : 'limited'
   }
 
   return {
     check,
-    ask: async (pluginId, householdId, profileId, question) => {
-      const refused = check(pluginId, householdId, profileId)
+    ask: async (pluginId, profileId, question) => {
+      const refused = check(pluginId, profileId)
       if (refused) throw new PluginAiError(refused)
-      const key = `${pluginId}|${householdId}`
+      const key = `${pluginId}|${profileId}`
       const at = now()
       asked.set(key, [...recent(key, at), at])
-      const answer = await ask(householdId, pluginId, profileId, question)
+      const answer = await ask(pluginId, profileId, question)
       if (answer.status !== 'ok') throw new PluginAiError(answer.status)
       return (answer.text ?? '').slice(0, MAX_ANSWER)
     }

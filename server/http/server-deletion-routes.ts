@@ -1,6 +1,5 @@
 import type express from 'express'
 import { deletionPlan } from '../db/account-data.ts'
-import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { type UserAccount, cleanEmail } from '../db/user-account-store.ts'
 import type { ServerHelpers, ServerRoutesOptions } from './server-routes.ts'
 
@@ -11,13 +10,12 @@ import type { ServerHelpers, ServerRoutesOptions } from './server-routes.ts'
 // null when the routes have nothing to delete with (tests without accounts).
 export const accountRemover = ({ people, accounts, profiles, deletions, now }: ServerRoutesOptions) => {
   if (!people || !accounts || !profiles || !deletions) return null
-  const { data, onProfileDeleted, onAccountDeleted, onHouseholdGone } = deletions
+  const { data, onProfileDeleted, onAccountDeleted } = deletions
   return (account: UserAccount, blocks: boolean) => {
     if (blocks && account.email) accounts.blockEmail(account.email, now())
     const plan = deletionPlan(account, accounts, profiles)
     ;[...plan.profiles, ...plan.children].forEach(profile => onProfileDeleted(profile.id))
     data.deleteFromServer(account, plan, now()).forEach(onAccountDeleted)
-    if (plan.serverGoes) onHouseholdGone(DEFAULT_ACCOUNT_ID)
   }
 }
 
