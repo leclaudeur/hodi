@@ -1456,6 +1456,53 @@ const MIGRATIONS: string[] = [
   DELETE FROM server_settings WHERE key = 'householdLater';
   -- The setup no longer names it: a new server's says Hodi wherever it still shows.
   UPDATE accounts SET name = 'Hodi' WHERE id = 1 AND set_up_at IS NULL;
+  `,
+  // One catalogue for the whole server: each feed once, in the topics, order and with the adder of the first household
+  // that followed it. Who reads it stays each person's own (my_sources).
+  `
+  CREATE TABLE catalog_sources (
+    source_id TEXT PRIMARY KEY REFERENCES sources (id) ON DELETE CASCADE,
+    section TEXT NOT NULL,
+    section_id TEXT NOT NULL,
+    topics TEXT,
+    position INTEGER NOT NULL,
+    added_by INTEGER REFERENCES profiles (id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+  );
+  CREATE INDEX catalog_sources_added_by ON catalog_sources (added_by);
+  WITH firsts AS (
+    SELECT h.*, ROW_NUMBER() OVER (PARTITION BY source_id ORDER BY household_id, created_at, rowid) AS nth
+    FROM household_sources h
+  )
+  INSERT INTO catalog_sources (source_id, section, section_id, topics, position, added_by, created_at)
+    SELECT source_id, section, section_id, topics,
+      ROW_NUMBER() OVER (PARTITION BY section, section_id ORDER BY household_id, position, created_at, source_id) - 1,
+      added_by, created_at
+    FROM firsts WHERE nth = 1 ORDER BY household_id, created_at, source_id;
+  -- Only its own household saw a source another household added: the server's admin validates it before anyone else
+  -- sees it in the catalogue, as any source added from now on.
+  INSERT OR IGNORE INTO source_reviews (source_id, state, asked_at)
+    SELECT c.source_id, 'pending', c.created_at FROM catalog_sources c JOIN profiles p ON p.id = c.added_by
+    WHERE p.account_id != 1;
+  DROP TABLE household_sources;
+  CREATE TRIGGER catalog_sources_forget_readers AFTER DELETE ON catalog_sources BEGIN
+    DELETE FROM my_sources WHERE source_id = OLD.source_id;
+  END;
+  -- A profile that goes takes the sources it added with it, unless someone else reads them: those become the server
+  -- admin's, so nobody takes a source away from the others by leaving. The server admin's own, with no other profile of
+  -- theirs to take them, still go.
+  CREATE TRIGGER profiles_hand_over_catalog BEFORE DELETE ON profiles BEGIN
+    UPDATE catalog_sources SET added_by = (
+      SELECT p.id FROM profiles p JOIN users u ON u.id = p.user_id
+      WHERE u.server_admin = 1 AND p.id != OLD.id ORDER BY p.id LIMIT 1
+    )
+    WHERE added_by = OLD.id AND EXISTS (
+      SELECT 1 FROM my_sources m WHERE m.source_id = catalog_sources.source_id
+        AND m.owner != 'p' || OLD.id AND m.owner != 'a' || COALESCE(OLD.user_id, 0)
+    ) AND EXISTS (
+      SELECT 1 FROM profiles p JOIN users u ON u.id = p.user_id WHERE u.server_admin = 1 AND p.id != OLD.id
+    );
+  END;
   `
 ]
 

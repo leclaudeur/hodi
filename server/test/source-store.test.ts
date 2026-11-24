@@ -52,7 +52,7 @@ const count = (db: ReturnType<typeof openDatabase>) =>
 const addedBy = (db: ReturnType<typeof openDatabase>) =>
   Object.fromEntries(
     (
-      db.prepare('SELECT source_id AS id, added_by FROM household_sources').all() as {
+      db.prepare('SELECT source_id AS id, added_by FROM catalog_sources').all() as {
         id: string
         added_by: number | null
       }[]
@@ -174,12 +174,12 @@ describe('source store', () => {
     // As the catalogue was before: every source of the file, nobody's.
     db.prepare("DELETE FROM seeds WHERE name = 'base-sources'").run()
     store.add({ ...file().topics[1]!.sources[0]!, addedBy: 1 }, 'topic', ['tech'], NOW)
-    db.prepare("UPDATE household_sources SET added_by = NULL WHERE source_id = 'delta'").run()
+    db.prepare("UPDATE catalog_sources SET added_by = NULL WHERE source_id = 'delta'").run()
 
     store.load(file(), NOW + 1, 'fr')
     assert.deepEqual(addedBy(db), { alpha: null, delta: 1 })
     // Done once: a source made nobody's later stays so.
-    db.prepare("UPDATE household_sources SET added_by = NULL WHERE source_id = 'delta'").run()
+    db.prepare("UPDATE catalog_sources SET added_by = NULL WHERE source_id = 'delta'").run()
     store.load(file(), NOW + 2, 'fr')
     assert.equal(addedBy(db).delta, null)
   })
@@ -191,13 +191,13 @@ describe('source store', () => {
     // As the catalogue was before: every channel of the file, nobody's.
     db.prepare("DELETE FROM seeds WHERE name = 'own-channels'").run()
     store.add({ ...file().listen[0]!.sources[0]!, addedBy: 1 }, 'listen', ['actu'], NOW)
-    db.prepare("UPDATE household_sources SET added_by = NULL WHERE source_id = 'chaine'").run()
+    db.prepare("UPDATE catalog_sources SET added_by = NULL WHERE source_id = 'chaine'").run()
 
     store.load(file(), NOW + 1, 'fr')
     assert.deepEqual(addedBy(db), { alpha: null, chaine: 1 })
   })
 
-  it('serves the icon of a source added since the start, and of another household’s own source', async () => {
+  it('serves the icon of a source added since the start, and nothing for one outside the catalogue', async () => {
     const db = openDatabase(':memory:')
     const store = new SourceStore(db)
     store.load(file(), NOW, 'fr')
@@ -210,13 +210,11 @@ describe('source store', () => {
     store.add({ ...file().topics[1]!.sources[0]!, addedBy: 1 }, 'topic', ['tech'], NOW)
     assert.equal((await icons.get('delta'))?.contentType, 'image/png')
 
-    db.prepare("INSERT INTO accounts (id, name, created_at) VALUES (2, 'Martin', ?)").run(NOW)
-    inHousehold(2, () => store.load(file(), NOW, 'fr'))
-    inHousehold(2, () => store.add({ ...file(BETA).topics[0]!.sources[1]!, addedBy: 1 }, 'topic', ['world'], NOW))
-    // Beta has no site to take an icon from: known, so no icon rather than not found.
-    assert.equal(await inHousehold(2, () => icons.get('beta')), null)
-    // Each household reaches only the icons of the sources it follows.
+    // Unknown until it is in the catalogue.
     assert.equal(await icons.get('beta'), undefined)
+    store.add({ ...file(BETA).topics[0]!.sources[1]!, addedBy: 1 }, 'topic', ['world'], NOW)
+    // Beta has no site to take an icon from: known, so no icon rather than not found.
+    assert.equal(await icons.get('beta'), null)
   })
 
   it('lists a source in each of its topics, the first one first', () => {
@@ -338,12 +336,12 @@ describe('pause check', () => {
   })
 })
 
-// A plugin's second household follows its own sources; a feed both follow is one row, fetched once.
-describe("each household's sources", () => {
+// One catalogue for the whole server, whichever request reads or changes it.
+describe("the server's catalogue", () => {
   const ids = (catalog: ReturnType<SourceStore['catalog']>) =>
     catalog.topics.map(topic => [topic.id, topic.sources.map(source => source.id)])
 
-  it('keeps one list per household over shared feeds', () => {
+  it('is the same catalogue for every request, each feed once', () => {
     const db = openDatabase(':memory:')
     const store = new SourceStore(db)
     store.load(file(BETA), NOW, 'fr')
@@ -351,68 +349,32 @@ describe("each household's sources", () => {
       NOW,
       NOW
     )
-    const martinAdmin = Number(
-      db
-        .prepare(
-          "INSERT INTO profiles (account_id, name, color, position, created_at, role) VALUES (2, 'Marc', 'world', 0, ?, 'admin')"
-        )
-        .run(NOW).lastInsertRowid
+    const before = ids(store.catalog(file(BETA)))
+    assert.deepEqual(
+      inHousehold(2, () => ids(store.catalog(file(BETA)))),
+      before
     )
+    // Already in the catalogue: the same row, never a second one.
+    assert.equal(
+      inHousehold(2, () => store.has('alpha')),
+      true
+    )
+    assert.equal(store.findByUrl('https://alpha.example/feed')?.id, 'alpha')
+    inHousehold(2, () => store.remove('alpha'))
+    assert.equal(store.has('alpha'), false)
+    assert.equal(count(db), 0)
+  })
 
-    inHousehold(2, () => {
-      // A new household gets the base sources of its own language: none here in English.
-      store.seed(file(BETA), 'en', NOW)
-      assert.deepEqual(ids(store.catalog(file(BETA))), [
-        ['world', []],
-        ['tech', []]
-      ])
-      assert.equal(store.has('alpha'), false)
-      // The first household's feed, added here: the same id, its own topics.
-      const feed = store.feedOf('https://alpha.example/feed')!
-      assert.equal(feed.id, 'alpha')
-      assert.equal(store.findByUrl('https://alpha.example/feed'), null)
-      store.add({ ...feed, addedBy: martinAdmin }, 'topic', ['tech'], NOW)
-      assert.deepEqual(ids(store.catalog(file(BETA))), [
-        ['world', []],
-        ['tech', ['alpha']]
-      ])
-      assert.equal(store.count(), 1)
-    })
-    // The first household's list did not move.
+  it('seeds the catalogue once, in the language asked first', () => {
+    const db = openDatabase(':memory:')
+    const store = new SourceStore(db)
+    store.seed(file(BETA), 'fr', NOW)
+    inHousehold(2, () => store.seed(file(BETA), 'en', NOW))
     assert.deepEqual(ids(store.catalog(file(BETA))), [
       ['world', ['alpha']],
       ['tech', []]
     ])
-    assert.equal(count(db), 1)
-
-    // Removed by the Martins: the Duponts still follow it, so the feed stays.
-    assert.equal(
-      inHousehold(2, () => store.remove('alpha')),
-      true
-    )
-    assert.equal(count(db), 1)
-    assert.equal(store.has('alpha'), true)
-    // Removed by the Duponts too: nobody follows it, the feed goes.
-    assert.equal(store.remove('alpha'), true)
-    assert.equal(count(db), 0)
-  })
-
-  it('seeds a household once, in its language', () => {
-    const db = openDatabase(':memory:')
-    const store = new SourceStore(db)
-    db.prepare("INSERT INTO accounts (id, name, created_at, set_up_at) VALUES (2, 'Famille Martin', ?, ?)").run(
-      NOW,
-      NOW
-    )
-    inHousehold(2, () => {
-      store.seed(file(BETA), 'fr', NOW)
-      store.seed(file(BETA), 'fr', NOW)
-      assert.deepEqual(ids(store.catalog(file(BETA))), [
-        ['world', ['alpha']],
-        ['tech', []]
-      ])
-    })
-    assert.equal(store.count(), 0)
+    assert.equal(store.count(), 1)
   })
 })
 
@@ -427,7 +389,7 @@ describe('household_sources migration', () => {
               ('blog', 'topic', 'tech', '["tech","ai"]', 3, 'Blog', 'https://blog.example/feed', 'rss', 'fr', '[]', 1, '[]', 1, ?)`
     ).run(NOW, NOW)
 
-    migrate(db)
+    migrate(db, versionBefore('CREATE TABLE catalog_sources'))
 
     assert.deepEqual(
       db
@@ -449,5 +411,111 @@ describe('household_sources migration', () => {
         .map(row => row.added_by),
       [null, null]
     )
+  })
+})
+
+describe('catalog_sources migration', () => {
+  it("merges every household's sources into one catalogue, the first household's row first", () => {
+    const db = new DatabaseSync(':memory:')
+    db.exec('PRAGMA foreign_keys = ON')
+    migrate(db, versionBefore('CREATE TABLE catalog_sources'))
+    db.prepare("INSERT INTO accounts (id, name, created_at) VALUES (2, 'Martin', ?)").run(NOW)
+    db.prepare(
+      `INSERT INTO sources (id, section, section_id, topics, position, name, url, kind, lang, domains, reader, skip, added_by, created_at)
+       VALUES ('alpha', 'topic', 'world', NULL, 0, 'Alpha', 'https://alpha.example/feed', 'rss', 'fr', '[]', 1, '[]', NULL, ?),
+              ('blog', 'topic', 'tech', NULL, 0, 'Blog', 'https://blog.example/feed', 'rss', 'fr', '[]', 1, '[]', NULL, ?)`
+    ).run(NOW, NOW)
+    // Marc, of the second household, added the blog; the first household added its own feed at the same position.
+    db.prepare(
+      "INSERT INTO profiles (id, account_id, name, color, position, created_at) VALUES (20, 2, 'Marc', 'world', 0, ?)"
+    ).run(NOW)
+    db.prepare(
+      `INSERT INTO sources (id, section, section_id, topics, position, name, url, kind, lang, domains, reader, skip, added_by, created_at)
+       VALUES ('own', 'topic', 'tech', NULL, 0, 'Own', 'https://own.example/feed', 'rss', 'fr', '[]', 1, '[]', NULL, ?)`
+    ).run(NOW)
+    db.prepare(
+      `INSERT INTO household_sources (household_id, source_id, section, section_id, topics, position, added_by, created_at)
+       VALUES (2, 'alpha', 'topic', 'tech', '["tech"]', 4, NULL, ?),
+              (1, 'alpha', 'topic', 'world', '["world"]', 0, NULL, ?),
+              (1, 'own', 'topic', 'tech', '["tech"]', 3, NULL, ?),
+              (2, 'blog', 'topic', 'tech', '["tech","ai"]', 3, 20, ?)`
+    ).run(NOW, NOW, NOW, NOW)
+    db.prepare("INSERT INTO my_sources (owner, source_id, added_at) VALUES ('a9', 'blog', ?)").run(NOW)
+
+    migrate(db)
+
+    assert.deepEqual(
+      db
+        .prepare('SELECT source_id, section_id, topics, position FROM catalog_sources ORDER BY source_id')
+        .all()
+        .map(row => Object.values(row)),
+      [
+        ['alpha', 'world', '["world"]', 0],
+        ['blog', 'tech', '["tech","ai"]', 1],
+        ['own', 'tech', '["tech"]', 0]
+      ]
+    )
+    // Only the second household saw the blog: the server's admin validates it before anyone else does.
+    assert.deepEqual(
+      db
+        .prepare('SELECT source_id, state FROM source_reviews')
+        .all()
+        .map(row => Object.values(row)),
+      [['blog', 'pending']]
+    )
+    // Who reads a source stays theirs, and goes with it when it leaves the catalogue.
+    db.prepare("DELETE FROM catalog_sources WHERE source_id = 'blog'").run()
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM my_sources').get()!.n, 0)
+  })
+})
+
+describe('a source whose adder goes', () => {
+  // Anna is the server's admin (profile 1); Paul (profile 2) added a feed.
+  const start = () => {
+    const db = openDatabase(':memory:')
+    const store = new SourceStore(db)
+    store.load(file(), NOW, 'fr')
+    db.exec(`
+      INSERT INTO users (id, email, password_hash, password_changed_at, created_at, server_admin)
+        VALUES (1, 'anna@example.com', 'x', 0, 0, 1), (2, 'paul@example.com', 'x', 0, 0, 0), (3, 'lea@example.com', 'x', 0, 0, 0);
+      UPDATE profiles SET user_id = 1 WHERE id = 1;
+    `)
+    const profile = (user: number, name: string) =>
+      Number(
+        db
+          .prepare(
+            "INSERT INTO profiles (account_id, name, color, position, created_at, user_id) VALUES (1, ?, 'world', 1, ?, ?)"
+          )
+          .run(name, NOW, user).lastInsertRowid
+      )
+    const paul = profile(2, 'Paul')
+    const lea = profile(3, 'Léa')
+    store.add({ ...file().topics[1]!.sources[0]!, addedBy: paul }, 'topic', ['tech'], NOW)
+    const reads = (owner: string) =>
+      db.prepare('INSERT INTO my_sources (owner, source_id, added_at) VALUES (?, ?, ?)').run(owner, 'delta', NOW)
+    reads('a2')
+    return { db, store, paul, lea, reads }
+  }
+
+  it('stays for those who read it, the server admin’s from then on', () => {
+    const { db, store, paul, reads } = start()
+    reads('a3')
+    db.prepare('DELETE FROM profiles WHERE id = ?').run(paul)
+    assert.equal(store.adderOf('delta'), 1)
+    assert.equal(store.handOver('delta', 1), null)
+  })
+
+  it('goes with its adder when nobody else reads it', () => {
+    const { db, store, paul } = start()
+    db.prepare('DELETE FROM profiles WHERE id = ?').run(paul)
+    assert.equal(store.adderOf('delta'), undefined)
+  })
+
+  it('is handed over when its adder removes it from the catalogue while others read it', () => {
+    const { store, paul, reads } = start()
+    assert.equal(store.handOver('delta', paul), null)
+    reads('a3')
+    assert.equal(store.handOver('delta', paul), 1)
+    assert.equal(store.adderOf('delta'), 1)
   })
 })

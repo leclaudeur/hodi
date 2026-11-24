@@ -145,7 +145,7 @@ export class UserStore {
 
   // « Mes sources », on every device with the next state.
   get sources() {
-    return sourcesOf(this.#db, this.#owner, this.#profile, (now, fn) => this.#write(now, fn))
+    return sourcesOf(this.#db, this.#owner, (now, fn) => this.#write(now, fn))
   }
 
   getState(): UserState {

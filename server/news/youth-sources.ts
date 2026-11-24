@@ -1,5 +1,5 @@
 import type { Profile } from '../db/profile-store.ts'
-import { slug } from '../http/source-routes.ts'
+import { slug } from './source-name.ts'
 import type { SourceStore } from '../db/source-store.ts'
 import type { UserStore } from '../db/user-store.ts'
 import type { YouthStore } from '../db/youth-store.ts'

@@ -26,22 +26,20 @@ export const tidyOldSourceNames = (db: Database) => {
 }
 
 // Every topic source that is not a base one becomes the admin's own, as if added by them.
-export const ownOldBaseSources = (db: Database, household: number, admin: number, file: Catalog) => {
+export const ownOldBaseSources = (db: Database, admin: number, file: Catalog) => {
   // Base sources then were the French ones.
   const base = file.topics.flatMap(topic =>
     topic.sources.filter(source => source.base?.includes('fr')).map(source => source.id)
   )
   db.prepare(
-    `UPDATE household_sources SET added_by = ? WHERE household_id = ? AND added_by IS NULL
+    `UPDATE catalog_sources SET added_by = ? WHERE added_by IS NULL
          AND section = 'topic' AND source_id NOT IN (SELECT value FROM json_each(?))`
-  ).run(admin, household, JSON.stringify(base))
+  ).run(admin, JSON.stringify(base))
 }
 
 // Every channel becomes the admin's own.
-export const ownOldChannels = (db: Database, household: number, admin: number) => {
-  db.prepare(
-    "UPDATE household_sources SET added_by = ? WHERE household_id = ? AND added_by IS NULL AND section = 'listen'"
-  ).run(admin, household)
+export const ownOldChannels = (db: Database, admin: number) => {
+  db.prepare("UPDATE catalog_sources SET added_by = ? WHERE added_by IS NULL AND section = 'listen'").run(admin)
 }
 
 // A site sources.yml now says Hodi cannot read (reader: false, a bot wall) is no longer read on an install that

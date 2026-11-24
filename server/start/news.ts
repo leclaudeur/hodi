@@ -10,7 +10,7 @@ import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import { inHousehold } from '../db/household-scope.ts'
 import { pluginFeedReader } from '../plugins/feeds.ts'
 import type { PluginRegistry } from '../plugins/registry.ts'
-import { type Catalog, allSources, type loadCatalog } from '../news/catalog.ts'
+import type { Catalog, loadCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { createExtractPool } from '../news/extract-pool.ts'
 import { SourceIcons } from '../news/source-icons.ts'
@@ -39,32 +39,16 @@ interface NewsWiring {
   plugins: () => PluginRegistry | null
 }
 
-// A source every profile turned off is not fetched. A profile does not read what its household does not follow.
+// A source every profile turned off is not fetched.
 const hiddenByProfileOf =
-  ({ file, sources, household, profiles, usersOf }: NewsWiring) =>
-  () => {
-    const followed = new Map(
-      household
-        .ids()
-        .map(id => [id, inHousehold(id, () => new Set(allSources(sources.catalog(file)).map(source => source.id)))])
-    )
-    const every = [...new Set([...followed.values()].flatMap(ids => [...ids]))]
-    return household
+  ({ household, profiles, usersOf }: NewsWiring) =>
+  () =>
+    household
       .ids()
-      .flatMap(id =>
-        inHousehold(id, () =>
-          profiles
-            .list()
-            .map(profile => [
-              ...usersOf(profile.id).hiddenSources(),
-              ...every.filter(sourceId => !followed.get(id)!.has(sourceId))
-            ])
-        )
-      )
-  }
+      .flatMap(id => inHousehold(id, () => profiles.everyone().map(profile => usersOf(profile.id).hiddenSources())))
 
 export const createNews = (wiring: NewsWiring) => {
-  const { config, outside, catalog, file, sources, household, install, usersOf, serverSettings, store } = wiring
+  const { config, outside, catalog, install, usersOf, serverSettings, store } = wiring
   // The time zone chosen at setup, else the install's.
   const householdTimeZone = () => install.get().timeZone ?? config.timeZone
   const news = new NewsService(catalog, {
@@ -72,9 +56,6 @@ export const createNews = (wiring: NewsWiring) => {
     extractPage: createExtractPool().extract,
     // A plugin's feed, once the plugins are loaded.
     readPluginFeed: pluginFeedReader(wiring.plugins),
-    // Each household's own sources; the first one's is the catalogue just loaded.
-    catalogOf: () => sources.catalog(file),
-    households: () => household.ids(),
     // Each reader's AI is its account's own key: a profile with no account has none.
     aiOf: accountAiTools(wiring),
     timeZoneOf: householdTimeZone,

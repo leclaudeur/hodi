@@ -1,19 +1,17 @@
 import type { Catalog, Language, Source } from '../news/catalog.ts'
 import { type Database, transaction } from './database.ts'
-import { currentHouseholdId } from './household-scope.ts'
 import { readerCounts } from './my-sources.ts'
 import { SELECT_FOLLOWED, type SourceRow, toSource, topicsOf } from './source-rows.ts'
 import { followFileReaderOff, ownOldBaseSources, ownOldChannels, tidyOldSourceNames } from './source-upkeep.ts'
 
-// The sources' catalogue in the database, which holds them for good. sources.yml's base sources for the household's
-// language fill it once, when the household is set up (no "Vidéos" channel is a base one); its other sources are only offered ("Sources proposées") until a
+// The sources' catalogue in the database, which holds them for good. sources.yml's base sources for the server's
+// language fill it once, when the server is set up (no "Vidéos" channel is a base one); its other sources are only offered ("Sources proposées") until a
 // profile adds one. Then the admin removes any source and profiles add theirs, each in one topic or more (the
 // topics and their labels stay in the file). Each person reads their own list of them (my-sources.ts);
 // a new adult only starts with the base sources, and sources nobody reads are paused.
 //
-// A feed is one row of sources for the whole server, fetched once. Which household follows it, in which topics and
-// added by whom is that household's row of household_sources: every method here is for the household of the request
-// (household-scope.ts).
+// A feed is one row of sources for the whole server, fetched once; its topics, order and adder are its row of
+// catalog_sources. One catalogue for the whole server: who reads which source is each person's own (my-sources.ts).
 
 export class SourceStore {
   readonly #db: Database
@@ -24,11 +22,7 @@ export class SourceStore {
     this.#db = db
   }
 
-  get #household() {
-    return currentHouseholdId()
-  }
-
-  // The feed's own row, once for the server, and this household's.
+  // The feed's own row and its place in the catalogue.
   #follow(
     source: Source,
     {
@@ -70,14 +64,13 @@ export class SourceStore {
       )
     this.#db
       .prepare(
-        `INSERT OR IGNORE INTO household_sources (household_id, source_id, section, section_id, topics, position, added_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT OR IGNORE INTO catalog_sources (source_id, section, section_id, topics, position, added_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(this.#household, source.id, section, sectionId, topics, position, addedBy, now)
+      .run(source.id, section, sectionId, topics, position, addedBy, now)
   }
 
-  // A household that starts (the core's first one at its setup, or one a plugin makes): sources.yml's base sources in
-  // its language. Nothing when it already follows some.
+  // A server that starts: sources.yml's base sources in its language. Nothing when the catalogue already has some.
   seed(file: Catalog, language: Language, now: number) {
     transaction(this.#db, () => {
       if (this.count() > 0) return
@@ -106,10 +99,10 @@ export class SourceStore {
     this.#db.prepare('INSERT OR IGNORE INTO seeds (name, done_at) VALUES (?, ?)').run(name, now)
   }
 
-  // The first time: the file's base sources in the household's language.
+  // The first time: the file's base sources in the server's language.
   #seedCatalog(file: Catalog, now: number, language: Language, admin: number | null) {
     const isBase = (source: Source) => source.base?.includes(language) ?? false
-    // A household older than the catalogue keeps every source it already fetched articles from: they become
+    // A server older than the catalogue keeps every source it already fetched articles from: they become
     // its admin's own. A new one starts with the base sources only.
     const fetched = new Set(
       admin === null
@@ -147,14 +140,12 @@ export class SourceStore {
     this.#markSeeded('own-channels', now)
   }
 
-  // Fills the catalogue with the file's base sources in the household's language the first time, then gives it as
+  // Fills the catalogue with the file's base sources in the server's language the first time, then gives it as
   // the database has it. language: null before setup, which fills it once the language is known.
   load(file: Catalog, now: number, language: Language | null): Catalog {
     transaction(this.#db, () => {
       const admin = (
-        this.#db
-          .prepare("SELECT MIN(id) AS id FROM profiles WHERE role = 'admin' AND account_id = ?")
-          .get(this.#household) as { id: number | null }
+        this.#db.prepare("SELECT MIN(id) AS id FROM profiles WHERE role = 'admin'").get() as { id: number | null }
       ).id
       if (!this.#seeded('catalog') && language !== null) this.#seedCatalog(file, now, language, admin)
 
@@ -171,13 +162,13 @@ export class SourceStore {
       // Once, on a catalogue filled before base sources existed: every topic source that is not a base one
       // becomes the admin's own, as if added by them. The other profiles keep seeing them; new ones won't.
       if (this.#seeded('catalog') && !this.#seeded('base-sources')) {
-        if (admin !== null) ownOldBaseSources(this.#db, this.#household, admin, file)
+        if (admin !== null) ownOldBaseSources(this.#db, admin, file)
         this.#markSeeded('base-sources', now)
       }
 
       // Once, on a catalogue filled when every channel was a base one: they become the admin's own too.
       if (this.#seeded('catalog') && !this.#seeded('own-channels')) {
-        if (admin !== null) ownOldChannels(this.#db, this.#household, admin)
+        if (admin !== null) ownOldChannels(this.#db, admin)
         this.#markSeeded('own-channels', now)
       }
 
@@ -186,8 +177,8 @@ export class SourceStore {
     return this.catalog(file)
   }
 
-  // A source a profile added, at the end of its topics (or its section of "Vidéos"). A feed another household
-  // already follows is the same row, under its id: see feedOf.
+  // A source a profile added, at the end of its topics (or its section of "Vidéos"). A feed the server already
+  // has is the same row, under its id: see feedOf.
   add(source: Source & { addedBy: number }, section: SourceRow['section'], sectionIds: string[], now: number) {
     this.#follow(source, {
       section,
@@ -199,7 +190,7 @@ export class SourceStore {
     })
   }
 
-  // The feed at this address, followed by any household: a source added again by another one keeps its id.
+  // The feed at this address: a source added again keeps its id.
   feedOf(url: string): Source | null {
     const row = this.#db
       .prepare(
@@ -213,10 +204,8 @@ export class SourceStore {
   setTopics(id: string, topicIds: string[]) {
     return (
       this.#db
-        .prepare(
-          "UPDATE household_sources SET topics = ?, section_id = ? WHERE household_id = ? AND source_id = ? AND section = 'topic'"
-        )
-        .run(JSON.stringify(topicIds), topicIds[0]!, this.#household, id).changes > 0
+        .prepare("UPDATE catalog_sources SET topics = ?, section_id = ? WHERE source_id = ? AND section = 'topic'")
+        .run(JSON.stringify(topicIds), topicIds[0]!, id).changes > 0
     )
   }
 
@@ -228,27 +217,21 @@ export class SourceStore {
     })
   }
 
-  // Gone for the whole household, sources.yml's too: the file does not bring them back. The feed itself goes once
-  // no household follows it.
+  // Gone for the whole server, sources.yml's too: the file does not bring them back. The feed goes with it.
   remove(id: string) {
     return transaction(this.#db, () => {
-      const gone =
-        this.#db
-          .prepare('DELETE FROM household_sources WHERE household_id = ? AND source_id = ?')
-          .run(this.#household, id).changes > 0
+      const gone = this.#db.prepare('DELETE FROM catalog_sources WHERE source_id = ?').run(id).changes > 0
       this.#db
-        .prepare(
-          'DELETE FROM sources WHERE id = ? AND NOT EXISTS (SELECT 1 FROM household_sources WHERE source_id = ?)'
-        )
+        .prepare('DELETE FROM sources WHERE id = ? AND NOT EXISTS (SELECT 1 FROM catalog_sources WHERE source_id = ?)')
         .run(id, id)
       return gone
     })
   }
 
-  // Every source of the household, for its cap.
+  // Every source of the catalogue, for its cap.
   count() {
     return (
-      this.#db.prepare('SELECT COUNT(*) AS n FROM household_sources WHERE household_id = ?').get(this.#household) as {
+      this.#db.prepare('SELECT COUNT(*) AS n FROM catalog_sources').get() as {
         n: number
       }
     ).n
@@ -256,18 +239,39 @@ export class SourceStore {
 
   // A feed already followed, under any name.
   findByUrl(url: string) {
-    const row = this.#db.prepare(`${SELECT_FOLLOWED} AND s.url = ?`).get(this.#household, url) as unknown as
-      SourceRow | undefined
+    const row = this.#db.prepare(`${SELECT_FOLLOWED} WHERE s.url = ?`).get(url) as unknown as SourceRow | undefined
     return row ? toSource(row) : null
   }
 
-  // Followed by this household.
+  // A source its adder lets go while others read it: the server admin's from now on. Returns that profile, or null when
+  // nobody else reads it or the server's admin has no other profile, and the source can go.
+  handOver(id: string, from: number): number | null {
+    const heir = this.#db
+      .prepare(
+        `SELECT p.id FROM profiles p JOIN users u ON u.id = p.user_id
+         WHERE u.server_admin = 1 AND p.id != ? ORDER BY p.id LIMIT 1`
+      )
+      .get(from) as { id: number } | undefined
+    const own = this.#db.prepare('SELECT user_id FROM profiles WHERE id = ?').get(from) as
+      { user_id: number | null } | undefined
+    const others = this.#db
+      .prepare('SELECT 1 FROM my_sources WHERE source_id = ? AND owner != ? AND owner != ? LIMIT 1')
+      .get(id, `p${from}`, `a${own?.user_id ?? 0}`)
+    if (!heir || !others) return null
+    this.#db.prepare('UPDATE catalog_sources SET added_by = ? WHERE source_id = ?').run(heir.id, id)
+    return heir.id
+  }
+
+  // Who added a source of the catalogue now: null for sources.yml's, undefined when it is not in it.
+  adderOf(id: string): number | null | undefined {
+    const row = this.#db.prepare('SELECT added_by FROM catalog_sources WHERE source_id = ?').get(id) as
+      { added_by: number | null } | undefined
+    return row === undefined ? undefined : row.added_by
+  }
+
+  // In the catalogue.
   has(id: string) {
-    return (
-      this.#db
-        .prepare('SELECT 1 FROM household_sources WHERE household_id = ? AND source_id = ?')
-        .get(this.#household, id) !== undefined
-    )
+    return this.#db.prepare('SELECT 1 FROM catalog_sources WHERE source_id = ?').get(id) !== undefined
   }
 
   // An id no feed of the server has yet, for a new source.
@@ -280,7 +284,7 @@ export class SourceStore {
   catalog(file: Catalog): Catalog {
     const rows = this.#db
       .prepare(`${SELECT_FOLLOWED} ORDER BY h.added_by IS NOT NULL, h.position, h.created_at, s.id`)
-      .all(this.#household) as unknown as SourceRow[]
+      .all() as unknown as SourceRow[]
     const sources = new Map(rows.map(row => [row.id, toSource(row)]))
     return {
       topics: file.topics.map(topic => ({
@@ -296,15 +300,13 @@ export class SourceStore {
     }
   }
 
-  // The file's sources not yet in the household's catalogue ("Sources proposées"), with their topic.
+  // The file's sources not yet in the catalogue ("Sources proposées"), with their topic.
   proposals(file: Catalog) {
     const urls = new Set(
       (
-        this.#db
-          .prepare(
-            'SELECT s.url FROM household_sources h JOIN sources s ON s.id = h.source_id WHERE h.household_id = ?'
-          )
-          .all(this.#household) as { url: string }[]
+        this.#db.prepare('SELECT s.url FROM catalog_sources h JOIN sources s ON s.id = h.source_id').all() as {
+          url: string
+        }[]
       ).map(row => row.url)
     )
     return file.topics.flatMap(topic =>

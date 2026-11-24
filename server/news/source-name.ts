@@ -1,3 +1,4 @@
+import type { Source } from './catalog.ts'
 import { decodeEntities } from './text.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -149,4 +150,20 @@ export const nameFromSite = (current: string, link: string, siteName: string | n
   if (!ADDRESS.test(current) || !siteName) return null
   const name = tidySourceName(siteName, link)
   return ADDRESS.test(name) || name === current ? null : name
+}
+
+// A source's id part from its name: plain letters and digits, at most 40.
+export const slug = (name: string) =>
+  name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40) || 'source'
+
+// A source's home page, from its first domain or its feed's host.
+export const siteOf = (source: Source) => {
+  const host = source.domains[0] ?? new URL(source.url).hostname
+  return `https://${host}/`
 }

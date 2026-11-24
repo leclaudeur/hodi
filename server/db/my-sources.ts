@@ -18,15 +18,14 @@ export const removeMySource = (db: Database, owner: string, id: string) =>
 
 // The catalogue's sources this person does not read, which every list and alert leaves out. The app still reads
 // them as the preferences' hiddenSources.
-export const sourcesOff = (db: Database, owner: string, profileId: number) =>
+export const sourcesOff = (db: Database, owner: string) =>
   (
     db
       .prepare(
-        `SELECT h.source_id FROM household_sources h JOIN profiles p ON p.account_id = h.household_id
-         WHERE p.id = ? AND h.source_id NOT IN (SELECT source_id FROM my_sources WHERE owner = ?)
-         ORDER BY h.created_at, h.rowid`
+        `SELECT source_id FROM catalog_sources WHERE source_id NOT IN (SELECT source_id FROM my_sources WHERE owner = ?)
+         ORDER BY created_at, rowid`
       )
-      .all(profileId, owner) as { source_id: string }[]
+      .all(owner) as { source_id: string }[]
   ).map(row => row.source_id)
 
 // Their preferences as the app reads them, with the sources outside « Mes sources » as hiddenSources (none: no key,
@@ -35,14 +34,9 @@ export const withSourcesOff = (preferences: Record<string, unknown> | null, off:
   off.length === 0 ? preferences : { ...preferences, hiddenSources: off }
 
 // One person's list, each change through write so their devices hear of it.
-export const sourcesOf = (
-  db: Database,
-  owner: string,
-  profileId: number,
-  write: (now: number, fn: () => void) => number
-) => ({
+export const sourcesOf = (db: Database, owner: string, write: (now: number, fn: () => void) => number) => ({
   mine: () => mySources(db, owner),
-  off: () => sourcesOff(db, owner, profileId),
+  off: () => sourcesOff(db, owner),
   // Whether they have a list yet: a new person starts with the base sources.
   any: () => db.prepare('SELECT 1 FROM my_sources WHERE owner = ? LIMIT 1').get(owner) !== undefined,
   add: (ids: string[], now: number) => write(now, () => void addMySources(db, owner, ids, now)),

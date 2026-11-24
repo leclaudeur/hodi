@@ -1,5 +1,5 @@
 import type { AnswerSource, SuggestedSite } from './summarizer.ts'
-import type { Catalog, Language, Source } from './catalog.ts'
+import type { Language, Source } from './catalog.ts'
 import type { ExtractedArticle } from './extract.ts'
 import type { FeedEntry, FeedItem } from './feed-parser.ts'
 import type { ExtractPage } from './extract-pool.ts'
@@ -153,15 +153,11 @@ export interface NewsServiceOptions {
   extractPage?: ExtractPage
   // A plugin's feed (plugins/feeds.ts): its articles, asked of the plugin in place of fetching an address.
   readPluginFeed?: (source: Source) => Promise<FeedEntry[]>
-  // Each household's own sources, read the first time a request of that household asks (the first household's is
-  // the catalogue given to the constructor), and every household, for the background pass.
-  catalogOf?: () => Catalog
-  households?: () => number[]
   // Each reader's own AI, its account's key: none for a profile without one. Without it, the tools below are everyone's.
   aiOf?: (profileId: number) => AiTools | null
-  // Each household's time zone, read as the catalogue is; setTimeZone changes the request's.
+  // The server's time zone, read at start; setTimeZone changes it.
   timeZoneOf?: () => string
-  // A reader's own time zone (its account's), or null to use the household's.
+  // A reader's own time zone (its account's), or null to use the server's.
   readerTimeZoneOf?: (profileId: number) => string | null
   // Absent when no API key is configured: the app then offers no summaries.
   summarize?: Summarize

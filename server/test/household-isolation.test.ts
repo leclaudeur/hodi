@@ -231,30 +231,20 @@ describe('two households on one server', () => {
   })
 })
 
-describe("each household's catalogue in the news service", () => {
+describe("the server's one catalogue in the news service", () => {
   const catalogOf = (sourceId: string) =>
     parseCatalog(
       `topics:\n  - id: monde\n    label: Monde\n    sources:\n      - id: ${sourceId}\n        name: ${sourceId}\n        url: https://${sourceId}.example/feed\n        domains: [${sourceId}.example]\nlisten: []\n`
     )
   const sourceIds = (news: NewsService) => news.catalog.topics.flatMap(topic => topic.sources.map(source => source.id))
 
-  it('lists, adds and removes in the household of the request only', () => {
-    const news = new NewsService(catalogOf('dupont'), {
-      fetchText: fakeFetch({}).fetchText,
-      catalogOf: () => catalogOf('martin'),
-      households: () => [1, 2],
-      log: () => {}
-    })
-    assert.deepEqual(sourceIds(news), ['dupont'])
+  it('lists, adds and removes the same catalogue whichever request asks', () => {
+    const news = new NewsService(catalogOf('dupont'), { fetchText: fakeFetch({}).fetchText, log: () => {} })
     assert.deepEqual(
       inHousehold(2, () => sourceIds(news)),
-      ['martin']
+      ['dupont']
     )
-    inHousehold(2, () => news.removeSource('martin'))
-    assert.deepEqual(
-      inHousehold(2, () => sourceIds(news)),
-      []
-    )
-    assert.deepEqual(sourceIds(news), ['dupont'])
+    inHousehold(2, () => news.removeSource('dupont'))
+    assert.deepEqual(sourceIds(news), [])
   })
 })

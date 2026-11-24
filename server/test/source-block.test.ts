@@ -139,7 +139,7 @@ describe('« Bloquer » a source', () => {
     assert.equal(count(db, 'SELECT COUNT(*) AS n FROM shares'), 0)
     assert.equal(count(db, 'SELECT COUNT(*) AS n FROM source_requests'), 0)
     assert.equal(count(db, "SELECT COUNT(*) AS n FROM my_sources WHERE source_id LIKE '%evil'"), 0)
-    assert.equal(count(db, "SELECT COUNT(*) AS n FROM household_sources WHERE source_id LIKE '%evil'"), 0)
+    assert.equal(count(db, "SELECT COUNT(*) AS n FROM catalog_sources WHERE source_id LIKE '%evil'"), 0)
     assert.equal(count(db, "SELECT COUNT(*) AS n FROM articles WHERE source_id = 'p3-good'"), 1)
     // Sam added the one blocked, and is blocked; whoever added another feed of the site is not.
     assert.deepEqual(

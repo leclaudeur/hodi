@@ -63,6 +63,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **One catalogue of sources for the server.** Every source added is in the one catalogue of the server, and each
+  person still picks the ones they read in My sources. A server with several groups of people merges their lists once,
+  each feed keeping the topics it had first; a source only one group saw waits in Server › To do. A source someone
+  added stays for the others who read it when that person removes it or leaves: it becomes the server admin's.
 - **Each device shows its accounts' profiles.** Who's reading? and every profile list show the profiles of the
   accounts signed in on the device and their teens' and children's, no longer every profile on the server. Send to…
   still finds anyone by their @username. An adult's profile goes only with its account (My account, or Server ›

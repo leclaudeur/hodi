@@ -152,6 +152,8 @@ const mountSources = (api: express.Router, wiring: Wiring) => {
         if (reviews?.validating()) askReview(wiring, sourceId)
         else toOthers(profileId)
       },
+      // Out of its adder's « Mes sources », while the others who read it keep it.
+      onLeft: (sourceId, profileId) => users?.(profileId).sources.remove(sourceId, now()),
       ...(reviews
         ? {
             unlisted: () => reviews.unlisted(),
