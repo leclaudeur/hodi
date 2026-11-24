@@ -1412,6 +1412,18 @@ const MIGRATIONS: string[] = [
   CREATE TRIGGER users_forget_share_reports AFTER DELETE ON users BEGIN
     DELETE FROM share_reports WHERE reporter = 'a' || OLD.id;
   END;
+  `,
+  // The accounts a plugin made (ctx.accounts.create) are the ones it may suspend, resume and remove. For a household
+  // a plugin made before, that is its admin, who signed up through the plugin, suspended while the household is: its
+  // other members came in by Hodi's own invitations and stay their own.
+  `
+  ALTER TABLE users ADD COLUMN made_by_plugin TEXT;
+  ALTER TABLE users ADD COLUMN suspended_at INTEGER;
+  UPDATE users SET (made_by_plugin, suspended_at) = (
+    SELECT accounts.made_by_plugin, accounts.suspended_at FROM profiles JOIN accounts ON accounts.id = profiles.account_id
+    WHERE profiles.user_id = users.id AND profiles.role = 'admin' AND accounts.made_by_plugin IS NOT NULL
+    ORDER BY profiles.id LIMIT 1
+  ) WHERE server_admin = 0 AND email IS NOT NULL;
   `
 ]
 

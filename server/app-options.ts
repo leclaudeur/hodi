@@ -37,6 +37,7 @@ import type { ServerNotifier } from './notices/server-notifier.ts'
 import type { ServerNoticeStore } from './db/server-notice-store.ts'
 import type { PluginAi } from './plugins/ai.ts'
 import type { HouseholdHooks } from './plugins/households.ts'
+import type { AccountHooks } from './plugins/accounts.ts'
 import type { PluginInstaller } from './plugins/installer.ts'
 import type { PluginCatalog } from './plugins/catalog.ts'
 import type { PluginRegistry } from './plugins/registry.ts'
@@ -77,6 +78,8 @@ export interface AppOptions {
   plugins?: PluginRegistry
   // What the households a plugin makes need from the app; filled in here.
   householdHooks?: HouseholdHooks
+  // Filled in once the app is made: removing an account a plugin made (ctx.accounts.remove).
+  accountHooks?: AccountHooks
   // Installs and removes them, then restarts Hodi; absent in tests that do not install anything.
   pluginInstaller?: { installer: PluginInstaller; restart: () => void; catalog?: PluginCatalog }
   // The household's AI for the plugins' AiButtons (plugins/ai.ts), shared with the registry's ctx.ai.

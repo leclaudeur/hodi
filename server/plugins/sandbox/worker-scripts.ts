@@ -156,7 +156,11 @@ export const ctx = Object.freeze({
             JSON.parse(await bridge.host('accounts.checkPassword', json([email, password]))),
           findByLogin: async login => JSON.parse(await bridge.host('accounts.findByLogin', json([login]))),
           addLogin: async (accountId, login) =>
-            JSON.parse(await bridge.host('accounts.addLogin', json([accountId, login])))
+            JSON.parse(await bridge.host('accounts.addLogin', json([accountId, login]))),
+          list: async () => JSON.parse(await bridge.host('accounts.list', json([]))),
+          suspend: async id => { JSON.parse(await bridge.host('accounts.suspend', json([id]))) },
+          resume: async id => { JSON.parse(await bridge.host('accounts.resume', json([id]))) },
+          remove: async id => { JSON.parse(await bridge.host('accounts.remove', json([id]))) }
         })
       }
     : {})

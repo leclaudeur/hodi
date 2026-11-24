@@ -13,7 +13,8 @@ import { pluginRoutes, pluginServerRoutes } from '../http/plugin-routes.ts'
 import { requireServerAdmin } from '../http/profile-routes.ts'
 import { accountAsking } from '../http/proof.ts'
 import { serverNoticeRoutes } from '../http/server-notice-routes.ts'
-import { serverRoutes } from '../http/server-routes.ts'
+import { type ServerRoutesOptions, serverRoutes } from '../http/server-routes.ts'
+import { accountRemover } from '../http/server-deletion-routes.ts'
 import { allSources } from '../news/catalog.ts'
 import type { Wiring } from './wiring.ts'
 
@@ -183,36 +184,36 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
   mountReportDecisions(api, wiring)
   mountShareDecisions(api, wiring)
   if (!serverStats) return
-  api.use(
-    '/server',
-    requireServerAdmin,
-    serverRoutes({
-      stats: serverStats,
-      presence: wiring.presence,
-      profiles,
-      household,
-      people: options.serverPeople,
-      codes,
-      settings: options.serverSettings,
-      backups: options.serverBackups,
-      accounts,
-      onHouseholdSetUp: language => {
-        wiring.householdOptions?.onSetUp?.(language)
-        options.onHouseholdChange()
-      },
-      checkProof: wiring.checkProof,
-      ...(inbox
-        ? {
-            codeRequests: {
-              askedAt: (id: number) => freshRequest(inbox.waiting(codeRequestKey(id)), now()),
-              handled: (id: number) => inbox.handle(codeRequestKey(id), now())
-            }
+  const routeOptions: ServerRoutesOptions = {
+    stats: serverStats,
+    presence: wiring.presence,
+    profiles,
+    household,
+    people: options.serverPeople,
+    codes,
+    settings: options.serverSettings,
+    backups: options.serverBackups,
+    accounts,
+    onHouseholdSetUp: language => {
+      wiring.householdOptions?.onSetUp?.(language)
+      options.onHouseholdChange()
+    },
+    checkProof: wiring.checkProof,
+    ...(inbox
+      ? {
+          codeRequests: {
+            askedAt: (id: number) => freshRequest(inbox.waiting(codeRequestKey(id)), now()),
+            handled: (id: number) => inbox.handle(codeRequestKey(id), now())
           }
-        : {}),
-      ...(twoFactor ? { twoFactorOn: (id: number) => twoFactor.isOn(id) } : {}),
-      ...deletionsOf(wiring),
-      ...blocksOf(wiring),
-      now
-    })
-  )
+        }
+      : {}),
+    ...(twoFactor ? { twoFactorOn: (id: number) => twoFactor.isOn(id) } : {}),
+    ...deletionsOf(wiring),
+    ...blocksOf(wiring),
+    now
+  }
+  // ctx.accounts.remove: an account a plugin made goes as « Supprimer » in Serveur › Comptes takes it.
+  const removeAccount = accountRemover(routeOptions)
+  if (options.accountHooks && removeAccount) options.accountHooks.remove = account => removeAccount(account, false)
+  api.use('/server', requireServerAdmin, serverRoutes(routeOptions))
 }

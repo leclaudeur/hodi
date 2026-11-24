@@ -59,7 +59,8 @@ export const accountSession = (
       now()
     )
     const account = found ? accounts.get(found.userId) : null
-    if (!found || !account || !madeBefore(account.createdAt, found.issuedAt)) return null
+    // A suspended account is out on every request, not only at its next sign-in.
+    if (!found || !account || account.suspendedBy || !madeBefore(account.createdAt, found.issuedAt)) return null
     if (found.deviceId === null) return { account, device: null, token }
     // Signed out from Appareils: the row is gone, the cookie with it. A row made after the cookie has its id again
     // (SQLite gives a deleted row's id to the next one): it is another device's.

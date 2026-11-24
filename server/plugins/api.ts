@@ -69,7 +69,7 @@ export interface PluginContext {
     appUrl: () => Promise<string | null>
     send: (message: PluginMailMessage) => Promise<void>
   }
-  // With permissions.households: the server's households. create() sets one up with its admin: an existing account
+  // Deprecated: households are going away, use ctx.accounts. With permissions.households: the server's households. create() sets one up with its admin: an existing account
   // in no household yet (never the server's admin) that joins at once, or a first name whose profile waits for the code it answers (24 h,
   // once, through « J'ai un code »). suspend(), resume() and remove() only take a household this plugin made, else
   // refuse with 'not_allowed'; remove() deletes it and all it holds, its people's accounts stay.
@@ -125,15 +125,28 @@ export interface PluginContext {
   // With permissions.accounts: people's accounts, never with anything that could sign them in. create() makes an
   // account (null when the address has one already): with a password, a login of the plugin's (its own name for the
   // person, such as google:<id>, 200 characters at most), or both; with a login alone, the account has no password
-  // (loginOnly) and its person comes in through the plugin. checkPassword() answers the account when the password is
+  // (loginOnly) and its person comes in through the plugin; name, the person's first name as Mon compte shows it
+  // (refused with 'invalid_account' when empty or too long). checkPassword() answers the account when the password is
   // right, null otherwise; it counts with the failed sign-ins of the address the call came from, and refuses with
   // 'throttled' past their limit. findByLogin() answers the account this plugin's login leads to. addLogin() gives
   // one to an account this same call made, checked or found (never the server's admin): false when the login leads
   // to another account. Each plugin only reads its own logins, and they go when the plugin is removed.
+  // list() answers the accounts this plugin made, newest first. suspend(), resume() and remove() only take one of
+  // them, else refuse with 'not_allowed': a suspended account is signed out everywhere and signs in nowhere (the
+  // page shows the plugin's signIn.suspended text) until resumed; remove() deletes it as Serveur › Comptes does.
   accounts: {
+    list: () => Promise<PluginAccount[]>
+    suspend: (id: number) => Promise<void>
+    resume: (id: number) => Promise<void>
+    remove: (id: number) => Promise<void>
     get: (id: number) => Promise<PluginAccount | null>
     findByEmail: (email: string) => Promise<PluginAccount | null>
-    create: (account: { email: string; password?: string; login?: string }) => Promise<PluginAccount | null>
+    create: (account: {
+      email: string
+      password?: string
+      login?: string
+      name?: string
+    }) => Promise<PluginAccount | null>
     checkPassword: (email: string, password: string) => Promise<PluginAccount | null>
     findByLogin: (login: string) => Promise<PluginAccount | null>
     addLogin: (accountId: number, login: string) => Promise<boolean>
@@ -159,9 +172,16 @@ export interface PluginHousehold {
 export interface PluginAccount {
   id: number
   email: string
+  // Only for an account this plugin made (else null): its first name as set in Mon compte, and when it was made.
+  name: string | null
+  createdAt: number | null
   // true for an account made with a login alone: no password of its own until its person sets one.
   loginOnly: boolean
   serverAdmin: boolean
+  // Made by this plugin: the only accounts it may suspend, resume or remove.
+  mine: boolean
+  // Suspended by the plugin that made it: signed out and refused at every sign-in.
+  suspended: boolean
 }
 
 // Who asks, as Hodi checked it. No cookie, header or session reaches the plugin.
