@@ -2,6 +2,7 @@ import express from 'express'
 import { MAX_PHOTO_BYTES, PHOTO_TYPES, type PhotoType, type ProfileStore } from '../db/profile-store.ts'
 import { pictureMaker } from '../news/picture-maker.ts'
 import { CONFIG } from '../fixed-config.ts'
+import { profileIdOf } from './request-locals.ts'
 
 // The app makes a photo 256 pixels square; a header that declares far more is refused, since a few kilobytes could
 // unpack into gigabytes in every browser that shows it.
@@ -19,10 +20,14 @@ export const photoFormatOf = async (data: Buffer, sharp = pictureMaker): Promise
   return format === 'webp' ? 'image/webp' : format === 'jpeg' ? 'image/jpeg' : format === 'png' ? 'image/png' : null
 }
 
-// A profile's photo: changed by whoever may change the profile, read by the household.
+// A profile's photo: changed by whoever may change the profile.
 export const mountPhotoRoutes = (
   router: express.Router,
-  { profiles, now }: { profiles: ProfileStore; now: () => number },
+  {
+    profiles,
+    now,
+    knows
+  }: { profiles: ProfileStore; now: () => number; knows?: (profileId: number, otherId: number) => boolean },
   {
     idOf,
     mayChange
@@ -71,9 +76,15 @@ export const mountPhotoRoutes = (
     response.json(profiles.setPhoto(id, null, now()))
   })
 
-  // ?v=<photoVersion>: a new photo has a new address, so each one is kept by the browser for good.
+  // ?v=<photoVersion>: a new photo has a new address, so each one is kept by the browser for good. Read by the device's
+  // accounts for their profiles, and for someone else's by those it shared with or is family of: ids follow each other,
+  // so anyone else would go through every adult's photo.
   router.get('/:id/photo', (request, response) => {
-    const id = idOf(request)
+    const asked = Number(request.params.id)
+    const target = Number.isInteger(asked) ? profiles.find(asked) : null
+    const me = profileIdOf(response)
+    const known = target !== null && me !== null && (knows?.(me, target.id) ?? false)
+    const id = target && (idOf(request) !== null || known) ? target.id : null
     const photo = id === null ? null : profiles.photo(id)
     if (!photo) {
       response.status(404).json({ error: 'not_found' })

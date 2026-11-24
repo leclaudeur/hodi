@@ -136,10 +136,8 @@ describe('a parent whose profile was deleted', () => {
       password: 'le mot de passe de Mia'
     })
     const mia = (await made.json()) as Child
-    const removed = await household.call(`/profiles/${household.samId}`, household.admin, 'DELETE', {
-      password: ADMIN_PASSWORD
-    })
-    assert.equal(removed.status, 204)
+    // Only its account takes an adult's profile away now; one deleted before that is gone all the same.
+    assert.ok(household.profiles.delete(household.samId))
     const lea = household.accounts.ofProfile(household.leaId)!
     const asked = await household.call(`/account/children/${lea.id}/parents`, household.admin, 'POST', {
       handle: 'sam'

@@ -27,7 +27,7 @@ export const mountAccountCodeRoute = (
   // asked for one, so the admin cannot take an account over on their own. One's own password changes in My account.
   router.post('/accounts/:id/code', async (request, response) => {
     const account = people.accounts().find(entry => entry.id === Number(request.params.id))
-    const profile = account?.profile ? profiles.get(account.profile.id) : null
+    const profile = account?.profile ? profiles.find(account.profile.id) : null
     if (!account || !profile || isYoung(profile)) {
       response.status(404).json({ error: 'not_found' })
       return

@@ -69,7 +69,7 @@ const blocksOf = ({ options }: Wiring) => {
           serverInbox?.notifier.handled?.(sourceReviewKey(id))
           serverInbox?.notifier.handled?.(sourceReportKey(id))
         }
-        profiles?.list().forEach(profile => users?.(profile.id).sources.catalogueChanged(now()))
+        profiles?.everyone().forEach(profile => users?.(profile.id).sources.catalogueChanged(now()))
       }
     }
   }
@@ -112,7 +112,7 @@ const mountReviews = (api: express.Router, { options }: Wiring) => {
       reviews: sources.reviews,
       news,
       sources: sources.store,
-      onAccepted: () => profiles?.list().forEach(profile => users?.(profile.id).sources.catalogueChanged(now())),
+      onAccepted: () => profiles?.everyone().forEach(profile => users?.(profile.id).sources.catalogueChanged(now())),
       onDecided: sourceId => serverInbox?.notifier.handled?.(sourceReviewKey(sourceId)),
       now
     })
@@ -130,7 +130,7 @@ const mountReportDecisions = (api: express.Router, { options }: Wiring) => {
       reports: sources.reports,
       reviews: sources.reviews,
       news,
-      onUnlisted: () => profiles?.list().forEach(profile => users?.(profile.id).sources.catalogueChanged(now())),
+      onUnlisted: () => profiles?.everyone().forEach(profile => users?.(profile.id).sources.catalogueChanged(now())),
       onDecided: sourceId => serverInbox?.notifier.handled?.(sourceReportKey(sourceId)),
       now
     })

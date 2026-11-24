@@ -41,7 +41,7 @@ export const deletionPlan = (
       heir: null,
       children: onlyChildren(account, accounts, profiles, householdId)
     }
-  const all = profiles.list()
+  const all = profiles.everyone()
   const others = all.filter(profile => profile.kind === 'adult' && profile.hasAccount && profile.id !== own)
   const householdGoes = others.length === 0
   const going = householdGoes ? all : all.filter(profile => profile.id === own)
@@ -58,7 +58,7 @@ export const deletionPlan = (
 const onlyChildren = (account: UserAccount, accounts: UserAccountStore, profiles: ProfileStore, householdId: number) =>
   accounts.young.invitations.onlyChildrenOf(account.id).flatMap(accountId => {
     const id = accounts.profileOf(accountId, householdId)
-    const profile = id === null ? null : profiles.get(id)
+    const profile = id === null ? null : profiles.find(id)
     return profile ? [{ accountId, id: profile.id, name: profile.name }] : []
   })
 

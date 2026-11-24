@@ -1,5 +1,4 @@
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
-import type { AdminProof } from './plugins.ts'
 import { CONFIG } from '../lib/config.ts'
 
 // Profiles. Mirrors server/db/profile-store.ts.
@@ -94,7 +93,7 @@ export const updateProfile = (id: number, changes: ProfileChanges) =>
   sendJson<Profile>('PATCH', `/profiles/${id}`, changes)
 
 // An adult's profile with its account goes with the proof of the admin deleting it.
-export const deleteProfile = (id: number, proof?: AdminProof) => sendJson<null>('DELETE', `/profiles/${id}`, proof)
+export const deleteProfile = (id: number) => sendJson<null>('DELETE', `/profiles/${id}`)
 
 // This device now reads as that profile, with the password it asks for, if any.
 // What « Qui lit ? » typed: a private profile's password (trust: « Ne plus demander sur cet appareil »), or the

@@ -7,7 +7,6 @@ import { type ReactNode, useState } from 'react'
 import type { ShareEntry, TopicItem } from '../api.ts'
 import { dayOfItem, shortAgo } from '../lib/format.ts'
 import { usePreferences } from '../lib/preferences.ts'
-import { useProfiles } from '../lib/profiles.ts'
 import { isDismissed, isReadAndClosed, useReadState } from '../lib/read-state.ts'
 import { useShares } from '../lib/shares.ts'
 import { FRONT_PAGE_HREF } from '../lib/use-hash-route.ts'
@@ -112,10 +111,9 @@ const SharesScreen = ({ layout, activeId = null, onUnauthorized }: SharesScreenP
   useReadState()
   const entries =
     all?.filter(entry => !isDismissed(entry.item.id) && !(hideRead && isReadAndClosed(entry.item.id))) ?? null
-  const household = useProfiles({ onError: () => {} })
   const [sender, setSender] = useState<number | null>(null)
-  const profileOf = (id: number) => household?.profiles.find(profile => profile.id === id)
-  const senders = [...new Set((entries ?? []).map(entry => entry.from))].filter(id => profileOf(id))
+  const profileOf = (id: number) => entries?.find(entry => entry.from === id)?.person
+  const senders = [...new Set((entries ?? []).map(entry => entry.from))]
   const chosen = sender !== null && senders.includes(sender) ? sender : null
   const shown = (entries ?? []).filter(entry => chosen === null || entry.from === chosen)
   const entryOf = new Map(shown.map(entry => [entry.item.id, entry]))
@@ -156,7 +154,7 @@ const SharesScreen = ({ layout, activeId = null, onUnauthorized }: SharesScreenP
     />
   )
   const content = (
-    <SharesContent error={error} loading={entries === null || !household} empty={shown.length === 0} layout={layout}>
+    <SharesContent error={error} loading={entries === null} empty={shown.length === 0} layout={layout}>
       {layout === 'phone' && filters}
       <ShareReactions layout={layout} from={chosen} />
       <ArticleList groups={groups} layout={layout} activeId={activeId} metaOf={metaOf} />

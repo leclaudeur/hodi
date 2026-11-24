@@ -278,7 +278,8 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     assert.equal((await locks(tablet)).Admin, null)
     const out = await call('POST', '/logout', tablet)
     tablet = after_(tablet, out)
-    assert.equal((await locks(tablet)).Admin, 'password')
+    // Signed out, his profile is not on the tablet any more.
+    assert.equal((await locks(tablet)).Admin, undefined)
     // Signed in on it again, it asks again.
     tablet = await signIn(ANTHO, tablet)
     assert.equal((await locks(tablet)).Admin, 'password')

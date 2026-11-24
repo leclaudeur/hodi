@@ -63,6 +63,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **Each device shows its accounts' profiles.** Who's reading? and every profile list show the profiles of the
+  accounts signed in on the device and their teens' and children's, no longer every profile on the server. Send to…
+  still finds anyone by their @username. An adult's profile goes only with its account (My account, or Server ›
+  Accounts); the admin's password is no longer asked to delete one from Profiles.
 - **One file for the fixed settings.** Every limit, duration, rate and size that Server does not let the admin
   change is now in `config.yml`, with a comment for each: change a value and restart Hodi (the web app's values need a
   new build). A missing or wrong value stops Hodi at start, saying which.

@@ -1,7 +1,6 @@
 import { Trans, useTranslation } from 'react-i18next'
 import { REACTIONS } from '../../api.ts'
 import { shortAgo } from '../../lib/format.ts'
-import { useProfiles } from '../../lib/profiles.ts'
 import { reactTo, useShareOf } from '../../lib/shares.ts'
 import ProfileAvatar from '../../ui/ProfileAvatar.tsx'
 import ShareSafety from './ShareSafety.tsx'
@@ -9,9 +8,7 @@ import styles from './ShareNote.module.css'
 
 const useShare = (articleId: string) => {
   const entry = useShareOf(articleId)
-  const household = useProfiles({ onError: () => {} })
-  const from = entry && household?.profiles.find(profile => profile.id === entry.from)
-  return entry && from ? { entry, from } : null
+  return entry ? { entry, from: entry.person } : null
 }
 
 // A shared article or video: who sent it, and their word, above it, as wide as the text.

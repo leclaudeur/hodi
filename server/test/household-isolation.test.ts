@@ -140,6 +140,20 @@ describe('two households on one server', () => {
     assert.deepEqual(names, ['Claire'])
   })
 
+  it("shows another account's photo only to those it shared with", async () => {
+    // Zoé, another adult of the server with her own account, never signed in on Claire's device.
+    const profiles = new ProfileStore(db)
+    const zoe = profiles.create('Zoé', 'music', Date.now())!
+    const accounts = new UserAccountStore(db)
+    accounts.linkProfile(accounts.create('zoe@example.com', 'hash', Date.now())!.id, zoe.id)
+    profiles.setPhoto(zoe.id, { data: Buffer.from('photo'), type: 'image/webp' }, Date.now())
+    // Ids follow each other: without a tie, nobody goes through every adult's photo.
+    assert.equal((await call(`/profiles/${zoe.id}/photo`, dupont)).status, 404)
+    new UserStore(db, zoe.id).shareTo(dupontAdmin, { id: 'a' }, Date.now())
+    assert.equal((await call(`/profiles/${zoe.id}/photo`, dupont)).status, 200)
+    profiles.delete(zoe.id)
+  })
+
   // Claire made the server, so she is its admin: that gives her the Duponts' household admin's rights, never a way
   // into the Martins' profiles or their teen's rules.
   it("gives the server's admin no hold on another household's profiles or children", async () => {
@@ -175,9 +189,10 @@ describe('two households on one server', () => {
     })
     assert.equal(joined.status, 200)
     const julie = cookiesFrom(joined)
+    // Julie reads with her own profile: nobody else's is on her device.
     const ids = await profileIds(julie)
-    assert.equal(ids.length, 3)
-    assert.ok(ids.includes(martinAdmin))
+    assert.equal(ids.length, 1)
+    assert.ok(!ids.includes(martinAdmin))
     assert.deepEqual(
       (await json<{ profiles: { name: string }[] }>('/profiles', dupont)).profiles.map(p => p.name),
       ['Claire']

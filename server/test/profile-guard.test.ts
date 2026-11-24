@@ -107,8 +107,10 @@ describe('opening a private profile with its account’s password', () => {
   after(() => close())
 
   it('asks every private profile for its own password, on every device, and never the young', async () => {
-    assert.deepEqual(await lockedIds(anthoDevice), [1, sophieId, noAccountId])
-    assert.deepEqual(await lockedIds(sophieDevice), [1, sophieId, noAccountId])
+    // Each device lists its accounts' profiles; the server's admin also the adults' that no account has yet.
+    assert.deepEqual(await lockedIds(anthoDevice), [1, noAccountId])
+    assert.deepEqual(await lockedIds(sophieDevice), [sophieId])
+    assert.deepEqual(await lockedIds(shared), [1, sophieId, noAccountId])
 
     // Until one opens, the app's requests answer 423, not 403: a proxy such as CrowdSec bans a burst of 403s.
     for (const route of ['/feed?tz=UTC', '/topics', '/me/limits', '/game']) {
@@ -124,7 +126,7 @@ describe('opening a private profile with its account’s password', () => {
 
     // Another adult's opens only where their account signed in too, and then only with their password.
     const notHere = await call('PUT', '/profiles/current', anthoDevice, { id: sophieId, password: SOPHIE.password })
-    assert.deepEqual([notHere.status, await notHere.json()], [403, { error: 'not_signed_in' }])
+    assert.equal(notHere.status, 400)
     assert.equal(
       (await call('PUT', '/profiles/current', shared, { id: sophieId, password: ANTHO.password })).status,
       403
@@ -149,7 +151,7 @@ describe('opening a private profile with its account’s password', () => {
       kind: 'child'
     })
     maxId = ((await max.json()) as { id: number }).id
-    assert.deepEqual(await lockedIds(anthoDevice), [1, sophieId, noAccountId])
+    assert.deepEqual(await lockedIds(anthoDevice), [1, noAccountId])
     assert.equal((await call('PUT', '/profiles/current', anthoDevice, { id: maxId })).status, 200)
     // « Qui lit ? » shows the accounts signed in on the device, and the young profiles.
     const shown = async (cookie: string) =>

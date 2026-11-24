@@ -7,6 +7,7 @@ import { accountHandleRoutes } from '../http/handle-routes.ts'
 import type { InvitationMail } from '../http/invitation-routes.ts'
 import { profileDeviceRoutes } from '../http/profile-device-routes.ts'
 import { profileRoutes } from '../http/profile-routes.ts'
+import { sharePeople } from '../http/share-people.ts'
 import { sessionRoutes } from '../http/session-routes.ts'
 import { sourceRequestMeRoutes, sourceRequestRoutes } from '../http/source-request-routes.ts'
 import { youngAccountRoutes } from '../http/young-account-routes.ts'
@@ -68,6 +69,11 @@ const mountAccount = (api: express.Router, wiring: Wiring) => {
 const mountProfiles = (api: express.Router, wiring: Wiring) => {
   const { profiles, devices, youth, users, accounts, pinThrottle, now } = wiring.options
   if (!profiles) return
+  const people = users ? sharePeople({ users, profiles, accounts }) : null
+  const knows = (profileId: number, otherId: number) => {
+    const [me, other] = [profiles.find(profileId), profiles.find(otherId)]
+    return people !== null && me !== null && other !== null && people.knows(me, other)
+  }
   api.use('/profiles', profileDeviceRoutes({ profiles, accounts, accountDevices: devices }))
   api.use(
     '/profiles',
@@ -83,7 +89,7 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
       onCreate: wiring.profileHooks.created,
       onChange: profile => wiring.youthSources?.start(profile),
       onDelete: wiring.profileHooks.deleted,
-      checkProof: wiring.checkProof
+      knows
     })
   )
   if (youth) {
@@ -96,8 +102,13 @@ const mountProfiles = (api: express.Router, wiring: Wiring) => {
 
 // "Demander une source": a teen asks, its parents answer in Réglages ("Demandes").
 const mountSourceRequests = (api: express.Router, { options, youthSources }: Wiring) => {
-  const { youth, profiles, sources, news, install, alerts, now } = options
+  const { youth, profiles, sources, news, install, alerts, accounts, now } = options
   if (!youth || !youthSources || !profiles || !sources) return
+  const parentProfilesOf = (profileId: number) => {
+    const young = accounts?.ofProfile(profileId)
+    const parents = young ? accounts!.young.invitations.parentsOf(young.id) : []
+    return parents.map(parentId => accounts!.profileOf(parentId)).filter(id => typeof id === 'number')
+  }
   api.use(
     '/me',
     sourceRequestMeRoutes({
@@ -109,12 +120,12 @@ const mountSourceRequests = (api: express.Router, { options, youthSources }: Wir
       },
       news,
       now,
-      // Every parent's devices hear of it.
+      // Each of its parents' devices hears of it.
       onRequest: request => {
         const t = textsIn(install.get().language)
         const name = profiles.get(request.profileId)?.name ?? ''
-        for (const parent of profiles.list().filter(profile => profile.kind === 'adult')) {
-          void alerts?.notifyShare(parent.id, {
+        for (const parentId of parentProfilesOf(request.profileId)) {
+          void alerts?.notifyShare(parentId, {
             title: t('requests.push', { name, source: request.source.name }),
             body: request.source.url,
             url: `#/settings/requests/${request.id}`,

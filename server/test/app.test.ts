@@ -877,6 +877,7 @@ describe('reader state', () => {
 
 describe('profiles', () => {
   let session = ''
+  let leaId = 0
   const call = (method: string, route: string, { body, cookie = session }: { body?: unknown; cookie?: string } = {}) =>
     fetch(`${baseUrl}/api${route}`, {
       method,
@@ -902,6 +903,7 @@ describe('profiles', () => {
     assert.equal(created.status, 201)
     const lea = (await created.json()) as { id: number; name: string }
     assert.equal(lea.name, 'Léa')
+    leaId = lea.id
 
     const asLea = await openAdult(session, lea.id)
     assert.match(asLea, new RegExp(`hodi_profile=${lea.id}\\.[\\w-]+`))
@@ -935,8 +937,7 @@ describe('profiles', () => {
   })
 
   it('lets a profile send articles only to the people that share, offering those signed in on its device', async () => {
-    const list = (await (await call('GET', '/profiles')).json()) as { profiles: { id: number; name: string }[] }
-    const lea = list.profiles.find(profile => profile.name === 'Léa')!
+    const lea = { id: leaId }
     // Léa on the admin's device: the admin is offered there, and nobody on the admin's own one.
     const asLea = await openAdult(session, lea.id)
     const targets = async (cookie: string) =>
@@ -975,17 +976,17 @@ describe('profiles', () => {
   })
 
   it('opens a new profile on its tour once, on whichever device it is first opened', async () => {
-    const list = (await (await call('GET', '/profiles')).json()) as {
+    const asLea = await openAdult(session, leaId)
+    const list = (await (await call('GET', '/profiles', { cookie: asLea })).json()) as {
       profiles: { id: number; name: string; tourPending: boolean }[]
     }
     const lea = list.profiles.find(profile => profile.name === 'Léa')!
     assert.equal(lea.tourPending, true)
     assert.equal(list.profiles.find(profile => profile.name === 'Admin')!.tourPending, false)
 
-    // Not the admin's to take for her.
-    assert.equal((await call('POST', `/profiles/${lea.id}/tour`)).status, 403)
+    // Not the admin's to take for her: on the admin's own device, her profile is not even there.
+    assert.equal((await call('POST', `/profiles/${lea.id}/tour`)).status, 404)
 
-    const asLea = await openAdult(session, lea.id)
     const taken = await call('POST', `/profiles/${lea.id}/tour`, { cookie: asLea })
     assert.equal(((await taken.json()) as { tourPending: boolean }).tourPending, false)
   })
@@ -1060,9 +1061,8 @@ describe('profiles', () => {
     assert.ok(usage.kinds.every(kind => !('limit' in kind)))
     assert.equal((await call('POST', '/ai-usage/reset', { body: {}, cookie: asZoe })).status, 404)
 
-    // Zoé has an account of her own: deleting her profile takes the admin's password.
-    assert.equal((await call('DELETE', `/profiles/${zoe.id}`)).status, 403)
-    assert.equal((await call('DELETE', `/profiles/${zoe.id}`, { body: { password: PASSWORD } })).status, 204)
+    // Zoé has an account of her own: her profile is not on the admin's device, and goes only with her account.
+    assert.equal((await call('DELETE', `/profiles/${zoe.id}`, { body: { password: PASSWORD } })).status, 404)
   })
 
   it('lets every adult manage the young profiles, and a young profile only its colour and avatar', async () => {
@@ -1097,7 +1097,10 @@ describe('profiles', () => {
     assert.equal((await call('PATCH', '/profiles/1', { body: { name: 'X' }, cookie: asParent })).status, 403)
 
     // The young profile picks its colour, not its name or kind.
-    const asMax = `${session.split('; ')[0]}; hodi_profile=${max.id}`
+    const asMax = [
+      ...asParent.split('; ').filter(part => !part.startsWith('hodi_profile=')),
+      `hodi_profile=${max.id}`
+    ].join('; ')
     await call('PATCH', `/profiles/${max.id}`, { body: { kind: 'child' }, cookie: asParent })
     assert.equal(
       (await call('PATCH', `/profiles/${max.id}`, { body: { color: 'music', avatar: 'owl' }, cookie: asMax })).status,
@@ -1123,7 +1126,7 @@ describe('profiles', () => {
 
     // Deleting is a parent's, as everything else about a young profile: here, with no accounts, any adult's.
     assert.equal((await call('DELETE', `/profiles/${max.id}`, { cookie: asParent })).status, 204)
-    assert.equal((await call('DELETE', `/profiles/${parent.id}`, { body: { password: PASSWORD } })).status, 204)
+    assert.equal((await call('DELETE', `/profiles/${parent.id}`, { body: { password: PASSWORD } })).status, 404)
   })
 
   it('renames, refuses bad names and colours, and never deletes the admin', async () => {
@@ -1276,6 +1279,7 @@ describe('adding a source', () => {
       true
     )
     assert.ok(left.sources.every(source => source.lang === 'fr' || source.lang === 'en'))
-    assert.equal((await call('DELETE', `/profiles/${other.id}`, { body: { password: PASSWORD } })).status, 204)
+    // Her profile goes only with her account, never from the admin's device.
+    assert.equal((await call('DELETE', `/profiles/${other.id}`, { body: { password: PASSWORD } })).status, 404)
   })
 })

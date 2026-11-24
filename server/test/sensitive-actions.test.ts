@@ -138,8 +138,8 @@ describe('no household admin role', () => {
         profiles.list().map(profile => [profile.name, profile.role]),
         before
       )
-      // Sam, an adult of the same space, manages no one else's profile: only the server's admin does.
-      assert.equal((await call(`/profiles/${leaId}`, sam, 'DELETE')).status, 403)
+      // Sam manages no one else's profile: Léa, the admin's child, is not even on his device.
+      assert.equal((await call(`/profiles/${leaId}`, sam, 'DELETE')).status, 404)
       assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 204)
     } finally {
       close()
@@ -148,28 +148,35 @@ describe('no household admin role', () => {
 })
 
 describe('the admin’s password before what cannot be undone for another adult', () => {
-  it('asks for it before deleting the profile of an adult with an account, not a child’s', async () => {
+  it('never deletes the profile of an adult with an account, which goes only with the account; a child’s, yes', async () => {
     const { call, admin, samId, leaId, accounts, close } = await start()
     try {
-      assert.equal((await call(`/profiles/${samId}`, admin, 'DELETE', {})).status, 403)
-      assert.equal((await call(`/profiles/${samId}`, admin, 'DELETE', { password: 'pas le bon' })).status, 403)
+      // Not on the admin's device, and refused even where Sam signs in too.
+      assert.equal((await call(`/profiles/${samId}`, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 404)
+      const both = await call('/login', admin, 'POST', { email: 'sam@example.com', password: SAM_PASSWORD })
+      const shared = [
+        ...admin.split('; ').filter(part => !part.startsWith('hodi_session=')),
+        ...both.headers.getSetCookie().map(cookie => cookie.split(';')[0]!)
+      ].join('; ')
+      const refused = await call(`/profiles/${samId}`, shared, 'DELETE', { password: ADMIN_PASSWORD })
+      assert.deepEqual([refused.status, await refused.json()], [409, { error: 'account_profile' }])
       assert.notEqual(accounts.ofProfile(samId), null)
       assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 204)
-      assert.equal((await call(`/profiles/${samId}`, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 204)
     } finally {
       close()
     }
   })
 
   it('counts wrong passwords as at the Connexion page, from the same device', async () => {
-    const { call, admin, samId, close } = await start()
+    const { call, admin, samAccount, close } = await start()
     const fromAfar = { 'X-Forwarded-For': '203.0.113.7' }
+    const url = `/server/accounts/${samAccount.id}`
     try {
       for (let attempt = 0; attempt < 5; attempt += 1) {
-        const wrong = await call(`/profiles/${samId}`, admin, 'DELETE', { password: `faux ${attempt}` }, fromAfar)
+        const wrong = await call(url, admin, 'DELETE', { password: `faux ${attempt}` }, fromAfar)
         assert.equal(wrong.status, 403)
       }
-      const blocked = await call(`/profiles/${samId}`, admin, 'DELETE', { password: ADMIN_PASSWORD }, fromAfar)
+      const blocked = await call(url, admin, 'DELETE', { password: ADMIN_PASSWORD }, fromAfar)
       assert.equal(blocked.status, 429)
     } finally {
       close()
@@ -389,7 +396,7 @@ describe('« Validation en deux étapes »', () => {
     try {
       const { secret } = await turnOn(env)
       env.clock.now += 30_000
-      const url = `/profiles/${env.samId}`
+      const url = `/server/accounts/${env.samAccount.id}`
       assert.equal((await env.call(url, env.admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 403)
       const wrong = await env.call(url, env.admin, 'DELETE', { password: ADMIN_PASSWORD, code: '000000' })
       assert.deepEqual(await wrong.json(), { error: 'invalid_code' })

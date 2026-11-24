@@ -53,18 +53,29 @@ export const sharePeople = ({ users, profiles, accounts, signedInHere }: SharePe
     const family = sender ? familyOf(sender.id) : new Set<number>()
     const near = new Set([...family, ...(signedInHere?.(request) ?? [])])
     const before = new Set(users(from.id).sharedWith())
-    return (profiles?.list() ?? []).filter(to => {
+    // A profile with no account is offered only on the device it is on: never another account's.
+    const here = new Set((profiles?.list() ?? []).map(profile => profile.id))
+    return (profiles?.everyone() ?? []).filter(to => {
       if (!mayShare(from, to, family)) return false
       const receiver = accountOf(to.id)
-      return !sender || !receiver || near.has(receiver.id) || before.has(to.id)
+      if (!sender || !receiver) return here.has(to.id) || before.has(to.id)
+      return near.has(receiver.id) || before.has(to.id)
     })
+  }
+
+  // Someone this profile has a tie with: a share either way, muted, or family. Their photo is theirs to see.
+  const knows = (me: Profile, other: Profile) => {
+    if (users(me.id).sharedWith().includes(other.id) || mutedBy(me.id).includes(other.id)) return true
+    const mine = accountOf(me.id)
+    const theirs = accountOf(other.id)
+    return mine !== null && theirs !== null && familyOf(mine.id).has(theirs.id)
   }
 
   // The adult (or family member) behind an @username, when this profile may send to them; else null.
   const byHandle = (from: Profile, handle: string) => {
     const account = accounts?.byHandle(handle.replace(/^@/, '').toLowerCase())
     const profileId = account ? accounts?.profileOf(account.id) : null
-    const to = typeof profileId === 'number' ? (profiles?.get(profileId) ?? null) : null
+    const to = typeof profileId === 'number' ? (profiles?.find(profileId) ?? null) : null
     return to && mayShare(from, to) ? to : null
   }
 
@@ -78,7 +89,7 @@ export const sharePeople = ({ users, profiles, accounts, signedInHere }: SharePe
     handle: accountOf(profile.id)?.handle ?? null
   })
 
-  return { sharingOn, mutedBy, mayShare, offered, byHandle, personOf }
+  return { sharingOn, mutedBy, mayShare, offered, byHandle, personOf, knows }
 }
 
 export type SharePeople = ReturnType<typeof sharePeople>

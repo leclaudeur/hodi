@@ -399,9 +399,10 @@ describe('joining the household with a code', () => {
     assert.equal((await makeCode(admin, { profileId: profiles.list()[0]!.id })).status, 400)
     const before = cookiesFrom(await login({ email: 'sophie@example.com', password: PASSWORD }))
 
-    // Her password is hers: the household's admin never makes the code, even with their own password.
+    // Her password is hers: the admin never makes the code here, even with their own password. Her profile is not even
+    // on the admin's device.
     const refused = await makeCode(admin, { profileId: sophie.id, password: PASSWORD })
-    assert.deepEqual([refused.status, await refused.json()], [403, { error: 'own_password' }])
+    assert.deepEqual([refused.status, await refused.json()], [400, { error: 'bad_request' }])
     // As Serveur › Comptes makes it.
     const { code } = new SignInCodeStore(install.db, Buffer.alloc(32, 2)).create(
       { profileId: sophie.id, createdBy: profiles.list()[0]!.id, reset: true },

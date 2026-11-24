@@ -3,6 +3,7 @@ import type express from 'express'
 import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
 import { ProfileStore } from '../db/profile-store.ts'
+import { asReaders } from '../db/reader-scope.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserStore } from '../db/user-store.ts'
 import { sharePeople } from '../http/share-people.ts'
@@ -78,6 +79,30 @@ describe('sharing between accounts', () => {
     assert.equal(people.mayShare(before, max.profile), false)
     assert.ok(people.mayShare(paul.profile, before))
     assert.ok(people.mayShare(before, paul.profile))
+  })
+
+  it("never offers another account's profile that has no account, only one on this device", () => {
+    const { profiles, offered, paul } = server()
+    const mamie = profiles.create('Mamie', 'music', NOW)!
+    assert.deepEqual(
+      asReaders([paul.account.id], () => offered(paul)),
+      ['Lina']
+    )
+    // On the device that has it (the server admin's, as an adult profile no account reads with), it is offered.
+    assert.ok(offered(paul).includes(mamie.name))
+  })
+
+  it('knows those it shared with, those it muted and its family, never anyone else', () => {
+    const { people, users, antho, sophie, paul, max, lina } = server()
+    assert.ok(people.knows(antho.profile, sophie.profile))
+    assert.ok(people.knows(max.profile, sophie.profile))
+    assert.equal(people.knows(antho.profile, paul.profile), false)
+    assert.equal(people.knows(paul.profile, max.profile), false)
+    users(antho.profile.id).shareTo(paul.profile.id, { id: 'a' }, NOW)
+    assert.ok(people.knows(paul.profile, antho.profile))
+    assert.ok(people.knows(antho.profile, paul.profile))
+    users(lina.profile.id).setPreferences({ mutedSharers: [sophie.profile.id] }, NOW)
+    assert.ok(people.knows(lina.profile, sophie.profile))
   })
 
   it('offers the accounts signed in on this device and whoever shared lately', () => {

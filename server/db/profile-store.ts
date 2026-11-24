@@ -1,6 +1,7 @@
 import { type Database, transaction } from './database.ts'
 import { recordForget, rowKey } from './forget-log.ts'
 import { currentHouseholdId } from './household-scope.ts'
+import { currentReaders } from './reader-scope.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 // Netflix-style profiles: one household (the password), up to five readers, each with their own
@@ -120,6 +121,11 @@ export const cleanName = (value: unknown) => {
   return name.length > 0 && name.length <= MAX_NAME_LENGTH ? name : null
 }
 
+const SELECT = `SELECT p.id, p.name, p.color, p.role, p.kind, p.avatar,
+    CASE WHEN p.photo IS NULL THEN NULL ELSE p.photo_version END AS photo_version, p.tour_pending,
+    p.user_id IS NOT NULL AS has_account
+  FROM profiles p`
+
 export class ProfileStore {
   readonly #db: Database
   readonly #fixed: number | undefined
@@ -134,16 +140,36 @@ export class ProfileStore {
     return this.#fixed ?? currentHouseholdId()
   }
 
+  // The profiles of the accounts the request reads as (reader-scope.ts), their children's, and for the server's admin
+  // the adults' profiles that no account has yet. Outside a request, every one.
   list(): Profile[] {
+    const readers = currentReaders()
+    if (readers === null) return this.everyone()
+    const ids = JSON.stringify(readers)
     const rows = this.#db
       .prepare(
-        `SELECT p.id, p.name, p.color, p.role, p.kind, p.avatar,
-           CASE WHEN p.photo IS NULL THEN NULL ELSE p.photo_version END AS photo_version, p.tour_pending,
-           p.user_id IS NOT NULL AS has_account
-         FROM profiles p JOIN accounts a ON a.id = p.account_id WHERE p.account_id = ? ORDER BY p.position, p.id`
+        `${SELECT} WHERE p.account_id = ? AND (
+           p.user_id IN (SELECT value FROM json_each(?))
+           OR p.user_id IN (SELECT child_id FROM account_parents WHERE parent_id IN (SELECT value FROM json_each(?)))
+           OR (p.user_id IS NULL AND EXISTS (
+             SELECT 1 FROM users WHERE server_admin = 1 AND id IN (SELECT value FROM json_each(?))))
+         ) ORDER BY p.position, p.id`
       )
+      .all(this.#account, ids, ids, ids) as unknown as ProfileRow[]
+    return rows.map(toProfile)
+  }
+
+  // Every profile, whoever reads: for what crosses accounts (a share, its sender's name) and the server's admin.
+  everyone(): Profile[] {
+    const rows = this.#db
+      .prepare(`${SELECT} WHERE p.account_id = ? ORDER BY p.position, p.id`)
       .all(this.#account) as unknown as ProfileRow[]
     return rows.map(toProfile)
+  }
+
+  // Any profile by its id, whoever reads; null when there is none.
+  find(id: number): Profile | null {
+    return this.everyone().find(profile => profile.id === id) ?? null
   }
 
   // The household a profile belongs to, whichever household this store is for; null when it is gone.
@@ -165,7 +191,7 @@ export class ProfileStore {
     { kind = 'adult', avatar }: { kind?: ProfileKind; avatar?: ProfileAvatar } = {}
   ): Profile | null {
     return transaction(this.#db, () => {
-      const profiles = this.list()
+      const profiles = this.everyone()
       const { lastInsertRowid } = this.#db
         .prepare(
           `INSERT INTO profiles (account_id, name, color, kind, avatar, position, created_at, tour_pending)
@@ -180,7 +206,7 @@ export class ProfileStore {
           profiles.length,
           now
         )
-      return this.get(Number(lastInsertRowid))
+      return this.find(Number(lastInsertRowid))
     })
   }
 
@@ -258,7 +284,7 @@ export class ProfileStore {
 
   // Its state goes with it. The admin stays: the household always has a reader who manages it.
   delete(id: number) {
-    const profiles = this.list()
+    const profiles = this.everyone()
     const profile = profiles.find(candidate => candidate.id === id)
     if (profiles.length <= 1 || !profile || profile.role === 'admin') return false
     // Written down first, outside the database: a backup restored later deletes it again (forget-log.ts).

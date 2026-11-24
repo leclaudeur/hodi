@@ -60,6 +60,11 @@ small hooks under `lib/`.
 - **Outgoing requests**: through `news/fetch-text.ts`, and the SSRF guard for any URL a user gives
 - **AI**: through `news/ai-providers.ts`, only from a click, counted in each account's usage
 - **Households**: `db/household-scope.ts` keeps the request's household, so a route never sees another's
+- **Profiles on a device**: `db/reader-scope.ts` keeps the accounts signed in on the device that asks, and
+  `ProfileStore.list()` and `get()` give only their profiles and their children's. Outside a request (start-up,
+  nightly jobs, a timer, a worker's callback) there is no such scope and they give every profile, so code that may run
+  there and must stay on one device's profiles takes them in the request. Anything that reaches other accounts on
+  purpose (sharing, Serveur, deletions) calls `everyone()` or `find()`, and says why
 - **Fixed settings**: every limit, duration, rate and size Serveur does not let an admin change is in
   [`config.yml`](../config.yml), read once at start by `fixed-config.ts` (`CONFIG`). Its keys and their kinds are in
   `shared/config-schema.ts`, checked by `shared/config-file.ts`: a missing, unknown or wrong value stops the server at

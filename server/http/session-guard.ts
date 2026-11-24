@@ -3,6 +3,7 @@ import type { RequestHandler } from 'express'
 import { PROFILE_COOKIE, readCookie, readProfileToken } from '../auth/session.ts'
 import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
 import type { InstallStore } from '../db/install-store.ts'
+import { asReaders } from '../db/reader-scope.ts'
 import type { Profile, ProfileStore } from '../db/profile-store.ts'
 import type { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerStatsStore } from '../db/server-stats-store.ts'
@@ -88,7 +89,7 @@ const answerBeforeSetup = (
 }
 
 const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
-  const { accounts, devices, sessionOf, cookieFor } = options
+  const { accounts, devices, sessionOf, sessionsOf, cookieFor } = options
   return (request, response, next) => {
     if (!options.install.isSetUp()) {
       answerBeforeSetup(options, request, response, next)
@@ -108,7 +109,10 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
       response.locals.accountId = session.account.id
       // A session from before devices were kept: this device gets its row in Appareils, and a cookie naming it.
       if (!session.device && devices) response.append('Set-Cookie', cookieFor(session.account, request))
-      inHousehold(householdId, next)
+      // The device reads as its accounts: their profiles and their children's, nobody else's.
+      const readers = sessionsOf ? sessionsOf(request).map(signedIn => signedIn.account.id) : []
+      const asTheseAccounts = () => asReaders(readers.length > 0 ? readers : [session.account.id], next)
+      inHousehold(householdId, asTheseAccounts)
       return
     }
 

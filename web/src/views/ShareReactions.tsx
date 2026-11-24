@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { ShareReaction } from '../api.ts'
 import { shortAgo } from '../lib/format.ts'
-import { useProfiles } from '../lib/profiles.ts'
 import { seeShareReactions, useShareReactions } from '../lib/shares.ts'
 import { articleHref, watchHref } from '../lib/use-hash-route.ts'
 import ProfileAvatar from '../ui/ProfileAvatar.tsx'
@@ -25,22 +24,18 @@ const ShareReactions = ({ layout, from = null }: { layout: 'desktop' | 'phone'; 
     setMerged(found)
     setItems([...found.filter(entry => !items.some(other => same(other, entry))), ...items])
   }
-  const household = useProfiles({ onError: () => {} })
 
   useEffect(() => {
     if (found.length > 0) seeShareReactions(Math.max(...found.map(entry => entry.reactedAt)))
   }, [found])
 
-  const shown = items.filter(
-    entry => (from === null || entry.to === from) && household?.profiles.some(profile => profile.id === entry.to)
-  )
+  const shown = items.filter(entry => from === null || entry.to === from)
   if (shown.length === 0) return null
 
   return (
     <section className={`${styles.reactions} ${styles[layout]}`} aria-label={t('shares.reactions')}>
       {shown.map(entry => {
-        const to = household?.profiles.find(profile => profile.id === entry.to)
-        if (!to) return null
+        const to = entry.person
         const video = entry.item.kind === 'video' || entry.item.kind === 'podcast'
         return (
           <div key={`${entry.item.id}:${entry.to}`} className={styles.row}>

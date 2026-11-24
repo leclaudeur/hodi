@@ -227,15 +227,15 @@ interface CodeRoutesOptions {
 
 // "Connecter un appareil" for one profile: the code, or the refusal sent.
 const profileCode = ({ codes, profiles, now }: CodeRoutesOptions, profileId: unknown, response: express.Response) => {
+  // The admin first, so no one else learns from the answer which profiles there are, or which are young.
+  if (!isServerAdminOf(response)) {
+    response.status(403).json({ error: 'admin_only' })
+    return
+  }
   const target = typeof profileId === 'number' ? profiles.get(profileId) : null
   // One's own password changes in Réglages › Compte et données, with the current one.
   if (!target || target.id === profileIdOf(response)) {
     response.status(400).json({ error: 'bad_request' })
-    return
-  }
-  // The admin first, so no one else learns from the answer which profiles are young.
-  if (!isServerAdminOf(response)) {
-    response.status(403).json({ error: 'admin_only' })
     return
   }
   // A young one signs in with the account its parents made: no code for it.
