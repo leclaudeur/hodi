@@ -368,6 +368,7 @@ was never published: its changes are in this one.
 - `hodi-plugin build`, the types of the server part and of `hodi:sdk`, and signing with `--key`.
 
 [unreleased]: https://www.npmjs.com/package/@hodi-app/plugin-sdk?activeTab=versions
+[1.0.0-beta.6]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.6
 [1.0.0-beta.5]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.5
 [1.0.0-beta.4]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.4
 [1.0.0-beta.3]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.3

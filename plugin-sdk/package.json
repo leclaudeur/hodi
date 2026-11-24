@@ -1,7 +1,7 @@
 {
   "name": "@hodi-app/plugin-sdk",
   "version": "1.0.0-beta.6",
-  "description": "Build and type plugins for Hodi, the self-hosted news reader for a household.",
+  "description": "Build and type plugins for Hodi, the self-hosted news reader.",
   "keywords": [
     "hodi",
     "hodi-plugin",
