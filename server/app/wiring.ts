@@ -5,7 +5,6 @@ import type { Config } from '../config.ts'
 import { inHousehold } from '../db/household-scope.ts'
 import { accountSession } from '../http/account-session.ts'
 import { Presence } from '../http/presence.ts'
-import { profileDeviceSession } from '../http/profile-device-session.ts'
 import { PIN_GLOBAL_MAX_FAILURES, PIN_MAX_FAILURES } from '../http/profile-routes.ts'
 import { accountAsking, askingWithProof, proofCheck, type CheckProof } from '../http/proof.ts'
 import type { RouteProof } from '../http/plugin-routes.ts'
@@ -27,7 +26,6 @@ export interface Wiring {
   // Who has Hodi open now, in memory only.
   presence: Presence
   session: ReturnType<typeof accountSession>
-  linkedDevices: ReturnType<typeof profileDeviceSession>
   // « Ne plus demander sur cet appareil »; null without accounts.
   trust: TrustedDevices | null
   // The person's own password before what cannot be undone (proof.ts).
@@ -91,7 +89,7 @@ const youthSourcesOf = ({ youth, sources, users, profiles, news, now }: Options)
 
 export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
   const options = withDefaults(appOptions)
-  const { accounts, devices, profileDevices, news, users, profiles, now } = options
+  const { accounts, devices, news, users, profiles, now } = options
   // The version a profile's cookie is signed for, in that profile's household: null for no such profile.
   const profileVersionOf = (id: number) => {
     const householdId = profiles?.householdOf(id) ?? null
@@ -105,7 +103,6 @@ export const wiringOf = (config: Config, appOptions: AppOptions): Wiring => {
     options,
     presence: new Presence(),
     session,
-    linkedDevices: profileDeviceSession(profileDevices, config.sessionSecret, now),
     trust: devices ? trustedDevices({ devices, session }) : null,
     ...proofsOf(options, session),
     householdOptions,

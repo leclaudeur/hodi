@@ -202,8 +202,7 @@ export const deleteAccount = (proof?: AdminProof) => sendJson<null>('DELETE', '/
 export const SIGN_IN_CODE_LENGTH = 8
 export const SIGN_IN_CODE_CHARACTERS = /[A-HJKMNP-Z2-9]/g
 
-// Without a profile, "Inviter un adulte"; with one, "Connecter un appareil" for an adult without an account or a
-// young profile.
+// Without a profile, "Inviter un adulte"; with one, "Connecter un appareil" for an adult without an account.
 // « Nouveau mot de passe » for another adult hands their account over: it goes with the admin's own proof.
 export const createSignInCode = (profileId?: number, proof?: AdminProof) =>
   sendJson<{ code: string; expiresAt: number }>(
@@ -218,7 +217,6 @@ export type CodeProfile = Pick<Profile, 'id' | 'name' | 'color' | 'kind' | 'avat
 export type CodeUse =
   | { kind: 'invite'; household: string; invitedBy: CodeProfile | null; full: boolean }
   | { kind: 'profile'; household: string; profile: CodeProfile }
-  | { kind: 'device'; household: string; profile: CodeProfile }
   | { kind: 'reset'; household: string; profile: CodeProfile }
 
 export const checkSignInCode = (code: string) => sendJson<CodeUse>('POST', '/codes/check', { code })
@@ -234,9 +232,6 @@ export const joinWithCode = (join: {
   profile?: { name: string; color: ProfileColor; handle?: string }
   // signIn false: the account has « Validation en deux étapes », so this device signs in on Connexion with its code.
 }) => sendJson<{ profileId: number; signIn?: false }>('POST', '/codes/join', join)
-
-// A young profile's code: this device opens that profile only, from now on.
-export const linkWithCode = (code: string) => sendJson<{ profileId: number }>('POST', '/codes/link', { code })
 
 // "Mot de passe oublié": the account's new password; its other devices sign in again, this one is signed in.
 export const resetWithCode = (code: string, password: string) =>
@@ -258,8 +253,8 @@ export const resetWithMailedCode = (code: string, password: string) =>
 // A young profile's own devices, in its form (Réglages > Profils).
 export interface ProfileDevice {
   id: number
-  // account: signed in with its @identifier; linked: with a parent's code, before.
-  kind: 'account' | 'linked'
+  // Signed in with its @identifier.
+  kind: 'account'
   userAgent: string
   lastSeenAt: number
 }
@@ -267,11 +262,8 @@ export interface ProfileDevice {
 export const getProfileDevices = async (profileId: number) =>
   (await getJson<{ devices: ProfileDevice[] }>(`/profiles/${profileId}/devices`)).devices
 
-export const removeProfileDevice = (profileId: number, device: Pick<ProfileDevice, 'id' | 'kind'>) =>
-  sendJson<null>(
-    'DELETE',
-    `/profiles/${profileId}/${device.kind === 'account' ? 'account-devices' : 'devices'}/${device.id}`
-  )
+export const removeProfileDevice = (profileId: number, device: Pick<ProfileDevice, 'id'>) =>
+  sendJson<null>('DELETE', `/profiles/${profileId}/account-devices/${device.id}`)
 
 export interface HouseholdSetup {
   // The server's one space needs none: a plugin with several households names them.

@@ -3,7 +3,6 @@ import { type ComponentProps, Suspense, lazy, useCallback, useEffect, useState }
 import { useTranslation } from 'react-i18next'
 import { PROFILE_CLOSED, getSession, leaveProfile } from './api.ts'
 import { rememberProfileOpen, rememberSession } from './lib/session-hint.ts'
-import { isLinkedDevice, setLinkedDevice } from './lib/linked-device.ts'
 import { setServerOnly } from './lib/server-only.ts'
 import { setHouseholdLanguage, setProfileLanguage } from './lib/i18n.ts'
 import { setContentDays } from './lib/content-days.ts'
@@ -92,7 +91,6 @@ const statusOf = (session: Session): Status => {
 const applySession = (session: Session) => {
   if (!session || session === 'setup') return
   if (session.language) setHouseholdLanguage(session.language)
-  setLinkedDevice(session.linkedDevice)
   setServerOnly(session.serverOnly)
   setHourCycle(session.hourCycle)
   if (session.content) setContentDays(session.content)
@@ -160,7 +158,7 @@ const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: S
   // "Qui lit ?": before anything else on a new device, and from the avatar to switch. From "À demain" there is no
   // way back to the feed, only another profile.
   // A young profile's own device has no other profile to open.
-  if (status === 'choosing' || (route.name === 'profiles' && !isLinkedDevice())) {
+  if (status === 'choosing' || route.name === 'profiles') {
     return (
       <ProfilePicker
         chosen={status === 'authenticated'}

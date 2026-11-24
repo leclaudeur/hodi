@@ -14,7 +14,6 @@ import { HouseholdStore } from '../../db/household-store.ts'
 import { ProfileStore } from '../../db/profile-store.ts'
 import { SignInCodeStore } from '../../db/sign-in-code-store.ts'
 import { UserAccountStore } from '../../db/user-account-store.ts'
-import { ProfileDeviceStore } from '../../db/profile-device-store.ts'
 import { UserDeviceStore } from '../../db/user-device-store.ts'
 import { UserStore } from '../../db/user-store.ts'
 import { parseCatalog } from '../../news/catalog.ts'
@@ -74,7 +73,6 @@ export const startHousehold = async () => {
     accountAi,
     aiProviders: [FAKE_AI],
     devices: new UserDeviceStore(db),
-    profileDevices: new ProfileDeviceStore(db),
     accountData: new AccountDataStore(db),
     codes: new SignInCodeStore(db, config.sessionSecret),
     throttle: new LoginThrottle(5, 60_000)

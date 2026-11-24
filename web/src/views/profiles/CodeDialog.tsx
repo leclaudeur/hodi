@@ -17,9 +17,9 @@ import styles from './CodeDialog.module.css'
 const COPIED_MS = 2000
 
 interface CodeDialogProps {
-  // undefined: closed. null: "Inviter un adulte"; a profile: "Connecter un appareil" for it (young: its own device;
-  // reset: an adult who forgot their password).
-  target: { id: number; name: string; young?: boolean; reset?: boolean } | null | undefined
+  // undefined: closed. null: "Inviter un adulte"; a profile: "Connecter un appareil" for it (reset: an adult who
+  // forgot their password).
+  target: { id: number; name: string; reset?: boolean } | null | undefined
   onClose: () => void
   // Where the code is made, when not by the household's route: Serveur › Foyers and Comptes make theirs.
   make?: () => Promise<{ code: string }>
@@ -81,7 +81,6 @@ const titleOf = (target: CodeDialogProps['target'], t: TFunction) => {
 
 const introKeyOf = (target: NonNullable<CodeDialogProps['target']>) => {
   if (target.reset) return 'profiles.code.resetIntro'
-  if (target.young) return 'profiles.code.deviceIntro'
   return 'profiles.code.connectIntro'
 }
 

@@ -7,7 +7,6 @@ import {
   SIGN_IN_CODE_LENGTH,
   checkSignInCode,
   joinWithCode,
-  linkWithCode,
   resetWithCode,
   uploadProfilePhoto
 } from '../api.ts'
@@ -127,12 +126,6 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
       failure => fixedOnAccount(failure) && setStep('account')
     )
 
-  const link = () =>
-    send(async () => {
-      await linkWithCode(code)
-      onDone(true)
-    })
-
   const reset = () =>
     send(async () => {
       const { signIn } = await resetWithCode(code, fields.password)
@@ -147,7 +140,7 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
 
   return {
     ...{ fields, step, setStep, code, setCode, use, busy, codeWrong, setCodeWrong, error, setError },
-    ...{ check, join, link, reset, back }
+    ...{ check, join, reset, back }
   }
 }
 

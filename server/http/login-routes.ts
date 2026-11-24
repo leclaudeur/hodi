@@ -7,7 +7,6 @@ import { SecondStepTickets } from '../auth/second-step-tickets.ts'
 import { clearedProfileCookie, clearedSessionCookie, profileCookie, profileToken } from '../auth/session.ts'
 import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
-import type { ProfileDeviceStore } from '../db/profile-device-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { TwoFactorStore } from '../db/two-factor-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
@@ -15,7 +14,6 @@ import type { UserDeviceStore } from '../db/user-device-store.ts'
 import type { PluginRegistry } from '../plugins/registry.ts'
 import type { CookieFor, accountSession } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
-import type { profileDeviceSession } from './profile-device-session.ts'
 import { type CheckSignIn, refuseSignIn } from './sign-in-check.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -25,12 +23,10 @@ interface LoginRoutesOptions {
   accounts?: UserAccountStore
   devices?: UserDeviceStore
   profiles?: ProfileStore
-  profileDevices?: ProfileDeviceStore
   plugins?: PluginRegistry
   twoFactor?: TwoFactorStore
   throttle: LoginThrottle
   cookieFor: CookieFor
-  linkedDevices: ReturnType<typeof profileDeviceSession>
   // The accounts signed in on this device, and its cookie once one of them signs out.
   session?: Pick<ReturnType<typeof accountSession>, 'sessionOf' | 'sessionsOf' | 'cookieWithout'>
   // The household's name, for an account of another one than the device's.
@@ -208,17 +204,11 @@ const mountLoginRoute = (
   })
 }
 
-const mountLogoutRoute = (
-  router: express.Router,
-  { devices, profileDevices, linkedDevices, session }: LoginRoutesOptions
-) => {
+const mountLogoutRoute = (router: express.Router, { devices, session }: LoginRoutesOptions) => {
   // « Se déconnecter »: the account whose profile is open leaves this device; the others signed in here stay, and
-  // « Qui lit ? » opens again. A young profile's own device that signs out is no longer linked: a parent gives it a
-  // new code.
+  // « Qui lit ? » opens again.
   router.post('/logout', (request, response) => {
-    const linked = linkedDevices.deviceOf(request)
-    if (linked) profileDevices?.delete(linked.device.profileId, linked.device.id)
-    const leaving = linked ? null : (session?.sessionOf(request) ?? null)
+    const leaving = session?.sessionOf(request) ?? null
     if (leaving?.device) devices?.delete(leaving.account.id, leaving.device.id)
     const cookie =
       leaving && session ? session.cookieWithout(leaving.account.id, request).cookie : clearedSessionCookie()

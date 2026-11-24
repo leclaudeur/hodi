@@ -25,8 +25,7 @@
   transition: background-color 120ms ease;
 }
 
-.waiting,
-.still {
+.waiting {
   cursor: default;
 }
 
@@ -39,8 +38,7 @@
     background: var(--control-hover);
   }
 
-  .selector.waiting:hover,
-  .selector.still:hover {
+  .selector.waiting:hover {
     background: var(--control);
   }
 }

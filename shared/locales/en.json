@@ -76,11 +76,6 @@
     "create": "Create my account",
     "emailTaken": "This address already has an account: sign in with it.",
     "failed": "Your account could not be created. Try again in a moment.",
-    "device": {
-      "title": "Link this device",
-      "intro": "This device will open only <b>{{name}}</b>’s profile, with no e-mail or password. It stays signed in as long as it is used at least once every 90 days, or until a parent removes it.",
-      "button": "Confirm"
-    },
     "reset": {
       "title": "New password",
       "intro": "Choose the new password for <b>{{name}}</b>’s account. Your other devices are signed out: you’ll sign in again on them with it.",
@@ -329,7 +324,6 @@
       "copyFailed": "The link could not be copied.",
       "done": "Done",
       "failed": "The code could not be made. Try again in a moment.",
-      "deviceIntro": "With this code, {{name}}’s device opens on their profile, with no e-mail or password. On that device, open Hodi, choose <i>I have a code</i> on the sign-in page and type these 8 characters. <b>The device will open only {{name}}’s profile.</b>",
       "resetTitle": "New password",
       "resetIntro": "With this code, {{name}} chooses a new password. On their device, {{name}} opens Hodi, chooses <i>I have a code</i> on the sign-in page, types these 8 characters, then the new password. <b>Their other devices are signed out</b>: they sign in again with the new one."
     },

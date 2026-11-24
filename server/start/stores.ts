@@ -8,7 +8,6 @@ import { HouseholdStore } from '../db/household-store.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { TwoFactorStore } from '../db/two-factor-store.ts'
-import { ProfileDeviceStore } from '../db/profile-device-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
 import { HandleStore } from '../db/handle-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
@@ -92,7 +91,6 @@ export const openStores = (
     codes: new SignInCodeStore(db, config.sessionSecret),
     twoFactor: new TwoFactorStore(db, config.sessionSecret),
     devices: new UserDeviceStore(db),
-    profileDevices: new ProfileDeviceStore(db),
     accountData: new AccountDataStore(db),
     youth: new YouthStore(db, readerTimeZone),
     serverPeople: new ServerPeopleStore(db),

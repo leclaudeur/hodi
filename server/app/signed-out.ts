@@ -67,7 +67,7 @@ const mountPassword = (api: express.Router, { options }: Wiring, login: Login) =
 
 // "J'ai un code", from a device signed in with nothing.
 const mountCodeJoin = (api: express.Router, wiring: Wiring, login: Login) => {
-  const { accounts, codes, profiles, household, throttle, now, profileDevices, devices, twoFactor } = wiring.options
+  const { accounts, codes, profiles, household, throttle, now, devices, twoFactor } = wiring.options
   if (!accounts || !codes || !profiles) return
   api.use(
     '/codes',
@@ -80,7 +80,6 @@ const mountCodeJoin = (api: express.Router, wiring: Wiring, login: Login) => {
       secret: wiring.config.sessionSecret,
       now,
       cookieFor: wiring.session.cookieFor,
-      linkDevice: profileDevices ? wiring.linkedDevices.link : undefined,
       resetPassword: devices ? login.resetAccountPassword : undefined,
       signsInHere: account => !twoFactor?.isOn(account.id),
       checkSignIn: login.checkSignIn,
@@ -119,7 +118,7 @@ const mountPublicPlugins = (api: express.Router, wiring: Wiring, login: Login) =
 // Everything that answers before the session check: setup, sign-in, codes and the plugins' public routes.
 export const mountSignedOut = (api: express.Router, wiring: Wiring) => {
   const { options, config, householdOptions } = wiring
-  const { accounts, devices, profiles, profileDevices, plugins, pluginInstaller, twoFactor, throttle, now } = options
+  const { accounts, devices, profiles, plugins, pluginInstaller, twoFactor, throttle, now } = options
   if (householdOptions) api.use('/setup', setupRoutes(householdOptions))
   const { handles } = options
   if (handles)
@@ -129,12 +128,10 @@ export const mountSignedOut = (api: express.Router, wiring: Wiring) => {
     accounts,
     devices,
     profiles,
-    profileDevices,
     plugins,
     twoFactor,
     throttle,
     cookieFor: wiring.session.cookieFor,
-    linkedDevices: wiring.linkedDevices,
     session: wiring.session,
     household: options.household,
     secret: config.sessionSecret,

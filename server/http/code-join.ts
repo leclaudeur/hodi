@@ -26,8 +26,6 @@ export interface CodeJoinOptions {
   secret: Buffer
   now: () => number
   cookieFor: CookieFor
-  // A young profile's own device: its row and its session cookie; absent without the store.
-  linkDevice?: (profileId: number, request: express.Request) => string
   // "Mot de passe oublié": the new password, every device of the account signed out, and this one's cookie; null when
   // this device signs in on the Connexion page instead (« Validation en deux étapes »).
   resetPassword?: (account: UserAccount, passwordHash: string, request: express.Request) => string | null
@@ -66,7 +64,6 @@ export const codeHelpers = ({
   household,
   throttle,
   now,
-  linkDevice,
   resetPassword
 }: CodeJoinOptions) => {
   // Checked again when the code is used: the account may have become the server's admin since the code was made.
@@ -75,10 +72,10 @@ export const codeHelpers = ({
     return account !== null && resettableByCode(accounts, account)
   }
 
-  // A profile's code holds while it still waits for it: an adult without an account, any young profile, or, for a
-  // reset, an adult who has one.
+  // A profile's code holds while it still waits for it: an adult without an account or, for a reset, an adult who
+  // has one. A young one signs in with its own account.
   const waitsForCode = (found: SignInCode, target: Profile) => {
-    if (isYoung(target)) return linkDevice !== undefined
+    if (isYoung(target)) return false
     if (found.reset) return target.hasAccount && resetPassword !== undefined && resettable(target.id)
     return !target.hasAccount
   }
@@ -109,8 +106,7 @@ export const codeHelpers = ({
     const name = household.get().name
     if (profileId !== null) {
       const profile = profiles.get(profileId)!
-      const kind = isYoung(profile) ? 'device' : reset ? 'reset' : 'profile'
-      return { kind, household: name, profile: publicProfile(profile) }
+      return { kind: reset ? 'reset' : 'profile', household: name, profile: publicProfile(profile) }
     }
     const by = createdBy === null ? null : profiles.get(createdBy)
     return {

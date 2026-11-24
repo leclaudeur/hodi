@@ -8,7 +8,6 @@ import ProfileAvatar from './ProfileAvatar.tsx'
 import styles from './ProfileButton.module.css'
 import { Bar } from './Skeleton.tsx'
 import ProfileSheet from './ProfileSheet.tsx'
-import { isLinkedDevice } from '../lib/linked-device.ts'
 
 // The open profile's face, in the headers. With the household game on, it opens the profile's sheet. Otherwise it
 // goes back to "Qui lit ?" to switch, except on a computer, where the sidebar's selector does that: one way per device.
@@ -36,8 +35,8 @@ const ProfileButton = ({ size }: { size: number }) => {
         <ProfileSheet profile={open ? profile : null} onClose={() => setOpen(false)} />
       </>
     )
-  // On a computer the sidebar switches; a young profile's own device has nothing to switch to.
-  if (desktop || isLinkedDevice())
+  // On a computer the sidebar switches.
+  if (desktop)
     return (
       <span className={styles.still} title={profile.name}>
         <ProfileAvatar profile={profile} size={size} />

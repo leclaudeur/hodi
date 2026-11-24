@@ -10,7 +10,6 @@ import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
 import type { UserDeviceStore } from '../db/user-device-store.ts'
 import type { accountSession } from './account-session.ts'
 import type { Presence } from './presence.ts'
-import type { profileDeviceSession } from './profile-device-session.ts'
 import { isHere } from './profile-current-routes.ts'
 import { guardOf, youngHereOf } from './profile-guard.ts'
 
@@ -26,12 +25,9 @@ export interface SessionGuardOptions {
   // Every account signed in on this device; absent in tests without accounts.
   sessionsOf?: ReturnType<typeof accountSession>['sessionsOf']
   cookieFor: ReturnType<typeof accountSession>['cookieFor']
-  linkedDevices: ReturnType<typeof profileDeviceSession>
   secret: Buffer
   now: () => number
 }
-
-type LinkedDevice = ReturnType<SessionGuardOptions['linkedDevices']['deviceOf']>
 
 // What "Qui lit ?" asks before a profile is open on the device.
 const isQuiLit = (request: express.Request) =>
@@ -86,32 +82,24 @@ const accountOnly = (request: express.Request, response: express.Response, accou
 
 const householdHelpers = ({
   accounts,
-  profiles,
   household,
   serverSettings,
   sessionOf
-}: Pick<SessionGuardOptions, 'accounts' | 'profiles' | 'household' | 'serverSettings' | 'sessionOf'>) => {
+}: Pick<SessionGuardOptions, 'accounts' | 'household' | 'serverSettings' | 'sessionOf'>) => {
   // The household a signed-in device reads in: its account's own, the only one it has.
   const householdOfSession = ({ account }: { account: UserAccount }) =>
     accounts ? accounts.householdOf(account.id) : null
 
   // Whether the household this request reads in is set up. isSetUp() reads the household of the scope, the first one
   // here: a server whose first household was left for later still has the households a plugin made, set up from the
-  // start, and a session or a young profile's device in one of them goes on as on any server.
-  const readsInSetUpHousehold = (request: express.Request, linked: LinkedDevice) => {
+  // start, and a session in one of them goes on as on any server.
+  const readsInSetUpHousehold = (request: express.Request) => {
     if (household.isSetUp()) return true
     if (!serverSettings?.householdLater()) return false
-    const session = linked ? null : sessionOf(request)
-    const householdId = linked
-      ? profiles?.householdOf(linked.device.profileId)
-      : session
-        ? householdOfSession(session)
-        : null
+    const session = sessionOf(request)
+    const householdId = session ? householdOfSession(session) : null
     return (
-      householdId !== null &&
-      householdId !== undefined &&
-      householdId !== DEFAULT_ACCOUNT_ID &&
-      inHousehold(householdId, () => household.isSetUp())
+      householdId !== null && householdId !== DEFAULT_ACCOUNT_ID && inHousehold(householdId, () => household.isSetUp())
     )
   }
 
@@ -161,25 +149,16 @@ const gateOf = (accounts: UserAccountStore | undefined, account: UserAccount, ho
 }
 
 const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
-  const { accounts, devices, profiles, sessionOf, cookieFor, linkedDevices } = options
+  const { accounts, devices, sessionOf, cookieFor } = options
   const { householdOfSession, readsInSetUpHousehold } = householdHelpers(options)
   return (request, response, next) => {
-    const linked = linkedDevices.deviceOf(request)
-    if (!readsInSetUpHousehold(request, linked)) {
+    if (!readsInSetUpHousehold(request)) {
       answerBeforeSetup(options, request, response, next)
       return
     }
 
-    // A young profile's own device: that profile only, whatever its profile cookie says.
-    // From here on, the request is for one household: its profile's, or its account's. Every store of one
-    // household's data reads that one (household-scope.ts).
-    if (linked) {
-      response.locals.linkedProfileId = linked.device.profileId
-      if (linked.cookie) response.append('Set-Cookie', linked.cookie)
-      inHousehold(profiles?.householdOf(linked.device.profileId) ?? DEFAULT_ACCOUNT_ID, next)
-      return
-    }
-
+    // From here on, the request is for one household: its account's. Every store of one household's data reads
+    // that one (household-scope.ts).
     const session = sessionOf(request)
     const householdId = (session && householdOfSession(session)) ?? DEFAULT_ACCOUNT_ID
     const gate = session && gateOf(accounts, session.account, householdId)
@@ -224,8 +203,7 @@ const profileOfRequest = (
     sessionsOf,
     secret
   }: Pick<SessionGuardOptions, 'accounts' | 'devices' | 'profiles' | 'sessionsOf' | 'secret'>,
-  request: express.Request,
-  linkedId: number | undefined
+  request: express.Request
 ) => {
   const token = readProfileToken(
     readCookie(request.get('cookie'), PROFILE_COOKIE),
@@ -240,15 +218,9 @@ const profileOfRequest = (
     isHere({ accounts, signedInHere: sessionsOf && (() => signedIn) }, candidate, request)
   // An adult whose account is not signed in here never opens on this device.
   const isGuarded = (candidate: Profile) => !here(candidate) || guardOf(candidate, accounts, youngHere) !== null
-  // Linked by a parent's code: the device is that profile's.
-  const chosen =
-    linkedId !== undefined
-      ? known.find(candidate => candidate.id === linkedId)
-      : token
-        ? known.find(
-            candidate => candidate.id === token.id && here(candidate) && (token.signed || !isGuarded(candidate))
-          )
-        : undefined
+  const chosen = token
+    ? known.find(candidate => candidate.id === token.id && here(candidate) && (token.signed || !isGuarded(candidate)))
+    : undefined
   const profile = chosen ?? known.find(candidate => !isGuarded(candidate)) ?? known[0]
   // Only profiles that ask for a password, and none given here: the device reads as nobody, with no right of any
   // profile.
@@ -271,8 +243,7 @@ const chooseProfileOf = (options: SessionGuardOptions): RequestHandler => {
       next()
       return
     }
-    const linkedId = response.locals.linkedProfileId as number | undefined
-    const { chosen, profile, locked } = profileOfRequest(options, request, linkedId)
+    const { chosen, profile, locked } = profileOfRequest(options, request)
     response.locals.profileId = profile?.id ?? 1
     const householdAdmin = locked ? false : profile ? profile.role === 'admin' : true
     // The server's admin is an account: the profile opened here must be that account's, so another adult opening
@@ -300,17 +271,11 @@ const chooseProfileOf = (options: SessionGuardOptions): RequestHandler => {
       presence.seen(chosen.id, request.get('user-agent') ?? '', now())
       serverStats?.recordVisit(chosen.id, now())
     }
-    response.locals.linkedDevice = linkedId !== undefined
-    // A linked device never changes profile.
-    if (linkedId !== undefined && request.method === 'PUT' && request.path === '/profiles/current') {
-      response.status(403).json({ error: 'linked_device' })
-      return
-    }
     next()
   }
 }
 
-// Who a request reads as: requireSession lets in a signed-in device or a young profile's own one, in its household;
+// Who a request reads as: requireSession lets in a signed-in device, in its household;
 // chooseProfile then says which profile of that household it is for.
 export const sessionGuards = (options: SessionGuardOptions) => ({
   requireSession: requireSessionOf(options),
