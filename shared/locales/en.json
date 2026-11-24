@@ -52,7 +52,7 @@
       "intro": "The 8 characters the server’s admin gave you, or the link that came with them.",
       "label": "Code",
       "helpTitle": "Where does this code come from?",
-      "help": "The server’s admin makes it in Server › Accounts, to invite someone or for a forgotten password. An adult also makes one to connect a device to a teen’s or a child’s profile. It works once, for 24 hours.",
+      "help": "The server’s admin makes it in <i>Server › Accounts</i>, to invite someone or for a forgotten password. It works once, for 24 hours.",
       "wrong": "This code doesn’t work: it may have been used already, or its 24 hours are over. Ask for a new one."
     },
     "invite": {
@@ -229,12 +229,6 @@
       "title": "Server e-mail",
       "intro": "Hodi uses it to send <i>Forgot password</i> links and the plugins’ e-mails. It can also be set later, in <i>Server › E-mail</i>.",
       "later": "Later"
-    },
-    "household": {
-      "name": "Household",
-      "namePlaceholder": "E.g. The Smiths",
-      "confirm": "Confirm the password",
-      "mismatch": "The two passwords aren’t the same."
     },
     "profile": {
       "title": "And who are you?",
@@ -752,10 +746,10 @@
     "shares": {
       "title": "Shared",
       "desktop": [
-        "What other profiles of the household sent you with <i>For…</i>, for 7 days. A read or hidden article goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
+        "What other people sent you with <i>For…</i>, for 7 days. A read or hidden article goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
       ],
       "phone": [
-        "What other profiles of the household sent you with <i>For…</i>, for 7 days. A read article, or one swiped left, goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
+        "What other people sent you with <i>For…</i>, for 7 days. A read article, or one swiped left, goes away. At the end of an article, react with an emoji: the sender sees it atop their Shared."
       ]
     },
     "videos": {
@@ -1019,7 +1013,6 @@
     "intro": "What you read, on all your devices. An article is read once you scrolled through 80% of it and spent at least a third of its reading time on it; a video, once 80% watched. Past 15%, it stays in progress and waits for you in <i>Pick up</i>; below that, it was skimmed."
   },
   "game": {
-    "yourHousehold": "Household",
     "tiers": {
       "1": "Bronze",
       "2": "Silver",
@@ -1037,14 +1030,7 @@
     "badgeWorn": "{{name}}, {{tier}}, worn",
     "badgeWear": "{{name}}, {{tier}}, wear it",
     "badgeLocked": "{{name}}, to earn",
-    "household": "Household",
     "thisWeek": "This week",
-    "challenge": "Shared goal",
-    "challengeReached": "Challenge met: {{read}} of {{goal}} articles read, bravo!",
-    "challengeAlone_one": "{{count}} article read out of {{goal}}, by Sunday",
-    "challengeAlone_other": "{{count}} articles read out of {{goal}}, by Sunday",
-    "challengeTogether_one": "{{count}} of {{goal}} articles read by you {{profiles}}, by Sunday",
-    "challengeTogether_other": "{{count}} of {{goal}} articles read by you {{profiles}}, by Sunday",
     "rankLabel_one": "{{rank}}. {{name}}, {{grade}}, {{count}} point",
     "rankLabel_other": "{{rank}}. {{name}}, {{grade}}, {{count}} points",
     "back": "Back",
@@ -1088,7 +1074,7 @@
       },
       "postman": {
         "rule": "Shared with a note",
-        "text": "Articles you send to someone in the household with a note.",
+        "text": "Articles you send to someone with a note.",
         "unit_one": "share",
         "unit_other": "shares"
       },
@@ -1111,8 +1097,8 @@
         "unit_other": "reads"
       },
       "team-player": {
-        "rule": "Household challenges",
-        "text": "The weekly challenges the household completes together.",
+        "rule": "Family challenges",
+        "text": "The weekly challenges the family completes together.",
         "unit_one": "challenge",
         "unit_other": "challenges"
       }
@@ -1512,7 +1498,7 @@
       "empty": "This feed is empty for now.",
       "failed": "The site isn’t answering. Try again in a moment.",
       "reddit": "Hodi dropped Reddit: its feeds are closing.",
-      "limit": "The household has hit its source limit. Remove one to add another.",
+      "limit": "The server already follows as many sources as its admin allows.",
       "followed": "Source already followed.",
       "bad_section": "Pick another topic for this source.",
       "unavailable": "Source unavailable on this server."
@@ -1530,14 +1516,14 @@
     "whichTopics": "In which topics?",
     "whichSection": "In which Videos section?",
     "topics": "Source topics",
-    "count": "{{added}} / {{limit}} home sources",
+    "count": "{{added}} / {{limit}} sources on the server",
     "adding": "Adding",
-    "countAll_one": "{{count}} home source",
-    "countAll_other": "{{count}} home sources"
+    "countAll_one": "{{count}} source on the server",
+    "countAll_other": "{{count}} sources on the server"
   },
   "suggest": {
     "add": {
-      "limit": "The household has hit its source limit.",
+      "limit": "The server already follows as many sources as its admin allows.",
       "followed": "Followed.",
       "failed": "The source could not be added. Try again in a moment."
     },
@@ -1556,7 +1542,6 @@
     "last": "Last article: {{title}}"
   },
   "sources": {
-    "deleteMessage": "It goes for the whole household and won’t come back by itself.",
     "deleted": "{{name}} deleted",
     "deleteFailed": "The source could not be deleted. Try again in a moment.",
     "hideLowTitle_one": "Hide the little-read source?",
@@ -1582,7 +1567,6 @@
     "readers_other": "{{formatted}} readers",
     "changeTopicsOf": "Change {{name}}’s topics",
     "changeTopics": "Change topics",
-    "deleteFor": "Delete {{name}} for the whole home",
     "intro": "The sites and channels that fill the feed, checked every 15 minutes. A source added here only goes into this account’s sources. Base sources can be removed but not deleted.",
     "search": "Search a source or a topic",
     "searchLabel": "Search a source",
@@ -1667,12 +1651,11 @@
     "deleteProfile": {
       "title": "Delete this profile?",
       "message": "<b>{{name}}</b>’s profile is deleted with its saved articles, reading history, points and settings. <b>This can’t be undone.</b>",
-      "button": "Delete profile",
-      "messageAccount": "<b>{{name}}</b>’s profile is deleted with its saved articles, reading history, points and settings, and <b>their account no longer opens this household</b>. This can’t be undone: type your password to confirm."
+      "button": "Delete profile"
     },
     "deleteSource": {
       "title": "Delete the source?",
-      "message": "The source <b>{{name}}</b> is deleted <b>for the whole household</b>: its articles leave every profile’s feed. It only comes back if someone adds it again.",
+      "message": "The source <b>{{name}}</b> is deleted <b>for the whole server</b>: its articles leave every profile’s feed. It only comes back if someone adds it again.",
       "button": "Delete source"
     },
     "hideSource": {
@@ -1806,7 +1789,7 @@
     "version": "Version",
     "versionHint": "The installed package’s",
     "enabled": "On",
-    "enabledHint": "Its pages and features are there for the household",
+    "enabledHint": "Its pages and features are there for everyone",
     "disabledHint": "It keeps its settings and data",
     "options": "Options",
     "remove": "Remove the plugin",
@@ -1832,9 +1815,9 @@
       "signedHint": "Signed by a key Hodi knows",
       "unsigned": "Unverified code",
       "unsignedHint": "No one has checked this code: its pages won’t show.",
+      "signedOnlyHint": "It asks for access only verified plugins get: accounts, sign-ins, e-mails or notifications.",
       "signedOnly": "Can’t be installed unsigned",
-      "signedOnlyHint": "It asks for access only verified plugins get: accounts, households, sign-ins, e-mails or notifications.",
-      "forAll": "For the whole household",
+      "forAll": "For everyone",
       "forAdmin": "For the admin only",
       "replaces": "Replaces version {{version}}",
       "install": "Allow and install",
@@ -1930,22 +1913,22 @@
       "mailHint": "Through Server › E-mail, 50 an hour at most",
       "notify": "Send notifications",
       "notifyHint": "To people across the whole server, on their devices, 10 a day at most for each",
-      "ai": "Household AI",
-      "aiHint": "A click on its violet button asks the AI one question, paid from the household’s credits. Only if it is Verified.",
+      "ai": "Each account’s AI",
+      "aiHint": "A click on its violet button asks the AI one question, paid from the credits of the account that clicks. Only if it is Verified.",
       "feeds_one": "Offer {{count}} source",
       "feeds_other": "Offer {{count}} sources",
       "feedsHint": "In <i>Add a source</i>: {{names}}"
     },
     "aiButton": {
-      "unavailable": "AI isn’t turned on for this household.",
-      "off": "The household’s admin turned this plugin’s AI off.",
+      "unavailable": "AI isn’t turned on for this account.",
+      "off": "The server’s admin turned this plugin’s AI off.",
       "limited": "Too many requests to the AI for now. Try again later.",
       "refused": "The AI declined to answer this request.",
       "failed": "The request didn’t go through. Try again in a moment."
     },
     "confirmInstall": {
       "title": "Install {{name}}?",
-      "message": "<b>{{name}}</b> is verified. It will read and change what its permissions declare, for <b>every household on the server</b>. Type your password to install it.",
+      "message": "<b>{{name}}</b> is verified. It will read and change what its permissions declare, for <b>every account on the server</b>. Type your password to install it.",
       "button": "Install"
     },
     "catalog": {
@@ -1979,7 +1962,6 @@
     },
     "titles": {
       "overview": "Overview",
-      "households": "Households",
       "accounts": "Accounts",
       "general": "General",
       "content": "Content",
@@ -2087,14 +2069,12 @@
       "noMatchAccounts": "No account matches.",
       "backToAccounts": "Back to accounts",
       "failed": "The list could not be loaded.",
-      "household": {},
       "account": {
         "intro": "The server sees the account, never what is read with it nor its settings.",
         "section": "Account",
         "email": "E-mail",
         "role": "Role",
         "roles": {
-          "admin": "Household admin",
           "member": "Adult",
           "none": "No profile"
         },
@@ -2110,7 +2090,7 @@
         "own": "Yours changes in Settings › My account",
         "deleteSection": "Delete or block",
         "serverAdminSection": "Server admin",
-        "serverAdmin": "Make server admin",
+        "makeServerAdmin": "Make server admin",
         "serverAdminHint": "Runs Server as you do: accounts, backups, plugins",
         "serverAdminButton": "Make admin",
         "delete": "Delete this account",
@@ -2155,7 +2135,7 @@
       }
     },
     "content": {
-      "intro": "How long the server keeps what it fetches for every household, and how many sources each may follow. Short durations keep the database light; a saved article always keeps its text.",
+      "intro": "How long the server keeps what it fetches, and how many sources it may follow. Short durations keep the database light; a saved article always keeps its text.",
       "durations": "Durations",
       "sources": "Sources",
       "less": "Less",
@@ -2180,11 +2160,11 @@
         "intro": "How many days the server keeps the text of an article read in Hodi, and its pictures. A saved article always keeps its own."
       },
       "maxSources": {
-        "label": "Sources per household",
-        "title": "Sources per household",
-        "intro": "How many sources a household may follow, all its profiles together: the server fetches each one. A household that already has more keeps them, but cannot add any.",
+        "label": "Sources on the server",
+        "title": "Sources on the server",
+        "intro": "How many sources the server may follow, all accounts together: it fetches each one. If it already follows more, it keeps them, but nobody can add any.",
         "toggle": "Limit sources",
-        "toggleHint": "Otherwise each household adds as many as it likes.",
+        "toggleHint": "Otherwise everyone adds as many as they like.",
         "unlimited": "Unlimited"
       },
       "validation": {
@@ -2225,7 +2205,7 @@
       "restore": "Restore",
       "restoreLabel": "Restore the copy of {{date}}",
       "restoreTitle": "Restore the copy",
-      "restoreIntro": "The whole server goes back to <b>{{date}} at {{time}}</b>: accounts, households, reading, the plugins’ data. What changed since is lost, but Hodi first keeps a copy of how things are now. What was deleted since stays deleted: an account, a profile, a household. A plugin removed since does not come back: its data stays 30 days, time to install it again. Then Hodi restarts, and people sign in again if needed.",
+      "restoreIntro": "The whole server goes back to <b>{{date}} at {{time}}</b>: accounts, profiles, reading, the plugins’ data. What changed since is lost, but Hodi first keeps a copy of how things are now. What was deleted since stays deleted: an account, a profile. A plugin removed since does not come back: its data stays 30 days, time to install it again. Then Hodi restarts, and people sign in again if needed.",
       "restoreFailed": "The copy could not be restored.",
       "restoring": "Restoring the copy of {{date}} at {{time}}"
     },

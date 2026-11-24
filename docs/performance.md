@@ -11,7 +11,7 @@ Lighthouse 12 scored the 21 screens of the app at three sizes. The work ran in t
 - **Computer**: **100**, all 21 screens at 100
 
 Accessibility scores 92 to 100 (92 on the server's overview, whose small labels lack contrast) and best practices 96
-to 100. SEO stays at 54 to 58 on purpose, since a household's Hodi is private and asks search engines not to index
+to 100. SEO stays at 54 to 58 on purpose, since a family's Hodi is private and asks search engines not to index
 it.
 
 Hodi's public welcome page is not part of the app: it is the static site get-hodi.com, measured on its own.
@@ -72,7 +72,7 @@ Each picture is the top of the Lighthouse report for one screen, from the last r
 - **Early requests**: `web/public/preload.js` asks for the session and the feed while the code downloads
 - **Nothing moves**: skeletons hold the exact place of what the home page loads
 - **Less background work**: offline downloads wait until the app has shown
-- **One language**: English is downloaded only by a household that reads in English
+- **One language**: English is downloaded only by someone who reads in English
 - **Code on demand**: the server space and its charts, the setup wizard, Réglages and the QR code maker download only
   when they open; Réglages is fetched in the background once the app has shown
 - **A tidy offline copy**: the service worker removes the files of older versions after an update

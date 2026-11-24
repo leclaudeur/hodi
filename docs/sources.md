@@ -6,13 +6,13 @@ fields does, then how to check the feeds and how to suggest a new source for eve
 
 ## How sources work
 
-The file fills an empty database once, when the household is set up. After that, the database holds the household's
+The file fills an empty database once, when the server is set up. After that, the database holds the server's
 sources, so editing the file's feeds changes nothing on an existing install. A renamed theme is the exception: it shows
 after a restart.
 
 The database holds the server's sources, and each person reads their own list of them, **My sources**, kept with their
-account (`my_sources`). **Base sources** are the only ones a new household and a new adult start with, in the
-household's language. They can be taken out of one's list, never deleted. Every other source is a **suggestion**: a
+account (`my_sources`). **Base sources** are the only ones a new adult starts with, in the language chosen at
+setup. They can be taken out of one's list, never deleted. Every other source is a **suggestion**: a
 person adds it from the **Catalogue** (_Settings › Sources › Browse the catalogue_: each theme's sources as cards, by name
 or by readers), or adds any site, feed or YouTube channel with its link, which goes into
 their list only. A source someone added can be deleted by them or by the admin, for everyone. A source in the lists of
@@ -47,8 +47,8 @@ server checks the file when it starts, and names the field at fault (`topics[0].
 - **`domains`**: for articles, the hosts Hodi may fetch article pages from, subdomains included.
 - **`reader`**: `false` when articles never open in Hodi's reader; each one then shows its summary and a link.
 - **`skip`**: paths whose pages are not articles (`/fr/vidéo/`), left out without being fetched.
-- **`base`**: `[fr]`, `[en]` or both, a base source for a household set up in that language.
-- **`young`**: `[teen]`, `[child]` or both, in the catalogue their parents turn on in _Settings › Profiles › Manage_.
+- **`base`**: `[fr]`, `[en]` or both, a base source for a server set up in that language.
+- **`young`**: `[teen]`, `[child]` or both, in the catalogue their parents turn on in _Settings › Teens and children_.
 - **`young_base`**: `[teen]`, `[child]` or both, turned on for these profiles from the start.
 - **`adults`**: `false` for a source made for young readers, never suggested to adults. Use it with `young`.
 
@@ -56,7 +56,7 @@ An article that does not open from its `domains`, because it is for subscribers 
 marked `reader: false` needs no `domains`, and an install that already follows it switches to the summary and link at
 its next start. A young profile only sees a source in a theme it sees, through the theme's `young` field.
 
-For example, a source every French household starts with, and teens too:
+For example, a source every adult of a French server starts with, and teens too:
 
 ```yaml
 - id: rtl-info

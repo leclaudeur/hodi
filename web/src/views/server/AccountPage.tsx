@@ -90,7 +90,7 @@ const ServerAdminRow = ({ account, name }: { account: ServerAccount; name: strin
       <h2 className={styles.label}>{t('server.people.account.serverAdminSection')}</h2>
       <div className={styles.card}>
         <SettingRow
-          label={t('server.people.account.serverAdmin')}
+          label={t('server.people.account.makeServerAdmin')}
           hint={t('server.people.account.serverAdminHint')}
           action={{
             label: t('server.people.account.serverAdminButton'),

@@ -4,7 +4,7 @@ Instructions for AI coding agents (Claude Code, Codex, Cursor, Copilot…) worki
 
 ## The project
 
-Hodi is a self-hosted news reader for a household: RSS feeds by theme, a reader view, videos, up to 5 profiles, and optional AI features. One Node.js server (Express 5, TypeScript, `node:sqlite`) serves a JSON API and a React 19 + Vite PWA, in one Docker container. Install is `git clone` + `docker compose up -d`, then a setup wizard in the browser.
+Hodi is a self-hosted news reader: RSS feeds by theme, a reader view, videos, one account and profile per person, and optional AI features. One Node.js server (Express 5, TypeScript, `node:sqlite`) serves a JSON API and a React 19 + Vite PWA, in one Docker container. Install is `git clone` + `docker compose up -d`, then a setup wizard in the browser.
 
 Read [docs/architecture.md](docs/architecture.md) for the code map before changing anything. [docs/features.md](docs/features.md) describes what each screen does.
 
@@ -36,8 +36,8 @@ A fresh `./data` shows the setup wizard; a request from `localhost` is never ask
 
 These are not style preferences. A pull request that breaks one will not be merged.
 
-1. **No AI call without an explicit click.** Every request to an AI provider answers a user's click on a purple (`look="ai"`) button and is counted in the account's usage. Never add an automatic, background, prefetched or retried AI call. Checking a key uses a request that costs no credits. A plugin reaches the household's AI only through `AiButton` (`hodi:sdk`): its web code calls `/api/plugins/<id>/ai/<action>` from that button's click and nowhere else. The server cannot tell a click from code in the page, so the maintainer checks this before signing a plugin.
-2. **No new setup step outside the browser.** No `.env`, no required environment variable, no CLI step for something a user chooses. Settings go in Réglages (admin-only ones in Réglages > Foyer or IA et crédits).
+1. **No AI call without an explicit click.** Every request to an AI provider answers a user's click on a purple (`look="ai"`) button and is counted in the account's usage. Never add an automatic, background, prefetched or retried AI call. Checking a key uses a request that costs no credits. A plugin reaches the AI of the account that clicks only through `AiButton` (`hodi:sdk`): its web code calls `/api/plugins/<id>/ai/<action>` from that button's click and nowhere else. The server cannot tell a click from code in the page, so the maintainer checks this before signing a plugin.
+2. **No new setup step outside the browser.** No `.env`, no required environment variable, no CLI step for something a user chooses. Settings go in Réglages, Mon compte › IA et crédits, or Serveur for the server admin's.
 3. **Every interface text goes through the locale files.** `shared/locales/fr.json` is the reference (French says "tu"), and every key is also in `en.json` (a test checks it). Components use `useTranslation()` from react-i18next; code outside React uses `t` from `web/src/lib/i18n.ts`. Code, comments, identifiers, commits and docs are in English.
 4. **Database changes are new migrations** appended to `server/db/migrations.ts`. Never edit or reorder an existing migration.
 5. **Outgoing requests** use `server/news/fetch-text.ts`; any URL a user supplies goes through the SSRF guard in `server/news/source-finder.ts`. The reader only opens articles by item id, never by URL.
@@ -50,7 +50,7 @@ These are not style preferences. A pull request that breaks one will not be merg
 The full conventions (names, file and function sizes, comments) are in [docs/conventions.md](docs/conventions.md). In short:
 
 - TypeScript strict, ES modules, imports with the `.ts`/`.tsx` extension.
-- Every address is in English: API routes and the web app's hash routes (`#/settings/household`, not `#/reglages/foyer`). A route that changes name keeps its old address as a redirect in `web/src/lib/use-hash-route.ts`.
+- Every address is in English: API routes and the web app's hash routes (`#/settings/sources`, not `#/reglages/sources`). A route that changes name keeps its old address as a redirect in `web/src/lib/use-hash-route.ts`.
 - Prettier decides formatting (no semicolons, single quotes, 120 columns). Run `npm run format` rather than formatting by hand.
 - Comments explain why, in one or two plain lines above the line they concern. Never what the code already says, never the history of a change.
 - At most 300 lines of code per file and 80 per function or component, with a cognitive complexity under 15: split before you go over. `npm run lint` fails on any warning.
@@ -70,7 +70,7 @@ The design is consistent on purpose. Reuse what exists before writing new CSS.
 - **Destructive actions** use `look="danger"` and ask first with `askToConfirm` from `lib/confirm.ts`. Every button that asks a confirmation first is red, whatever it does, except the buttons of a coloured notice (`ui/Notice`), which take the notice's colours.
 - **Toasts** (`lib/toast.ts`) only report what happened; they never ask a question or carry a form.
 - **Empty states**: a title and one line of text at most.
-- **Emphasis in texts**: in every dialog text and every intro at the top of a Réglages, Serveur or Mon compte page, a household's or a profile's name and an e-mail go in `<b>`, a screen's, page's or button's name in `<i>` (never « » quotes). Locale strings carry the tags; `Dialog`, `SectionPage`, `StepHeader` and `askToConfirm` render them (`ui/rich.tsx`, or `ui/RichText` for a node).
+- **Emphasis in texts**: in every dialog text and every intro at the top of a Réglages, Serveur or Mon compte page, a profile's name and an e-mail go in `<b>`, a screen's, page's or button's name in `<i>` (never « » quotes). Locale strings carry the tags; `Dialog`, `SectionPage`, `StepHeader` and `askToConfirm` render them (`ui/rich.tsx`, or `ui/RichText` for a node).
 - **Colours** come from the CSS variables in `styles/tokens.css`, which change with the theme (Clair, Sombre, Poudré). Never hard-code a colour.
 - **Icons**: `lucide-react`.
 - **Captions and metadata** use the mono font (`--font-mono`).
@@ -88,7 +88,7 @@ Unit tests cover the web utilities only: check a screen in a real browser. Playw
 
 ## End-to-end tests
 
-`e2e/hodi.spec.ts` (Playwright) goes through the journeys Hodi cannot do without, on a fresh install whose news sites are made up by `e2e/server.ts`: setup, reader, Enregistrés, search, profiles (adult, teen, the parental code, a private profile with its password and a trusted device), adding and reporting a source, signing in on other devices and out, adding an account to Qui lit ? and signing each one out, inviting someone from Serveur › Comptes, no household left to show, a phone, sharing with and without a word and the reactions, Masquer and Historique, Suivis, Reprendre, English, and a teen's sources, requests and hours. A change to one of them keeps `npm run test:e2e` passing and updates the test. The `e2e-test` skill explains the harness and how to write a test.
+`e2e/hodi.spec.ts` (Playwright) goes through the journeys Hodi cannot do without, on a fresh install whose news sites are made up by `e2e/server.ts`: setup, reader, Enregistrés, search, profiles (adult, teen, the parental code, a private profile with its password and a trusted device), adding and reporting a source, signing in on other devices and out, adding an account to Qui lit ? and signing each one out, inviting someone from Serveur › Comptes, no household anywhere, a phone, sharing with and without a word and the reactions, Masquer and Historique, Suivis, Reprendre, English, and a teen's sources, requests and hours. A change to one of them keeps `npm run test:e2e` passing and updates the test. The `e2e-test` skill explains the harness and how to write a test.
 
 ## Pull requests
 

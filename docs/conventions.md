@@ -17,7 +17,7 @@ follows it now.
 - **Errors**: end with `Error` (`SqlRefusedError`)
 - **Event handlers**: a prop `onXxx`, a local function `handleXxx`
 - **Files**: `PascalCase.tsx` for a component, `kebab-case.ts` otherwise (`use-media.ts`)
-- **Ids and routes**: always in English (`#/settings/household`)
+- **Ids and routes**: always in English (`#/settings/sources`)
 
 Files with one job say it in their suffix: `*-store.ts` for a kind of data, `*-routes.ts` for a group of routes and
 `use-*.ts` for a hook.

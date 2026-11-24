@@ -21,14 +21,14 @@ volume.
 Open <http://localhost:3000> in a browser on the same machine. Hodi walks you through its setup:
 
 1. **Account**: your e-mail and password, 8 characters or more. This account is yours, and it runs the server.
-2. **The server is ready**: create the household now, or go to the _Server space_ first and create it later.
-3. **Your household**: its name. It has no password: everyone gets their own account.
-4. **And who are you?**: your profile's name, colour and photo. Up to 4 more profiles come later.
+2. **Protect your account**: two-step verification with an authenticator app, required for the server's admin.
+3. **The server is ready**: on to your own profile; the _Server space_ is there afterwards.
+4. **And who are you?**: your profile's name, colour and photo. Everyone you invite later gets their own account.
 5. **AI, if you like**: a key from an AI provider, checked for free, or **No AI**.
 6. **All set**: your time zone and country, guessed from the browser.
 
 Your account exists as soon as you leave the first step: if you stop there, sign in from any device to carry on.
-Everything chosen here can be changed later in _Settings › Household_ and _My account › AI and credits_.
+Everything chosen here can be changed later in _My account_ and in the _Server space_.
 
 > [!TIP]
 > Put plugins in `data/plugins/` before the first start: the setup then shows them under _Plugins found_, right after

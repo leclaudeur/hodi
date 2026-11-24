@@ -2,8 +2,8 @@
 
 # 🧩 Hodi plugin SDK
 
-**Build, type and test plugins for [Hodi](https://github.com/leclaudeur/hodi), the self-hosted news reader for a
-household.**<br>
+**Build, type and test plugins for [Hodi](https://github.com/leclaudeur/hodi), the self-hosted news reader for
+your family and friends.**<br>
 One command builds the file Hodi installs. _Your plugin runs in Hodi's sandbox, with Hodi's own look._
 
 [![npm](https://img.shields.io/npm/v/@hodi-app/plugin-sdk?label=%40hodi-app%2Fplugin-sdk)](https://www.npmjs.com/package/@hodi-app/plugin-sdk)
@@ -60,8 +60,8 @@ A plugin sent by `hodi-plugin dev` shows as **In development**. Its pages show a
 - 🌐 **Read other sites**, only the ones it names
 - ⚙️ **Have settings** that Hodi draws for it
 - 📄 **Add pages** to _Settings_ and to the _Server_ space, and cards to its _Overview_
-- 📰 **Offer feeds** a household follows like any source
-- ✨ **Use the household's AI**, only on a click
+- 📰 **Offer feeds** anyone follows like any source
+- ✨ **Use the AI of whoever clicks**, only on a click
 - 🔔 **Send notifications** and e-mails
 - 🚪 **Join the sign-in**, for a sign-up or another way in
 - 🔎 **Open pages to search engines**, such as a public home page
@@ -100,7 +100,7 @@ every theme and on every screen size.
 ## Testing
 
 The SDK runs a plugin's server part as Hodi does: it builds the plugin, loads it in Hodi's own sandbox and calls its
-routes through Hodi's own checks. Around it is a small Hodi in memory, with a household, the people a test adds and
+routes through Hodi's own checks. Around it is a small Hodi in memory, with a server admin, the people a test adds and
 stand-ins for sites, e-mails, notifications and the AI, so a test never sends anything.
 
 In the template, `npm test` runs these tests on your machine, and CI runs them again on every push. A plugin that passes

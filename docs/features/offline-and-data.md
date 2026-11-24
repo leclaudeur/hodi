@@ -11,8 +11,8 @@ online. Signing out clears what the device kept.
 Everything lives in a SQLite database in the `hodi-data` volume (`/app/data/hodi.db`, or `./data` outside Docker),
 copied every night:
 
-- the household's settings and its AI key;
-- each account: e-mail, password hash and signed-in devices;
+- the server's settings;
+- each account: e-mail, password hash, AI key and signed-in devices;
 - the profiles: settings, saved articles, history (a year, 5,000 articles at most), statistics (400 days), followed
   subjects and the devices that get its notifications;
 - every article the feeds listed, with a full-text index of titles and summaries;

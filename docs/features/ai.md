@@ -16,7 +16,7 @@ one minute, a person's next calls are refused, with nothing sent, until the minu
 at most 10 times an hour, so a plugin's bug cannot empty a key.
 
 _AI and credits_ shows the account's own calls of the last 24 hours, kind by kind, and its country, used for the AI's
-web searches. Once a plugin has a purple button, the admin's page lists it with their calls of the last 24
-hours and a switch to turn its AI off for the household.
+web searches. Once a plugin has a purple button, the server admin's page lists it with their calls of the last 24
+hours and a switch to turn its AI off for everyone.
 
 [← Back to the features](../features.md)

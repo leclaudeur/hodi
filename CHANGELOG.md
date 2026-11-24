@@ -63,6 +63,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **No household in any text.** Sources count for the server, plugins and their AI for everyone or for the account
+  that clicks, the weekly challenge for a family; the features docs gain _Accounts and families_.
 - **One group of people on the server.** A server with several households merges them once: every profile, code and
   plugin's AI turned off joins the first one. Invited people lists the invitations each adult made, and a plugin's AI
   turned off is off for the whole server. A code made by the server's admin sets a new password for anyone but
@@ -139,6 +141,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **A server admin's role in Server › Accounts.** Their account's role reads _Adult · Server admin_ again, not the
+  button's _Make server admin_.
 - **Historique right after Masquer.** An article hidden a moment before opening _Historique_ is there at once.
 - **An invitation code tries no addresses.** Each e-mail it is refused because it already has an account, or is
   blocked, counts as a failed sign-in: after a few, the device waits as after wrong passwords.

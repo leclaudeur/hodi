@@ -1,17 +1,17 @@
 # Features
 
-Hodi is a news reader for one household, on its own server. Up to five people read the news by topic, in a clean
-reader, with their own profile, and an AI helps only when someone clicks for it. This page sums up each part of Hodi;
-each part has its own page with the details. Screens and buttons are named as Hodi shows them in English.
+Hodi is a news reader on its own server, for a family and the people around it. Everyone reads the news by topic, in a
+clean reader, with their own account and profile, and an AI helps only when someone clicks for it. This page sums up
+each part of Hodi; each part has its own page with the details. Screens and buttons are named as Hodi shows them in
+English.
 
-## [The household](features/household.md)
+## [Accounts and families](features/accounts.md)
 
-One install is one household of up to five profiles, each person with their own account. Newcomers join with a
-one-time code, and a teen's or child's device can be linked to their profile with no account at all.
+Every person has their own account and profile, with no household around them and no limit to their number. The
+server's admin invites newcomers with a one-time code, and parents make their teens' and children's accounts.
 
-The first profile is the household's admin: it runs the sources, the AI key and the settings. An adult profile can be
-private, opening with its password except on the devices its person trusts, or open with the household's parental
-code. Two-step verification adds an app's code to the password.
+An adult profile can be private, opening with its password except on the devices its person trusts, or open with the
+parental code where a young one is signed in. Two-step verification adds an app's code to the password.
 
 ## [Reading](features/reading.md)
 
@@ -30,12 +30,12 @@ Every request answers a click on a purple button, paid with the person's own key
 ## [Statistics and the game](features/game.md)
 
 Each profile sees what it read this week and this month, by topic and by source. Reading also earns points, levels and
-badges, and the household has a weekly challenge to read together, unless the admin turns the game off.
+badges, and each family has a weekly challenge to read together, unless the server's admin turns the game off.
 
 ## [The Server space](features/server-space.md)
 
 The account that set Hodi up runs the server from a space of its own, apart from the app. It sees totals, never what
-anyone reads, and manages the households, the accounts, how long content is kept, backups, e-mail and plugins.
+anyone reads, and manages the accounts, the sources, how long content is kept, backups, e-mail and plugins.
 
 ## [Offline and stored data](features/offline-and-data.md)
 
