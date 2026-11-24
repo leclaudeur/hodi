@@ -64,4 +64,26 @@ describe('a person’s name, colour and photo', () => {
       env.close()
     }
   })
+
+  // Each refusal counts as a failed sign-in: a code never serves to find out which addresses have an account.
+  it('stops a code that tries one taken e-mail after another', async () => {
+    const env = await startHousehold()
+    try {
+      const { code } = (await (await env.call('/codes', env.admin, 'POST', {})).json()) as { code: string }
+      const join = () =>
+        env.call('/codes/join', '', 'POST', {
+          code,
+          email: 'sam@example.com',
+          password: 'another-password-1',
+          ageConfirmed: true,
+          profile: { name: 'Sam', color: 'world' }
+        })
+      for (let tries = 0; tries < 5; tries += 1) assert.equal((await join()).status, 409)
+      const stopped = await join()
+      assert.equal(stopped.status, 429)
+      assert.equal(((await stopped.json()) as { error: string }).error, 'too_many_attempts')
+    } finally {
+      env.close()
+    }
+  })
 })

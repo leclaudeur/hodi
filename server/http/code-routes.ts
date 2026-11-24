@@ -14,6 +14,7 @@ import {
   withProfileCookie
 } from './code-join.ts'
 import { ANYONE_IN, refuseSignIn } from './sign-in-check.ts'
+import { clientAddressOf } from './client-address.ts'
 import { isPassword } from './household-input.ts'
 import { type InvitationMail, invitationRoutes, inviteOf, mailInvitation } from './invitation-routes.ts'
 import { isServerAdminOf, isParentOf, profileIdOf } from './profile-routes.ts'
@@ -108,6 +109,8 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
 
     const refusal = newAccountRefusal(options, asked.email, handle)
     if (refusal) {
+      // A taken or blocked e-mail counts as a failed sign-in: one valid code never tries addresses in a loop.
+      if (refusal !== 'handle_taken') options.throttle.recordFailure(options.now(), clientAddressOf(request))
       response.status(409).json({ error: refusal })
       return
     }

@@ -10,6 +10,7 @@ import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
+import { SourceStore } from '../db/source-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
@@ -75,7 +76,8 @@ describe('two families on one server', () => {
       devices: new UserDeviceStore(db),
       codes: new SignInCodeStore(db, config.sessionSecret),
       users: id => new UserStore(db, id),
-      youth: new YouthStore(db, () => 'UTC')
+      youth: new YouthStore(db, () => 'UTC'),
+      sources: { store: new SourceStore(db), file: catalog, find: async () => ({ status: 'none' }) }
     }).listen(0)
     await new Promise(resolve => server.once('listening', resolve))
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
@@ -116,14 +118,14 @@ describe('two families on one server', () => {
 
   after(() => close())
 
-  it('shows each household its own profiles only', async () => {
+  it('shows each account its own profiles only', async () => {
     assert.deepEqual(await profileIds(martin), [martinAdmin, martinTeen])
     assert.ok(!(await profileIds(dupont)).includes(martinAdmin))
     const session = await json<{ profileChosen: boolean }>('/session', martin)
     assert.equal(session.profileChosen, true)
   })
 
-  it('never opens or changes a profile of the other household', async () => {
+  it('never opens or changes a profile of the other account', async () => {
     // « Qui lit ? » with a profile of the Duponts: not one of the Martins'.
     assert.equal((await call('/profiles/current', martin, 'PUT', { id: dupontAdmin })).status, 400)
     assert.equal((await call('/profiles/current', dupont, 'PUT', { id: martinTeen })).status, 400)
@@ -147,9 +149,8 @@ describe('two families on one server', () => {
     profiles.delete(zoe.id)
   })
 
-  // Claire made the server, so she is its admin: that gives her the Duponts' household admin's rights, never a way
-  // into the Martins' profiles or their teen's rules.
-  it("gives the server's admin no hold on another household's profiles or children", async () => {
+  // Claire made the server, so she is its admin: never a way into the Martins' profiles or their teen's rules.
+  it("gives the server's admin no hold on another account's profiles or children", async () => {
     assert.equal((await json<{ serverAdmin: boolean }>('/profiles', dupont)).serverAdmin, true)
     assert.equal((await call(`/profiles/${martinTeen}`, dupont, 'DELETE')).status, 404)
     assert.equal((await call(`/profiles/${martinAdmin}`, dupont, 'DELETE')).status, 404)
@@ -160,12 +161,67 @@ describe('two families on one server', () => {
     assert.equal((await call(`/profiles/${martinTeen}/rules`, martin)).status, 200)
   })
 
-  it('shares within the household only', async () => {
+  it('shares only with the accounts one is tied to', async () => {
     const targets = async (cookie: string) =>
       (await json<{ people: { id: number }[] }>('/me/share-targets', cookie)).people.map(person => person.id)
     assert.deepEqual(await targets(martin), [martinTeen])
     assert.deepEqual(await targets(dupont), [])
   })
+
+  // Every screen Marc opens, signed in on his own device: nothing of Claire's in any answer, nothing of /server.
+  it("shows Marc nothing of Claire's on any screen", async () => {
+    const screens = [
+      ...['/session', '/profiles', '/account', '/account/children', '/ai-usage', '/ai-usage/plugins', '/game'],
+      ...['/me/game', '/me/history', '/me/share-senders', '/me/share-targets', '/me/shares', '/me/source-requests'],
+      ...['/me/time', '/me/limits', '/me/resume', '/sources', '/source-requests', '/storage', '/topics', '/plugins']
+    ]
+    for (const screen of screens) {
+      const answer = await call(screen, martin)
+      assert.ok(answer.status < 500, `${screen}: ${answer.status}`)
+      const text = await answer.text()
+      assert.doesNotMatch(text, /Claire|claire@example\.com/, screen)
+      assert.doesNotMatch(text, new RegExp(`"(id|profileId)":${dupontAdmin}[,}]`), screen)
+    }
+    for (const screen of ['/server/accounts', '/server/overview', '/server/general', '/server/inbox']) {
+      const refused = await call(screen, martin)
+      assert.ok(refused.status >= 400 && refused.status < 500, `${screen}: ${refused.status}`)
+    }
+  })
+
+  // Each parent sees the requests of their own teens in Demandes, never another family's.
+  it("shows each parent only their own teens' source requests", async () => {
+    const now = Date.now()
+    const accounts = new UserAccountStore(db)
+    const profiles = new ProfileStore(db)
+    const youth = new YouthStore(db, () => 'UTC')
+    const claire = accounts.byEmail(DUPONT)!
+    const lina = profiles.create('Lina', 'music', now, { kind: 'teen' })!
+    accounts.linkProfile(accounts.create('lina@example.com', 'hash', now)!.id, lina.id)
+    db.prepare('INSERT INTO account_parents (child_id, parent_id, created_at) VALUES (?, ?, ?)').run(
+      accounts.ofProfile(lina.id)!.id,
+      claire.id,
+      now
+    )
+    const source = (name: string) => ({ id: '', name, url: `https://${name}.example/feed`, kind: 'article' as const })
+    const linas = youth.addRequest(lina.id, { ...source('lina'), lang: 'fr', domains: [], skip: [] }, now)
+    const leos = youth.addRequest(martinTeen, { ...source('leo'), lang: 'fr', domains: [], skip: [] }, now)
+    try {
+      await checkRequests(linas.id, leos.id)
+    } finally {
+      youth.decide(linas.id, 'refused', now)
+      youth.decide(leos.id, 'refused', now)
+      profiles.delete(lina.id)
+    }
+  })
+
+  const checkRequests = async (linas: number, leos: number) => {
+    const asked = async (cookie: string) =>
+      (await json<{ requests: { id: number }[] }>('/source-requests', cookie)).requests.map(entry => entry.id)
+    assert.deepEqual(await asked(dupont), [linas])
+    assert.deepEqual(await asked(martin), [leos])
+    // Nor can Claire answer Léo's.
+    assert.equal((await call(`/source-requests/${leos}`, dupont, 'POST', { accept: false })).status, 404)
+  }
 
   // A code no longer opens a household: whoever made it, the new account gets its own profile on the server.
   it('makes an account of its own with any adult’s code', async () => {

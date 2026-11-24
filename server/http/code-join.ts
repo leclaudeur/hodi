@@ -75,7 +75,7 @@ export const codeHelpers = ({ codes, accounts, profiles, install, throttle, now,
     }
     const code = signInCodeOf(request.body?.code)
     const found = code && install.isSetUp() ? codes.peek(code, now()) : null
-    const target = found?.profileId ? profiles.get(found.profileId) : null
+    const target = found?.profileId ? profiles.find(found.profileId) : null
     const waiting = target && waitsForCode(found!, target)
     if (!found || (found.profileId !== null && !waiting)) {
       throttle.recordFailure(now(), client)
@@ -87,10 +87,10 @@ export const codeHelpers = ({ codes, accounts, profiles, install, throttle, now,
 
   const describe = ({ profileId, createdBy, reset }: SignInCode) => {
     if (profileId !== null) {
-      const profile = profiles.get(profileId)!
+      const profile = profiles.find(profileId)!
       return { kind: reset ? 'reset' : 'profile', profile: publicProfile(profile) }
     }
-    const by = createdBy === null ? null : profiles.get(createdBy)
+    const by = createdBy === null ? null : profiles.find(createdBy)
     return { kind: 'invite', invitedBy: by ? publicProfile(by) : null }
   }
 

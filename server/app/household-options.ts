@@ -35,7 +35,7 @@ export const onSetUpOf = (options: Options) => (language: Language) => {
     }
   }
   profiles
-    ?.list()
+    ?.everyone()
     .filter(profile => profile.kind === 'adult')
     .forEach(profile => giveBaseSources(options, profile.id))
 }

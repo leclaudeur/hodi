@@ -21,6 +21,8 @@ import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { fakeFetch } from './helpers/news.ts'
 
+const THROTTLE_WINDOW = 60_000
+
 const PASSWORD = 'une phrase de passe assez longue'
 const CODE = 'K7PM2QXR'
 
@@ -72,7 +74,7 @@ const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => 
     onHouseholdChange: () => {
       changes += 1
     },
-    throttle: new LoginThrottle(5, 60_000)
+    throttle: new LoginThrottle(5, THROTTLE_WINDOW)
   }).listen(0)
   await new Promise(resolve => server.once('listening', resolve))
   return {
@@ -387,6 +389,8 @@ describe('joining the household with a code', () => {
   })
 
   it('gives an adult who forgot their password a new one, with a code from the server admin only', async () => {
+    // The refusals of the tests above, an e-mail already taken among them, count as failed sign-ins: they age out.
+    clock += THROTTLE_WINDOW
     const sophie = profiles.list().find(profile => profile.name === 'Sophie')!
     const asSam = cookiesFrom(await login({ email: 'sam@example.com', password: PASSWORD }))
     assert.equal((await makeCode(asSam, { profileId: sophie.id })).status, 403)
