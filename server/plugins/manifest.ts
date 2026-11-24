@@ -50,8 +50,6 @@ export interface Permissions {
   // signIn in a public route's answer, for an account the call made or checked; and checkSignIn, which may refuse a
   // sign-in.
   signIn: boolean
-  // ctx.households: list, make, suspend and remove households (only its own for the last three).
-  households: boolean
   // ctx.notify: a notification on a person's devices.
   notify: boolean
   // ctx.ai: one question to the household's AI per click on the plugin's AiButton. Only a signed plugin ("Vérifié")
@@ -102,10 +100,10 @@ const MAX_FEEDS = CONFIG.pluginManifest.feeds
 const TOPIC = /^[a-z][a-z0-9-]{0,31}$/
 // The memory a plugin's code gets unless its manifest asks for more, and the most it may ask: plugins share one
 // budget (sandbox/sandbox.ts), so a bigger one is refused at install rather than failing at its first call.
-// What only a plugin a trusted key signed may ask: they reach people's accounts, households, sign-ins, mail and
-// notifications. An unsigned plugin asking any of them is refused at install and not loaded; « npx hodi-plugin dev »
+// What only a plugin a trusted key signed may ask: they reach people's accounts, sign-ins, mail and notifications.
+// An unsigned plugin asking any of them is refused at install and not loaded; « npx hodi-plugin dev »
 // keeps them, to test them. (permissions.ai is for signed plugins too, but an unsigned one only goes without it.)
-export const SIGNED_ONLY = ['accounts', 'households', 'signIn', 'mail', 'notify'] as const
+export const SIGNED_ONLY = ['accounts', 'signIn', 'mail', 'notify'] as const
 export type SignedOnly = (typeof SIGNED_ONLY)[number]
 
 // The signed-only permissions this manifest asks for.
@@ -203,7 +201,7 @@ const parseSettings = (settings: unknown) => {
 }
 
 // The switches a manifest may turn on, each false unless it says true.
-const FLAGS = ['articles', 'publicRoutes', 'accounts', 'mail', 'signIn', 'households', 'notify', 'ai'] as const
+const FLAGS = ['articles', 'publicRoutes', 'accounts', 'mail', 'signIn', 'notify', 'ai'] as const
 
 const parsePermissions = (value: unknown): Manifest['permissions'] => {
   if (!isRecord(value)) throw new ManifestError('permissions must be an object')

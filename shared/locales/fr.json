@@ -1942,8 +1942,6 @@
       "networkHint": "{{hosts}}",
       "articles": "Lire les articles",
       "articlesHint": "Ceux que les sources de Hodi ont listés",
-      "households": "Créer et gérer des foyers",
-      "householdsHint": "Il ne supprime que les foyers qu’il a créés",
       "accounts": "Créer et vérifier des comptes",
       "accountsHint": "Il ne lit jamais les mots de passe enregistrés",
       "signIn": "Connecter des appareils",

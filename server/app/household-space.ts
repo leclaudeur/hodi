@@ -132,16 +132,6 @@ const mountSourceRequests = (api: express.Router, { options, youthSources }: Wir
   api.use('/source-requests', sourceRequestRoutes({ youth, sources: youthSources, news, profiles, now }))
 }
 
-// A household a plugin makes: its base sources and its admin's profile set up as the core's.
-const fillHouseholdHooks = ({ options, householdOptions, profileHooks }: Wiring) => {
-  const { householdHooks, plugins } = options
-  if (!householdHooks) return
-  householdHooks.setUp = language => householdOptions?.onSetUp?.(language)
-  householdHooks.profileCreated = profileHooks.created
-  householdHooks.profileDeleted = profileHooks.deleted
-  householdHooks.removed = id => plugins?.householdRemoved(id)
-}
-
 // Personnes invitées: an invitation's code by e-mail, once Serveur › E-mail is set, in the inviter's language.
 const invitationMail = ({ options }: Wiring): InvitationMail | undefined => {
   const { serverMail, news, profiles, household, serverSettings } = options
@@ -175,7 +165,6 @@ export const mountHousehold = (api: express.Router, wiring: Wiring) => {
         mail: invitationMail(wiring)
       })
     )
-  fillHouseholdHooks(wiring)
   mountProfiles(api, wiring)
   mountSourceRequests(api, wiring)
   api.use(householdPhotoRoutes({ household, profiles, accounts }))

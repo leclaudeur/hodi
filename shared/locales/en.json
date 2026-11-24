@@ -1942,8 +1942,6 @@
       "networkHint": "{{hosts}}",
       "articles": "Read the articles",
       "articlesHint": "The ones Hodi’s sources listed",
-      "households": "Create and manage households",
-      "householdsHint": "It only deletes households it created",
       "accounts": "Create and check accounts",
       "accountsHint": "It never reads stored passwords",
       "signIn": "Sign devices in",

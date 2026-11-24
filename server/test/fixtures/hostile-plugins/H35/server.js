@@ -1,17 +1,19 @@
-// H35: households: remove or suspend what the plugin did not create. A hostile test plugin: the sandbox must make it fail.
+// H35: accounts: remove or suspend what the plugin did not create. A hostile test plugin: the sandbox must make it fail.
 const attempt = async (name, fn) => { try { return { name, ok: true, value: await fn() } } catch (error) { return { name, ok: false, error: String(error && error.message) } } }
 
 export default {
   routes: {
     'POST /wipe': async (_r, ctx) => {
-      const all = await ctx.households.list()
-      const own = await ctx.households.create({ name: 'Plugin made', admin: null })
+      const own = await ctx.accounts.create({ email: 'made@example.com', password: 'a long password', name: 'Made' })
       const results = []
-      for (const household of all) {
-        results.push(await attempt('suspend ' + household.id, () => ctx.households.suspend(household.id)))
-        results.push(await attempt('remove ' + household.id, () => ctx.households.remove(household.id)))
+      // The plugin lists only its own accounts: it guesses the others' ids.
+      for (let id = 1; id <= 5; id++) {
+        if (id === own.id) continue
+        results.push(await attempt('suspend ' + id, () => ctx.accounts.suspend(id)))
+        results.push(await attempt('remove ' + id, () => ctx.accounts.remove(id)))
       }
-      results.push(await attempt('remove own', () => ctx.households.remove(own.id)))
+      results.push(await attempt('own suspend', () => ctx.accounts.suspend(own.id)))
+      results.push(await attempt('own resume', () => ctx.accounts.resume(own.id)))
       return { body: results }
     }
   }

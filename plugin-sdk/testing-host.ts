@@ -4,10 +4,8 @@ import { openDatabase } from '../server/db/database.ts'
 import { DEFAULT_ACCOUNT_ID } from '../server/db/household-scope.ts'
 import { HouseholdStore } from '../server/db/household-store.ts'
 import type { MailSettings } from '../server/db/mail-settings-store.ts'
-import { PluginHouseholdStore } from '../server/db/plugin-household-store.ts'
 import { PluginStore } from '../server/db/plugin-store.ts'
 import { ProfileStore } from '../server/db/profile-store.ts'
-import { SignInCodeStore } from '../server/db/sign-in-code-store.ts'
 import { UserAccountStore } from '../server/db/user-account-store.ts'
 import type { HttpAnswer } from '../server/news/fetch-text.ts'
 import { accountHooks, pluginAccounts } from '../server/plugins/accounts.ts'
@@ -15,7 +13,6 @@ import { PluginAccountStore } from '../server/db/plugin-account-store.ts'
 import { AccountDataStore } from '../server/db/account-data.ts'
 import { pluginAi } from '../server/plugins/ai.ts'
 import type { PluginArticle } from '../server/plugins/articles.ts'
-import { householdHooks, pluginHouseholds } from '../server/plugins/households.ts'
 import { pluginMailer } from '../server/plugins/mail.ts'
 import { pluginNotifier } from '../server/plugins/notify.ts'
 import { type LoadPluginsOptions, loadPlugins } from '../server/plugins/registry.ts'
@@ -169,12 +166,6 @@ export const startSmallHodi = async (
       made: new PluginAccountStore(db),
       hooks: removals,
       throttle: new LoginThrottle()
-    }),
-    households: pluginHouseholds({
-      store: new PluginHouseholdStore(db),
-      accounts,
-      codes: new SignInCodeStore(db, Buffer.alloc(32, 7)),
-      hooks: householdHooks()
     }),
     mail: pluginMailer({
       store: { get: () => (options.mail === false ? null : MAIL) },

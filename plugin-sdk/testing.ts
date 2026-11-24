@@ -48,7 +48,7 @@ export interface TestPluginOptions {
   publicHome?: string
   // The household's name and language.
   household?: { name?: string; language?: 'fr' | 'en' }
-  // Built unsigned: Hodi then refuses accounts, households, signIn, mail, notify and ai, as it would.
+  // Built unsigned: Hodi then refuses accounts, signIn, mail, notify and ai, as it would.
   unsigned?: boolean
 }
 

@@ -133,19 +133,6 @@ export const ctx = Object.freeze({
         }
       }
     : {}),
-  ...(objects.includes('households')
-    ? {
-        households: Object.freeze({
-          list: async () => JSON.parse(await bridge.host('households.list', json([]))),
-          get: async id => JSON.parse(await bridge.host('households.get', json([id]))),
-          of: async accountId => JSON.parse(await bridge.host('households.of', json([accountId]))),
-          create: async household => JSON.parse(await bridge.host('households.create', json([household]))),
-          suspend: async id => { JSON.parse(await bridge.host('households.suspend', json([id]))) },
-          resume: async id => { JSON.parse(await bridge.host('households.resume', json([id]))) },
-          remove: async id => { JSON.parse(await bridge.host('households.remove', json([id]))) }
-        })
-      }
-    : {}),
   ...(objects.includes('accounts')
     ? {
         accounts: Object.freeze({

@@ -218,7 +218,7 @@ const StagedPackage = ({ staged, state }: { staged: StagedPlugin; state: AddPlug
         <Button onClick={state.close} disabled={state.busy}>
           {t('common.cancel')}
         </Button>
-        {/* Unsigned and asking for accounts, households, sign-ins, mail or notifications: only Annuler is left. */}
+        {/* Unsigned and asking for accounts, sign-ins, mail or notifications: only Annuler is left. */}
         {!blocked && (
           <Button look="danger" busy={state.busy} onClick={() => state.confirmInstall(staged)}>
             {t(staged.signed ? 'plugins.add.install' : 'plugins.add.installAnyway')}

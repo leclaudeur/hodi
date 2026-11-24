@@ -15,7 +15,6 @@ import {
   restoreTimeFile,
   stageRestore
 } from '../db/maintenance.ts'
-import { PluginHouseholdStore } from '../db/plugin-household-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 
@@ -129,28 +128,6 @@ describe('deletions done again after a restore', () => {
       { ...(restored.prepare('SELECT name, set_up_at FROM accounts WHERE id = 1').get() as object) },
       { name: 'Foyer', set_up_at: null }
     )
-  })
-
-  it('removes again a household a plugin removed', () => {
-    const { dir, db, log } = server()
-    const households = new PluginHouseholdStore(db)
-    const { household } = households.create(
-      { name: 'Martin', language: 'fr', plugin: 'club', admin: { name: 'Jo', accountId: null } },
-      clock
-    )
-    const copy = copyOf(db, dir)
-    clock += HOUR
-    assert.ok(households.remove(household.id, 'club'))
-    // Another plugin's household, or the core's, is not its to remove: nothing is written down.
-    assert.equal(households.remove(1, 'club'), false)
-    assert.deepEqual(
-      log.all().map(entry => entry.kind),
-      ['household']
-    )
-    const restored = openDatabase(copy.file)
-    replayForgotten(restored, log.since(copy.at), clock)
-    assert.equal(count(restored, 'SELECT count(*) AS n FROM accounts WHERE id = ?', household.id), 0)
-    assert.equal(count(restored, 'SELECT count(*) AS n FROM profiles WHERE account_id = ?', household.id), 0)
   })
 
   it('never deletes a new row that got a deleted one’s id', () => {

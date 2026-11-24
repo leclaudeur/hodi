@@ -3,7 +3,6 @@ import type { IsAllowedUrl } from '../news/address-guard.ts'
 import { type FetchHttp, type FetchText } from '../news/fetch-text.ts'
 import type { PluginAccounts } from './accounts.ts'
 import type { PluginArticles } from './articles.ts'
-import type { PluginHouseholds } from './households.ts'
 import type { PluginMailer } from './mail.ts'
 import type { PluginNotifier } from './notify.ts'
 import { type PluginAi, PluginAiError, pluginQuestion } from './ai.ts'
@@ -96,7 +95,6 @@ interface RequestDeps {
   fetchHttpFor: (isAllowed: IsAllowedUrl) => FetchHttp
   isPublicUrl: IsAllowedUrl
   articles: PluginArticles
-  households: PluginHouseholds
   accounts: PluginAccounts
   mail: PluginMailer
   notifier: PluginNotifier
@@ -153,40 +151,6 @@ const addAccounts = (requests: Requests, manifest: Manifest, { accounts }: Reque
   }
 }
 
-const addHouseholds = (requests: Requests, manifest: Manifest, { households }: RequestDeps) => {
-  const id = manifest.id
-  requests['households.list'] = async () => households.list(id)
-  requests['households.get'] = async ([household]) => households.get(id, household)
-  requests['households.of'] = async ([account]) => households.of(id, account)
-  // An existing account becomes a household's admin only when this same call made, checked or found it: a plugin
-  // cannot hand a household to someone who never agreed to it.
-  requests['households.create'] = async ([value], context) => {
-    const admin = typeof value === 'object' && value !== null ? (value as { admin?: unknown }).admin : null
-    const accountId = typeof admin === 'object' && admin !== null ? (admin as { accountId?: unknown }).accountId : null
-    if (accountId !== undefined && accountId !== null) {
-      const vouched =
-        typeof accountId === 'number' &&
-        typeof context === 'object' &&
-        context !== null &&
-        vouchedFor(context as CallContext, accountId)
-      if (!vouched) throw new Error('not_vouched')
-    }
-    return households.create(id, value)
-  }
-  requests['households.suspend'] = async ([household]) => {
-    households.suspend(id, household)
-    return null
-  }
-  requests['households.resume'] = async ([household]) => {
-    households.resume(id, household)
-    return null
-  }
-  requests['households.remove'] = async ([household]) => {
-    households.remove(id, household)
-    return null
-  }
-}
-
 const addAi = (requests: Requests, manifest: Manifest, { ai }: RequestDeps) => {
   requests['ai.ask'] = async ([question], context) => {
     const ticket = typeof context === 'object' && context !== null ? (context as CallContext).ai : undefined
@@ -218,7 +182,6 @@ export const requestsOf = (manifest: Manifest, deps: RequestDeps) => {
     requests['articles.page'] = ([id], context) => inHousehold(householdOf(context), () => articles.page(String(id)))
   }
   if (manifest.permissions.accounts) addAccounts(requests, manifest, deps)
-  if (manifest.permissions.households) addHouseholds(requests, manifest, deps)
   if (manifest.permissions.mail) {
     const plugin = { id: manifest.id, name: manifest.name }
     requests['mail.available'] = async () => mail.available()

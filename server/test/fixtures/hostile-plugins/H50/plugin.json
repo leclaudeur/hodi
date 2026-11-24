@@ -7,7 +7,6 @@
   "audience": "admin",
   "permissions": {
     "accounts": true,
-    "households": true,
     "signIn": true,
     "publicRoutes": true
   }

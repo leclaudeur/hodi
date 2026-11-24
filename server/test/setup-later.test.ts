@@ -10,7 +10,6 @@ import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
 import { MailSettingsStore } from '../db/mail-settings-store.ts'
-import { PluginHouseholdStore } from '../db/plugin-household-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { ServerPeopleStore } from '../db/server-people-store.ts'
 import { ServerSettingsStore } from '../db/server-settings-store.ts'
@@ -304,7 +303,7 @@ describe('a code taken with an account that exists', () => {
   })
 })
 
-// A household plugin's case: the first household left for later, and a household a plugin made for someone else.
+// An older household plugin's case: the first household left for later, and a household it made for someone else.
 describe('a household a plugin made while the first one is left for later', () => {
   it('lets its people sign in and read in it, while a device signed in with nothing still goes to Connexion', async () => {
     const { call, db, session, close } = await startServer()
@@ -317,10 +316,16 @@ describe('a household a plugin made while the first one is left for later', () =
       await hashPassword('la phrase de Claire', { N: 2 ** 10, r: 8, p: 1 }),
       0
     )!
-    new PluginHouseholdStore(db).create(
-      { name: 'Famille Lambert', language: 'fr', plugin: 'club', admin: { name: 'Claire', accountId: claire.id } },
-      0
-    )
+    // As an older plugin made it with ctx.households: set up at once, with its admin's profile.
+    const { lastInsertRowid } = db
+      .prepare(
+        "INSERT INTO accounts (name, created_at, set_up_at, language, made_by_plugin) VALUES (?, 0, 0, 'fr', 'club')"
+      )
+      .run('Famille Lambert')
+    db.prepare(
+      `INSERT INTO profiles (account_id, name, color, kind, position, created_at, role, user_id, tour_pending)
+       VALUES (?, 'Claire', 'world', 'adult', 0, 0, 'admin', ?, 1)`
+    ).run(Number(lastInsertRowid), claire.id)
 
     const login = await call('/login', '', 'POST', { email: 'claire@example.com', password: 'la phrase de Claire' })
     assert.equal(login.status, 204)

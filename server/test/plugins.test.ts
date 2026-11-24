@@ -177,7 +177,6 @@ describe('plugin manifest', () => {
         accounts: true,
         mail: true,
         signIn: true,
-        households: true,
         notify: true,
         ai: true
       },
@@ -190,11 +189,12 @@ describe('plugin manifest', () => {
       accounts: true,
       mail: true,
       signIn: true,
-      households: true,
       notify: true,
       ai: true
     })
     assert.equal(manifest.memoryMb, 32)
+    // households is gone: an older plugin that asks for it still loads, without it.
+    assert.equal('households' in parseManifest({ ...MANIFEST, permissions: { households: true } }).permissions, false)
     assert.deepEqual(parseManifest(MANIFEST).permissions, {
       network: [],
       articles: false,
@@ -202,7 +202,6 @@ describe('plugin manifest', () => {
       accounts: false,
       mail: false,
       signIn: false,
-      households: false,
       notify: false,
       ai: false
     })
@@ -222,7 +221,6 @@ describe('plugin manifest', () => {
       { ...MANIFEST, permissions: { accounts: 'yes' } },
       { ...MANIFEST, permissions: { mail: 'yes' } },
       { ...MANIFEST, permissions: { signIn: 'yes' } },
-      { ...MANIFEST, permissions: { households: 'yes' } },
       { ...MANIFEST, memoryMb: 0 },
       { ...MANIFEST, memoryMb: 1.5 },
       { ...MANIFEST, memoryMb: 33 },
@@ -1044,7 +1042,6 @@ describe('plugin routes', () => {
       accounts: false,
       mail: false,
       signIn: false,
-      households: false,
       notify: false,
       ai: false
     })
@@ -1172,7 +1169,7 @@ describe('plugin packages', () => {
     )
   })
 
-  it('installs a plugin asking for accounts, households, sign-ins, mail or notifications only when it is signed', async () => {
+  it('installs a plugin asking for accounts, sign-ins, mail or notifications only when it is signed', async () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'hodi-plugins-'))
     const installer = new PluginInstaller({ dir, keys: trusted, installedVersion: () => null })
     for (const permission of SIGNED_ONLY) {
@@ -1456,7 +1453,7 @@ describe('the server settings a plugin reads', () => {
   })
 })
 
-// Accounts, households, sign-ins, mail and notifications: an unsigned plugin asking for one does not run, whatever
+// Accounts, sign-ins, mail and notifications: an unsigned plugin asking for one does not run, whatever
 // put it in the plugins' folder (an install from before the rule, a copy by hand).
 describe('signed-only permissions', () => {
   for (const permission of SIGNED_ONLY) {

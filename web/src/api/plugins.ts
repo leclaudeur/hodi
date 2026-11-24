@@ -13,7 +13,6 @@ export const updatePlugin = (id: string, change: { enabled?: boolean; settings?:
 export interface PluginPermissions {
   network: string[]
   articles: boolean
-  households?: boolean
   accounts?: boolean
   signIn?: boolean
   publicRoutes?: boolean

@@ -5,7 +5,6 @@ import { isPublicAddressUrl } from '../news/address-guard.ts'
 import { createFetchHttp, createFetchText } from '../news/fetch-text.ts'
 import { NO_ACCOUNTS } from './accounts.ts'
 import { NO_ARTICLES, type PluginArticle } from './articles.ts'
-import { NO_HOUSEHOLDS } from './households.ts'
 import { NO_MAIL } from './mail.ts'
 import { NO_NOTICES } from './notify.ts'
 import { NO_PLUGIN_SERVER_NOTICES } from './server-notify.ts'
@@ -151,7 +150,6 @@ const requestDepsOf = (options: LoadPluginsOptions): RequestDeps => ({
   notifier: options.notifier ?? NO_NOTICES,
   serverNotifier: options.serverNotifier ?? NO_PLUGIN_SERVER_NOTICES,
   ai: options.ai ?? NO_PLUGIN_AI,
-  households: options.households ?? NO_HOUSEHOLDS,
   serverSettings:
     options.serverSettings ??
     (() => {
