@@ -4,26 +4,23 @@ import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword } from '../auth/password.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
-import { type HouseholdAi, type HouseholdStore, cleanHouseholdName } from '../db/household-store.ts'
+import type { InstallStore } from '../db/install-store.ts'
 import { type ProfileStore, cleanName, profileColorOf } from '../db/profile-store.ts'
 import { signInCodeOf } from '../db/sign-in-code-store.ts'
 import { type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import { type Language, isLanguage } from '../../shared/i18n.ts'
 import type { AiProvider } from '../news/ai-providers.ts'
-import type { AccountAiStore } from '../db/account-ai-store.ts'
+import type { AccountAi, AccountAiStore } from '../db/account-ai-store.ts'
 import type { ManifestTranslations } from '../plugins/manifest-texts.ts'
 import type { AccountOf, CookieFor } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
 import { aiOf, countryOf, isNearby, isPassword, providersList, timeZoneOf } from './household-input.ts'
 
-// The name of the space everyone reads in, kept where a plugin still shows households.
-export const SPACE_NAME = 'Hodi'
-
-// The first-run screens, in two parts: the server admin's own account, then the household. The same start with or
-// without plugins, which may add their steps between the two. Then Réglages > Foyer and > IA et crédits, the admin's.
+// The first-run screens, in two parts: the server admin's own account, then their profile. The same start with or
+// without plugins, which may add their steps between the two.
 
 export interface HouseholdRoutesOptions {
-  household: HouseholdStore
+  install: InstallStore
   profiles: ProfileStore
   providers: AiProvider[]
   now: () => number
@@ -47,8 +44,6 @@ export interface HouseholdRoutesOptions {
   onSetUp?: (language: Language) => void
   // « Mot de passe oublié » can send its link: Serveur › E-mail is set.
   canResetByMail?: () => boolean
-  // « Plus tard » at the household step: whether the server's admin left the household for later, and its change.
-  householdLater?: { get: () => boolean; set: (later: boolean) => void }
   // Serveur › Général: where a browser that never signed in here goes from the app's bare address.
   publicHome?: () => string | null
   // « Plugins trouvés »: the plugins put in data/plugins before the first start, and their switch.
@@ -91,7 +86,7 @@ export const setupRoutes = ({
   return router
 }
 
-const setupChecks = ({ household, now, setupCode, throttle, accountOf }: SetupOptions) => {
+const setupChecks = ({ install, now, setupCode, throttle, accountOf }: SetupOptions) => {
   // The server admin signed in on this device: past "Ton compte", the session stands for the setup code.
   const adminOf = (request: express.Request) => {
     const account = accountOf(request)
@@ -120,7 +115,7 @@ const setupChecks = ({ household, now, setupCode, throttle, accountOf }: SetupOp
   }
 
   const notNeeded = (response: express.Response) => {
-    if (!household.isSetUp()) return false
+    if (!install.isSetUp()) return false
     response.status(409).json({ error: 'already_set_up' })
     return true
   }
@@ -132,29 +127,16 @@ type SetupChecks = ReturnType<typeof setupChecks>
 
 const mountSetupStateRoutes = (
   router: express.Router,
-  { household, providers, accounts, canResetByMail, householdLater, setupPlugins, publicHome }: SetupOptions,
+  { install, providers, accounts, canResetByMail, setupPlugins, publicHome }: SetupOptions,
   { adminOf, codeOk, notNeeded }: SetupChecks
 ) => {
   // stage account: nobody has an account yet, the setup starts with "Ton compte". stage household: the server admin
   // has one; signedIn says whether it is on this device, else it signs in first.
   router.get('/', (request, response) => {
-    if (household.isSetUp()) {
-      const { name, language } = household.get()
+    if (install.isSetUp()) {
       response.json({
         needed: false,
-        name,
-        language,
-        resetByMail: canResetByMail(),
-        publicHome: publicHome?.() ?? null
-      })
-      return
-    }
-    // No household for now: Connexion, then /server for its admin, as on a set-up server.
-    if (accounts?.any() && householdLater?.get()) {
-      response.json({
-        needed: false,
-        name: null,
-        language: household.get().language,
+        language: install.get().language,
         resetByMail: canResetByMail(),
         publicHome: publicHome?.() ?? null
       })
@@ -198,7 +180,7 @@ const mountSetupStateRoutes = (
 
 const mountSetupAccountRoutes = (
   router: express.Router,
-  { now, accounts, cookieFor, householdLater, setupPlugins }: SetupOptions,
+  { now, accounts, cookieFor, setupPlugins }: SetupOptions,
   { adminOf, codeOk, notNeeded }: SetupChecks
 ) => {
   // "Ton compte": the server admin's account, which signs this device in. Only the first account is made here.
@@ -216,21 +198,6 @@ const mountSetupAccountRoutes = (
       return
     }
     response.set('Set-Cookie', cookieFor(account, request))
-    response.status(204).end()
-  })
-
-  // « Plus tard »: the server goes on with no household; its admin reaches /server, which can make one later.
-  router.post('/later', (request, response) => {
-    if (notNeeded(response)) return
-    if (!adminOf(request)) {
-      response.status(401).json({ error: 'unauthenticated' })
-      return
-    }
-    if (!householdLater) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    householdLater.set(true)
     response.status(204).end()
   })
 
@@ -258,7 +225,7 @@ const chosenHandleOf = (value: unknown) => (value === undefined ? null : (cleanH
 
 const mountSetupHouseholdRoute = (
   router: express.Router,
-  { household, profiles, providers, now, secret, accounts, accountAi, onChange, onSetUp, householdLater }: SetupOptions,
+  { install, profiles, providers, now, secret, accounts, accountAi, onChange, onSetUp }: SetupOptions,
   { adminOf, notNeeded }: SetupChecks
 ) => {
   // The profile to "Tout est prêt": the server's one space, with the server admin's profile as its admin.
@@ -271,9 +238,6 @@ const mountSetupHouseholdRoute = (
     }
     const body = (request.body ?? {}) as Record<string, unknown>
     const profile = (body.profile ?? {}) as { name?: unknown; color?: unknown; handle?: unknown }
-    // The server's one space is not shown any more: it needs no name of its own, and an empty one from an old page
-    // gets the same.
-    const name = body.name === undefined || body.name === '' ? SPACE_NAME : cleanHouseholdName(body.name)
     const profileName = cleanName(profile.name)
     const color = profileColorOf(profile.color)
     const timeZone = timeZoneOf(body.timeZone)
@@ -283,7 +247,6 @@ const mountSetupHouseholdRoute = (
     const handle = chosenHandleOf(profile.handle)
     if (
       handle === false ||
-      !name ||
       !profileName ||
       !color ||
       timeZone === false ||
@@ -299,14 +262,11 @@ const mountSetupHouseholdRoute = (
       response.status(409).json({ error: 'handle_taken' })
       return
     }
-    const settings: HouseholdAi | null = ai ? { provider: ai.provider.id, key: ai.key, model: null } : null
-    if (
-      !household.setUp({ name, timeZone: timeZone ?? null, country: country ?? null, language, ai: settings }, now())
-    ) {
+    const settings: AccountAi | null = ai ? { provider: ai.provider.id, key: ai.key, model: null } : null
+    if (!install.setUp({ timeZone: timeZone ?? null, language }, now())) {
       response.status(409).json({ error: 'already_set_up' })
       return
     }
-    householdLater?.set(false)
     // The admin's own region too: its days and its AI's searches follow it from now on.
     accounts?.setRegion(admin.id, { timeZone: timeZone ?? undefined, country: country ?? null })
     // The key given here is the admin's own: each account pays for its own AI.

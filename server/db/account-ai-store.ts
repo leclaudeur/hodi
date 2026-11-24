@@ -1,7 +1,10 @@
 import type { Database } from './database.ts'
-import type { HouseholdAi } from './household-store.ts'
 
-export type AccountAi = HouseholdAi
+export interface AccountAi {
+  provider: string
+  key: string
+  model: string | null
+}
 
 interface AiRow {
   ai_provider: string | null

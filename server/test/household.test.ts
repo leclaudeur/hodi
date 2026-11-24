@@ -10,6 +10,7 @@ import { LoginThrottle } from '../auth/login-throttle.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { SIGN_IN_CODE_LIFETIME, SignInCodeStore } from '../db/sign-in-code-store.ts'
@@ -41,6 +42,7 @@ const fakeAi: AiProvider = {
 const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => {
   const db = openDatabase(':memory:')
   const household = new HouseholdStore(db)
+  const installed = new InstallStore(db)
   const profiles = new ProfileStore(db)
   const accounts = new UserAccountStore(db)
   const webDir = mkdtempSync(path.join(tmpdir(), 'hodi-web-'))
@@ -61,6 +63,7 @@ const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => 
     news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
     profiles,
     household,
+    install: installed,
     accounts,
     devices: new UserDeviceStore(db),
     accountData: new AccountDataStore(db),
@@ -79,6 +82,7 @@ const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => 
     baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
     close: () => server.close(),
     household,
+    installed,
     profiles,
     accounts,
     db
@@ -88,7 +92,6 @@ const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => 
 let changes = 0
 let install: Awaited<ReturnType<typeof startInstall>>
 let baseUrl: string
-let household: HouseholdStore
 let profiles: ProfileStore
 
 const post = (url: string, body: unknown, headers: Record<string, string> = {}, method = 'POST') =>
@@ -124,7 +127,7 @@ const signIn = async () => cookiesFrom(await login(ACCOUNT))
 describe('household', () => {
   before(async () => {
     install = await startInstall()
-    ;({ baseUrl, household, profiles } = install)
+    ;({ baseUrl, profiles } = install)
   })
   after(() => install.close())
 
@@ -212,13 +215,12 @@ describe('household', () => {
     assert.equal((await fetch(`${baseUrl}/api/session`, { headers: { cookie } })).status, 401)
   })
 
-  it('refuses a household without a name or with a wrong region', async () => {
+  it('refuses a wrong region or language', async () => {
     const cookie = await signIn()
-    assert.equal((await post('/setup', { ...SETUP, name: ' ' }, { cookie })).status, 400)
     assert.equal((await post('/setup', { ...SETUP, timeZone: 'Mars/Olympus' }, { cookie })).status, 400)
     assert.equal((await post('/setup', { ...SETUP, country: 'Belgique' }, { cookie })).status, 400)
     assert.equal((await post('/setup', { ...SETUP, language: 'nl' }, { cookie })).status, 400)
-    assert.equal(household.isSetUp(), false)
+    assert.equal(install.installed.isSetUp(), false)
   })
 
   it('sets up the household with the admin’s profile, which is its own, once', async () => {
@@ -244,16 +246,14 @@ describe('household', () => {
       model: null
     })
 
-    const stored = household.get()
-    assert.equal(stored.name, 'Chez nous')
-    assert.equal(stored.timeZone, 'Europe/Brussels')
-    assert.equal(stored.country, 'BE')
+    // The server's clock is the one chosen here; the country is the admin's own.
+    assert.equal(install.installed.get().timeZone, 'Europe/Brussels')
+    assert.equal(install.accounts.byEmail(EMAIL)!.country, 'BE')
 
     assert.equal((await post('/setup', SETUP, { cookie })).status, 409)
     assert.equal((await post('/setup/account', ACCOUNT)).status, 409)
     assert.deepEqual(await (await fetch(`${baseUrl}/api/setup`)).json(), {
       needed: false,
-      name: 'Chez nous',
       language: 'fr',
       // No mail server here: Connexion offers no « Mot de passe oublié ».
       resetByMail: false,
@@ -312,7 +312,7 @@ describe('joining the household with a code', () => {
 
   before(async () => {
     install = await startInstall({ now: () => clock })
-    ;({ baseUrl, household, profiles } = install)
+    ;({ baseUrl, profiles } = install)
     const account = await post('/setup/account', ACCOUNT)
     admin = cookiesFrom(account)
     const done = await post('/setup', SETUP, { cookie: admin })
@@ -333,7 +333,7 @@ describe('joining the household with a code', () => {
     const checked = await post('/codes/check', { code })
     assert.deepEqual(await checked.json(), {
       kind: 'invite',
-      household: 'Chez nous',
+      household: 'Hodi',
       invitedBy: { id: profiles.list()[0]!.id, name: 'Antho', color: 'tech', kind: 'adult', avatar: null },
       full: false
     })
@@ -465,7 +465,7 @@ describe('an account with no password of its own (« Se connecter avec Google »
 
   before(async () => {
     install = await startInstall({ now: () => clock })
-    ;({ baseUrl, household, profiles } = install)
+    ;({ baseUrl, profiles } = install)
     antho = cookiesFrom(await post('/setup/account', ACCOUNT))
     antho = `${antho}; ${cookiesFrom(await post('/setup', SETUP, { cookie: antho }))}`
     // As if a plugin had made it with a login alone.
@@ -530,7 +530,7 @@ describe("a young profile's own device", () => {
 
   before(async () => {
     install = await startInstall({ now: () => clock })
-    ;({ baseUrl, household, profiles } = install)
+    ;({ baseUrl, profiles } = install)
     const account = await post('/setup/account', ACCOUNT)
     admin = cookiesFrom(account)
     const done = await post('/setup', SETUP, { cookie: admin })
@@ -556,7 +556,7 @@ describe('the account and its data', () => {
 
   before(async () => {
     install = await startInstall()
-    ;({ baseUrl, household, profiles } = install)
+    ;({ baseUrl, profiles } = install)
     const account = await post('/setup/account', ACCOUNT)
     antho = cookiesFrom(account)
     antho = `${antho}; ${cookiesFrom(await post('/setup', SETUP, { cookie: antho }))}`
@@ -644,7 +644,7 @@ describe('the account and its data', () => {
       you: { profile: { name: string }; saved_articles: unknown[] }
     }
     assert.equal(body.account.email, 'antho@example.org')
-    assert.equal(body.household.name, 'Chez nous')
+    assert.equal(body.household.name, 'Hodi')
     assert.equal(body.you.profile.name, 'Antho')
     assert.deepEqual(body.you.saved_articles, [])
     assert.doesNotMatch(JSON.stringify(body), /passwordHash|password_hash|scrypt|ai_key/)
@@ -676,7 +676,7 @@ describe('the account and its data', () => {
     const last = (await (await get(sam)).json()) as { deletion: { householdGoes: boolean; household: string } }
     assert.deepEqual(last.deletion, {
       householdGoes: true,
-      household: 'Chez nous',
+      household: 'Hodi',
       others: [],
       children: [],
       heir: null,
@@ -694,7 +694,7 @@ describe('the server’s one space', () => {
   let install: Awaited<ReturnType<typeof startInstall>>
   before(async () => {
     install = await startInstall()
-    ;({ baseUrl, household, profiles } = install)
+    ;({ baseUrl, profiles } = install)
   })
   after(() => install.close())
 
@@ -702,7 +702,7 @@ describe('the server’s one space', () => {
     const admin = cookiesFrom(await post('/setup/account', ACCOUNT))
     const done = await post('/setup', { ...SETUP, name: undefined }, { cookie: admin })
     assert.equal(done.status, 200)
-    assert.equal(household.get().name, 'Hodi')
+    assert.equal(install.installed.isSetUp(), true)
     assert.equal(profiles.list()[0]?.name, 'Antho')
   })
 
@@ -722,7 +722,7 @@ describe('the server’s one space', () => {
         body: JSON.stringify({ ...SETUP, name: '' })
       })
       assert.equal(done.status, 200)
-      assert.equal(other.household.get().name, 'Hodi')
+      assert.equal(other.installed.isSetUp(), true)
     } finally {
       other.close()
     }

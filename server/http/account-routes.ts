@@ -5,6 +5,7 @@ import { hashPassword } from '../auth/password.ts'
 import { type AccountDataStore, deletionPlan } from '../db/account-data.ts'
 import { currentHouseholdId } from '../db/household-scope.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
+import type { InstallStore } from '../db/install-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import type { UserDevice, UserDeviceStore } from '../db/user-device-store.ts'
@@ -30,6 +31,7 @@ export interface AccountRoutesOptions extends AccountAiOptions {
   devices: UserDeviceStore
   profiles?: ProfileStore
   household: HouseholdStore
+  install: InstallStore
   // The install's time zone, for an account and a household with none.
   defaultTimeZone?: string
   // The account and device a request is signed in with.
@@ -92,6 +94,7 @@ const accountHelpers = ({
   devices,
   profiles,
   household,
+  install,
   sessionOf,
   throttle,
   now,
@@ -140,8 +143,8 @@ const accountHelpers = ({
       privateProfile: account.privateProfile,
       // Its own Code parental is set; Mes enfants offers it while it is not.
       parentalCode: account.parentalCode !== null,
-      // Its own, else the household's, as the account's days run in it.
-      timeZone: account.timeZone ?? household.get().timeZone ?? defaultTimeZone,
+      // Its own, else the server's, as the account's days run in it.
+      timeZone: account.timeZone ?? install.get().timeZone ?? defaultTimeZone,
       country: account.country,
       ...accountAiView({ accountAi, providers }, account),
       devices: devices.list(account.id).map(({ id, userAgent, lastSeenAt, trusted }) => ({

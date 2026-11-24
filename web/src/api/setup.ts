@@ -40,11 +40,9 @@ export type SetupState =
       plugins?: SetupPlugin[]
       providers: AiProviderInfo[]
     }
-  // resetByMail: « Mot de passe oublié » can send its link (Serveur › E-mail is set). name: null while the setup
-  // left the household for later.
+  // resetByMail: « Mot de passe oublié » can send its link (Serveur › E-mail is set).
   | {
       needed: false
-      name: string | null
       language?: InterfaceLanguage
       resetByMail?: boolean
       // Serveur › Général: where a browser that never signed in here goes from the app's bare address.
@@ -80,7 +78,6 @@ export const setUpAccount = (account: { code: string | null; email: string; pass
   sendJson<null>('POST', '/setup/account', account)
 
 // « Plus tard » at the household step: the server goes on with no household, its admin in /server.
-export const setUpHouseholdLater = () => sendJson<null>('POST', '/setup/later')
 
 // Réglages > Compte et données: the account signed in on this device, its devices, and what deleting it takes.
 export interface AccountDevice {

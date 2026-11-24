@@ -51,7 +51,7 @@ interface Running {
 // internet) is asked for this code, which only whoever can read the server's log knows.
 const drawSetupCode = (stores: Stores) => {
   const setupCode = drawCode()
-  if (!stores.household.isSetUp()) {
+  if (!stores.install.isSetUp()) {
     console.log(`Hodi is not set up yet: open it in a browser. Setup code, if asked: ${codeForPeople(setupCode)}`)
   }
   return setupCode
@@ -107,6 +107,7 @@ const serve = ({ config, outside, stores, news, plugins, restart, ...running }: 
       catalog: new PluginCatalog({ fetchText: outside.fetchText, fetchBytes: outside.fetchPackages })
     },
     household: stores.household,
+    install: stores.install,
     shareReports: stores.shareReports,
     setupCode: drawSetupCode(stores),
     onHouseholdChange: running.applyHousehold,

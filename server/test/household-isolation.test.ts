@@ -10,6 +10,7 @@ import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { inHousehold } from '../db/household-scope.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
@@ -72,6 +73,7 @@ describe('two households on one server', () => {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles: new ProfileStore(db),
       household: new HouseholdStore(db),
+      install: new InstallStore(db),
       accounts,
       devices: new UserDeviceStore(db),
       codes: new SignInCodeStore(db, config.sessionSecret),
@@ -82,10 +84,9 @@ describe('two households on one server', () => {
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
     close = () => server.close()
 
-    // The Duponts: the core's own household, made by the setup.
+    // The Duponts: the core's own household, made by the setup, which names it no more.
     const account = await call('/setup/account', '', 'POST', { email: DUPONT, password: PASSWORD })
     const done = await call('/setup', cookiesFrom(account), 'POST', {
-      name: 'Famille Dupont',
       profile: { name: 'Claire', color: 'tech' },
       timeZone: 'Europe/Brussels',
       ai: null
@@ -208,7 +209,7 @@ describe('two households on one server', () => {
     assert.deepEqual(await added.json(), {
       error: 'other_household',
       household: 'Famille Martin',
-      here: 'Famille Dupont'
+      here: 'Hodi'
     })
     assert.equal(added.headers.getSetCookie().length, 0)
     assert.equal((await call('/profiles', dupont)).status, 200)

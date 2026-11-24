@@ -1,7 +1,5 @@
 import { ArrowRight, AtSign, LifeBuoy, Smartphone } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getSetup } from '../api.ts'
 import Button from '../ui/Button.tsx'
 import PasswordField from '../ui/PasswordField.tsx'
 import RichText from '../ui/RichText.tsx'
@@ -13,17 +11,6 @@ import { SecondField } from './LoginForms.tsx'
 import { Actions, SetupFrame, StepHeader } from './SetupParts.tsx'
 import setup from './SetupPage.module.css'
 import { type Login, useLogin } from './use-login.ts'
-
-// The household this device serves, for the intro.
-const useHouseholdName = () => {
-  const [name, setName] = useState('')
-  useEffect(() => {
-    getSetup()
-      .then(state => setName(state.needed ? '' : (state.name ?? '')))
-      .catch(() => {})
-  }, [])
-  return name
-}
 
 const Fields = ({ login }: { login: Login }) => {
   const { t } = useTranslation()
@@ -109,7 +96,6 @@ const SecondStep = ({ login, onBack }: { login: Login; onBack: () => void }) => 
 // once it is in; an account of another household is refused, the device serving one.
 const AddAccountPage = ({ onBack }: { onBack: () => void }) => {
   const { t } = useTranslation()
-  const name = useHouseholdName()
   // The device starts again on the feed, with the new session and its own profile open.
   const login = useLogin(() => window.location.replace('/'))
   return (
@@ -121,7 +107,7 @@ const AddAccountPage = ({ onBack }: { onBack: () => void }) => {
           <>
             <StepHeader
               title={t('profiles.addAccount.title')}
-              intro={<RichText i18nKey="profiles.addAccount.intro" values={{ household: name }} />}
+              intro={<RichText i18nKey="profiles.addAccount.intro" />}
             />
             <Fields login={login} />
             {login.error && <StatusLine tone="error">{login.error}</StatusLine>}

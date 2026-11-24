@@ -29,7 +29,7 @@ const apiRouter = (config: Config, appOptions: AppOptions) => {
     accounts: options.accounts,
     devices: options.devices,
     profiles: options.profiles,
-    household: options.household,
+    install: options.install,
     serverSettings: options.serverSettings,
     serverStats: options.serverStats,
     presence: wiring.presence,

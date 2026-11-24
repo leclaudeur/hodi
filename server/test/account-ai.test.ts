@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { after, before, describe, it } from 'node:test'
 import type { Config } from '../config.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { KEY_CHECKS_PER_MINUTE } from '../http/account-ai-routes.ts'
 import { accountAiTools } from '../start/account-ai.ts'
 import { startHousehold } from './helpers/household-env.ts'
@@ -98,6 +99,7 @@ describe('a reader’s AI tools', () => {
     const toolsOf = accountAiTools({
       config: { timeZone: 'UTC' } as Config,
       household: new HouseholdStore(household.db),
+      install: new InstallStore(household.db),
       accounts: household.accounts,
       accountAi: household.accountAi
     })
@@ -118,6 +120,7 @@ describe('a reader’s AI tools', () => {
     const toolsOf = accountAiTools({
       config: { timeZone: 'UTC' } as Config,
       household: new HouseholdStore(household.db),
+      install: new InstallStore(household.db),
       accounts: household.accounts,
       accountAi: household.accountAi
     })

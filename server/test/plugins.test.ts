@@ -22,6 +22,7 @@ import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { ServerSettingsStore, publicServerSettings } from '../db/server-settings-store.ts'
 import { PluginStore } from '../db/plugin-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
@@ -566,6 +567,7 @@ describe('plugin routes', () => {
   let pluginDir = ''
   const db = openDatabase(':memory:')
   const household = new HouseholdStore(db)
+  const install = new InstallStore(db)
   const profiles = new ProfileStore(db)
 
   const call = (url: string, cookie: string, method = 'GET', body?: unknown) =>
@@ -643,6 +645,7 @@ describe('plugin routes', () => {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles,
       household,
+      install,
       accounts,
       devices: new UserDeviceStore(db),
       plugins,

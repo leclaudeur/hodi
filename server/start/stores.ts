@@ -5,6 +5,7 @@ import type { Database } from '../db/database.ts'
 import type { ForgetLog } from '../db/forget-log.ts'
 import { type PluginBackup, startMaintenance } from '../db/maintenance.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { TwoFactorStore } from '../db/two-factor-store.ts'
@@ -67,9 +68,10 @@ export const openStores = (
     plugins: pluginBackup
   })
   const household = new HouseholdStore(db)
+  const install = new InstallStore(db)
   const accounts = new UserAccountStore(db)
-  // Serveur › Vue d'ensemble's days run in the household's time zone, else the install's.
-  const timeZone = () => household.get().timeZone ?? config.timeZone
+  // Serveur › Vue d'ensemble's days run in the time zone chosen at setup, else the install's.
+  const timeZone = () => install.get().timeZone ?? config.timeZone
   // A reader's days (a young profile's hours, the points of the game) run in its account's, else that one.
   const readerTimeZone = (profileId?: number) =>
     (profileId === undefined ? null : accounts.timeZoneOfProfile(profileId)) ?? timeZone()
@@ -85,6 +87,7 @@ export const openStores = (
     usersOf: (profileId: number) => new UserStore(db, profileId),
     images,
     household,
+    install,
     accounts,
     accountAi: new AccountAiStore(db),
     handles: new HandleStore(db),
@@ -95,11 +98,11 @@ export const openStores = (
     youth: new YouthStore(db, readerTimeZone),
     serverPeople: new ServerPeopleStore(db),
     serverStats: new ServerStatsStore(db, timeZone),
-    // The server's time zone: its household's, else the install's.
+    // The server's time zone: the one chosen at setup, else the install's.
     timeZone,
     sources,
     file,
-    catalog: sources.load(file, Date.now(), household.isSetUp() ? household.get().language : null),
+    catalog: sources.load(file, Date.now(), install.isSetUp() ? install.get().language : null),
     // The household game's rules, next to sources.yml; points follow each reader's days.
     game: new GameStore(db, loadRules(path.resolve('gamification.yml')), readerTimeZone),
     mailSettings: new MailSettingsStore(db),

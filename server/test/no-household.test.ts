@@ -10,6 +10,7 @@ import type { Config } from '../config.ts'
 import { AccountDataStore, deletionPlan } from '../db/account-data.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
@@ -54,7 +55,7 @@ describe('an account whose profile was deleted from its household', () => {
       timeZone: 'UTC',
       vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
     }
-    new HouseholdStore(db).setUp({ name: 'Martin', timeZone: 'UTC', country: null, ai: null }, clock)
+    new InstallStore(db).setUp({ language: 'fr', timeZone: 'UTC' }, clock)
     const antho = accounts.createServerAdmin(ANTHO.email, await hashPassword(ANTHO.password, FAST), clock)!
     accounts.linkProfile(antho.id, 1)
     const sophie = profiles.create('Sophie', 'tech', clock)!
@@ -67,6 +68,7 @@ describe('an account whose profile was deleted from its household', () => {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles,
       household: new HouseholdStore(db),
+      install: new InstallStore(db),
       accounts,
       devices: new UserDeviceStore(db),
       accountData: new AccountDataStore(db),
@@ -131,7 +133,7 @@ describe('the deletion plan of an account with no profile in the household', () 
   it('never takes the household, even with no other adult account in it', async () => {
     const db = openDatabase(':memory:')
     const clock = Date.UTC(2026, 10, 18, 12)
-    new HouseholdStore(db).setUp({ name: 'Martin', timeZone: 'UTC', country: null, ai: null }, clock)
+    new InstallStore(db).setUp({ language: 'fr', timeZone: 'UTC' }, clock)
     const accounts = new UserAccountStore(db)
     const profiles = new ProfileStore(db)
     const leftAlone = accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!

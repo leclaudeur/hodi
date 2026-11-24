@@ -192,4 +192,6 @@ export const resetHousehold = (db: Database, householdId: number, now: number) =
      ai_provider = NULL, ai_key = NULL, ai_model = NULL, parental_pin_hash = NULL,
      session_generation = session_generation + 1 WHERE id = ?`
   ).run(householdId)
+  // The server's first space emptied: its first-run screens come back.
+  if (householdId === DEFAULT_ACCOUNT_ID) db.prepare('UPDATE server_install SET set_up_at = NULL WHERE id = 1').run()
 }

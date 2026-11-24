@@ -10,6 +10,7 @@ import type { Config } from '../config.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { openDatabase } from '../db/database.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { PluginStore } from '../db/plugin-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
@@ -269,6 +270,7 @@ describe('Compte et données with plugins', () => {
       }),
       profiles,
       household: new HouseholdStore(db),
+      install: new InstallStore(db),
       accounts: new UserAccountStore(db),
       devices: new UserDeviceStore(db),
       accountData: new AccountDataStore(db),

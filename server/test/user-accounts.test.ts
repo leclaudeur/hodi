@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { describe, it } from 'node:test'
 import { migrate, versionBefore } from '../db/migrations.ts'
-import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 
 const NOW = Date.UTC(2026, 10, 6, 9)
@@ -13,14 +13,13 @@ describe('personal accounts', () => {
     migrate(db, versionBefore('CREATE TABLE users'))
     db.prepare("UPDATE accounts SET name = 'Chez nous', password_hash = 'hash', password_changed_at = ?").run(NOW)
     migrate(db)
-    const household = new HouseholdStore(db).get()
-    assert.equal(household.setUpAt, NOW)
+    assert.equal(new InstallStore(db).get().setUpAt, NOW)
   })
 
   it('leaves a new install waiting for its first-run screens', () => {
     const db = new DatabaseSync(':memory:')
     migrate(db)
-    assert.equal(new HouseholdStore(db).isSetUp(), false)
+    assert.equal(new InstallStore(db).isSetUp(), false)
     assert.equal(new UserAccountStore(db).any(), false)
   })
 

@@ -123,6 +123,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   gone: a plugin makes accounts instead. A plugin that still makes households stops working on this version, so
   update your plugins together with Hodi.
 - **Household photos.** Nothing showed them any more: the server deletes the ones it still kept.
+- **Later at the end of the setup.** The setup always ends with the server admin's own profile. A server whose setup
+  went on without one counts as set up, and its admin's profile is made at their next sign-in.
 - **The household admin role.** What it allowed (other adults' profiles, the game switch, stored texts, other people's
   sources, the plugins' AI use and the plugins for the admin only) is now the server admin's alone, and Pass the admin
   role is gone. On a household where the admin was another adult than the server's admin, that adult loses them.

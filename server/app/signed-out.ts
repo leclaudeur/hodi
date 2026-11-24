@@ -35,7 +35,7 @@ const askAdmin = ({ serverInbox, accounts, profiles, now }: Wiring['options'], a
 
 // « Mot de passe oublié »: as a login, its own profile opens at once.
 const mountPassword = (api: express.Router, { options }: Wiring, login: Login) => {
-  const { accounts, devices, serverMail, passwordResets, household, news, now } = options
+  const { accounts, devices, serverMail, passwordResets, install, news, now } = options
   if (!accounts || !devices || !serverMail || !passwordResets) return
   api.use(
     '/password',
@@ -47,7 +47,7 @@ const mountPassword = (api: express.Router, { options }: Wiring, login: Login) =
       languageOf: account =>
         inHousehold(accounts.householdOf(account.id) ?? DEFAULT_ACCOUNT_ID, () => {
           const profileId = accounts.profileOf(account.id)
-          return profileId === null ? household.get().language : news.languageOf(profileId)
+          return profileId === null ? install.get().language : news.languageOf(profileId)
         }),
       checkSignIn: login.checkSignIn,
       askAdmin: account => askAdmin(options, account),
@@ -67,7 +67,7 @@ const mountPassword = (api: express.Router, { options }: Wiring, login: Login) =
 
 // "J'ai un code", from a device signed in with nothing.
 const mountCodeJoin = (api: express.Router, wiring: Wiring, login: Login) => {
-  const { accounts, codes, profiles, household, throttle, now, devices, twoFactor } = wiring.options
+  const { accounts, codes, profiles, household, install, throttle, now, devices, twoFactor } = wiring.options
   if (!accounts || !codes || !profiles) return
   api.use(
     '/codes',
@@ -76,6 +76,7 @@ const mountCodeJoin = (api: express.Router, wiring: Wiring, login: Login) => {
       accounts,
       profiles,
       household,
+      install,
       throttle,
       secret: wiring.config.sessionSecret,
       now,
@@ -89,14 +90,14 @@ const mountCodeJoin = (api: express.Router, wiring: Wiring, login: Login) => {
 }
 
 // Plugins' routes open to anyone, before any session is read: they never learn who is signed in on the device.
-// They open once the setup is over: a household made, or the server's admin gone on without one.
+// They open once the setup is over.
 const mountPublicPlugins = (api: express.Router, wiring: Wiring, login: Login) => {
-  const { plugins, household, serverSettings, accounts, twoFactor, now } = wiring.options
+  const { plugins, install, accounts, twoFactor, now } = wiring.options
   if (!plugins) return
   api.use(
     '/public/plugins',
     pluginPublicRoutes(plugins, {
-      isOpen: () => household.isSetUp() || Boolean(serverSettings?.householdLater()),
+      isOpen: () => install.isSetUp(),
       // A plugin's signIn, once Hodi checked the account: as a login, its own profile opens at once.
       signIn: async (accountId, request) => {
         const account = accounts?.get(accountId)

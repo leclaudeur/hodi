@@ -38,7 +38,6 @@ export interface Setup {
   codeOrNull: string | null
   createAccount: () => Promise<void>
   savePlugins: () => Promise<void>
-  later: () => Promise<void>
   finish: () => Promise<void>
 }
 
@@ -134,15 +133,7 @@ const householdContent = (s: Setup): ReactNode => {
   const extra = s.plugins.pluginSteps.length
   const total = STEPS + extra
   if (flow.step === READY_STEP) {
-    return (
-      <ReadyStep
-        email={answers.email}
-        busy={flow.busy}
-        error={flow.error}
-        onLater={() => void s.later()}
-        onHousehold={() => flow.go(HOUSEHOLD_STEP)}
-      />
-    )
+    return <ReadyStep email={answers.email} onHousehold={() => flow.go(HOUSEHOLD_STEP)} />
   }
   return (
     <ProfileStep

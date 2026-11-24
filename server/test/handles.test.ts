@@ -11,6 +11,7 @@ import { AccountDataStore } from '../db/account-data.ts'
 import { openDatabase } from '../db/database.ts'
 import { HandleStore } from '../db/handle-store.ts'
 import { HouseholdStore } from '../db/household-store.ts'
+import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
@@ -121,6 +122,7 @@ describe('identifiers through the API', () => {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles: new ProfileStore(db),
       household: new HouseholdStore(db),
+      install: new InstallStore(db),
       accounts: new UserAccountStore(db),
       handles: new HandleStore(db),
       accountData: new AccountDataStore(db),

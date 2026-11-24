@@ -46,11 +46,11 @@ export const householdOptionsOf = (
   options: Options,
   { accountOf, cookieFor }: ReturnType<typeof accountSession>
 ): HouseholdRoutesOptions | null => {
-  const { profiles, household, aiProviders, now, setupCode, throttle, accounts, accountAi } = options
+  const { profiles, install, aiProviders, now, setupCode, throttle, accounts, accountAi } = options
   const { passwordResets, serverMail, serverSettings, onHouseholdChange } = options
   if (!profiles) return null
   return {
-    household,
+    install,
     profiles,
     providers: aiProviders,
     now,
@@ -65,9 +65,6 @@ export const householdOptionsOf = (
     onChange: onHouseholdChange,
     // « Mot de passe oublié » shows on Connexion once Hodi can send its link.
     canResetByMail: () => (passwordResets && serverMail?.store.canSendLinks()) ?? false,
-    householdLater: serverSettings
-      ? { get: () => serverSettings.householdLater(), set: later => serverSettings.setHouseholdLater(later) }
-      : undefined,
     publicHome: serverSettings ? () => serverSettings.publicHome() : undefined,
     setupPlugins: setupPluginsOf(options),
     onSetUp: onSetUpOf(options)

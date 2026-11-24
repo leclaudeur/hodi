@@ -221,9 +221,8 @@
     },
     "ready": {
       "title": "Le serveur est prêt",
-      "intro": "Crée maintenant le profil avec lequel tu liras Hodi, ou va d’abord dans l’espace <i>Serveur</i> : tu pourras le créer plus tard.",
-      "household": "Créer mon profil",
-      "server": "Plus tard"
+      "intro": "Crée maintenant le profil avec lequel tu liras Hodi. L’espace <i>Serveur</i> t’attend juste après.",
+      "household": "Créer mon profil"
     },
     "plugins": {
       "title": "Plugins trouvés",
@@ -245,8 +244,7 @@
       "name": "Nom du foyer",
       "namePlaceholder": "Ex. La maison Martin",
       "confirm": "Confirme le mot de passe",
-      "mismatch": "Les deux mots de passe ne sont pas identiques.",
-      "laterFailed": "Impossible d’ouvrir l’espace Serveur. Réessaie dans un instant."
+      "mismatch": "Les deux mots de passe ne sont pas identiques."
     },
     "profile": {
       "title": "Et toi, c’est qui ?",

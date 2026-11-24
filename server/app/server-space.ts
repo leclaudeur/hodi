@@ -7,7 +7,6 @@ import { sourceReportKey } from '../notices/source-report.ts'
 import { sourceReviewKey } from '../notices/source-review.ts'
 import { codeRequestKey, freshRequest } from '../notices/code-request.ts'
 import type express from 'express'
-import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
 import { mailRoutes } from '../http/mail-routes.ts'
 import { pluginRoutes, pluginServerRoutes } from '../http/plugin-routes.ts'
 import { requireServerAdmin } from '../http/profile-routes.ts'
@@ -44,19 +43,14 @@ const mountPlugins = (api: express.Router, wiring: Wiring) => {
 
 // What deleting an account or a household from Serveur › Comptes and Foyers sets off.
 const deletionsOf = ({ options, profileHooks }: Wiring) => {
-  const { accountData, plugins, serverSettings } = options
+  const { accountData, plugins } = options
   if (!accountData) return {}
   return {
     deletions: {
       data: accountData,
       onProfileDeleted: profileHooks.deleted,
       onAccountDeleted: (id: number) => plugins?.accountDeleted(id),
-      onHouseholdGone: (id: number) => {
-        plugins?.householdRemoved(id)
-        // The core's household left as a new install's: its server's admin goes on in /server, where
-        // « Créer un foyer » starts it again.
-        if (id === DEFAULT_ACCOUNT_ID) serverSettings?.setHouseholdLater(true)
-      }
+      onHouseholdGone: (id: number) => plugins?.householdRemoved(id)
     }
   }
 }

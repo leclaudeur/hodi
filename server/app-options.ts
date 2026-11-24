@@ -4,6 +4,7 @@ import type { AccountDataStore } from './db/account-data.ts'
 import type { Database } from './db/database.ts'
 import type { GameStore } from './db/game-store.ts'
 import type { HouseholdStore } from './db/household-store.ts'
+import type { InstallStore } from './db/install-store.ts'
 import type { MailSettingsStore } from './db/mail-settings-store.ts'
 import type { PluginBackup } from './db/maintenance.ts'
 import type { PasswordResetStore } from './db/password-reset-store.ts'
@@ -80,8 +81,10 @@ export interface AppOptions {
   pluginInstaller?: { installer: PluginInstaller; restart: () => void; catalog?: PluginCatalog }
   // The household's AI for the plugins' AiButtons (plugins/ai.ts), shared with the registry's ctx.ai.
   pluginAi?: PluginAi
-  // The household's name, region and AI, from the first-run screens.
+  // The names of the households from before accounts, until the server reads by account alone.
   household: HouseholdStore
+  // The server's own setup, its language and its clock, from the first-run screens.
+  install: InstallStore
   // The people's own accounts; absent in tests of an install from before them, which signs in with the household's
   // password.
   accounts?: UserAccountStore
