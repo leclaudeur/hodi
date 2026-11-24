@@ -5,6 +5,8 @@ import type { PluginAiStatus } from './ai.ts'
 export interface CallContext {
   // A person signed in on a device asked, with a profile open.
   forReader: boolean
+  // That profile, when the call knows it: what the plugin may notify stays around it.
+  readerProfileId?: number
   // The address the request came from, for the sign-in throttle; absent for a hook, which no request led to.
   client?: string
   // The accounts this call made, checked the password of or found by its login: the only ones its answer may sign in.
@@ -26,11 +28,15 @@ export const readerOnly = (context: unknown) => {
   if (!forReader) throw new Error('no_reader')
 }
 
-export const callContext = (forReader = true, client?: string): CallContext => ({
+export const callContext = (forReader = true, client?: string, readerProfileId?: number): CallContext => ({
   forReader,
   ...(client === undefined ? {} : { client }),
+  ...(readerProfileId === undefined ? {} : { readerProfileId }),
   vouched: new Set()
 })
+
+// The profile a call answers, for ctx.notify: the reader of a route, the adult who clicked; null outside one.
+export const readerOf = (context: CallContext) => context.readerProfileId ?? context.ai?.profileId ?? null
 
 // An account the call vouched for. A request that comes after its call ended has no context, and vouches for nothing.
 export const vouch = (context: unknown, account: { id: number } | null) => {

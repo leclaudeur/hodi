@@ -36,7 +36,10 @@ and never touch `version`; a small release pull request raises `version` and mov
 - **`ctx.articles` runs for a reader.** It answers within a route of the app, an `aiActions` handler, `exportData` and
   `onArticle`; a task, a feed, another hook, a public route or the server's space gets `no_reader` (was
   `no_household`).
-- **`ctx.notify` with `accountId`** reaches the profile that account reads with, from any call.
+- **`ctx.notify`.** `accountId` reaches the profile that account reads with. Within a person's own route or an
+  `aiActions` click, it reaches only that person and the people they have a tie with (family, or a share either way);
+  anyone else answers `unknown_profile`. A task, a hook, a public route or Serveur reaches anyone. Three an hour per
+  plugin and profile at most, besides the ten a day.
 - **`ctx.ai`'s hourly cap** of 10 questions counts per plugin and profile.
 
 ### Removed

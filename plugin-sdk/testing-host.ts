@@ -6,6 +6,8 @@ import type { MailSettings } from '../server/db/mail-settings-store.ts'
 import { PluginStore } from '../server/db/plugin-store.ts'
 import { ProfileStore } from '../server/db/profile-store.ts'
 import { UserAccountStore } from '../server/db/user-account-store.ts'
+import { UserStore } from '../server/db/user-store.ts'
+import { sharePeople } from '../server/http/share-people.ts'
 import type { HttpAnswer } from '../server/news/fetch-text.ts'
 import { accountHooks, pluginAccounts } from '../server/plugins/accounts.ts'
 import { PluginAccountStore } from '../server/db/plugin-account-store.ts'
@@ -165,6 +167,12 @@ export const startSmallHodi = async (
     notifier: pluginNotifier({
       hasProfile: profileId => profiles.find(profileId) !== null,
       profileOf: accountId => accounts.profileOf(accountId),
+      // As in Hodi: a person's route reaches the people they have a tie with.
+      knows: (reader, profileId) => {
+        const people = sharePeople({ users: id => new UserStore(db, id), profiles, accounts })
+        const [me, other] = [profiles.find(reader), profiles.find(profileId)]
+        return me !== null && other !== null && people.knows(me, other)
+      },
       push: async (profileId, payload) => {
         notifications.push({ profileId, payload })
       },

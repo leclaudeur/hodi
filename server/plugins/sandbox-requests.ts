@@ -8,7 +8,7 @@ import { type PluginAi, PluginAiError, pluginQuestion } from './ai.ts'
 import type { PublicServerSettings } from '../db/server-settings-store.ts'
 import type { Manifest } from './manifest.ts'
 import type { SandboxRequest } from './sandbox/sandbox.ts'
-import { type CallContext, clientOf, readerOnly, vouch, vouchedFor } from './call-context.ts'
+import { type CallContext, clientOf, readerOf, readerOnly, vouch, vouchedFor } from './call-context.ts'
 import type { PluginServerNotifier } from './server-notify.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -200,9 +200,9 @@ export const requestsOf = (manifest: Manifest, deps: RequestDeps) => {
   if (manifest.permissions.notify) {
     const plugin = { id: manifest.id, name: manifest.name }
     requests['notify.send'] = async ([notice], context) => {
-      // A request after its call ended reaches nobody.
+      // A request after its call ended reaches nobody; within a reader's call, only the people around them.
       if (typeof context !== 'object' || context === null) throw new Error('no_call')
-      await notifier.send(plugin, notice)
+      await notifier.send(plugin, notice, readerOf(context as CallContext))
       return null
     }
   }

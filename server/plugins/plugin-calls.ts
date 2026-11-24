@@ -106,7 +106,12 @@ export const dataExporter =
     const copies = await Promise.all(
       asked.map(async plugin => {
         try {
-          const data = await plugin.sandbox!.call('hook', 'exportData', who, callContext())
+          const data = await plugin.sandbox!.call(
+            'hook',
+            'exportData',
+            who,
+            callContext(true, undefined, who.profileId ?? undefined)
+          )
           if (Buffer.byteLength(JSON.stringify(data) ?? 'null') > MAX_EXPORT_BYTES) {
             log(`[plugin ${plugin.id}] exportData answered more than ${MAX_EXPORT_BYTES} bytes`)
             return [plugin.id, { error: 'too_large' }] as const

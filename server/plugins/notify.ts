@@ -1,5 +1,5 @@
 import type { AlertPayload } from '../news/followed-alerts.ts'
-import { DAY_MS } from '../../shared/time.ts'
+import { DAY_MS, HOUR_MS } from '../../shared/time.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 // ctx.notify: a plugin tells a person something on their devices (« Ta demande est acceptée »), through the same push
@@ -9,6 +9,8 @@ import { CONFIG } from '../fixed-config.ts'
 
 // How many notices one plugin may send to one profile in a day.
 export const PLUGIN_NOTICES_PER_DAY = CONFIG.pluginNotices.perDay
+// And in an hour: a loop or a bug spends a few, not the whole day at once.
+export const PLUGIN_NOTICES_PER_HOUR = CONFIG.pluginNotices.perHour
 
 const MAX_TITLE = CONFIG.pluginNotices.titleMaxLength
 const MAX_TEXT = CONFIG.pluginNotices.textMaxLength
@@ -52,7 +54,8 @@ export const pluginNotice = (value: unknown): PluginNotice | null => {
 }
 
 export interface PluginNotifier {
-  send: (plugin: { id: string; name: string }, value: unknown) => Promise<void>
+  // reader: the profile whose request the plugin's call answers; null outside one (a task, onArticle).
+  send: (plugin: { id: string; name: string }, value: unknown, reader: number | null) => Promise<void>
 }
 
 // No push at all (tests that do not need it): every notice is refused.
@@ -65,6 +68,7 @@ export const NO_NOTICES: PluginNotifier = {
 export const pluginNotifier = ({
   hasProfile,
   profileOf,
+  knows,
   push,
   now = Date.now,
   log = console.log
@@ -73,6 +77,8 @@ export const pluginNotifier = ({
   hasProfile: (profileId: number) => boolean
   // The profile an account reads with; null without one.
   profileOf: (accountId: number) => number | null
+  // Whether a reader has a tie with another profile: family, or a share either way.
+  knows: (reader: number, profileId: number) => boolean
   // The profile's devices that want it, outside their quiet hours.
   push: (profileId: number, payload: AlertPayload) => Promise<void>
   now?: () => number
@@ -81,35 +87,47 @@ export const pluginNotifier = ({
   // The times of each plugin's notices to each profile in the last day.
   const sent = new Map<string, number[]>()
 
+  // Within a reader's call, only the reader and the people they have a tie with: a plugin's route never becomes a
+  // way to reach anyone on the server. Outside one, anyone.
+  const targetOf = (notice: PluginNotice, reader: number | null) => {
+    const target = notice.profileId ?? profileOf(notice.accountId!)
+    if (target === null || !hasProfile(target)) return null
+    return reader === null || target === reader || knows(reader, target) ? target : null
+  }
+
+  // A day's and an hour's notices per plugin and profile, counted whatever the plugin does.
+  const counted = (pluginId: string, profileId: number, at: number) => {
+    const key = `${pluginId}|${profileId}`
+    const times = (sent.get(key) ?? []).filter(time => at - time < DAY_MS)
+    const lastHour = times.filter(time => at - time < HOUR_MS)
+    if (times.length >= PLUGIN_NOTICES_PER_DAY || lastHour.length >= PLUGIN_NOTICES_PER_HOUR) {
+      sent.set(key, times)
+      log(`[plugin ${pluginId}] notify: too many notices for profile ${profileId}`)
+      return false
+    }
+    sent.set(key, [...times, at])
+    return true
+  }
+
   return {
-    send: async (plugin, value) => {
+    send: async (plugin, value, reader) => {
       const notice = pluginNotice(value)
       if (!notice) throw new Error('invalid_notice')
-      const own = notice.profileId === null ? profileOf(notice.accountId!) : null
-      const targets = notice.profileId === null ? (own === null ? [] : [own]) : [notice.profileId].filter(hasProfile)
-      if (notice.profileId !== null && targets.length === 0) throw new Error('unknown_profile')
-      const at = now()
-      const payload: AlertPayload = {
+      const target = targetOf(notice, reader)
+      if (target === null) {
+        // A named profile that is not there, or not the reader's to reach; an account with no profile yet is no one.
+        if (notice.profileId !== null) throw new Error('unknown_profile')
+        return
+      }
+      if (!counted(plugin.id, target, now())) throw new Error('too_many_notices')
+      await push(target, {
         title: `${plugin.name} · ${notice.title}`,
         body: notice.text,
         url: `#/settings/plugin/${plugin.id}${notice.path ? `/${notice.path}` : ''}`,
         // A newer notice of the plugin replaces the one before on the device.
         tag: `plugin:${plugin.id}`,
         badge: null
-      }
-      for (const profileId of targets) {
-        const key = `${plugin.id}|${profileId}`
-        const times = (sent.get(key) ?? []).filter(time => at - time < DAY_MS)
-        if (times.length >= PLUGIN_NOTICES_PER_DAY) {
-          sent.set(key, times)
-          log(`[plugin ${plugin.id}] notify: ${PLUGIN_NOTICES_PER_DAY} a day reached for profile ${profileId}`)
-          // Said to the plugin when it named the profile; for an account, its other profiles are still told.
-          if (notice.profileId !== null) throw new Error('too_many_notices')
-          continue
-        }
-        sent.set(key, [...times, at])
-        await push(profileId, payload)
-      }
+      })
     }
   }
 }

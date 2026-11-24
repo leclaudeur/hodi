@@ -3,6 +3,8 @@ import type { ForgetRecord } from '../db/forget-log.ts'
 import type { InstallStore } from '../db/install-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
+import type { UserStore } from '../db/user-store.ts'
+import { sharePeople } from '../http/share-people.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import type { PluginStore } from '../db/plugin-store.ts'
 import { AccountLoginStore } from '../db/account-login-store.ts'
@@ -32,6 +34,7 @@ interface PluginWiring {
   accounts: UserAccountStore
   install: InstallStore
   profiles: ProfileStore
+  usersOf: (profileId: number) => UserStore
   alerts: FollowedAlerts
   serverNotices: ServerNotifier
   accountHooks: AccountHooks
@@ -49,6 +52,15 @@ export const replayToPlugins = (plugins: PluginRegistry, forgottenAgain: ForgetR
       for (const { id } of entry.accounts) plugins.accountDeleted(id)
       for (const { id } of entry.profiles) plugins.profileDeleted(id)
     }
+  }
+}
+
+// Whether a reader has a tie with another profile, as « Envoyer à… » sees it: family, or a share either way.
+const knowsOf = ({ usersOf, profiles, accounts }: PluginWiring) => {
+  const people = sharePeople({ users: usersOf, profiles, accounts })
+  return (reader: number, profileId: number) => {
+    const [me, other] = [profiles.find(reader), profiles.find(profileId)]
+    return me !== null && other !== null && people.knows(me, other)
   }
 }
 
@@ -78,6 +90,7 @@ export const startPlugins = async (wiring: PluginWiring) => {
     notifier: pluginNotifier({
       hasProfile: profileId => profiles.find(profileId) !== null,
       profileOf: accountId => accounts.profileOf(accountId),
+      knows: knowsOf(wiring),
       push: (profileId, payload) => wiring.alerts.notifyShare(profileId, payload, 'plugins')
     }),
     // What a plugin tells the server's admin of (Serveur › Notifications).

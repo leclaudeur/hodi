@@ -71,9 +71,10 @@ export interface PluginContext {
     send: (message: PluginMailMessage) => Promise<void>
   }
   // With permissions.notify: a notification on a person's devices, through the same push as shares, in each device's
-  // quiet hours and only where its « Plugins » switch is on. profileId, or accountId for the profile of an account.
+  // quiet hours and only where its « Plugins » switch is on. profileId, or accountId for the profile of an account;
+  // within a person's own route or click, only them and the people they have a tie with (family, a share).
   // title (80 characters) and text (240), plain text; path:
-  // where it opens under the plugin's page (#/settings/plugin/<id>/<path>). Ten a day per profile at most:
+  // where it opens under the plugin's page (#/settings/plugin/<id>/<path>). Three an hour and ten a day per profile:
   // 'too_many_notices' past them.
   notify?: (notice: {
     profileId?: number

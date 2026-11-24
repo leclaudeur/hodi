@@ -7,19 +7,22 @@ import { openDatabase } from '../db/database.ts'
 import { PluginStore } from '../db/plugin-store.ts'
 import type { AlertPayload } from '../news/followed-alerts.ts'
 import { PLUGIN_API } from '../plugins/manifest.ts'
-import { PLUGIN_NOTICES_PER_DAY, pluginNotice, pluginNotifier } from '../plugins/notify.ts'
+import { PLUGIN_NOTICES_PER_DAY, PLUGIN_NOTICES_PER_HOUR, pluginNotice, pluginNotifier } from '../plugins/notify.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 import { callContext } from '../plugins/call-context.ts'
 import { TEST_TRUSTED_KEYS, signTestFolder } from './helpers/signing.ts'
 
-// Profiles 1, 2 and 3 are there; account 7 reads with profile 2, account 8 has no profile yet.
+// Profiles 1, 2 and 3 are there; account 7 reads with profile 2, account 8 has no profile yet. Profiles 1 and 2 are
+// family; 3 has no tie with either.
 const PROFILES = new Set([1, 2, 3])
 const PROFILE_OF: Record<number, number> = { 7: 2 }
+const TIES = new Set(['1|2', '2|1'])
 
 const notifierWith = (pushed: { profileId: number; payload: AlertPayload }[], clock = { now: 0 }) =>
   pluginNotifier({
     hasProfile: id => PROFILES.has(id),
     profileOf: id => PROFILE_OF[id] ?? null,
+    knows: (reader, profileId) => TIES.has(`${reader}|${profileId}`),
     push: async (profileId, payload) => {
       pushed.push({ profileId, payload })
     },
@@ -58,7 +61,7 @@ describe('notifications of plugins', () => {
   it('tells a profile, or the profile of an account', async () => {
     const pushed: { profileId: number; payload: AlertPayload }[] = []
     const notifier = notifierWith(pushed)
-    await notifier.send(PLUGIN, { profileId: 1, title: 'Bonjour', text: 'Un mot.', path: 'inbox' })
+    await notifier.send(PLUGIN, { profileId: 1, title: 'Bonjour', text: 'Un mot.', path: 'inbox' }, null)
     assert.deepEqual(pushed, [
       {
         profileId: 1,
@@ -71,29 +74,52 @@ describe('notifications of plugins', () => {
         }
       }
     ])
-    await assert.rejects(notifier.send(PLUGIN, { profileId: 99, title: 'a', text: 'b' }), /unknown_profile/)
+    await assert.rejects(notifier.send(PLUGIN, { profileId: 99, title: 'a', text: 'b' }, null), /unknown_profile/)
     // An account: the profile it reads with; one with none yet reaches nobody.
     pushed.length = 0
-    await notifier.send(PLUGIN, { accountId: 7, title: 'a', text: 'b' })
-    await notifier.send(PLUGIN, { accountId: 8, title: 'a', text: 'b' })
+    await notifier.send(PLUGIN, { accountId: 7, title: 'a', text: 'b' }, null)
+    await notifier.send(PLUGIN, { accountId: 8, title: 'a', text: 'b' }, null)
     assert.deepEqual(
       pushed.map(({ profileId }) => profileId),
       [2]
     )
-    await assert.rejects(notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b', url: 'x' }), /invalid_notice/)
+    await assert.rejects(
+      notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b', url: 'x' }, null),
+      /invalid_notice/
+    )
   })
 
-  it('sends a profile ten a day at most from one plugin', async () => {
+  it('within a reader’s call, reaches only the reader and the people around them', async () => {
+    const pushed: { profileId: number; payload: AlertPayload }[] = []
+    const notifier = notifierWith(pushed)
+    await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, 1)
+    await notifier.send(PLUGIN, { accountId: 7, title: 'a', text: 'b' }, 1)
+    // Profile 3 exists, but the reader has no tie with it: told as if it did not.
+    await assert.rejects(notifier.send(PLUGIN, { profileId: 3, title: 'a', text: 'b' }, 1), /unknown_profile/)
+    await notifier.send(PLUGIN, { profileId: 3, title: 'a', text: 'b' }, null)
+    assert.deepEqual(
+      pushed.map(({ profileId }) => profileId),
+      [1, 2, 3]
+    )
+  })
+
+  it('sends a profile a few an hour and ten a day at most from one plugin', async () => {
     const pushed: { profileId: number; payload: AlertPayload }[] = []
     const clock = { now: 0 }
     const notifier = notifierWith(pushed, clock)
-    for (let index = 0; index < PLUGIN_NOTICES_PER_DAY; index++)
-      await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' })
-    await assert.rejects(notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }), /too_many_notices/)
+    for (let index = 0; index < PLUGIN_NOTICES_PER_HOUR; index++)
+      await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, null)
+    await assert.rejects(notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, null), /too_many_notices/)
+    for (let index = PLUGIN_NOTICES_PER_HOUR; index < PLUGIN_NOTICES_PER_DAY; index++) {
+      if (index % PLUGIN_NOTICES_PER_HOUR === 0) clock.now += 60 * 60 * 1000
+      await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, null)
+    }
+    clock.now += 60 * 60 * 1000
+    await assert.rejects(notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, null), /too_many_notices/)
     // Another plugin, another count.
-    await notifier.send({ id: 'other', name: 'Other' }, { profileId: 1, title: 'a', text: 'b' })
+    await notifier.send({ id: 'other', name: 'Other' }, { profileId: 1, title: 'a', text: 'b' }, null)
     clock.now += 24 * 60 * 60 * 1000
-    await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' })
+    await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, null)
     assert.equal(pushed.length, PLUGIN_NOTICES_PER_DAY + 2)
   })
 })
@@ -146,6 +172,16 @@ describe('ctx.notify', () => {
       body: 'unknown_profile'
     })
     assert.deepEqual(await tell('silent', { profileId: 1, title: 'Salut', text: 'Un mot.' }), { body: 'none' })
+    // A route of profile 3's: profile 1 is not theirs to reach.
+    const asThree = await registry
+      .get('teller')!
+      .sandbox!.call(
+        'routes',
+        'POST /tell',
+        { body: { profileId: 1, title: 'Salut', text: 'Un mot.' } },
+        callContext(true, undefined, 3)
+      )
+    assert.deepEqual(asThree, { body: 'unknown_profile' })
     assert.deepEqual(
       pushed.map(({ profileId, payload }) => [profileId, payload.title]),
       [[1, 'Teller · Salut']]

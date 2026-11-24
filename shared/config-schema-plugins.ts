@@ -89,5 +89,11 @@ export const PLUGIN_SCHEMA = {
     noteMaxLength: 'count',
     urlMaxLength: 'count'
   },
-  pluginNotices: { perDay: 'count', serverPerDay: 'count', titleMaxLength: 'count', textMaxLength: 'count' }
+  pluginNotices: {
+    perDay: 'count',
+    perHour: 'count',
+    serverPerDay: 'count',
+    titleMaxLength: 'count',
+    textMaxLength: 'count'
+  }
 } as const satisfies Record<string, Record<string, ConfigKind>>

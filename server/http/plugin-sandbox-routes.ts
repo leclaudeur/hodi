@@ -252,7 +252,9 @@ const callRoute = (call: RouteCall) => async (request: express.Request, response
   // Whatever the plugin answers, the browser reads it as data only.
   response.set('X-Content-Type-Options', 'nosniff')
   response.set('Content-Security-Policy', "default-src 'none'; sandbox")
-  const context = callContext(forReader, clientAddressOf(request))
+  // A person's own route: what the plugin notifies stays around them. The server's admin, in Serveur, reaches anyone.
+  const reader = call.group === 'routes' && forReader ? profileIdOf(response) : null
+  const context = callContext(forReader, clientAddressOf(request), typeof reader === 'number' ? reader : undefined)
   const called = await answerOf(call, request, response, argument, context)
   if (!called) return
   const { answer } = called
