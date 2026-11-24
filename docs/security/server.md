@@ -8,14 +8,14 @@ Hodi serves the app with strict HTTP headers, and runs in a container with as fe
 - **`Strict-Transport-Security`**: one year.
 - **`Referrer-Policy`**: `no-referrer`, so article links never leak the app's address.
 - **`X-Robots-Tag`**: `noindex, nofollow` on every answer, with a `robots.txt` that disallows everything: a
-  household's Hodi stays out of search engines. A public site, such as get-hodi.com, is a separate static site.
+  family's Hodi stays out of search engines. A public site, such as get-hodi.com, is a separate static site.
 - **`Cache-Control`**: `no-store` on every API response.
 
 `/health` is public, and only answers `{"status":"ok"}`.
 
 ## Request limit
 
-Each address may send 3,000 requests a minute, far above what a household's devices ask for, even a feed that loads all
+Each address may send 3,000 requests a minute, far above what a family's devices ask for, even a feed that loads all
 its pictures at once. Past that, the server answers `429` until the minute is over, which slows a flood without
 touching anyone else. The address is found as for the [sign-in throttle](sign-in.md#throttling), and requests from the
 machine Hodi runs on are never counted.
