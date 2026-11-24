@@ -275,8 +275,10 @@ const mountSetupHouseholdRoute = (
     // The install's first profile becomes the one set up here, its admin, and the server admin's own.
     const first = profiles.everyone().find(candidate => candidate.role === 'admin' && !candidate.hasAccount)
     if (first) {
-      asReaders([admin.id], () => profiles.update(first.id, { name: profileName, color }))
-      profiles.tourTaken(first.id)
+      asReaders([admin.id], () => {
+        profiles.update(first.id, { name: profileName, color })
+        profiles.tourTaken(first.id)
+      })
       accounts?.linkProfile(admin.id, first.id)
       const lock = profiles.lock(first.id)
       response.set('Set-Cookie', profileCookie(profileToken(first.id, lock?.version ?? 0, secret)))

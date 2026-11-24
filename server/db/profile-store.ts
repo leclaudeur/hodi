@@ -200,6 +200,7 @@ export class ProfileStore {
     const profile = this.get(id)
     if (!profile) return null
     const kind = profile.role === 'admin' ? 'adult' : (change.kind ?? profile.kind)
+    // A free avatar among the profiles the request sees: two children of different families may wear the same.
     const avatar =
       kind === 'child'
         ? (change.avatar ?? profile.avatar ?? this.#freeAvatar(this.list().filter(other => other.id !== id)))

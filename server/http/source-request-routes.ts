@@ -111,8 +111,14 @@ export const sourceRequestRoutes = ({
     return false
   }
 
+  // Only the requests of the children of the accounts signed in here: another family's never show.
+  const pending = () => {
+    const own = new Set(profiles.list().map(profile => profile.id))
+    return youth.requests({ status: 'pending' }).filter(entry => own.has(entry.profileId))
+  }
+
   router.get('/', (_request, response) => {
-    if (parentsOnly(response)) response.json({ requests: youth.requests({ status: 'pending' }) })
+    if (parentsOnly(response)) response.json({ requests: pending() })
   })
 
   // accept: true or false; topicIds: where a source new to the household goes (Monde unless said). A channel goes to
@@ -140,7 +146,7 @@ export const sourceRequestRoutes = ({
       return
     }
     youth.decide(entry.id, accept ? 'accepted' : 'refused', now())
-    response.json({ requests: youth.requests({ status: 'pending' }) })
+    response.json({ requests: pending() })
   })
 
   return router
