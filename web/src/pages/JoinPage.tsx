@@ -1,5 +1,5 @@
 import { SetupFrame } from './SetupParts.tsx'
-import { AccountStep, CodeStep, FullStep, ResetStep, WhoStep } from './JoinSteps.tsx'
+import { AccountStep, CodeStep, ResetStep, WhoStep } from './JoinSteps.tsx'
 import { useJoin } from './use-join.ts'
 
 interface JoinPageProps {
@@ -24,7 +24,6 @@ const JoinPage = ({ initialCode = '', onBack, onDone }: JoinPageProps) => {
   const { step, use } = join
   let content
   if (step === 'code' || !use) content = <CodeStep join={join} onBack={onBack} />
-  else if (use.kind === 'invite' && use.full) content = <FullStep onBack={onBack} />
   else if (use.kind === 'reset') content = <ResetStep join={join} use={use} />
   else if (step === 'account') content = <AccountStep join={join} use={use} />
   else content = <WhoStep join={join} />

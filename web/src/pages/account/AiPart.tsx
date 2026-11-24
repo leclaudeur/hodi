@@ -120,17 +120,12 @@ const Usage = ({ onUnauthorized }: { onUnauthorized: () => void }) => {
   )
 }
 
-interface AiPartProps extends KeyCardProps {
-  // Calls are counted while reading in a household.
-  inHousehold: boolean
-}
-
 // Mon compte › IA et crédits: the account's own key, then its calls of the last 24 hours.
-const AiPart = ({ account, onAccount, onUnauthorized, inHousehold }: AiPartProps) => (
+const AiPart = ({ account, onAccount, onUnauthorized }: KeyCardProps) => (
   <>
     <KeyCard account={account} onAccount={onAccount} onUnauthorized={onUnauthorized} />
     {/* Read again with each new key: the buttons come or go with it. */}
-    {inHousehold && <Usage key={account.ai?.keyHint ?? 'none'} onUnauthorized={onUnauthorized} />}
+    <Usage key={account.ai?.keyHint ?? 'none'} onUnauthorized={onUnauthorized} />
   </>
 )
 

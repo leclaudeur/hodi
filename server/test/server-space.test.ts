@@ -274,11 +274,9 @@ describe('server overview route', () => {
   it('lists the households and the accounts, and makes their codes', async () => {
     assert.equal((await call('/server/accounts', memberCookie)).status, 403)
 
-    const { households, maxProfiles } = (await (await call('/server/households', adminCookie)).json()) as {
+    const { households } = (await (await call('/server/households', adminCookie)).json()) as {
       households: { id: number; name: string; admin: string; adults: number; young: number; accounts: number }[]
-      maxProfiles: number
     }
-    assert.equal(maxProfiles, 5)
     assert.deepEqual(
       households.map(({ name, admin, adults, young, accounts }) => ({ name, admin, adults, young, accounts })),
       [{ name: 'Hodi', admin: 'Antho', adults: 2, young: 0, accounts: 2 }]

@@ -3,7 +3,6 @@ import { type FormEvent, type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RequestError, startTwoFactor } from '../../api.ts'
 import { FRONT_PAGE_HREF } from '../../lib/use-hash-route.ts'
-import { isServerOnly } from '../../lib/server-only.ts'
 import { setTwoFactorOn } from '../../lib/two-factor.ts'
 import { Actions, SetupFrame, StepHeader } from '../../pages/SetupParts.tsx'
 import styles from '../../pages/SetupPage.module.css'
@@ -63,14 +62,11 @@ const ServerTwoFactor = () => {
             />
           </div>
           {error && <StatusLine tone="error">{error}</StatusLine>}
-          {/* With no household, the app is /server alone: nowhere to go back to. */}
           <Actions
             start={
-              isServerOnly() ? undefined : (
-                <Button icon={House} href={FRONT_PAGE_HREF}>
-                  {t('twoFactor.server.back')}
-                </Button>
-              )
+              <Button icon={House} href={FRONT_PAGE_HREF}>
+                {t('twoFactor.server.back')}
+              </Button>
             }
           >
             <Button type="submit" look="primary" busy={busy} disabled={!password}>

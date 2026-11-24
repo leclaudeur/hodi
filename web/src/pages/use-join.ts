@@ -32,7 +32,6 @@ const refusalOf = (failure: unknown, t: TFunction, joining?: { email: string; ho
     return t('join.otherHousehold', { ...joining, current: failure.household })
   }
   if (failure.code === 'invalid_code') return t('join.code.wrong')
-  if (failure.code === 'household_full') return t('join.full.intro')
   return t('join.failed')
 }
 

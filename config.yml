@@ -100,9 +100,8 @@ accounts:
   # Vue d'ensemble shows an account online for this long after its last request.
   online_for: 5m
 
-# Profiles of a household.
+# Profiles.
 profiles:
-  max: 5
   name_max_length: 24
   photo_max_size: 200KB
   # A photo is resized to at most this side, in pixels.

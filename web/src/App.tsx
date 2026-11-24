@@ -3,7 +3,6 @@ import { type ComponentProps, Suspense, lazy, useCallback, useEffect, useState }
 import { useTranslation } from 'react-i18next'
 import { PROFILE_CLOSED, getSession, leaveProfile } from './api.ts'
 import { rememberProfileOpen, rememberSession } from './lib/session-hint.ts'
-import { setServerOnly } from './lib/server-only.ts'
 import { setHouseholdLanguage, setProfileLanguage } from './lib/i18n.ts'
 import { setContentDays } from './lib/content-days.ts'
 import { setNoPassword, setTwoFactorOn } from './lib/two-factor.ts'
@@ -20,7 +19,6 @@ import Tour from './app/Tour.tsx'
 import HomePage from './pages/HomePage.tsx'
 import AccountPage from './pages/AccountPage.tsx'
 import CataloguePage from './pages/CataloguePage.tsx'
-import NoHouseholdPage from './pages/NoHouseholdPage.tsx'
 import ProfilePicker from './pages/ProfilePicker.tsx'
 import TimeUpPage from './pages/TimeUpPage.tsx'
 import EmptyState from './ui/EmptyState.tsx'
@@ -45,8 +43,7 @@ const SetupPage = (props: ComponentProps<typeof LazySetupPage>) => (
 )
 
 // setup: a new install, before its first-run screens. choosing: logged in, but no profile picked on this device yet.
-// server: the server's admin with no household yet, in /server alone.
-type Status = 'loading' | 'setup' | 'anonymous' | 'choosing' | 'authenticated' | 'server' | 'noHousehold' | 'error'
+type Status = 'loading' | 'setup' | 'anonymous' | 'choosing' | 'authenticated' | 'error'
 
 // Each time the app opens (not on a reload in the same tab), it starts on « Qui lit ? », as Netflix does: the device
 // may be shared, and the profile open when it closed may not be the reader's. Not while another tab of Hodi is open in
@@ -73,8 +70,7 @@ type Session = Awaited<ReturnType<typeof getSession>>
 const openingSession = async () => {
   const session = await getSession()
   const signedIn = session !== null && session !== 'setup'
-  // The server's admin outside any household opens /server alone: preload.js's requests would all be refused.
-  rememberSession(signedIn && !session.serverOnly && !session.noHousehold)
+  rememberSession(signedIn)
   const left = await leaveOnOpen(signedIn && session.profileChosen)
   return left ? getSession(true) : session
 }
@@ -82,8 +78,6 @@ const openingSession = async () => {
 const statusOf = (session: Session): Status => {
   if (session === 'setup') return 'setup'
   if (!session) return 'anonymous'
-  if (session.serverOnly) return 'server'
-  if (session.noHousehold) return 'noHousehold'
   return session.profileChosen ? 'authenticated' : 'choosing'
 }
 
@@ -91,7 +85,6 @@ const statusOf = (session: Session): Status => {
 const applySession = (session: Session) => {
   if (!session || session === 'setup') return
   if (session.language) setHouseholdLanguage(session.language)
-  setServerOnly(session.serverOnly)
   setHourCycle(session.hourCycle)
   if (session.content) setContentDays(session.content)
   setTwoFactorOn(session.twoFactor)
@@ -99,12 +92,12 @@ const applySession = (session: Session) => {
 }
 
 // The household's plugins, in the background: the first screen never waits for them. Before a profile is open, only
-// the ones that draw on Connexion and « Qui lit ? », and on the card of an account in no household. Signed out after the signed-in ones loaded: the app starts
-// again, so that none of them stays in the page.
+// the ones that draw on Connexion and « Qui lit ? ». Signed out after the signed-in ones loaded: the app starts again,
+// so that none of them stays in the page.
 const usePluginLoading = (status: Status) => {
   useEffect(() => {
-    if (status === 'authenticated' || status === 'server') void loadPlugins()
-    else if (status === 'choosing' || status === 'noHousehold') void loadPublicPlugins()
+    if (status === 'authenticated') void loadPlugins()
+    else if (status === 'choosing') void loadPublicPlugins()
     else if (status === 'anonymous') {
       if (loadedPlugins() === 'signedIn') window.location.reload()
       else void loadPublicPlugins()
@@ -177,7 +170,7 @@ const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: S
   }
 
   // Mon compte: a page of its own, as the legal pages.
-  if (route.name === 'account') return <AccountPage inHousehold />
+  if (route.name === 'account') return <AccountPage />
 
   // The catalogue of the server's sources: a page of its own, as Mon compte.
   if (route.name === 'catalogue') return <CataloguePage />
@@ -196,7 +189,6 @@ const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: S
 
 const App = () => {
   const [status, setStatus] = useState<Status>('loading')
-  const route = useHashRoute()
   const { language, hourCycle, game } = usePreferences()
 
   const check = useCallback(() => {
@@ -252,17 +244,6 @@ const App = () => {
   }
   if (status === 'setup') return <SetupPage onDone={signedIn} />
   if (status === 'anonymous') return <SignedOut onLoggedIn={signedIn} />
-  if (status === 'noHousehold') return <NoHouseholdPage account={route.name === 'account'} />
-
-  // No household yet: the server's space whatever the address, with its plugins' sections.
-  if (status === 'server') {
-    if (route.name === 'account') return <AccountPage inHousehold={false} />
-    return route.name === 'server' ? (
-      <ServerSpace section={route.section} item={route.item} pluginSection={route.plugin} />
-    ) : (
-      <ServerSpace section={null} />
-    )
-  }
 
   return <SignedIn status={status} setStatus={setStatus} />
 }

@@ -22,7 +22,7 @@ const ANTHO = { email: 'antho@example.com', password: 'le mot de passe d’Antho
 const SOPHIE = { email: 'sophie@example.com', password: 'le mot de passe de Sophie' }
 const FAST = { N: 2 ** 10, r: 8, p: 1 }
 
-describe('an account whose profile was deleted from its household', () => {
+describe('an account with no profile', () => {
   let baseUrl = ''
   let close = () => {}
   const clock = Date.UTC(2026, 10, 18, 12)
@@ -30,8 +30,6 @@ describe('an account whose profile was deleted from its household', () => {
   const profiles = new ProfileStore(db)
   const accounts = new UserAccountStore(db)
   let sophieAccount = 0
-  let maxId = 0
-  let sophieDevice = ''
 
   const call = (method: string, route: string, cookie: string, body?: unknown) =>
     fetch(`${baseUrl}/api${route}`, {
@@ -61,8 +59,6 @@ describe('an account whose profile was deleted from its household', () => {
     const sophie = profiles.create('Sophie', 'tech', clock)!
     sophieAccount = accounts.create(SOPHIE.email, await hashPassword(SOPHIE.password, FAST), clock)!.id
     accounts.linkProfile(sophieAccount, sophie.id)
-    // A child's profile, which opens without a password: the one a device on nobody would fall into.
-    maxId = profiles.create('Max', 'sport', clock, { kind: 'child' })!.id
     const catalog = parseCatalog('topics:\n  - id: world\n    label: Monde\n    sources: []\n')
     const server = createApp(config, {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
@@ -77,55 +73,47 @@ describe('an account whose profile was deleted from its household', () => {
     await new Promise(resolve => server.once('listening', resolve))
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
     close = () => server.close()
-    // The household's admin deletes her profile: her account stays.
+    // Her profile is deleted: her account stays, still wearing its name and colour.
     profiles.delete(sophie.id)
-    sophieDevice = cookieOf(await call('POST', '/login', '', SOPHIE))
   })
   after(() => close())
 
-  it('still signs in, and the session says it has no household', async () => {
-    assert.ok(accounts.get(sophieAccount))
-    assert.match(sophieDevice, /^hodi_session=/)
-    const session = await call('GET', '/session', sophieDevice)
+  it('gets back a profile of its own as it signs in, named and coloured as it was', async () => {
+    const device = cookieOf(await call('POST', '/login', '', SOPHIE))
+    assert.match(device, /^hodi_session=/)
+    const session = await call('GET', '/session', device)
     assert.equal(session.status, 200)
-    const body = (await session.json()) as { noHousehold?: boolean; profileChosen: boolean }
-    assert.equal(body.noHousehold, true)
-    assert.equal(body.profileChosen, false)
-  })
-
-  it('sees nothing of the household it left, nor opens any of its profiles', async () => {
-    for (const route of ['/profiles', '/feed?tz=UTC', '/topics', `/profiles/${maxId}/photo`]) {
-      const refused = await call('GET', route, sophieDevice)
-      assert.deepEqual([route, refused.status, await refused.json()], [route, 423, { error: 'no_household' }])
-    }
-    const open = await call('PUT', '/profiles/current', sophieDevice, { id: maxId })
-    assert.equal(open.status, 423)
-    // Not even with a profile cookie from before.
-    const withCookie = await call('GET', '/feed?tz=UTC', `${sophieDevice}; hodi_profile=${maxId}`)
-    assert.equal(withCookie.status, 423)
-  })
-
-  it('reaches its own account: what deleting it takes, and a copy of its data', async () => {
-    const account = await call('GET', '/account', sophieDevice)
-    assert.equal(account.status, 200)
-    const view = (await account.json()) as { email: string; deletion: { householdGoes: boolean; others: string[] } }
-    assert.equal(view.email, SOPHIE.email)
-    assert.deepEqual([view.deletion.householdGoes, view.deletion.others], [false, []])
-    const copy = await call('GET', '/account/copy', sophieDevice)
-    assert.equal(copy.status, 200)
-    assert.match(copy.headers.get('content-disposition') ?? '', /attachment/)
-  })
-
-  it('deletes itself alone, the household and its profiles staying', async () => {
-    const before = profiles.list().map(profile => profile.id)
-    const deleted = await call('DELETE', '/account', sophieDevice, { password: SOPHIE.password })
-    assert.equal(deleted.status, 204)
-    assert.equal(accounts.get(sophieAccount), null)
+    assert.equal(((await session.json()) as Record<string, unknown>).noHousehold, undefined)
+    const own = accounts.profileOf(sophieAccount, 1)
+    assert.notEqual(own, null)
     assert.deepEqual(
-      profiles.list().map(profile => profile.id),
-      before
+      [profiles.get(own!)?.name, profiles.get(own!)?.color, profiles.get(own!)?.kind],
+      ['Sophie', 'tech', 'adult']
     )
-    assert.equal((await call('POST', '/login', '', SOPHIE)).status, 401)
+    // Once: the next requests make no other.
+    assert.equal((await call('GET', '/profiles', device)).status, 200)
+    assert.equal(profiles.list().filter(profile => profile.name === 'Sophie').length, 1)
+  })
+
+  it('makes one profile only, however many requests come at once', async () => {
+    const made = accounts.create('paul@example.com', await hashPassword(SOPHIE.password, FAST), clock)!
+    const device = cookieOf(await call('POST', '/login', '', { email: made.email, password: SOPHIE.password }))
+    const answers = await Promise.all(
+      ['/session', '/profiles', '/topics', '/session', '/profiles'].map(route => call('GET', route, device))
+    )
+    assert.deepEqual(
+      answers.map(answer => answer.status),
+      [200, 200, 200, 200, 200]
+    )
+    assert.equal(profiles.list().filter(profile => profile.name === 'Paul').length, 1)
+  })
+
+  it('names the profile of an account a plugin made after its e-mail', async () => {
+    const made = accounts.create('marie.dupont@example.com', await hashPassword(SOPHIE.password, FAST), clock)!
+    const device = cookieOf(await call('POST', '/login', '', { email: made.email, password: SOPHIE.password }))
+    assert.equal((await call('GET', '/session', device)).status, 200)
+    const own = accounts.profileOf(made.id, 1)
+    assert.deepEqual([profiles.get(own!)?.name, profiles.get(own!)?.color], ['Marie dupont', 'world'])
   })
 })
 

@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
 import { migrate } from '../db/migrations.ts'
-import { MAX_PROFILES, ProfileStore, cleanName } from '../db/profile-store.ts'
+import { ProfileStore, cleanName } from '../db/profile-store.ts'
 import { MAX_READ, UserStore } from '../db/user-store.ts'
 
 const NOW = Date.UTC(2026, 9, 25, 12)
@@ -144,12 +144,11 @@ describe('profiles', () => {
     assert.deepEqual(lea.getState().read, ['b'])
   })
 
-  it('makes up to five profiles, and never deletes the last one', () => {
+  it('makes as many profiles as asked, and never deletes the last one', () => {
     const db = openDatabase(':memory:')
     const profiles = new ProfileStore(db)
-    for (let count = 2; count <= MAX_PROFILES; count++) assert.ok(profiles.create(`Profil ${count}`, 'tech', NOW))
-    assert.equal(profiles.create('Un de trop', 'tech', NOW), null)
-    assert.equal(profiles.list().length, MAX_PROFILES)
+    for (let count = 2; count <= 8; count++) assert.ok(profiles.create(`Profil ${count}`, 'tech', NOW))
+    assert.equal(profiles.list().length, 8)
 
     const last = profiles.list().at(-1)!
     assert.deepEqual(profiles.update(last.id, { name: 'Sam', color: 'ai' }), { ...last, name: 'Sam', color: 'ai' })

@@ -32,7 +32,6 @@ const pluginFolder = (permissions: Record<string, unknown> = {}) => {
           return { status: 201, body: { greeting: ctx.settings().greeting } }
         },
         'GET /me': async request => ({ body: { accountId: request.who.accountId } }),
-        'GET /alone': { noHousehold: true, handler: async request => ({ body: request.who }) },
         'GET /page': async (_request, ctx) => ({ body: (await ctx.fetchText('https://news.example.test/')).text }),
         'POST /mail': async (request, ctx) => { await ctx.mail.send({ to: request.body.to, subject: 'Hi', text: 'Hello' }); return { body: null } },
         'DELETE /notes': { proof: true, handler: async () => ({ status: 204 }) }
@@ -87,19 +86,6 @@ describe('the plugin test kit', () => {
     assert.deepEqual((await kit.route('GET /me', { as: lea })).body, { accountId: lea.accountId })
     assert.deepEqual((await kit.route('GET /me', { as: tom })).body, { accountId: null })
     assert.equal((await kit.route('GET /page')).body, '<p>Une page</p>')
-    // An account in no household reaches only the routes marked noHousehold.
-    const alone = await kit.addAccount({ email: 'alone@example.test' })
-    assert.deepEqual((await kit.noHouseholdRoute('GET /alone', alone)).body, {
-      profileId: null,
-      householdId: null,
-      kind: 'adult',
-      serverAdmin: false,
-      accountId: alone
-    })
-    assert.deepEqual(await kit.noHouseholdRoute('GET /me', alone).then(answer => [answer.status, answer.body]), [
-      423,
-      { error: 'no_household' }
-    ])
 
     // E-mails and sign-ins are caught, not sent.
     await kit.route('POST /mail', { body: { to: 'marie@example.test' } })

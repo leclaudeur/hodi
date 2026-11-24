@@ -37,7 +37,8 @@ const apiRouter = (config: Config, appOptions: AppOptions) => {
     sessionsOf: wiring.session.sessionsOf,
     cookieFor: wiring.session.cookieFor,
     secret: config.sessionSecret,
-    now: options.now
+    now: options.now,
+    onProfileCreated: wiring.profileHooks.created
   })
   api.use(requireSession)
   api.use(chooseProfile)

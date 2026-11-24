@@ -39,7 +39,6 @@ export const PROFILE_AVATARS = [
 ] as const
 export type ProfileAvatarName = (typeof PROFILE_AVATARS)[number]
 
-export const MAX_PROFILES = CONFIG.profiles.max
 export const MAX_PROFILE_NAME_LENGTH = CONFIG.profiles.nameMaxLength
 
 // admin: manages every profile and the household's shared data. member: its own profile and settings.

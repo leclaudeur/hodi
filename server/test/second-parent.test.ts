@@ -119,7 +119,7 @@ describe('Mon compte › Mes enfants › Parents', () => {
   })
 })
 
-describe('a parent who no longer reads in the household', () => {
+describe('a parent whose profile was deleted', () => {
   let household: Awaited<ReturnType<typeof startHousehold>>
   before(async () => {
     household = await startHousehold()
@@ -127,7 +127,7 @@ describe('a parent who no longer reads in the household', () => {
   })
   after(() => household.close())
 
-  it('cannot be invited, and takes the children only they run when their account goes', async () => {
+  it('cannot be invited until they sign in again, and takes the children only they run when their account goes', async () => {
     const made = await household.call('/account/children', household.sam, 'POST', {
       kind: 'child',
       name: 'Mia',
@@ -146,7 +146,14 @@ describe('a parent who no longer reads in the household', () => {
     })
     assert.equal(asked.status, 404)
 
-    const deleted = await household.call('/account', household.sam, 'DELETE', { password: SAM_PASSWORD })
+    // Signed in again, Sam reads with a profile of his own once more, and opens it on this device.
+    assert.equal((await household.call('/session', household.sam)).status, 200)
+    const own = household.accounts.profileOf(household.samAccount.id, 1)!
+    const opened = await household.call('/profiles/current', household.sam, 'PUT', { id: own, password: SAM_PASSWORD })
+    assert.equal(opened.status, 200)
+    const signedIn = household.sam.split('; ').filter(part => !part.startsWith('hodi_profile='))
+    const sam = [...signedIn, ...opened.headers.getSetCookie().map(cookie => cookie.split(';')[0])].join('; ')
+    const deleted = await household.call('/account', sam, 'DELETE', { password: SAM_PASSWORD })
     assert.equal(deleted.status, 204)
     assert.equal(household.accounts.get(mia.accountId), null)
     assert.equal(household.profiles.get(mia.profileId), null)

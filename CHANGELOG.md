@@ -128,6 +128,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **The household admin role.** What it allowed (other adults' profiles, the game switch, stored texts, other people's
   sources, the plugins' AI use and the plugins for the admin only) is now the server admin's alone, and Pass the admin
   role is gone. On a household where the admin was another adult than the server's admin, that adult loses them.
+- **No household left to show, and no limit of 5 profiles.** Every account has its own profile: one without (made by
+  a plugin, or whose profile was deleted) gets it at its next sign-in, with the name and colour it had, or the start of
+  its e-mail. The screen « You have no household any more » is gone, and invitations and new profiles no longer stop at 5.
 - **Devices linked to a young profile by a code.** A teen or a child now signs in with the account a parent made in
   My account › My children. A device still linked by a code is signed out: sign it in with that account.
 

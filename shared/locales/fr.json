@@ -65,10 +65,6 @@
       "intro": "Crée un compte : ce profil y sera lié, avec ses lectures.",
       "introExisting": "Entre avec le compte que tu as déjà : ce profil y sera lié, avec ses lectures."
     },
-    "full": {
-      "title": "Le serveur est complet",
-      "intro": "Il a déjà 5 profils. Demande à l’admin d’en retirer un, puis réessaie avec ce code."
-    },
     "who": {
       "intro": "Un prénom et une couleur, que les autres verront. Tu pourras les changer dans <i>Mon compte</i>."
     },
@@ -1025,15 +1021,6 @@
         "skimmed_one": "survolée",
         "skimmed_other": "survolées"
       }
-    },
-    "account": {
-      "intro": "Les tiennes, liées au compte : elles te suivent sur chaque appareil.",
-      "articles_one": "article lu",
-      "articles_other": "articles lus",
-      "videos_one": "vidéo vue",
-      "videos_other": "vidéos vues",
-      "points_one": "point",
-      "points_other": "points"
     },
     "loading": "Chargement des statistiques",
     "intro": "Ce que tu as lu, sur tous les appareils. Un article est lu quand tu l’as parcouru jusqu’à 80 % et que tu y as passé au moins un tiers de son temps de lecture ; une vidéo, vue à 80 %. Au-delà de 15 %, il reste en cours et t’attend dans <i>Reprendre</i> ; en dessous, il est survolé."
@@ -2098,14 +2085,11 @@
       "searchAccounts": "Chercher un compte",
       "accountsMeta_one": "{{count}} compte",
       "accountsMeta_other": "{{count}} comptes",
-      "noHousehold": "Sans foyer",
       "noProfile": "Sans profil",
       "noMatchAccounts": "Aucun compte ne correspond.",
       "backToAccounts": "Retour aux comptes",
       "failed": "Impossible de charger la liste.",
-      "household": {
-        "serverFull": "Serveur complet"
-      },
+      "household": {},
       "account": {
         "intro": "Le serveur voit le compte, jamais ce qui y est lu ni ses réglages.",
         "section": "Compte",
@@ -2285,7 +2269,6 @@
       "senderIntro": "L’adresse d’où partent les e-mails de Hodi, par exemple no-reply@exemple.be. Le serveur d’envoi doit accepter de l’utiliser.",
       "toFill": "À remplir"
     },
-    "logout": "Se déconnecter",
     "notifications": {
       "title": "Alertes",
       "intro": "Comment le serveur te prévient de chaque chose : par e-mail, en push sur les appareils où tu es connecté, ou les deux. Tout reste aussi dans <i>Notifications</i>.",
@@ -2612,12 +2595,6 @@
       "button": "Continuer"
     }
   },
-  "noHousehold": {
-    "title": "Tu n’as plus de foyer",
-    "text": "Le compte <b>{{email}}</b> n’est plus dans aucun foyer, mais il existe toujours : tu le retrouves dans <i>Mon compte</i>. Pour rejoindre un foyer, déconnecte-toi, puis entre dans <i>J’ai un code</i> celui qu’un de ses adultes te donne.",
-    "deleteMessage": "<b>{{email}}</b> est effacé tout de suite. Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-    "account": "Mon compte"
-  },
   "choiceField": {
     "remove": "Retirer {{name}}"
   },
@@ -2640,8 +2617,7 @@
       "data": "Une copie de tout ce que Hodi garde du compte, ou sa suppression.",
       "ai": "Chaque bouton violet est un appel à l’IA, payé avec la clé d’API de ce compte : rien ne part sans un clic. Les appels se comptent sur 24 heures glissantes, sans plafond : la clé est à toi.",
       "children": "Les comptes des ados et des enfants que tu gères : chacun se connecte avec son identifiant et le mot de passe que tu choisis."
-    },
-    "noStats": "Rien de lu pour l’instant."
+    }
   },
   "children": {
     "create": {

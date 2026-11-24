@@ -334,8 +334,7 @@ describe('joining the household with a code', () => {
     assert.deepEqual(await checked.json(), {
       kind: 'invite',
       household: 'Hodi',
-      invitedBy: { id: profiles.list()[0]!.id, name: 'Antho', color: 'tech', kind: 'adult', avatar: null },
-      full: false
+      invitedBy: { id: profiles.list()[0]!.id, name: 'Antho', color: 'tech', kind: 'adult', avatar: null }
     })
 
     // The age is the person's word, the profile's name and colour theirs to choose.
@@ -429,24 +428,23 @@ describe('joining the household with a code', () => {
     assert.equal((await post('/codes/reset', { code, password: NEW_PASSWORD })).status, 403)
   })
 
-  it('stops after a day, and with a full household', async () => {
+  it('stops after a day, and knows no limit of profiles', async () => {
     const { code } = (await (await makeCode(admin)).json()) as { code: string }
     clock += SIGN_IN_CODE_LIFETIME
     assert.equal((await post('/codes/check', { code })).status, 403)
 
     const late = (await (await makeCode(admin)).json()) as { code: string }
-    profiles.create('Lou', 'sport', clock)
-    profiles.create('Noé', 'science', clock)
-    const full = (await (await post('/codes/check', { code: late.code })).json()) as { full: boolean }
-    assert.equal(full.full, true)
-    const refused = await post('/codes/join', {
+    for (const name of ['Lou', 'Noé', 'Zoé', 'Tom']) profiles.create(name, 'sport', clock)
+    const checked = (await (await post('/codes/check', { code: late.code })).json()) as Record<string, unknown>
+    assert.equal('full' in checked, false)
+    const joined = await post('/codes/join', {
       ...JOINER,
       email: 'lou@example.com',
       code: late.code,
       profile: { name: 'Lou', color: 'sport' }
     })
-    assert.deepEqual(await refused.json(), { error: 'household_full' })
-    assert.equal((await makeCode(admin)).status, 409)
+    assert.equal(joined.status, 200)
+    assert.equal((await makeCode(admin)).status, 201)
   })
 
   it('counts wrong codes as wrong passwords', async () => {

@@ -130,7 +130,7 @@ test('sets up the server in the browser', async () => {
   await expect(keep).toBeDisabled()
   await page.getByRole('button', { name: 'Télécharger' }).click()
   await keep.click()
-  // The server is set up: the admin's profile comes next, or later from the server's space. No household to name.
+  // The server is set up: the admin's profile comes next. No household to name.
   await expect(page.getByRole('heading', { name: 'Le serveur est prêt' })).toBeVisible()
   await page.getByRole('button', { name: 'Créer mon profil' }).click()
   await page.getByPlaceholder('Ex. Léa').fill('Alex')

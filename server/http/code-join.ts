@@ -6,7 +6,7 @@ import { profileCookie, profileToken } from '../auth/session.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
 import type { InstallStore } from '../db/install-store.ts'
 import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
-import { MAX_PROFILES, type Profile, type ProfileStore, isYoung } from '../db/profile-store.ts'
+import { type Profile, type ProfileStore, isYoung } from '../db/profile-store.ts'
 import { type SignInCode, type SignInCodeStore, signInCodeOf } from '../db/sign-in-code-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import type { CookieFor } from './account-session.ts'
@@ -115,8 +115,7 @@ export const codeHelpers = ({
     return {
       kind: 'invite',
       household: name,
-      invitedBy: by ? publicProfile(by) : null,
-      full: profiles.list().length >= MAX_PROFILES
+      invitedBy: by ? publicProfile(by) : null
     }
   }
 

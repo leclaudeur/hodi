@@ -315,23 +315,6 @@ describe('opening a profile with a private profile, a Code parental or a trusted
     const left = after_(forged, await call('POST', '/logout', forged))
     assert.equal((await call('PUT', '/profiles/current', left, { id: 1, password: ANTHO.password })).status, 200)
   })
-
-  it('keeps one account at a time on a device when it is in no household', async () => {
-    const lone = { email: 'lone@example.com', password: 'une autre phrase assez longue' }
-    const other = { email: 'other@example.com', password: 'encore une phrase assez longue' }
-    for (const account of [lone, other])
-      accounts.create(account.email, await hashPassword(account.password, FAST), clock)
-    const device = await signIn(other, await signIn(lone))
-    const asking = await call('GET', '/account', device)
-    assert.equal(((await asking.json()) as { email: string }).email, other.email)
-    assert.equal(
-      device
-        .split('; ')
-        .find(part => part.startsWith('hodi_session='))
-        ?.includes('~'),
-      false
-    )
-  })
 })
 
 describe('the accounts from before « Profil privé »', () => {

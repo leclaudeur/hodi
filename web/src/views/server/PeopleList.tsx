@@ -114,15 +114,13 @@ const PeopleSearch = ({ phone, label, query, onQuery }: SearchProps) => (
 const InviteButton = ({ loaded }: { loaded: People }) => {
   const { t } = useTranslation()
   const [inviting, setInviting] = useState(false)
-  // Everyone reads in the server's one space; it holds as many profiles as a household may.
+  // Everyone reads in the server's one space.
   const space = loaded.households[0]
   if (!space) return null
-  const full = space.adults + space.young >= loaded.maxProfiles
   return (
     <div className={serverStyles.invite}>
-      {/* Full, the button says so and stays greyed, with no line more. */}
-      <Button icon={UserPlus} wide disabled={full} onClick={() => setInviting(true)}>
-        {t(full ? 'server.people.household.serverFull' : 'profiles.code.invite')}
+      <Button icon={UserPlus} wide onClick={() => setInviting(true)}>
+        {t('profiles.code.invite')}
       </Button>
       <CodeDialog
         target={inviting ? null : undefined}

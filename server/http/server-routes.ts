@@ -1,7 +1,7 @@
 import express from 'express'
 import type { AccountDataStore } from '../db/account-data.ts'
 import type { HouseholdStore } from '../db/household-store.ts'
-import { MAX_PROFILES, type ProfileStore } from '../db/profile-store.ts'
+import { type ProfileStore } from '../db/profile-store.ts'
 import type { ServerPeopleStore } from '../db/server-people-store.ts'
 import {
   CONTENT_SETTINGS,
@@ -147,10 +147,7 @@ const mountPeopleRoutes = (router: express.Router, { people, codeRequests }: Ser
   if (!people) return
   // Comptes: who has an account, in which household, and when it was last used. Nothing they read.
   router.get('/households', (_request, response) => {
-    response.json({
-      households: people.households(),
-      maxProfiles: MAX_PROFILES
-    })
+    response.json({ households: people.households() })
   })
   router.get('/accounts', (_request, response) => {
     response.json({
@@ -185,10 +182,6 @@ const mountInviteRoutes = (
     const id = Number(request.params.id)
     if (!people.households().some(entry => entry.id === id)) {
       response.status(404).json({ error: 'not_found' })
-      return
-    }
-    if (profiles.list().length >= MAX_PROFILES) {
-      response.status(409).json({ error: 'household_full' })
       return
     }
     response.status(201).json(codes.create({ createdBy: createdByOf(response), householdId: id }, now()))

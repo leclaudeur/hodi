@@ -39,9 +39,9 @@ describe('a person’s name, colour and photo', () => {
     const env = await startHousehold()
     try {
       const before = env.profiles.get(env.samId)!
-      // As Réglages › Profils › « Supprimer » does; leaving the household on one's own is no longer a way.
-      assert.ok(env.profiles.delete(env.samId))
+      // Leaving the household on one's own is no longer a way; Réglages › Profils › « Supprimer » is.
       assert.equal((await env.call('/account/leave', env.sam, 'POST', { password: SAM_PASSWORD })).status, 404)
+      assert.ok(env.profiles.delete(env.samId))
       const { code } = (await (await env.call('/codes', env.admin, 'POST', {})).json()) as { code: string }
       const joined = await env.call('/codes/join', '', 'POST', {
         code,

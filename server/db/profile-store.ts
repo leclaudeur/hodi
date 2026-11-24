@@ -7,7 +7,6 @@ import { CONFIG } from '../fixed-config.ts'
 // preferences, "Enregistrés", reads, stats and alerts (UserStore, by profile). Articles, their texts and
 // what the AI wrote stay shared.
 
-export const MAX_PROFILES = CONFIG.profiles.max
 export const MAX_NAME_LENGTH = CONFIG.profiles.nameMaxLength
 // A square picture made small on the device: well under this.
 export const MAX_PHOTO_BYTES = CONFIG.profiles.photoMaxSize
@@ -158,7 +157,7 @@ export class ProfileStore {
     return this.list().find(profile => profile.id === id) ?? null
   }
 
-  // null when the household already has MAX_PROFILES. A child without an avatar gets one no other profile has.
+  // A child without an avatar gets one no other profile has.
   create(
     name: string,
     color: ProfileColor,
@@ -167,7 +166,6 @@ export class ProfileStore {
   ): Profile | null {
     return transaction(this.#db, () => {
       const profiles = this.list()
-      if (profiles.length >= MAX_PROFILES) return null
       const { lastInsertRowid } = this.#db
         .prepare(
           `INSERT INTO profiles (account_id, name, color, kind, avatar, position, created_at, tour_pending)

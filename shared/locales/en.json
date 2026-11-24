@@ -65,10 +65,6 @@
       "intro": "Create your account: this profile becomes yours, with its reading.",
       "introExisting": "Sign in with the account you already have: this profile will be linked to it, with its reading."
     },
-    "full": {
-      "title": "The server is full",
-      "intro": "It already has 5 profiles. Ask the admin to remove one, then try this code again."
-    },
     "who": {
       "intro": "Your name and colour, which others will see. You can change them in <i>My account</i>."
     },
@@ -1025,15 +1021,6 @@
         "skimmed_one": "skimmed",
         "skimmed_other": "skimmed"
       }
-    },
-    "account": {
-      "intro": "Yours, tied to your account: they follow you on every device.",
-      "articles_one": "article read",
-      "articles_other": "articles read",
-      "videos_one": "video watched",
-      "videos_other": "videos watched",
-      "points_one": "point",
-      "points_other": "points"
     },
     "loading": "Loading the stats",
     "intro": "What you read, on all your devices. An article is read once you scrolled through 80% of it and spent at least a third of its reading time on it; a video, once 80% watched. Past 15%, it stays in progress and waits for you in <i>Pick up</i>; below that, it was skimmed."
@@ -2098,14 +2085,11 @@
       "searchAccounts": "Search accounts",
       "accountsMeta_one": "{{count}} account",
       "accountsMeta_other": "{{count}} accounts",
-      "noHousehold": "No household",
       "noProfile": "No profile",
       "noMatchAccounts": "No account matches.",
       "backToAccounts": "Back to accounts",
       "failed": "The list could not be loaded.",
-      "household": {
-        "serverFull": "Server full"
-      },
+      "household": {},
       "account": {
         "intro": "The server sees the account, never what is read with it nor its settings.",
         "section": "Account",
@@ -2285,7 +2269,6 @@
       "senderIntro": "The address Hodi’s e-mails come from, for example no-reply@example.com. The mail server must accept it.",
       "toFill": "To fill in"
     },
-    "logout": "Sign out",
     "notifications": {
       "title": "Alerts",
       "intro": "How the server lets you know of each thing: by e-mail to your address, in push on your devices, or both. Everything also stays in <i>Notifications</i>.",
@@ -2612,12 +2595,6 @@
       "button": "Continue"
     }
   },
-  "noHousehold": {
-    "title": "You no longer have a household",
-    "text": "Your account <b>{{email}}</b> is in no household any more, but it still exists: you find it in <i>My account</i>. To join a household, sign out, then type in <i>I have a code</i> the one an adult of it gives you.",
-    "deleteMessage": "<b>{{email}}</b> is erased right away. Backup copies forget it within {{days}} at most.",
-    "account": "My account"
-  },
   "choiceField": {
     "remove": "Remove {{name}}"
   },
@@ -2640,8 +2617,7 @@
       "data": "A copy of everything Hodi keeps about the account, or deleting it.",
       "ai": "Each purple button is a call to the AI, paid with this account's API key: nothing goes without a click. Calls count over a rolling 24 hours, with no cap: the key is yours.",
       "children": "The teens’ and children’s accounts you run: each signs in with their username and the password you choose."
-    },
-    "noStats": "Nothing read yet."
+    }
   },
   "children": {
     "create": {

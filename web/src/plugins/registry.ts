@@ -137,10 +137,6 @@ export interface WebPlugin {
   signInExtras?: ComponentType<{ layout: 'desktop' | 'phone'; signedIn: () => void }>
   // After « J'ai au moins 13 ans » (« et j'accepte les conditions d'utilisation »).
   ageConsent?: AgeConsent
-  // On the card of an account in no household (it left, or its profile was deleted), under its text: one more way
-  // on, such as « Créer mon foyer ». Only the public part is loaded there; it calls the routes marked noHousehold,
-  // then done(), and Hodi starts again on the account's new household.
-  noHouseholdActions?: ComponentType<{ layout: 'desktop' | 'phone'; done: () => void }>
   // Rows at the end of « Ton compte » in Réglages › Compte et données: SettingRows.
   accountRows?: ComponentType<{ layout: 'desktop' | 'phone' }>
   // Entries of the avatar's menu.

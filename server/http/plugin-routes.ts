@@ -234,36 +234,10 @@ const mountOwnRoutes = (router: express.Router, plugins: PluginRegistry, { route
   }
 }
 
-// An account in no household reaches only the plugins' routes marked noHousehold: true; anything else of /plugins
-// answers 423 no_household, as the rest of Hodi does.
-const noHouseholdRoutes = (plugins: PluginRegistry, { routeProof }: PluginRoutesOptions) => {
-  const open = express.Router()
-  for (const plugin of plugins.list()) {
-    if (!plugin.shape?.noHouseholdRoutes?.length) continue
-    open.use(
-      `/${plugin.id}`,
-      (_request, response, next) => {
-        if (plugins.enabled(plugin.id)) next()
-        else response.status(404).json({ error: 'not_found' })
-      },
-      sandboxRoutes(plugins, plugin, 'routes', undefined, [], routeProof, true)
-    )
-  }
-  const handler: express.RequestHandler = (request, response, next) => {
-    if (response.locals.noHousehold !== true) {
-      next()
-      return
-    }
-    open(request, response, () => response.status(423).json({ error: 'no_household' }))
-  }
-  return handler
-}
-
 export const pluginRoutes = (plugins: PluginRegistry, { restart = () => {}, ...options }: PluginRoutesOptions = {}) => {
   const { installer, ai, proof = async () => true } = options
   const router = express.Router()
   const restartAfter = (response: express.Response) => response.on('finish', restart)
-  router.use(noHouseholdRoutes(plugins, options))
   mountListRoute(router, plugins)
   if (installer) {
     mountInstallRoutes(router, installer, proof, restartAfter)

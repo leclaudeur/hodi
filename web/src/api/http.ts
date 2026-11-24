@@ -1,5 +1,4 @@
 import { noteResponse } from '../lib/connection.ts'
-import { isServerOnly } from '../lib/server-only.ts'
 import { type SignInRefusal, refusalOf } from '../lib/sign-in-refusal.ts'
 
 // Thrown when the session expired: the app goes back to the login page.
@@ -14,8 +13,7 @@ const noteProfileClosed = async (response: Response) => {
     .clone()
     .json()
     .catch(() => null)) as { error?: string } | null
-  if (body?.error === 'profile_locked' || (body?.error === 'no_household' && !isServerOnly()))
-    window.dispatchEvent(new Event(PROFILE_CLOSED))
+  if (body?.error === 'profile_locked') window.dispatchEvent(new Event(PROFILE_CLOSED))
 }
 
 export const getJson = async <T>(route: string, accept: number[] = []): Promise<T> => {

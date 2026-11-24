@@ -224,17 +224,12 @@ globalThis.__hodiDescribe = () => {
   }
   const rawRoutes = {}
   const proofRoutes = []
-  const noHouseholdRoutes = []
   for (const group of groups) {
     for (const [key, entry] of Object.entries(plugin[group] ?? {})) {
       if (typeof entry === 'function') continue
       if (entry.proof !== undefined && entry.proof !== false) {
         if (entry.proof !== true) throw new Error(key + ': proof must be true or false')
         proofRoutes.push(group + ' ' + key)
-      }
-      if (entry.noHousehold !== undefined && entry.noHousehold !== false) {
-        if (entry.noHousehold !== true) throw new Error(key + ': noHousehold must be true or false')
-        noHouseholdRoutes.push(group + ' ' + key)
       }
       if (!entry.raw) continue
       if (!Number.isInteger(entry.maxBody) || entry.maxBody < 1) throw new Error(key + ': maxBody must be a number of bytes')
@@ -251,8 +246,7 @@ globalThis.__hodiDescribe = () => {
   feeds: Object.keys(plugin.feeds ?? {}),
   aiActions: Object.keys(plugin.aiActions ?? {}),
   rawRoutes,
-  proofRoutes,
-  noHouseholdRoutes
+  proofRoutes
   })
 }
 globalThis.__hodiRun = async (kind, name, argument, settingsText, body) => {

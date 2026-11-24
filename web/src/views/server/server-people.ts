@@ -4,7 +4,6 @@ import { numericDate } from '../../lib/format.ts'
 
 export interface People {
   households: ServerHousehold[]
-  maxProfiles: number
   accounts: ServerAccount[]
 }
 
@@ -19,8 +18,8 @@ const subscribe = (listener: () => void) => {
 let pending: Promise<void> | null = null
 export const load = () =>
   (pending ??= Promise.all([getServerHouseholds(), getServerAccounts()])
-    .then(([{ households, maxProfiles }, accounts]) => {
-      people = { households, maxProfiles, accounts }
+    .then(([{ households }, accounts]) => {
+      people = { households, accounts }
       failed = false
     })
     .catch(() => {

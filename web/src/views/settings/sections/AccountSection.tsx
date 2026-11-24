@@ -15,7 +15,6 @@ import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
 import { PluginSlots } from '../../../plugins/Slots.tsx'
 import AccountProfile from './AccountProfile.tsx'
-import AccountStatsCard from './AccountStatsCard.tsx'
 import { DeviceRows, TwoFactorRow, confirmDelete, labelOf } from './AccountRows.tsx'
 import PrivateProfileRow from './PrivateProfileRow.tsx'
 
@@ -223,4 +222,4 @@ export const DevicePart = () => {
   )
 }
 
-export { AccountProfile, AccountStatsCard }
+export { AccountProfile }

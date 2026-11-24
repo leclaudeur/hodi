@@ -1,5 +1,4 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import { isServerOnly } from './server-only.ts'
 import {
   type Profile,
   type ProfileChanges,
@@ -62,8 +61,6 @@ export const useProfiles = ({
 }: { fresh?: boolean; onError?: (error: unknown) => void } = {}) => {
   const value = useSyncExternalStore(subscribe, () => state)
   useEffect(() => {
-    // No household to list: asking would only be refused.
-    if (isServerOnly()) return
     if (!state || fresh) refreshProfiles().catch((error: unknown) => onError?.(error))
     // eslint-disable-next-line react-hooks/exhaustive-deps -- loaded once for the app: later changes come through this module
   }, [])
@@ -81,8 +78,6 @@ export const useCurrentProfile = () => {
 // The server's admin reads here: /server is theirs. null until the list has arrived.
 export const useIsServerAdmin = () => {
   const value = useProfiles({ onError: () => {} })
-  // No household yet: only the server's admin is ever signed in.
-  if (isServerOnly()) return true
   return value ? value.serverAdmin : null
 }
 

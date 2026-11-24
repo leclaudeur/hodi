@@ -77,8 +77,7 @@ export interface InboxItem {
 
 export const getServerInbox = () => getJson<{ items: InboxItem[]; waiting: number }>('/server/inbox')
 
-export const getServerHouseholds = () =>
-  getJson<{ households: ServerHousehold[]; maxProfiles: number }>('/server/households')
+export const getServerHouseholds = () => getJson<{ households: ServerHousehold[] }>('/server/households')
 
 export const getServerAccounts = async () => (await getJson<{ accounts: ServerAccount[] }>('/server/accounts')).accounts
 

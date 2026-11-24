@@ -1,4 +1,4 @@
-import { ArrowLeft, ListTree, LogOut } from 'lucide-react'
+import { ArrowLeft, ListTree } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import type { AccountView } from '../api.ts'
 import { useTranslation } from 'react-i18next'
@@ -15,16 +15,9 @@ import RowsSkeleton from '../views/settings/SettingsSkeleton.tsx'
 import { useAccount } from '../views/settings/sections/AccountSection.tsx'
 import YoungProfileSection from '../views/settings/sections/YoungProfileSection.tsx'
 import { PART_ICONS, PartBody, introKeyOf, partsOf } from './account/account-parts.tsx'
-import { signOutHere } from './NoHouseholdPage.tsx'
 import styles from './AccountPage.module.css'
 
-interface HeaderProps {
-  back: string
-  // Out of a household, the account can only leave from here.
-  signOut?: () => void
-}
-
-export const Header = ({ back, signOut }: HeaderProps) => {
+export const Header = ({ back }: { back: string }) => {
   const { t } = useTranslation()
   const phone = useIsPhone()
   return (
@@ -33,21 +26,11 @@ export const Header = ({ back, signOut }: HeaderProps) => {
         <Logo size={28} />
         <div className={styles.topActions}>
           {phone ? (
-            <>
-              <RoundButton icon={ArrowLeft} label={t('common.back')} size={34} href={back} />
-              {signOut && <RoundButton icon={LogOut} label={t('settings.logout')} size={34} onClick={signOut} />}
-            </>
+            <RoundButton icon={ArrowLeft} label={t('common.back')} size={34} href={back} />
           ) : (
-            <>
-              <Button compact icon={ArrowLeft} href={back}>
-                {t('common.back')}
-              </Button>
-              {signOut && (
-                <Button compact icon={LogOut} onClick={signOut}>
-                  {t('settings.logout')}
-                </Button>
-              )}
-            </>
+            <Button compact icon={ArrowLeft} href={back}>
+              {t('common.back')}
+            </Button>
           )}
         </div>
       </div>
@@ -121,14 +104,13 @@ interface PartViewProps {
   part: AccountPart
   account: AccountView | null | undefined
   onAccount: (account: AccountView) => void
-  inHousehold: boolean
   meta: string
   phone: boolean
   onUnauthorized: () => void
 }
 
 // One section: its title, its intro, its body.
-const PartView = ({ part, account, onAccount, inHousehold, meta, phone, onUnauthorized }: PartViewProps) => {
+const PartView = ({ part, account, onAccount, meta, phone, onUnauthorized }: PartViewProps) => {
   const { t } = useTranslation()
   return (
     <>
@@ -137,12 +119,11 @@ const PartView = ({ part, account, onAccount, inHousehold, meta, phone, onUnauth
         <RowsSkeleton rows={3} end="button" />
       ) : (
         <>
-          <p className={styles.intro}>{rich(t(introKeyOf(part, account, inHousehold)))}</p>
+          <p className={styles.intro}>{rich(t(introKeyOf(part, account)))}</p>
           <PartBody
             part={part}
             account={account}
             onAccount={onAccount}
-            inHousehold={inHousehold}
             layout={phone ? 'phone' : 'desktop'}
             onUnauthorized={onUnauthorized}
           />
@@ -152,13 +133,8 @@ const PartView = ({ part, account, onAccount, inHousehold, meta, phone, onUnauth
   )
 }
 
-interface AccountPageProps {
-  // In a household, from Réglages; out of one, from the card that says so.
-  inHousehold: boolean
-}
-
 // Mon compte, as the legal pages: the app's header, the sections in a sidebar, one section at a time.
-const AccountPage = ({ inHousehold }: AccountPageProps) => {
+const AccountPage = () => {
   const { t } = useTranslation()
   const phone = useIsPhone()
   const route = useHashRoute()
@@ -166,21 +142,17 @@ const AccountPage = ({ inHousehold }: AccountPageProps) => {
   const [account, setAccount] = useAccount(onUnauthorized)
   const household = useProfiles({ onError: () => {} })
   const own = household?.profiles.find(profile => profile.id === household.current)
-  const parts = account === undefined ? [] : partsOf(account, inHousehold)
+  const parts = account === undefined ? [] : partsOf(account)
   const asked = route.name === 'account' ? route.part : null
   const current = asked && parts.includes(asked) ? asked : (parts[0] ?? 'sign-in')
   // Mes enfants › Gérer: a young one's card, its name for title, back to the list.
   const item = route.name === 'account' ? route.item : undefined
   const youngId = current === 'children' && item && /^\d+$/.test(item) ? Number(item) : null
   const young = youngId === null ? null : household?.profiles.find(profile => profile.id === youngId)
-  const meta = [inHousehold ? own?.name : null, account?.email].filter(Boolean).join(' · ')
-  const home = inHousehold ? '#/settings' : '#/'
+  const meta = [own?.name, account?.email].filter(Boolean).join(' · ')
   return (
     <div className={styles.page}>
-      <Header
-        back={youngId === null ? home : accountHref('children')}
-        signOut={inHousehold ? undefined : () => void signOutHere()}
-      />
+      <Header back={youngId === null ? '#/settings' : accountHref('children')} />
       <div className={styles.frame}>
         <div className={styles.view}>
           <div className={styles.wrap}>
@@ -192,7 +164,6 @@ const AccountPage = ({ inHousehold }: AccountPageProps) => {
                   part={current}
                   account={account}
                   onAccount={setAccount}
-                  inHousehold={inHousehold}
                   meta={meta}
                   phone={phone}
                   onUnauthorized={onUnauthorized}
