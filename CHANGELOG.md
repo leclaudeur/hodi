@@ -8,6 +8,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.14] - 2026-11-24
+
+No households any more: a server and its accounts, each with its own settings, sources, AI key and stats. Reports and
+blocks for the server's admin, usernames, teens' and children's accounts for their parents, and sources as cards.
+Plugins need `@hodi-app/plugin-sdk` 1.0.0-beta.6 for what is new here.
+
 ### Added
 
 - **Report a source.** A flag on every source card, in My sources and the catalogue, tells the server's admin why a
