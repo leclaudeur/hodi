@@ -137,6 +137,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   person waits for one after _Forgot password_: _Make a code_ is in their request, and the account page has no button
   otherwise; a request waits a week. The server's admin can no longer make one for an account that did not ask.
 
+### Fixed
+
+- **Historique right after Masquer.** An article hidden a moment before opening _Historique_ is there at once.
+
 ### Removed
 
 - **Plugins no longer make households.** `ctx.households` and the plugin permission _Create and manage households_ are

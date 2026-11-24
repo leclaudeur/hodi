@@ -8,6 +8,7 @@ import { dayOfItem } from '../lib/format.ts'
 import { clearRead, closeArticle, isRead, markUnread, useReadState } from '../lib/read-state.ts'
 import { askToConfirm } from '../lib/confirm.ts'
 import { showDone } from '../lib/toast.ts'
+import { sendPendingChanges } from '../lib/user-state.ts'
 import { CLOSE_READER, HISTORY_HREF, SETTINGS_HREF } from '../lib/use-hash-route.ts'
 import EmptyState from '../ui/EmptyState.tsx'
 import Button from '../ui/Button.tsx'
@@ -62,7 +63,9 @@ const useHistory = (onUnauthorized: () => void) => {
   const [error, setError] = useState(false)
   useEffect(() => {
     let cancelled = false
-    getHistory()
+    // What this device just hid or read goes first: Historique is read from the server.
+    sendPendingChanges()
+      .then(() => getHistory())
       .then(result => !cancelled && setEntries(result.items))
       .catch((loadError: unknown) => {
         if (cancelled) return
