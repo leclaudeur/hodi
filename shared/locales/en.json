@@ -62,8 +62,7 @@
     },
     "profile": {
       "title": "Last step: the profile",
-      "intro": "Create your account: this profile becomes yours, with its reading.",
-      "introExisting": "Sign in with the account you already have: this profile will be linked to it, with its reading."
+      "intro": "Create your account: this profile becomes yours, with its reading."
     },
     "who": {
       "intro": "Your name and colour, which others will see. You can change them in <i>My account</i>."
@@ -76,11 +75,7 @@
       "title": "New password",
       "intro": "Choose the new password for <b>{{name}}</b>’s account. Your other devices are signed out: you’ll sign in again on them with it.",
       "button": "Confirm"
-    },
-    "existing": "I already have an account",
-    "newAccount": "Create a new account",
-    "signIn": "Join",
-    "alreadyMember": "This account already has a profile on this server: sign in with it."
+    }
   },
   "password": {
     "show": "Show password",

@@ -155,6 +155,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **No household left to show, and no limit of 5 profiles.** Every account has its own profile: one without (made by
   a plugin, or whose profile was deleted) gets it at its next sign-in, with the name and colour it had, or the start of
   its e-mail. The screen « You have no household any more » is gone, and invitations and new profiles no longer stop at 5.
+- **I already have an account, on an invitation.** An invitation code always makes a new account: someone who already
+  has one on the server signs in with it, and the code is refused to their e-mail.
 - **Devices linked to a young profile by a code.** A teen or a child now signs in with the account a parent made in
   My account › My children. A device still linked by a code is signed out: sign it in with that account.
 

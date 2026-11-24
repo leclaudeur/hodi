@@ -207,13 +207,11 @@ export type CodeUse =
 export const checkSignInCode = (code: string) => sendJson<CodeUse>('POST', '/codes/check', { code })
 
 // The account, and for an invitation the new profile; this device is then signed in with both.
-// existing: « J'ai déjà un compte », that account's e-mail and password instead of a new account.
 export const joinWithCode = (join: {
   code: string
   email: string
   password: string
-  ageConfirmed?: true
-  existing?: true
+  ageConfirmed: true
   profile?: { name: string; color: ProfileColor; handle?: string }
   // signIn false: the account has « Validation en deux étapes », so this device signs in on Connexion with its code.
 }) => sendJson<{ profileId: number; signIn?: false }>('POST', '/codes/join', join)

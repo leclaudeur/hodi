@@ -26,16 +26,12 @@ const refusalOf = (failure: unknown, t: TFunction) => {
   }
   if (failure.code === 'email_taken') return t('join.emailTaken')
   if (failure.code === 'blocked') return t('login.blocked')
-  if (failure.code === 'invalid_credentials') return t('login.wrongCredentials')
-  if (failure.code === 'already_member') return t('join.alreadyMember')
   if (failure.code === 'invalid_code') return t('join.code.wrong')
   return t('join.failed')
 }
 
-// A taken address, or a wrong one for an existing account, is fixed on the account's screen.
-const fixedOnAccount = (failure: unknown) =>
-  failure instanceof RequestError &&
-  ['email_taken', 'invalid_credentials', 'already_member'].includes(failure.code ?? '')
+// A taken address is fixed on the account's screen.
+const fixedOnAccount = (failure: unknown) => failure instanceof RequestError && failure.code === 'email_taken'
 
 // The fields the person fills in along the way.
 const useJoinFields = () => {
@@ -43,12 +39,10 @@ const useJoinFields = () => {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [age, setAge] = useState(false)
-  // « J'ai déjà un compte »: that account joins, with its e-mail and password, instead of a new one.
-  const [existing, setExisting] = useState(false)
   const passwordReady = passwordStrength(password).score > 0 && password === confirm
-  const accountReady = EMAIL_PATTERN.test(email.trim()) && (existing ? password !== '' : passwordReady && age)
+  const accountReady = EMAIL_PATTERN.test(email.trim()) && passwordReady && age
   return {
-    ...{ email, setEmail, password, setPassword, confirm, setConfirm, age, setAge, existing, setExisting },
+    ...{ email, setEmail, password, setPassword, confirm, setConfirm, age, setAge },
     ...{ passwordReady, accountReady }
   }
 }
@@ -95,7 +89,7 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
     void check(initialCode)
   }
 
-  // An account that has been in a household joins as it is; one that never was says who it is first ("who").
+  // An invitation code always makes a new account, with the profile it was invited for or the one drafted ("who").
   const join = (profile?: ProfileDraft) =>
     send(
       async () => {
@@ -103,17 +97,9 @@ export const useJoin = (initialCode: string, onDone: (signedIn: boolean) => void
           code,
           email: fields.email.trim(),
           password: fields.password,
-          ...(fields.existing ? { existing: true as const } : { ageConfirmed: true as const }),
+          ageConfirmed: true,
           ...(profile ? { profile: { name: profile.name, color: profile.color, handle: profile.handle } } : {})
-        }).catch((failure: unknown) => {
-          if (!(failure instanceof RequestError) || failure.code !== 'profile_needed') throw failure
-          return null
         })
-        if (!joined) {
-          setStep('who')
-          setBusy(false)
-          return
-        }
         const { profileId, signIn } = joined
         // The photo once the profile is open; the account is made whatever happens to it.
         if (profile?.photo && signIn !== false) await uploadProfilePhoto(profileId, profile.photo).catch(() => {})
