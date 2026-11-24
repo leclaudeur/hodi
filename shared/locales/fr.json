@@ -52,7 +52,7 @@
       "intro": "Les 8 caractères que l’admin du serveur t’a donnés, ou le lien qui va avec.",
       "label": "Code",
       "helpTitle": "D’où vient ce code ?",
-      "help": "L’admin du serveur le crée dans Serveur › Comptes, pour inviter quelqu’un ou pour un mot de passe oublié. Un adulte le crée aussi pour connecter un appareil au profil d’un ado ou d’un enfant. Il sert une seule fois, pendant 24 h.",
+      "help": "L’admin du serveur le crée dans <i>Serveur › Comptes</i>, pour inviter quelqu’un ou pour un mot de passe oublié. Il sert une seule fois, pendant 24 h.",
       "wrong": "Ce code ne marche pas : il a peut-être déjà servi, ou ses 24 h sont passées. Demandes-en un nouveau."
     },
     "invite": {
@@ -229,12 +229,6 @@
       "title": "E-mail du serveur",
       "intro": "Hodi s’en sert pour envoyer les liens <i>Mot de passe oublié</i> et les e-mails des plugins. Il se règle aussi plus tard, dans <i>Serveur › E-mail</i>.",
       "later": "Plus tard"
-    },
-    "household": {
-      "name": "Nom du foyer",
-      "namePlaceholder": "Ex. La maison Martin",
-      "confirm": "Confirme le mot de passe",
-      "mismatch": "Les deux mots de passe ne sont pas identiques."
     },
     "profile": {
       "title": "Et toi, c’est qui ?",
@@ -752,10 +746,10 @@
     "shares": {
       "title": "Partages",
       "desktop": [
-        "Ce que les autres profils du foyer t’ont envoyé avec <i>Pour…</i>, pendant 7 jours. Un article lu ou masqué s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
+        "Ce que d’autres personnes t’ont envoyé avec <i>Pour…</i>, pendant 7 jours. Un article lu ou masqué s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
       ],
       "phone": [
-        "Ce que les autres profils du foyer t’ont envoyé avec <i>Pour…</i>, pendant 7 jours. Un article lu, ou glissé vers la gauche, s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
+        "Ce que d’autres personnes t’ont envoyé avec <i>Pour…</i>, pendant 7 jours. Un article lu, ou glissé vers la gauche, s’en va. En fin d’article, réagis d’un emoji : l’expéditeur le voit en haut de ses Partages."
       ]
     },
     "videos": {
@@ -1019,7 +1013,6 @@
     "intro": "Ce que tu as lu, sur tous les appareils. Un article est lu quand tu l’as parcouru jusqu’à 80 % et que tu y as passé au moins un tiers de son temps de lecture ; une vidéo, vue à 80 %. Au-delà de 15 %, il reste en cours et t’attend dans <i>Reprendre</i> ; en dessous, il est survolé."
   },
   "game": {
-    "yourHousehold": "Le foyer",
     "tiers": {
       "1": "Bronze",
       "2": "Argent",
@@ -1037,14 +1030,7 @@
     "badgeWorn": "{{name}}, {{tier}}, porté",
     "badgeWear": "{{name}}, {{tier}}, le porter",
     "badgeLocked": "{{name}}, à gagner",
-    "household": "Foyer",
     "thisWeek": "Cette semaine",
-    "challenge": "Défi du foyer",
-    "challengeReached": "Défi relevé : {{read}} articles lus sur {{goal}}, bravo !",
-    "challengeAlone_one": "{{count}} article lu sur {{goal}}, d’ici dimanche",
-    "challengeAlone_other": "{{count}} articles lus sur {{goal}}, d’ici dimanche",
-    "challengeTogether_one": "{{count}} article lu sur {{goal}} à vous {{profiles}}, d’ici dimanche",
-    "challengeTogether_other": "{{count}} articles lus sur {{goal}} à vous {{profiles}}, d’ici dimanche",
     "rankLabel_one": "{{rank}}. {{name}}, {{grade}}, {{count}} point",
     "rankLabel_other": "{{rank}}. {{name}}, {{grade}}, {{count}} points",
     "back": "Retour",
@@ -1088,7 +1074,7 @@
       },
       "postman": {
         "rule": "Partagés avec un mot",
-        "text": "Les articles que tu envoies à quelqu’un du foyer avec un mot.",
+        "text": "Les articles que tu envoies à quelqu’un avec un mot.",
         "unit_one": "partage",
         "unit_other": "partages"
       },
@@ -1111,8 +1097,8 @@
         "unit_other": "lectures"
       },
       "team-player": {
-        "rule": "Défis du foyer",
-        "text": "Les défis de la semaine que le foyer réussit ensemble.",
+        "rule": "Défis en famille",
+        "text": "Les défis de la semaine que la famille réussit ensemble.",
         "unit_one": "défi",
         "unit_other": "défis"
       }
@@ -1512,7 +1498,7 @@
       "empty": "Ce flux est vide pour le moment.",
       "failed": "Le site ne répond pas. Réessaie dans un instant.",
       "reddit": "Hodi ne suit plus Reddit, qui ferme ses flux.",
-      "limit": "Le foyer a atteint son maximum de sources. Retires-en une pour en ajouter une autre.",
+      "limit": "Le serveur suit déjà autant de sources que son admin le permet.",
       "followed": "Cette source est déjà suivie.",
       "bad_section": "Choisis un autre thème pour cette source.",
       "unavailable": "Source indisponible sur ce serveur."
@@ -1530,14 +1516,14 @@
     "whichTopics": "Dans quels thèmes ?",
     "whichSection": "Dans quelle section de Vidéos ?",
     "topics": "Thèmes de la source",
-    "count": "{{added}} / {{limit}} sources du foyer",
+    "count": "{{added}} / {{limit}} sources sur le serveur",
     "adding": "Ajout…",
-    "countAll_one": "{{count}} source du foyer",
-    "countAll_other": "{{count}} sources du foyer"
+    "countAll_one": "{{count}} source sur le serveur",
+    "countAll_other": "{{count}} sources sur le serveur"
   },
   "suggest": {
     "add": {
-      "limit": "Le foyer a atteint son maximum de sources.",
+      "limit": "Le serveur suit déjà autant de sources que son admin le permet.",
       "followed": "Déjà suivie.",
       "failed": "La source n’a pas pu être ajoutée. Réessaie dans un instant."
     },
@@ -1556,7 +1542,6 @@
     "last": "Dernier article : {{title}}"
   },
   "sources": {
-    "deleteMessage": "Elle disparaît pour tout le foyer et ne reviendra pas d’elle-même.",
     "deleted": "{{name}} supprimée",
     "deleteFailed": "La source n’a pas pu être supprimée. Réessaie dans un instant.",
     "hideLowTitle_one": "Masquer la source peu ouverte ?",
@@ -1582,7 +1567,6 @@
     "readers_other": "{{formatted}} lecteurs",
     "changeTopicsOf": "Changer les thèmes de {{name}}",
     "changeTopics": "Changer les thèmes",
-    "deleteFor": "Supprimer {{name}} pour tout le foyer",
     "intro": "Les sites et les chaînes qui remplissent le fil, vérifiés toutes les 15 minutes. Une source ajoutée ici ne va que dans les sources de ce compte. Les sources de base se retirent mais ne se suppriment pas.",
     "search": "Chercher une source ou un thème",
     "searchLabel": "Chercher une source",
@@ -1667,12 +1651,11 @@
     "deleteProfile": {
       "title": "Supprimer ce profil ?",
       "message": "Le profil de <b>{{name}}</b> est supprimé avec ses enregistrés, ses lectures, ses points et ses réglages. <b>Il n’y a pas de retour en arrière.</b>",
-      "button": "Supprimer le profil",
-      "messageAccount": "Le profil de <b>{{name}}</b> est supprimé avec ses enregistrés, ses lectures, ses points et ses réglages, et <b>son compte n’ouvre plus ce foyer</b>. Il n’y a pas de retour en arrière : confirme avec le mot de passe."
+      "button": "Supprimer le profil"
     },
     "deleteSource": {
       "title": "Supprimer la source ?",
-      "message": "La source <b>{{name}}</b> est supprimée <b>pour tout le foyer</b> : ses articles quittent le fil de chaque profil. Elle ne reviendra que si quelqu’un l’ajoute à nouveau.",
+      "message": "La source <b>{{name}}</b> est supprimée <b>pour tout le serveur</b> : ses articles quittent le fil de chaque profil. Elle ne reviendra que si quelqu’un l’ajoute à nouveau.",
       "button": "Supprimer la source"
     },
     "hideSource": {
@@ -1806,7 +1789,7 @@
     "version": "Version",
     "versionHint": "Celle du paquet installé",
     "enabled": "Activé",
-    "enabledHint": "Ses pages et ses fonctions sont là pour le foyer",
+    "enabledHint": "Ses pages et ses fonctions sont là pour tout le monde",
     "disabledHint": "Il garde ses réglages et ses données",
     "options": "Options",
     "remove": "Supprimer le plugin",
@@ -1832,9 +1815,9 @@
       "signedHint": "Signé par une clé que Hodi connaît",
       "unsigned": "Code non vérifié",
       "unsignedHint": "Personne n’a vérifié ce code : ses pages ne s’afficheront pas.",
+      "signedOnlyHint": "Il demande des accès réservés aux plugins vérifiés : comptes, connexions, e-mails ou notifications.",
       "signedOnly": "Pas installable sans signature",
-      "signedOnlyHint": "Il demande des accès réservés aux plugins vérifiés : comptes, foyers, connexions, e-mails ou notifications.",
-      "forAll": "Pour tout le foyer",
+      "forAll": "Pour tout le monde",
       "forAdmin": "Pour l’admin seulement",
       "replaces": "Remplace la version {{version}}",
       "install": "Autoriser et installer",
@@ -1930,22 +1913,22 @@
       "mailHint": "Par Serveur › E-mail, 50 par heure au plus",
       "notify": "Envoyer des notifications",
       "notifyHint": "Aux personnes de tout le serveur, sur leurs appareils, 10 par jour au plus pour chacune",
-      "ai": "IA du foyer",
-      "aiHint": "Un clic sur son bouton violet pose une question à l’IA, payée sur les crédits du foyer. Seulement s’il est Vérifié.",
+      "ai": "IA de chaque compte",
+      "aiHint": "Un clic sur son bouton violet pose une question à l’IA, payée sur les crédits du compte qui clique. Seulement s’il est Vérifié.",
       "feeds_one": "Proposer {{count}} source",
       "feeds_other": "Proposer {{count}} sources",
       "feedsHint": "Dans <i>Ajouter une source</i> : {{names}}"
     },
     "aiButton": {
-      "unavailable": "L’IA n’est pas activée pour ce foyer.",
-      "off": "L’admin du foyer a coupé l’IA de ce plugin.",
+      "unavailable": "L’IA n’est pas activée pour ce compte.",
+      "off": "L’admin du serveur a coupé l’IA de ce plugin.",
       "limited": "Trop de demandes à l’IA pour l’instant. Réessaie plus tard.",
       "refused": "L’IA n’a pas voulu répondre à cette demande.",
       "failed": "La demande n’a pas abouti. Réessaie dans un instant."
     },
     "confirmInstall": {
       "title": "Installer {{name}} ?",
-      "message": "<b>{{name}}</b> est vérifié. Il pourra lire et changer ce que ses autorisations annoncent, pour <b>tous les foyers du serveur</b>. Confirme avec le mot de passe pour l’installer.",
+      "message": "<b>{{name}}</b> est vérifié. Il pourra lire et changer ce que ses autorisations annoncent, pour <b>tous les comptes du serveur</b>. Confirme avec le mot de passe pour l’installer.",
       "button": "Installer"
     },
     "catalog": {
@@ -1979,7 +1962,6 @@
     },
     "titles": {
       "overview": "Vue d’ensemble",
-      "households": "Foyers",
       "accounts": "Comptes",
       "general": "Général",
       "content": "Contenu",
@@ -2087,14 +2069,12 @@
       "noMatchAccounts": "Aucun compte ne correspond.",
       "backToAccounts": "Retour aux comptes",
       "failed": "Impossible de charger la liste.",
-      "household": {},
       "account": {
         "intro": "Le serveur voit le compte, jamais ce qui y est lu ni ses réglages.",
         "section": "Compte",
         "email": "E-mail",
         "role": "Rôle",
         "roles": {
-          "admin": "Admin du foyer",
           "member": "Adulte",
           "none": "Sans profil"
         },
@@ -2110,7 +2090,7 @@
         "own": "Le tien se change dans Réglages › Mon compte",
         "deleteSection": "Supprimer ou bloquer",
         "serverAdminSection": "Admin du serveur",
-        "serverAdmin": "Nommer admin du serveur",
+        "makeServerAdmin": "Nommer admin du serveur",
         "serverAdminHint": "Gère Serveur comme toi : les comptes, les sauvegardes, les plugins",
         "serverAdminButton": "Nommer",
         "delete": "Supprimer ce compte",
@@ -2155,7 +2135,7 @@
       }
     },
     "content": {
-      "intro": "Combien de temps le serveur garde ce qu’il récupère pour tous les foyers, et combien de sources chacun peut suivre. Des durées courtes gardent la base légère ; un article enregistré garde toujours son texte.",
+      "intro": "Combien de temps le serveur garde ce qu’il récupère, et combien de sources il peut suivre. Des durées courtes gardent la base légère ; un article enregistré garde toujours son texte.",
       "durations": "Durées",
       "sources": "Sources",
       "less": "Moins",
@@ -2180,11 +2160,11 @@
         "intro": "Combien de jours le serveur garde le texte d’un article lu dans Hodi, et ses images. Un article enregistré garde toujours les siens."
       },
       "maxSources": {
-        "label": "Sources par foyer",
-        "title": "Sources par foyer",
-        "intro": "Combien de sources un foyer peut suivre, tous ses profils ensemble : le serveur récupère chacune d’elles. Un foyer qui en a déjà plus les garde, mais ne peut plus en ajouter.",
+        "label": "Sources du serveur",
+        "title": "Sources du serveur",
+        "intro": "Combien de sources le serveur peut suivre, tous les comptes ensemble : il récupère chacune d’elles. S’il en suit déjà plus, il les garde, mais personne ne peut plus en ajouter.",
         "toggle": "Limiter les sources",
-        "toggleHint": "Sinon, chaque foyer en ajoute autant qu’il veut.",
+        "toggleHint": "Sinon, chacun en ajoute autant qu’il veut.",
         "unlimited": "Illimité"
       },
       "validation": {
@@ -2225,7 +2205,7 @@
       "restore": "Restaurer",
       "restoreLabel": "Restaurer la copie du {{date}}",
       "restoreTitle": "Restaurer la copie",
-      "restoreIntro": "Tout le serveur revient au <b>{{date}} à {{time}}</b> : les comptes, les foyers, les lectures, les données des plugins. Ce qui a changé depuis disparaît, mais Hodi garde d’abord une copie de l’état actuel. Ce qui a été supprimé depuis reste supprimé : un compte, un profil, un foyer. Un plugin retiré depuis ne revient pas : ses données restent 30 jours, le temps de le réinstaller. Puis Hodi redémarre, et chacun se reconnecte si besoin.",
+      "restoreIntro": "Tout le serveur revient au <b>{{date}} à {{time}}</b> : les comptes, les profils, les lectures, les données des plugins. Ce qui a changé depuis disparaît, mais Hodi garde d’abord une copie de l’état actuel. Ce qui a été supprimé depuis reste supprimé : un compte, un profil. Un plugin retiré depuis ne revient pas : ses données restent 30 jours, le temps de le réinstaller. Puis Hodi redémarre, et chacun se reconnecte si besoin.",
       "restoreFailed": "La copie n’a pas pu être restaurée.",
       "restoring": "Restauration de la copie du {{date}} à {{time}}"
     },

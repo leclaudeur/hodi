@@ -9,7 +9,7 @@ container. Each of these parts has its own page below, with the details of how i
 
 ## [First run](security/first-run.md)
 
-Until the household is set up, the server answers nothing but the setup screens. A browser that reaches them from
+Until the server is set up, it answers nothing but the setup screens. A browser that reaches them from
 another network must first type a setup code, which only the server's log shows, and the setup can run only once.
 
 ## [Sign-in and sessions](security/sign-in.md)

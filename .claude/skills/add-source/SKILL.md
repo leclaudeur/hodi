@@ -21,7 +21,7 @@ Follow the comment at the top of `sources.yml`:
 - `domains`: the hosts article pages are fetched from, so they open in the reader. Required unless `reader: false`.
 - `reader: false` when article pages cannot be read (consent walls, paywalls): Hodi then shows the feed's summary and a link.
 - `skip`: paths that are not articles (videos, live pages).
-- `base: [fr]` or `base: [en]` only for the few sources a new household in that language starts with; do not add one without the maintainer agreeing.
+- `base: [fr]` or `base: [en]` only for the few sources a new adult on a server in that language starts with; do not add one without the maintainer agreeing.
 - Add a short comment above an entry that needs explaining, as the file does.
 
 ## 3. Check it

@@ -1,7 +1,7 @@
 # Sign-in and sessions
 
 Each person has their own account, and every `/api/*` route needs a session, except sign-in, sign-out and the setup
-screens. The household's settings, its profiles and its AI key also need the admin profile.
+screens. The _Server_ space needs a server admin's session, with two-step verification on.
 
 ## Passwords
 
@@ -18,9 +18,9 @@ A sign-in sets a signed, stateless cookie: `HttpOnly`, `Secure`, `SameSite=Lax`,
 The cookie is signed with a key derived from the session secret, the account's password hash and its session
 generation. A new password therefore signs out that account's other devices, and no one else's.
 
-One device may hold up to 5 accounts of the same household, for _Who's in?_: the cookie then carries one token per
-account, joined by `~`, and each is checked on its own. A profile opens only for an account whose token is there, and
-an account of another household is refused at sign-in.
+One device may hold up to 5 accounts, for _Who's in?_: the cookie then carries one token per account, joined by `~`,
+and each is checked on its own. A profile opens only for an account whose token is there, or for a child of one of
+them. A request sees only these accounts' profiles and their children's, and a request with no session sees none.
 
 Signing out removes only the token of the account whose profile is open, and that device's row in the account's
 devices. [Deployment](../deployment.md#sign-out-every-device) shows how to sign
@@ -47,12 +47,13 @@ What an adult profile asks for before it opens depends on two settings, both off
 
 - A **private profile** asks for its account's password, which the server checks against that account's hash. The
   parental code never opens it.
-- Any other adult profile asks for the household's **parental code** when the admin has set one: six digits, kept as a
-  hash like a password and never sent back. Setting, changing or turning it off asks for the admin's own password (and
-  the authenticator app's code when it is on).
+- Any other adult profile asks for its **parental code** when its person has set one, in _My account › My children_,
+  and one of their young ones is signed in on the device: six digits, kept as a hash like a password and never sent
+  back. Setting, changing or turning it off asks for the parent's own password (and the authenticator app's code when
+  it is on).
 - Without either, it opens at once. Teen and child profiles always do.
 
-Each device may fail an account's password, or the household's code, 5 times in 15 minutes, so a child guessing on a
+Each device may fail an account's password, or a parental code, 5 times in 15 minutes, so a child guessing on a
 tablet never blocks the parents' own devices. All devices together stop after 50 failures.
 
 **Don't ask again on this device**, under a private profile's password, marks that account's own session row on the
@@ -71,11 +72,11 @@ asking: a profile id written in the cookie by hand reads as nobody's.
 The actions that can't be undone ask for the person's own password again, whatever session the device holds. A device
 left open, or a stolen cookie, therefore can't do any of them:
 
-- deleting one's account, or another adult's profile that has an account;
-- handing over the household's admin role;
+- deleting one's account;
+- making another adult server admin;
 - installing or removing a plugin, or starting the developer mode;
 - downloading or restoring a backup;
-- a code for a new password, or deleting an account or a household, in the _Server_ space.
+- a code for a new password, or deleting or blocking an account, in the _Server_ space.
 
 The password is the one of the profile open on the device, and a wrong one counts against the throttle. An account
 without a password of its own, made by a plugin's sign-in, shows a sign-in on that device in the last 5 minutes instead.
@@ -113,6 +114,6 @@ attempt spread over many addresses.
 
 A client is known by its connection's address. Behind a reverse proxy on the same machine or network, it is the last
 `X-Forwarded-For` entry or `X-Real-IP`, the one the proxy added. Bots trying passwords from the internet therefore
-never block the household's own sign-ins, and devices already signed in keep working in every case.
+never block the family's own sign-ins, and devices already signed in keep working in every case.
 
 [← Back to security](../security.md)

@@ -4,7 +4,7 @@ What a profile reads, watches, follows and shares.
 
 ## Articles
 
-- **Feed**: every visible topic's articles, one day at a time in the household's time zone, with **Load** for earlier
+- **Feed**: every visible topic's articles, one day at a time in the account's time zone, with **Load** for earlier
   days. Several sources on the same story within 36 hours share one card, marked **Also on…**.
 - **Topics**: some twenty, each with its own page. A profile reorders or hides them, picks its sources (_My sources_, filled from the _Catalogue_ page) and mutes
   words in _Settings_. A topic without any source is hidden from every list and from the sidebar.

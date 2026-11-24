@@ -78,7 +78,7 @@ export const sourceListMarkdown = (catalog: Catalog) => {
     `- **${channels}** channels and podcasts on the _Videos_ page`,
     '',
     '> [!NOTE]',
-    '> - ⭐ a default source: a new household in its language starts with it; the others are in _Add a source_.',
+    '> - ⭐ a default source: a new adult starts with it on a server in its language; the others are in _Add a source_.',
     '> - 🧒 for young readers only, never suggested to adults.',
     '> - 🔗 link only: its articles show their summary and a link instead of opening in the reader.',
     '',

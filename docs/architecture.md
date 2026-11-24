@@ -50,7 +50,7 @@ small hooks under `lib/`.
 - **`news/`**: feeds, article extraction (on a worker thread of its own, `news/extract-pool.ts`), stories, videos,
   alerts and the AI
 - **`mail/`**: e-mails, through the settings of _Server › E-mail_
-- **`game/`**: the household game, read from `gamification.yml`
+- **`game/`**: the game, read from `gamification.yml`
 - **`plugins/`**: installed plugins, and the sandbox their server part runs in
 - **`test/`**: one `*.test.ts` per module
 
@@ -62,10 +62,11 @@ small hooks under `lib/`.
 - **One server, no household**: every profile reads on the server as one. `db/server-row.ts` names the one row of
   server settings (time zone, language, AI, the game) that the first-run screens fill
 - **Profiles on a device**: `db/reader-scope.ts` keeps the accounts signed in on the device that asks, and
-  `ProfileStore.list()` and `get()` give only their profiles and their children's. Outside a request (start-up,
-  nightly jobs, a timer, a worker's callback) there is no such scope and they give every profile, so code that may run
-  there and must stay on one device's profiles takes them in the request. Anything that reaches other accounts on
-  purpose (sharing, Serveur, deletions) calls `everyone()` or `find()`, and says why
+  `ProfileStore.list()` and `get()` give only their profiles and their children's. Every API request starts as
+  nobody, so a route that runs before the session check (setup, codes, sign-in) sees no profile at all. Outside a
+  request (start-up, nightly jobs, a timer started at boot) there is no scope and they give every profile. Anything
+  that reaches other accounts on purpose (sharing, Serveur, deletions, hooks) calls `everyone()` or `find()`, and says
+  why. A listener attached during a request keeps that request's scope: it uses `find()` or `everyone()` too
 - **Fixed settings**: every limit, duration, rate and size Serveur does not let an admin change is in
   [`config.yml`](../config.yml), read once at start by `fixed-config.ts` (`CONFIG`). Its keys and their kinds are in
   `shared/config-schema.ts`, checked by `shared/config-file.ts`: a missing, unknown or wrong value stops the server at
@@ -76,8 +77,8 @@ small hooks under `lib/`.
 A feed is one row of `sources` for the whole server, fetched once whoever reads it. The server has one catalogue: a
 feed's topics, order and adder are its row of `catalog_sources`. Which of them each person reads is their rows of
 `my_sources` (`db/my-sources.ts`, through `/api/me/sources/:id`); the app still gets the others as the preferences'
-`hiddenSources`. `server/test/household-isolation.test.ts` puts two families on one server and checks that neither
-ever sees what the other holds.
+`hiddenSources`. `server/test/account-isolation.test.ts` puts two families on one server and checks, screen by screen, that
+neither ever sees what the other holds.
 
 ### Accounts and sign-in
 

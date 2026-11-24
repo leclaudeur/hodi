@@ -1,12 +1,12 @@
 # First run
 
 A fresh install has no account yet, so the first person who reaches it could claim it for themselves. Hodi closes that
-window in three ways, from the server's first start until the household is set up.
+window in three ways, from the server's first start until the setup is done.
 
 ## Until the setup is done
 
 Every API route except the setup screens' answers `setup_required`, and sign-in is refused. The rest of the app stays
-closed until the household exists, so a stranger can neither see nor change anything.
+closed until the setup is done, so a stranger can neither see nor change anything.
 
 ## The setup code
 
@@ -24,7 +24,7 @@ the [sign-in throttle](sign-in.md#throttling), just as a wrong password does, so
 
 ## A setup that runs once
 
-_Account_ is refused once an account exists, and _Your household_ once the household is set up. The household's step
-needs the server admin's session, which stands for the setup code from then on.
+_Account_ is refused once an account exists, and the profile's step once the server is set up. Every step after
+_Account_ needs the server admin's session, which stands for the setup code from then on.
 
 [← Back to security](../security.md)

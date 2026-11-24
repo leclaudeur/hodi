@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-  A self-hosted news reader for the whole household: news by theme, a clean reader view, videos,<br>
-  up to five profiles, and optional AI that only ever runs when you click.
+  A self-hosted news reader for your family and friends: news by theme, a clean reader view, videos,<br>
+  an account for everyone, and optional AI that only ever runs when you click.
 </p>
 
 <p align="center">
@@ -42,9 +42,9 @@
 
 ## Intro
 
-**Hodi** is a news reader you host yourself, made for a **whole household**. It gathers French and English news from
-public RSS feeds, sorts it by theme and opens every article in a _clean, ad-free reader_. Everyone at home gets their own
-profile, and everything stays on **your own machine**, in one Docker container and a small SQLite database.
+**Hodi** is a news reader you host yourself, made for **your family and friends**. It gathers French and English news
+from public RSS feeds, sorts it by theme and opens every article in a _clean, ad-free reader_. Everyone gets their own
+account, and everything stays on **your own machine**, in one Docker container and a small SQLite database.
 
 ## Features
 
@@ -57,9 +57,9 @@ It brings **everything you need to keep up with the news**, and nothing that pul
   link_
 - Videos - _the latest YouTube videos (**no Shorts**) and podcasts of the channels you follow_
 - Followed - _follow a subject (“Iran”, “GTA 6”…) and get a **notification** when a new article mentions it_
-- Profiles - _up to **5 per household**, each with its own settings, history and stats; a code keeps one private_
-- Shared - _send an article to someone at home with a note, and react to what they send you_
-- The game - _points, levels and badges for reading, and a **weekly challenge** for the whole household_
+- Accounts - _**one per person**, with its settings, history and stats; parents make their children’s_
+- Shared - _send an article to someone close with a note, and react to what they send you_
+- The game - _points, levels and badges for reading, and a **weekly challenge** for each family_
 - Offline - _install it on a phone or a computer, the latest articles stay readable **without a connection**_
 - AI, optional - _summaries, questions and the “Daily summary” with your own key (Claude today), **only on a click**_
 
