@@ -141,6 +141,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **A plugin's page in Settings.** A plugin whose page names no group, or a group Settings no longer has, shows
+  it at the end of _You_ instead of nowhere.
 - **A server admin's role in Server › Accounts.** Their account's role reads _Adult · Server admin_ again, not the
   button's _Make server admin_.
 - **Historique right after Masquer.** An article hidden a moment before opening _Historique_ is there at once.

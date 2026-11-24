@@ -13,7 +13,7 @@ export const OUTDATED_API = 'outdated_api'
 export const CAPABILITIES = ['profile-kind:child', 'shell:child', 'speech'] as const
 export type Capability = (typeof CAPABILITIES)[number]
 
-// Who sees the plugin, its pages and its routes: the household's admin only, or every profile.
+// Who sees the plugin, its pages and its routes: the server's admin only, or every profile.
 export const AUDIENCES = ['admin', 'all'] as const
 export type Audience = (typeof AUDIENCES)[number]
 
@@ -41,7 +41,7 @@ export interface Permissions {
   network: string[]
   // ctx.articles: the articles Hodi listed, and their pages.
   articles: boolean
-  // Its publicRoutes, served to anyone (a device on no household, a visitor) under /api/public/plugins/<id>/.
+  // Its publicRoutes, served to anyone (a device with no one signed in, a visitor) under /api/public/plugins/<id>/.
   publicRoutes: boolean
   // ctx.accounts: find, make and check people's accounts.
   accounts: boolean
@@ -52,8 +52,8 @@ export interface Permissions {
   signIn: boolean
   // ctx.notify: a notification on a person's devices.
   notify: boolean
-  // ctx.ai: one question to the household's AI per click on the plugin's AiButton. Only a signed plugin ("Vérifié")
-  // gets it: the AI is paid for by the household.
+  // ctx.ai: one question to the clicking account's AI per click on the plugin's AiButton. Only a signed plugin
+  // ("Vérifié") gets it: the AI is paid for by that account.
   ai: boolean
 }
 

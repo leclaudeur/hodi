@@ -21,7 +21,7 @@ import { usePluginId } from './scope.ts'
 // hooks scoped to the plugin. Plugins are built against it with React, react/jsx-runtime and react-dom left out
 // (see host.ts). What is here is the plugin API: removing or changing a name needs a new major version of it.
 
-// The violet button that asks the household's AI through the plugin's aiActions (ctx.ai on the server).
+// The violet button that asks the account's AI through the plugin's aiActions (ctx.ai on the server).
 export { default as AiButton } from './AiButton.tsx'
 // « J'ai au moins 13 ans » and every plugin's consent line after it, as on « J'ai un code ».
 export { default as AgeCheckbox } from './AgeCheckbox.tsx'
@@ -194,7 +194,7 @@ export { navigate, usePluginLinks, usePluginPath } from './links.ts'
 // Serveur › Contenu and Sauvegardes, read only, signed in or not: the numbers a plugin's legal pages say.
 export { useServerSettings } from './server-settings.ts'
 export type { ServerSettings } from './server-settings.ts'
-// Serveur › Foyers and Comptes, read only, for the server's admin: households, accounts and when each was last used.
+// Serveur › Comptes, read only, for the server's admin: the accounts and when each was last used.
 export { useServerAccounts } from './server-people.ts'
 export type { ServerAccountSummary } from './server-people.ts'
 export type { PluginLinks } from './links.ts'
