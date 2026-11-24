@@ -184,3 +184,22 @@ describe('Personnes invitées', () => {
     assert.equal((await call('/codes/invitations', '')).status, 401)
   })
 })
+
+describe('Personnes invitées, each adult their own', () => {
+  it('lists, cancels and renews only the invitations this profile made', () => {
+    const db = openDatabase(':memory:')
+    const codes = new SignInCodeStore(db, Buffer.alloc(32, 9))
+    const now = Date.now()
+    const other = new ProfileStore(db).create('Paul', 'world', now)!.id
+    codes.create({ createdBy: 1, invite: { name: 'Mamie', email: null } }, now)
+    codes.create({ createdBy: other, invite: { name: 'Tonton', email: null } }, now)
+    assert.deepEqual(
+      codes.invitations(now, 1).map(invitation => invitation.name),
+      ['Mamie']
+    )
+    const tonton = codes.invitations(now, other)[0]!
+    assert.equal(codes.cancelInvitation(tonton.id, 1), false)
+    assert.equal(codes.renewInvitation(tonton.id, 1, now), null)
+    assert.equal(codes.cancelInvitation(tonton.id, other), true)
+  })
+})

@@ -93,7 +93,6 @@ const accountHelpers = ({
   accounts,
   devices,
   profiles,
-  household,
   install,
   sessionOf,
   throttle,
@@ -124,8 +123,7 @@ const accountHelpers = ({
   // The account's password, typed again before a change; false sends the refusal.
   const checkProof = proofCheck({ throttle, now, sessionOf, twoFactor })
 
-  const plan = (account: UserAccount) =>
-    profiles ? deletionPlan(account, accounts, profiles, household.get().name) : null
+  const plan = (account: UserAccount) => (profiles ? deletionPlan(account, accounts, profiles) : null)
 
   const view = (account: UserAccount, device: UserDevice | null) => {
     const going = plan(account)
@@ -156,7 +154,6 @@ const accountHelpers = ({
       // What "Supprimer ton compte" deletes, for its confirmation.
       deletion: going && {
         householdGoes: going.householdGoes,
-        household: going.household,
         others: going.profiles.slice(1).map(profile => profile.name),
         // The teens and children it is the only parent of, which go with it.
         children: going.children.map(child => child.name),

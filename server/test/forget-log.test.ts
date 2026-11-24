@@ -77,7 +77,7 @@ describe('deletions done again after a restore', () => {
     db.prepare('UPDATE users SET server_admin = 1 WHERE id = ?').run(marie.id)
     const data = new AccountDataStore(db)
     const marieNow = accounts.get(marie.id)!
-    data.delete(marieNow, deletionPlan(marieNow, accounts, profiles, 'Dupont'), clock)
+    data.delete(marieNow, deletionPlan(marieNow, accounts, profiles), clock)
     assert.deepEqual(
       log.all().map(entry => entry.kind),
       ['profile', 'admin', 'profile', 'serverAdmin', 'account']
@@ -107,9 +107,9 @@ describe('deletions done again after a restore', () => {
     const data = new AccountDataStore(db)
     // Paul goes first, then Marie, the last adult with an account: the household goes with her.
     const paulNow = accounts.get(paul.id)!
-    data.delete(paulNow, deletionPlan(paulNow, accounts, profiles, 'Dupont'), clock)
+    data.delete(paulNow, deletionPlan(paulNow, accounts, profiles), clock)
     const marieNow = accounts.get(marie.id)!
-    const plan = deletionPlan(marieNow, accounts, profiles, 'Dupont')
+    const plan = deletionPlan(marieNow, accounts, profiles)
     assert.ok(plan.householdGoes)
     data.delete(marieNow, plan, clock)
 
@@ -164,7 +164,7 @@ describe('deletions done again after a restore', () => {
     utimesSync(path.join(backups, copy), new Date(clock + 5 * HOUR), new Date(clock + 5 * HOUR))
     clock += HOUR
     const paulNow = accounts.get(paul.id)!
-    new AccountDataStore(db).delete(paulNow, deletionPlan(paulNow, accounts, profiles, 'Dupont'), clock)
+    new AccountDataStore(db).delete(paulNow, deletionPlan(paulNow, accounts, profiles), clock)
 
     // « Restaurer » as the route does it: set aside with its time, then a copy of now, which pushes it out (1 kept).
     clock += HOUR

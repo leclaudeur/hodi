@@ -81,7 +81,7 @@
     "newAccount": "Créer un nouveau compte",
     "signIn": "Rejoindre",
     "alreadyMember": "Ce compte a déjà un profil sur ce serveur : connecte-toi avec lui.",
-    "otherHousehold": "Le compte <b>{{email}}</b> est déjà dans <b>{{current}}</b>. Pour rejoindre <b>{{household}}</b>, quitte d’abord ce foyer dans <i>Mon compte</i>."
+    "otherHousehold": "Le compte <b>{{email}}</b> est déjà dans <b>{{current}}</b> : quitte d’abord ce foyer dans <i>Mon compte</i>."
   },
   "password": {
     "show": "Afficher le mot de passe",
@@ -1714,8 +1714,8 @@
     "deleteAccount": {
       "title": "Supprimer le compte ?",
       "message": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-      "messageHousehold": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Le foyer {{name}} n’a pas d’autre adulte avec un compte : il part aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
-      "messageHouseholdWith": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Le foyer {{name}} n’a pas d’autre adulte avec un compte : il part aussi, avec les profils de {{profiles}}.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
+      "messageHousehold": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : tous les profils partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
+      "messageHouseholdWith": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Aucun autre adulte n’a de compte sur ce serveur : les profils de {{profiles}} partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}.",
       "button": "Supprimer",
       "messageChildren": "<b>{{email}}</b> et tout ce qu’il contient sont effacés tout de suite : le profil, les enregistrés, les lectures, les partages et les statistiques. <b>Tu es le seul parent de {{children}} : leurs comptes partent aussi.</b> Les copies de sauvegarde l’oublient au plus tard dans {{days}}."
     },

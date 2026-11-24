@@ -1,10 +1,10 @@
 import { createHmac, randomInt } from 'node:crypto'
 import type { Database } from './database.ts'
-import { currentHouseholdId } from './household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from './household-scope.ts'
 import { CONFIG } from '../fixed-config.ts'
 
-// "J'ai un code": eight letters and digits that let a person make their account in the household, from a device signed in with
-// nothing. An invitation (no profile) adds them as a new adult; a code for a profile gives that profile its person.
+// "J'ai un code": eight letters and digits that let a person make their account on the server, from a device signed in
+// with nothing. An invitation (no profile) adds them as a new adult; a code for a profile gives that profile its person.
 // A reset code gives an adult who has an account a new password. Valid once, for a day. The table keeps a hash keyed with the server's secret, so a copy of the database alone
 // cannot be turned back into codes.
 
@@ -15,7 +15,6 @@ export const SIGN_IN_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 export const SIGN_IN_CODE_LIFETIME = CONFIG.codes.signInLifetime
 
 export interface SignInCode {
-  householdId: number
   // null: an invitation to join as a new adult.
   profileId: number | null
   // The profile that made it, for "Rejoins <foyer>": "<name> t'invite".
@@ -39,7 +38,6 @@ export interface Invitation {
 }
 
 interface SignInCodeRow {
-  account_id: number
   profile_id: number | null
   created_by: number | null
   reset: number
@@ -47,7 +45,6 @@ interface SignInCodeRow {
 }
 
 const toCode = (row: SignInCodeRow): SignInCode => ({
-  householdId: row.account_id,
   profileId: row.profile_id,
   createdBy: row.created_by,
   reset: row.reset === 1,
@@ -93,16 +90,14 @@ export class SignInCodeStore {
       profileId = null,
       createdBy,
       reset = false,
-      invite = null,
-      householdId = currentHouseholdId()
+      invite = null
     }: {
       profileId?: number | null
-      // null: the server's admin, who has no profile in the household.
+      // null: the server's admin, before their profile is made.
       createdBy: number | null
       reset?: boolean
       // « Inviter un adulte »: the name it is known by in Personnes invitées, and the address it went to.
       invite?: Invite | null
-      householdId?: number
     },
     now: number
   ) {
@@ -120,7 +115,7 @@ export class SignInCodeStore {
         )
         .run(
           this.#hash(code),
-          householdId,
+          DEFAULT_ACCOUNT_ID,
           profileId,
           createdBy,
           reset ? 1 : 0,
@@ -137,7 +132,7 @@ export class SignInCodeStore {
   peek(code: string, now: number): SignInCode | null {
     const row = this.#db
       .prepare(
-        'SELECT account_id, profile_id, created_by, reset, expires_at FROM sign_in_codes WHERE code_hash = ? AND expires_at > ?'
+        'SELECT profile_id, created_by, reset, expires_at FROM sign_in_codes WHERE code_hash = ? AND expires_at > ?'
       )
       .get(this.#hash(code), now) as SignInCodeRow | undefined
     return row ? toCode(row) : null
@@ -148,46 +143,46 @@ export class SignInCodeStore {
     const row = this.#db
       .prepare(
         `DELETE FROM sign_in_codes WHERE code_hash = ? AND expires_at > ?
-         RETURNING account_id, profile_id, created_by, reset, expires_at`
+         RETURNING profile_id, created_by, reset, expires_at`
       )
       .get(this.#hash(code), now) as SignInCodeRow | undefined
     return row ? toCode(row) : null
   }
 
-  // Personnes invitées: the household's invitations still waiting, oldest first. An invitation made before names were
-  // kept has none.
-  invitations(now: number, householdId = currentHouseholdId()): Invitation[] {
+  // Personnes invitées: the invitations this profile made still waiting, oldest first. An invitation made before names
+  // were kept has none.
+  invitations(now: number, createdBy: number): Invitation[] {
     return (
       this.#db
         .prepare(
           `SELECT rowid AS id, invite_name AS name, invite_email AS email, expires_at AS expiresAt FROM sign_in_codes
-           WHERE account_id = ? AND profile_id IS NULL AND reset = 0 AND expires_at > ? ORDER BY created_at, rowid`
+           WHERE created_by = ? AND profile_id IS NULL AND reset = 0 AND expires_at > ? ORDER BY created_at, rowid`
         )
-        .all(householdId, now) as unknown as Invitation[]
+        .all(createdBy, now) as unknown as Invitation[]
     ).map(row => ({ ...row }))
   }
 
-  // « Annuler »: the invitation's code works no more. false when there was no such invitation in the household.
-  cancelInvitation(id: number, householdId = currentHouseholdId()) {
+  // « Annuler »: the invitation's code works no more. false when this profile made no such invitation.
+  cancelInvitation(id: number, createdBy: number) {
     return (
       this.#db
-        .prepare('DELETE FROM sign_in_codes WHERE rowid = ? AND account_id = ? AND profile_id IS NULL AND reset = 0')
-        .run(id, householdId).changes === 1
+        .prepare('DELETE FROM sign_in_codes WHERE rowid = ? AND created_by = ? AND profile_id IS NULL AND reset = 0')
+        .run(id, createdBy).changes === 1
     )
   }
 
   // « Voir le code », « Renvoyer »: a hash cannot be read back, so the invitation gets a new code for another day, under
   // the same name and address. null when there was no such invitation.
-  renewInvitation(id: number, createdBy: number | null, now: number, householdId = currentHouseholdId()) {
+  renewInvitation(id: number, createdBy: number, now: number) {
     const row = this.#db
       .prepare(
         `SELECT invite_name AS name, invite_email AS email FROM sign_in_codes
-         WHERE rowid = ? AND account_id = ? AND profile_id IS NULL AND reset = 0 AND expires_at > ?`
+         WHERE rowid = ? AND created_by = ? AND profile_id IS NULL AND reset = 0 AND expires_at > ?`
       )
-      .get(id, householdId, now) as { name: string | null; email: string | null } | undefined
+      .get(id, createdBy, now) as { name: string | null; email: string | null } | undefined
     if (!row) return null
-    this.cancelInvitation(id, householdId)
+    this.cancelInvitation(id, createdBy)
     const invite = row.name === null ? null : { name: row.name, email: row.email }
-    return { ...this.create({ createdBy, invite, householdId }, now), invite }
+    return { ...this.create({ createdBy, invite }, now), invite }
   }
 }

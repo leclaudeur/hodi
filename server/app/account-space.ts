@@ -141,12 +141,12 @@ const mountSourceRequests = (api: express.Router, { options, youthSources }: Wir
 
 // Personnes invitées: an invitation's code by e-mail, once Serveur › E-mail is set, in the inviter's language.
 const invitationMail = ({ options }: Wiring): InvitationMail | undefined => {
-  const { serverMail, news, profiles, household, serverSettings } = options
+  const { serverMail, news, profiles, serverSettings } = options
   if (!serverMail || !profiles) return undefined
   return {
     ...serverMail,
     languageOf: profileId => news.languageOf(profileId),
-    inviterOf: profileId => ({ name: profiles.get(profileId)?.name ?? '', household: household.get().name }),
+    inviterOf: profileId => ({ name: profiles.get(profileId)?.name ?? '' }),
     home: () => serverSettings?.publicHome() ?? null
   }
 }

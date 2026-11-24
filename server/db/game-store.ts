@@ -4,6 +4,7 @@ import type { Language } from '../../shared/i18n.ts'
 import { type BadgeId, type GameRules, type LevelProgress, levelOf, nameIn } from '../game/rules.ts'
 import { type Database, transaction } from './database.ts'
 import { badgeCounts } from './game-badges.ts'
+import { teamOf } from './game-team.ts'
 import { ownerOf } from './stats-owner.ts'
 import { DAY_MS } from '../../shared/time.ts'
 import { CONFIG } from '../fixed-config.ts'
@@ -203,31 +204,32 @@ export class GameStore {
     if (read >= points.readingDayArticles) {
       this.#earn(profileId, { kind: 'reading_day', ref: day, points: points.readingDay }, when)
     }
-    this.#checkChallenge(when)
+    this.#checkChallenge(profileId, when)
   }
 
-  // The week's goal reached: every profile gets the bonus, once a week.
-  #checkChallenge(now: number) {
-    const challenge = this.challenge(now)
-    if (!challenge.reached) return
+  // The week's goal reached: every profile of the reader's team gets the bonus, once a week.
+  #checkChallenge(profileId: number, now: number) {
+    if (!this.challenge(profileId, now).reached) return
     const monday = mondayOf(dayOf(now, this.#timeZone()))
-    const profiles = this.#db.prepare('SELECT id FROM profiles WHERE account_id = ?').all(currentHouseholdId()) as {
-      id: number
-    }[]
-    for (const { id } of profiles) {
+    for (const id of teamOf(this.#db, profileId).profiles) {
       this.#earn(id, { kind: 'challenge', ref: monday, points: this.#rules.weeklyChallenge.bonus }, now)
     }
   }
 
-  // The household's articles read per week over the last weeks, raised; a new household gets the minimum.
-  challenge(now: number): WeeklyChallenge {
+  // The articles the profile's team (game-team.ts) read per week over the last weeks, raised; a new team gets the
+  // minimum. Never the whole server's: each family has its own goal.
+  challenge(profileId: number, now: number): WeeklyChallenge {
     const { lookbackWeeks, raise, minimum } = this.#rules.weeklyChallenge
     const monday = mondayOf(dayOf(now, this.#timeZone()))
+    const owners = JSON.stringify(teamOf(this.#db, profileId).owners)
     const count = (from: string, to: string) =>
       (
         this.#db
-          .prepare("SELECT COUNT(*) AS read FROM game_events WHERE kind = 'article_read' AND day >= ? AND day < ?")
-          .get(from, to) as { read: number }
+          .prepare(
+            `SELECT COUNT(*) AS read FROM game_events WHERE kind = 'article_read' AND day >= ? AND day < ?
+             AND owner IN (SELECT value FROM json_each(?))`
+          )
+          .get(from, to, owners) as { read: number }
       ).read
     const before = count(daysBefore(monday, 7 * lookbackWeeks), monday)
     const goal = Math.max(minimum, Math.round((before / lookbackWeeks) * (1 + raise)))

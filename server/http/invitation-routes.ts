@@ -1,6 +1,5 @@
 import express from 'express'
 import { LoginThrottle } from '../auth/login-throttle.ts'
-import { currentHouseholdId } from '../db/household-scope.ts'
 import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { codeForPeople, type Invite, type SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { cleanEmail } from '../db/user-account-store.ts'
@@ -12,7 +11,7 @@ import type { Language } from '../../shared/i18n.ts'
 import { isParentOf, profileIdOf } from './profile-routes.ts'
 import { CONFIG } from '../fixed-config.ts'
 
-// Réglages › Profils › Personnes invitées: the invitations an adult of the household made and nobody used yet, each
+// Réglages › Profils › Personnes invitées: the invitations this adult made and nobody used yet, each
 // under the name it was given. With Serveur › E-mail set, its code also goes by e-mail.
 
 export interface InvitationMail {
@@ -21,7 +20,7 @@ export interface InvitationMail {
   // The inviter's language: the e-mail goes out in it.
   languageOf: (profileId: number) => Language
   // Who invites, named in the e-mail; and the household it is.
-  inviterOf: (profileId: number) => { name: string; household: string }
+  inviterOf: (profileId: number) => { name: string }
   home?: () => string | null
   log?: (line: string) => void
 }
@@ -48,7 +47,7 @@ export const inviteOf = (body: unknown): Invite | null | 'invalid' => {
 // Whether the server can send the code: Serveur › E-mail set, with the app's address for the link.
 const canMail = (mail: InvitationMail | undefined) => mail !== undefined && mail.store.canSendLinks()
 
-// Each e-mail goes to any address a person typed: a household sends a few a day at most, and the whole server a few
+// Each e-mail goes to any address a person typed: a person sends a few a day at most, and the whole server a few
 // hundred, so the server's address never becomes a way to write to strangers. Past them the code still shows, to give
 // by hand.
 export const INVITATION_MAILS_PER_DAY = CONFIG.invitations.mailsPerDay
@@ -56,15 +55,15 @@ const SERVER_INVITATION_MAILS_PER_DAY = CONFIG.invitations.serverMailsPerDay
 const DAY_MS = 24 * 60 * 60 * 1000
 const budgets = new WeakMap<InvitationMail, LoginThrottle>()
 
-const spendMail = (mail: InvitationMail, now: number) => {
+const spendMail = (mail: InvitationMail, now: number, inviter: number) => {
   let budget = budgets.get(mail)
   if (!budget) {
     budget = new LoginThrottle(INVITATION_MAILS_PER_DAY, DAY_MS, SERVER_INVITATION_MAILS_PER_DAY)
     budgets.set(mail, budget)
   }
-  const household = `household:${currentHouseholdId()}`
-  if (!budget.check(now, household).allowed) return false
-  budget.recordFailure(now, household)
+  const key = `inviter:${inviter}`
+  if (!budget.check(now, key).allowed) return false
+  budget.recordFailure(now, key)
   return true
 }
 
@@ -76,15 +75,15 @@ export const mailInvitation = (
 ) => {
   const settings = mail?.store.get()
   const appUrl = mail?.store.appUrl()
-  if (!mail || !settings || !appUrl || !spendMail(mail, now)) return false
+  if (!mail || !settings || !appUrl || !spendMail(mail, now, inviter)) return false
   const language = mail.languageOf(inviter)
   const t = textsIn(language)
-  const { name, household } = mail.inviterOf(inviter)
+  const { name } = mail.inviterOf(inviter)
   const content = {
-    eyebrow: household,
-    title: t('mail.invite.title', { household }),
+    eyebrow: name,
+    title: t('mail.invite.title'),
     blocks: [
-      { kind: 'text' as const, text: t('mail.invite.text', { name, household }) },
+      { kind: 'text' as const, text: t('mail.invite.text', { name }) },
       { kind: 'text' as const, text: t('mail.invite.code', { code: codeForPeople(code) }) },
       { kind: 'action' as const, label: t('mail.invite.button'), url: `${appUrl}/#/code/${code}` },
       { kind: 'note' as const, text: t('mail.invite.note') }
@@ -108,11 +107,12 @@ export const invitationRoutes = ({ codes, now, mail }: InvitationOptions) => {
   // The list, and whether a code can go by e-mail (the invite dialog asks an address then).
   router.get('/', (_request, response) => {
     response.set('Cache-Control', 'no-store')
-    response.json({ mail: canMail(mail), invitations: codes.invitations(now()) })
+    response.json({ mail: canMail(mail), invitations: codes.invitations(now(), profileIdOf(response)) })
   })
 
   router.delete('/:id', (request, response) => {
-    if (!codes.cancelInvitation(Number(request.params.id))) response.status(404).json({ error: 'not_found' })
+    if (!codes.cancelInvitation(Number(request.params.id), profileIdOf(response)))
+      response.status(404).json({ error: 'not_found' })
     else response.status(204).end()
   })
 

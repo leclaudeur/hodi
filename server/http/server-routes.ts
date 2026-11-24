@@ -184,7 +184,7 @@ const mountInviteRoutes = (
       response.status(404).json({ error: 'not_found' })
       return
     }
-    response.status(201).json(codes.create({ createdBy: createdByOf(response), householdId: id }, now()))
+    response.status(201).json(codes.create({ createdBy: createdByOf(response) }, now()))
   })
 }
 

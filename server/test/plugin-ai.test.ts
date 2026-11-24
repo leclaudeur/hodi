@@ -335,11 +335,11 @@ describe('ctx.ai and the AiButton', () => {
     assert.deepEqual(await young.json(), { error: 'young' })
     kind = 'adult'
 
-    store.setAiOff(1, 'helper', true)
+    store.setAiOff('helper', true)
     const off = await click('summarize')
     assert.equal(off.status, 403)
     assert.deepEqual(await off.json(), { error: 'ai_off' })
-    store.setAiOff(1, 'helper', false)
+    store.setAiOff('helper', false)
 
     left = false
     const limited = await click('summarize')

@@ -1,5 +1,4 @@
 import express from 'express'
-import { currentHouseholdId } from '../db/household-scope.ts'
 import { type NewsService } from '../news/news-service.ts'
 import type { PluginRegistry } from '../plugins/registry.ts'
 import { profileIdOf, requireServerAdmin } from './profile-routes.ts'
@@ -15,9 +14,9 @@ export const aiUsageRoutes = ({ news, plugins }: { news: NewsService; plugins?: 
 
   if (plugins) {
     // Each active plugin whose AiButton may ask a reader's AI, the admin's own calls of it in the last 24 hours, and
-    // the switch that turns its AI off for the household.
+    // the switch that turns its AI off for the server.
     const aiPlugins = (profileId: number) => {
-      const off = plugins.store.aiOff(currentHouseholdId())
+      const off = plugins.store.aiOff()
       const calls = news.pluginAiCalls(profileId)
       return plugins
         .list()
@@ -48,7 +47,7 @@ export const aiUsageRoutes = ({ news, plugins }: { news: NewsService; plugins?: 
           .json({ error: typeof on !== 'boolean' ? 'bad_request' : 'not_found' })
         return
       }
-      plugins.store.setAiOff(currentHouseholdId(), plugin.id, !on)
+      plugins.store.setAiOff(plugin.id, !on)
       response.json({ plugins: aiPlugins(profileIdOf(response)) })
     })
   }

@@ -45,12 +45,9 @@ export type ResolvedJoinOptions = CodeJoinOptions & Required<Pick<CodeJoinOption
 // What "Rejoins <foyer>" and "Ton profil t'attend" show of a profile: no photo, which only a session may load.
 const publicProfile = ({ id, name, color, kind, avatar }: Profile) => ({ id, name, color, kind, avatar })
 
-// Whether a household's admin may give a code that sets a new password for this account: never the server's admin's
-// (that would hand the whole server to the household's admin), nor an account that also reads in another household,
-// which this household's admin has no say over. Those use « Mot de passe oublié » by e-mail, or the server's admin.
-export const resettableByCode = (accounts: UserAccountStore, account: UserAccount) =>
-  !account.serverAdmin &&
-  accounts.profilesOf(account.id).every(({ householdId }) => householdId === currentHouseholdId())
+// Whether a code may set a new password for this account: never the server's admin's, which would hand the whole
+// server to whoever holds the code. Theirs goes through « Mot de passe oublié » by e-mail.
+export const resettableByCode = (account: UserAccount) => !account.serverAdmin
 
 // The cookies of a device that now reads as this profile, after its session cookie.
 export const withProfileCookie = (
@@ -59,20 +56,11 @@ export const withProfileCookie = (
   profileId: number
 ) => [sessionCookie, profileCookie(profileToken(profileId, profiles.lock(profileId)?.version ?? 0, secret))]
 
-export const codeHelpers = ({
-  codes,
-  accounts,
-  profiles,
-  household,
-  install,
-  throttle,
-  now,
-  resetPassword
-}: CodeJoinOptions) => {
+export const codeHelpers = ({ codes, accounts, profiles, install, throttle, now, resetPassword }: CodeJoinOptions) => {
   // Checked again when the code is used: the account may have become the server's admin since the code was made.
   const resettable = (profileId: number) => {
     const account = accounts.ofProfile(profileId)
-    return account !== null && resettableByCode(accounts, account)
+    return account !== null && resettableByCode(account)
   }
 
   // A profile's code holds while it still waits for it: an adult without an account or, for a reset, an adult who
@@ -106,17 +94,12 @@ export const codeHelpers = ({
   }
 
   const describe = ({ profileId, createdBy, reset }: SignInCode) => {
-    const name = household.get().name
     if (profileId !== null) {
       const profile = profiles.get(profileId)!
-      return { kind: reset ? 'reset' : 'profile', household: name, profile: publicProfile(profile) }
+      return { kind: reset ? 'reset' : 'profile', profile: publicProfile(profile) }
     }
     const by = createdBy === null ? null : profiles.get(createdBy)
-    return {
-      kind: 'invite',
-      household: name,
-      invitedBy: by ? publicProfile(by) : null
-    }
+    return { kind: 'invite', invitedBy: by ? publicProfile(by) : null }
   }
 
   return { validCode, describe }

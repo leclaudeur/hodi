@@ -81,7 +81,7 @@
     "newAccount": "Create a new account",
     "signIn": "Join",
     "alreadyMember": "This account already has a profile on this server: sign in with it.",
-    "otherHousehold": "Your account <b>{{email}}</b> is already in <b>{{current}}</b>. To join <b>{{household}}</b>, leave your household first in <i>My account</i>."
+    "otherHousehold": "Your account <b>{{email}}</b> is already in <b>{{current}}</b>: leave that household first in <i>My account</i>."
   },
   "password": {
     "show": "Show password",
@@ -1714,8 +1714,8 @@
     "deleteAccount": {
       "title": "Delete your account?",
       "message": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. Backup copies forget it within {{days}}.",
-      "messageHousehold": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>The household {{name}} has no other adult with an account: it goes too.</b> Backup copies forget it within {{days}}.",
-      "messageHouseholdWith": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>The household {{name}} has no other adult with an account: it goes too, with the profiles of {{profiles}}.</b> Backup copies forget it within {{days}}.",
+      "messageHousehold": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: every profile goes too.</b> Backup copies forget it within {{days}}.",
+      "messageHouseholdWith": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>No other adult has an account on this server: the profiles of {{profiles}} go too.</b> Backup copies forget it within {{days}}.",
       "button": "Delete",
       "messageChildren": "<b>{{email}}</b> and everything in it are erased at once: your profile, saved articles, reading, shares and statistics. <b>You are the only parent of {{children}}: their accounts go too.</b> Backup copies forget it within {{days}}."
     },
