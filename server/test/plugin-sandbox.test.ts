@@ -198,11 +198,11 @@ describe('plugin sandbox', () => {
         }
       }
     )
-    assert.deepEqual(await sandbox.call('routes', 'GET /x', null, { householdId: 7 }), {
+    assert.deepEqual(await sandbox.call('routes', 'GET /x', null, { forReader: true }), {
       refused: 'not_allowed',
       fetched: { url: 'https://example.test/', text: '' }
     })
-    assert.deepEqual(seen, { householdId: 7 })
+    assert.deepEqual(seen, { forReader: true })
   })
 
   it('turns text into UTF-8 bytes and back', async () => {
@@ -575,10 +575,10 @@ describe('plugin sandbox', () => {
         }
       }
     )
-    assert.equal(await sandbox.call('routes', 'GET /x', null, { householdId: 7 }), 'done')
+    assert.equal(await sandbox.call('routes', 'GET /x', null, { forReader: true }), 'done')
     await new Promise(resolve => setTimeout(resolve, 200))
     assert.deepEqual(seen, [
-      ['now', { householdId: 7 }],
+      ['now', { forReader: true }],
       ['later', null]
     ])
   })

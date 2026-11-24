@@ -121,9 +121,6 @@ invitations:
   mails_per_day: 10
   server_mails_per_day: 300
 
-household:
-  name_max_length: 40
-
 # The mail server settings (Serveur › E-mail): field lengths, and how long sending may take.
 mail:
   host_max_length: 253

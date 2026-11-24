@@ -8,7 +8,6 @@ import { createApp } from '../app.ts'
 import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { PasswordResetStore } from '../db/password-reset-store.ts'
@@ -133,7 +132,6 @@ describe('« Demander un code »', () => {
     const server = createApp(config, {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles,
-      household: new HouseholdStore(db),
       install: new InstallStore(db),
       accounts,
       devices: new UserDeviceStore(db),

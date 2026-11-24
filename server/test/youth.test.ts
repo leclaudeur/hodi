@@ -7,7 +7,6 @@ import { after, before, describe, it } from 'node:test'
 import { createApp } from '../app.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SourceStore } from '../db/source-store.ts'
@@ -152,7 +151,6 @@ describe('youth api', () => {
   const db = openDatabase(':memory:')
   const profiles = new ProfileStore(db)
   const youth = new YouthStore(db, () => ZONE)
-  const household = new HouseholdStore(db)
   const install = new InstallStore(db)
 
   const call = (method: string, route: string, profileId: number, body?: unknown) =>
@@ -196,7 +194,6 @@ describe('youth api', () => {
       profiles,
       users: profileId => new UserStore(db, profileId),
       youth,
-      household,
       install,
       now: () => clock
     }).listen(0)
@@ -306,7 +303,6 @@ describe('youth sources api', () => {
   const db = openDatabase(':memory:')
   const profiles = new ProfileStore(db)
   const youth = new YouthStore(db, () => ZONE)
-  const household = new HouseholdStore(db)
   const install = new InstallStore(db)
   const users = (profileId: number) => new UserStore(db, profileId)
   const sent: string[] = []
@@ -428,7 +424,6 @@ listen:
       profiles,
       users,
       youth,
-      household,
       install,
       images: { file: async () => picture, inlineFile: async () => picture },
       sources: {

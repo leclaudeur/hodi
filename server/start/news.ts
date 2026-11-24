@@ -1,5 +1,4 @@
 import type { Config } from '../config.ts'
-import type { HouseholdStore } from '../db/household-store.ts'
 import type { InstallStore } from '../db/install-store.ts'
 import type { NewsStore } from '../db/news-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
@@ -19,7 +18,7 @@ import type { AccountAiStore } from '../db/account-ai-store.ts'
 import { accountAiTools } from './account-ai.ts'
 import type { Outside } from './outside.ts'
 
-// The news service, wired to the households, profiles and settings in the database (start.ts).
+// The news service, wired to the profiles and settings in the database (start.ts).
 
 interface NewsWiring {
   config: Config
@@ -27,7 +26,6 @@ interface NewsWiring {
   catalog: Catalog
   file: ReturnType<typeof loadCatalog>
   sources: SourceStore
-  household: HouseholdStore
   install: InstallStore
   profiles: ProfileStore
   usersOf: (profileId: number) => UserStore

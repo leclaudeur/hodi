@@ -9,7 +9,6 @@ import { createApp } from '../app.ts'
 import { LoginThrottle } from '../auth/login-throttle.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { AccountDataStore } from '../db/account-data.ts'
@@ -41,7 +40,6 @@ const fakeAi: AiProvider = {
 // An install of its own, with personal accounts.
 const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => {
   const db = openDatabase(':memory:')
-  const household = new HouseholdStore(db)
   const installed = new InstallStore(db)
   const profiles = new ProfileStore(db)
   const accounts = new UserAccountStore(db)
@@ -62,7 +60,6 @@ const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => 
   const server = createApp(config, {
     news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
     profiles,
-    household,
     install: installed,
     accounts,
     devices: new UserDeviceStore(db),
@@ -81,7 +78,6 @@ const startInstall = async ({ now = Date.now }: { now?: () => number } = {}) => 
   return {
     baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
     close: () => server.close(),
-    household,
     installed,
     profiles,
     accounts,

@@ -222,16 +222,6 @@ export class UserAccountStore {
     return row.session_generation
   }
 
-  // Every profile of this account, in every household.
-  profilesOf(id: number): { profileId: number; householdId: number }[] {
-    return (
-      this.#db.prepare('SELECT id, account_id FROM profiles WHERE user_id = ? ORDER BY id').all(id) as {
-        id: number
-        account_id: number
-      }[]
-    ).map(row => ({ profileId: row.id, householdId: row.account_id }))
-  }
-
   // The profile this account reads with, or null.
   profileOf(id: number): number | null {
     const row = this.#db.prepare('SELECT id FROM profiles WHERE user_id = ? ORDER BY id LIMIT 1').get(id) as

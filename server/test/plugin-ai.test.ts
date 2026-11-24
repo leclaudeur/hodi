@@ -158,38 +158,38 @@ describe('a plugin’s question to the API', () => {
   })
 })
 
-describe('the household’s AI for plugins', () => {
+describe('Hodi’s AI for plugins', () => {
   it('lets a plugin ask a few times an hour, unless it is off or the caps are reached', async () => {
     let at = NOW
     let left = true
     const off = new Set<string>()
     const ai = pluginAi({
-      isOff: (_household, plugin) => off.has(plugin),
+      isOff: plugin => off.has(plugin),
       left: () => left,
       ask: async () => ({ status: 'ok', text: 'y'.repeat(MAX_ANSWER + 50) }),
       now: () => at
     })
     for (let index = 0; index < PLUGIN_AI_PER_HOUR; index++) {
-      assert.equal((await ai.ask('helper', 1, 2, { system: '', prompt: 'a', maxTokens: 10 })).length, MAX_ANSWER)
+      assert.equal((await ai.ask('helper', 2, { system: '', prompt: 'a', maxTokens: 10 })).length, MAX_ANSWER)
     }
-    assert.equal(ai.check('helper', 1, 2), 'limited')
-    await assert.rejects(ai.ask('helper', 1, 2, { system: '', prompt: 'a', maxTokens: 10 }), /ai_limited/)
-    // Another household, or another plugin, has its own hour.
-    assert.equal(ai.check('helper', 7, 2), null)
-    assert.equal(ai.check('other', 1, 2), null)
+    assert.equal(ai.check('helper', 2), 'limited')
+    await assert.rejects(ai.ask('helper', 2, { system: '', prompt: 'a', maxTokens: 10 }), /ai_limited/)
+    // Another profile, or another plugin, has its own hour.
+    assert.equal(ai.check('helper', 7), null)
+    assert.equal(ai.check('other', 2), null)
     at += 60 * 60 * 1000
-    assert.equal(ai.check('helper', 1, 2), null)
+    assert.equal(ai.check('helper', 2), null)
 
     off.add('helper')
-    assert.equal(ai.check('helper', 1, 2), 'off')
+    assert.equal(ai.check('helper', 2), 'off')
     off.clear()
     left = false
-    assert.equal(ai.check('helper', 1, 2), 'limited')
+    assert.equal(ai.check('helper', 2), 'limited')
   })
 })
 
 describe('ctx.ai and the AiButton', () => {
-  const asked: { pluginId: string; householdId: number; profileId: number; question: PluginQuestion }[] = []
+  const asked: { pluginId: string; profileId: number; question: PluginQuestion }[] = []
   let answer: PluginAskAnswer = { status: 'ok', text: 'Un résumé.' }
   let left = true
   let kind = 'adult'
@@ -217,10 +217,10 @@ describe('ctx.ai and the AiButton', () => {
       )
     store = new PluginStore(openDatabase(':memory:'))
     const ai = pluginAi({
-      isOff: (householdId, pluginId) => store.aiOff(householdId).has(pluginId),
+      isOff: pluginId => store.aiOff().has(pluginId),
       left: () => left,
-      ask: async (householdId, pluginId, profileId, question) => {
-        asked.push({ pluginId, householdId, profileId, question })
+      ask: async (pluginId, profileId, question) => {
+        asked.push({ pluginId, profileId, question })
         return answer
       }
     })
@@ -264,11 +264,10 @@ describe('ctx.ai and the AiButton', () => {
     assert.equal(response.headers.get('content-security-policy'), "default-src 'none'; sandbox")
     const { answer: answered } = (await response.json()) as { answer: { text: string; who: unknown } }
     assert.equal(answered.text, 'Un résumé.')
-    assert.deepEqual(answered.who, { householdId: 1, profileId: 2 })
+    assert.deepEqual(answered.who, { profileId: 2 })
     assert.equal(asked.length, 1)
     assert.deepEqual(asked[0], {
       pluginId: 'helper',
-      householdId: 1,
       profileId: 2,
       question: { system: 'Sois bref.', prompt: 'Résume : Un long article.', maxTokens: 200 }
     })

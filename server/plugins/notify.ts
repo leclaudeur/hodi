@@ -52,8 +52,7 @@ export const pluginNotice = (value: unknown): PluginNotice | null => {
 }
 
 export interface PluginNotifier {
-  // householdId: the household the plugin's call is for; null for a task, a public or a server route.
-  send: (plugin: { id: string; name: string }, value: unknown, householdId: number | null) => Promise<void>
+  send: (plugin: { id: string; name: string }, value: unknown) => Promise<void>
 }
 
 // No push at all (tests that do not need it): every notice is refused.
@@ -64,16 +63,16 @@ export const NO_NOTICES: PluginNotifier = {
 }
 
 export const pluginNotifier = ({
-  householdOf,
-  profilesOf,
+  hasProfile,
+  profileOf,
   push,
   now = Date.now,
   log = console.log
 }: {
-  // The household of a profile; null when there is none.
-  householdOf: (profileId: number) => number | null
-  // The profiles of an account, in every household.
-  profilesOf: (accountId: number) => { profileId: number; householdId: number }[]
+  // Whether the profile is still there.
+  hasProfile: (profileId: number) => boolean
+  // The profile an account reads with; null without one.
+  profileOf: (accountId: number) => number | null
   // The profile's devices that want it, outside their quiet hours.
   push: (profileId: number, payload: AlertPayload) => Promise<void>
   now?: () => number
@@ -83,20 +82,11 @@ export const pluginNotifier = ({
   const sent = new Map<string, number[]>()
 
   return {
-    send: async (plugin, value, householdId) => {
+    send: async (plugin, value) => {
       const notice = pluginNotice(value)
       if (!notice) throw new Error('invalid_notice')
-      // Within a household's call, only that household's people; anywhere else (a task), anyone.
-      const inScope = (household: number | null) =>
-        household !== null && (householdId === null || household === householdId)
-      const targets =
-        notice.profileId !== null
-          ? inScope(householdOf(notice.profileId))
-            ? [notice.profileId]
-            : []
-          : profilesOf(notice.accountId!)
-              .filter(({ householdId: household }) => inScope(household))
-              .map(({ profileId }) => profileId)
+      const own = notice.profileId === null ? profileOf(notice.accountId!) : null
+      const targets = notice.profileId === null ? (own === null ? [] : [own]) : [notice.profileId].filter(hasProfile)
       if (notice.profileId !== null && targets.length === 0) throw new Error('unknown_profile')
       const at = now()
       const payload: AlertPayload = {

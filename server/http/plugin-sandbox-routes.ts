@@ -1,5 +1,4 @@
 import express from 'express'
-import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { type CallContext, callContext, vouchedFor } from '../plugins/call-context.ts'
 import { reserveIo } from '../plugins/io-budget.ts'
 import { sendZip, takeZipRoom, zipOf } from '../plugins/plugin-zip.ts'
@@ -148,12 +147,7 @@ interface RouteCall {
 }
 
 // The clean request the plugin gets: no cookie, no header, who Hodi says asks.
-const argumentOf = (
-  { group, method, maxBody }: RouteCall,
-  request: express.Request,
-  response: express.Response,
-  householdId: number | null
-) => {
+const argumentOf = ({ group, method, maxBody }: RouteCall, request: express.Request, response: express.Response) => {
   const open = group === 'publicRoutes'
   const serverOnly = response.locals.serverOnly === true
   return {
@@ -166,7 +160,6 @@ const argumentOf = (
       ? null
       : {
           profileId: serverOnly ? null : profileIdOf(response),
-          householdId,
           kind: kindOf(response),
           serverAdmin: isServerAdminOf(response),
           accountId: typeof response.locals.accountId === 'number' ? response.locals.accountId : null
@@ -254,13 +247,12 @@ const applySignIn = async (
 
 // Runs the plugin's handler and writes its answer: JSON, a 2xx or 4xx status, no header but Cache-Control; or a zip.
 const callRoute = (call: RouteCall) => async (request: express.Request, response: express.Response) => {
-  const inNone = call.group === 'publicRoutes' || response.locals.serverOnly === true
-  const householdId = inNone ? null : DEFAULT_ACCOUNT_ID
-  const argument = argumentOf(call, request, response, householdId)
+  const forReader = call.group !== 'publicRoutes' && response.locals.serverOnly !== true
+  const argument = argumentOf(call, request, response)
   // Whatever the plugin answers, the browser reads it as data only.
   response.set('X-Content-Type-Options', 'nosniff')
   response.set('Content-Security-Policy', "default-src 'none'; sandbox")
-  const context = callContext(householdId, clientAddressOf(request))
+  const context = callContext(forReader, clientAddressOf(request))
   const called = await answerOf(call, request, response, argument, context)
   if (!called) return
   const { answer } = called

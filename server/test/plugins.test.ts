@@ -21,7 +21,6 @@ import { createApp } from '../app.ts'
 import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { ServerSettingsStore, publicServerSettings } from '../db/server-settings-store.ts'
 import { PluginStore } from '../db/plugin-store.ts'
@@ -566,7 +565,6 @@ describe('plugin routes', () => {
   let restarts = 0
   let pluginDir = ''
   const db = openDatabase(':memory:')
-  const household = new HouseholdStore(db)
   const install = new InstallStore(db)
   const profiles = new ProfileStore(db)
 
@@ -644,7 +642,6 @@ describe('plugin routes', () => {
     const server = createApp(config, {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles,
-      household,
       install,
       accounts,
       devices: new UserDeviceStore(db),
@@ -812,7 +809,6 @@ describe('plugin routes', () => {
     // Sam's own account (2) and profile.
     assert.deepEqual(who, {
       profileId: 2,
-      householdId: 1,
       kind: 'adult',
       serverAdmin: false,
       accountId: 2

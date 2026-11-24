@@ -48,7 +48,8 @@ export interface PluginContext {
     }
   ) => Promise<{ url: string; status: number; contentType: string | null; text: string }>
   // With permissions.articles: an article Hodi listed (null for an id it never listed), and its page as the site serves
-  // it now. Only while the call runs, in the household it runs for: work left running after it returns is refused.
+  // it now. Only while a reader's call runs (a route of the app, an AiButton, exportData, onArticle): a task, a feed,
+  // another hook or work left running after a call returns is refused with 'no_reader'.
   articles: {
     get: (id: string) => Promise<PluginArticle | null>
     page: (id: string) => Promise<{ url: string; html: string } | null>
@@ -70,8 +71,8 @@ export interface PluginContext {
     send: (message: PluginMailMessage) => Promise<void>
   }
   // With permissions.notify: a notification on a person's devices, through the same push as shares, in each device's
-  // quiet hours and only where its « Plugins » switch is on. profileId, or accountId for every profile of an account;
-  // within a route's call, only the people of its household. title (80 characters) and text (240), plain text; path:
+  // quiet hours and only where its « Plugins » switch is on. profileId, or accountId for the profile of an account.
+  // title (80 characters) and text (240), plain text; path:
   // where it opens under the plugin's page (#/settings/plugin/<id>/<path>). Ten a day per profile at most:
   // 'too_many_notices' past them.
   notify?: (notice: {
@@ -94,11 +95,11 @@ export interface PluginContext {
   ) => Promise<void>
   // The request of that key is handled (the person invited, refused): its notice leaves « À traiter ».
   serverNoticeHandled?: (key: string) => Promise<void>
-  // With permissions.ai, for a signed plugin ("Vérifié"): one question to the household's AI, only inside an aiActions
+  // With permissions.ai, for a signed plugin ("Vérifié"): one question to Hodi's AI, only inside an aiActions
   // handler, which only a click on the plugin's AiButton (hodi:sdk) runs, and once per click: anywhere else it refuses
   // with 'ai_no_click', a second time with 'ai_already_asked'. Plain text: prompt (8000 characters), system (2000),
   // maxTokens (1 to 1024, 512 by default); the answer's text comes back, 8000 characters at most. It counts against
-  // the household's daily plugin cap and 10 an hour per plugin. It refuses a question that does not fit with
+  // the profile's daily plugin cap and 10 an hour per plugin and profile. It refuses a question that does not fit with
   // 'ai_invalid_question', and one Hodi cannot ask with 'ai_unavailable', 'ai_off',
   // 'ai_limited', 'ai_refused' or 'ai_failed'. The plugin never sees the key, the provider or the model.
   ai?: {
@@ -153,11 +154,8 @@ export interface PluginAccount {
 
 // Who asks, as Hodi checked it. No cookie, header or session reaches the plugin.
 export interface PluginCaller {
-  // The profile open on the device; null in the server's own space for an admin outside the household.
+  // The profile open on the device; null in the server's own space for an admin with no profile.
   profileId: number | null
-  // The household it asks for; null in the server's own space for an admin outside the household. A plugin serves
-  // every household on the server from one database: it keeps their data apart with this.
-  householdId: number | null
   kind: 'adult' | 'teen' | 'child'
   // The server's admin.
   serverAdmin: boolean
@@ -241,33 +239,29 @@ export interface ServerPlugin {
   // With permissions.signIn: asked at each sign-in of an account but the server admin's (Connexion, a plugin's
   // signIn, « J'ai déjà un compte », a new password). null lets it in; a key of the plugin's locales refuses it with
   // that message. Throwing or running out of time refuses it too, with Hodi's neutral message.
-  checkSignIn?: (who: { accountId: number; householdId: number | null }, ctx: PluginContext) => Promise<string | null>
+  checkSignIn?: (who: { accountId: number }, ctx: PluginContext) => Promise<string | null>
   // Work that runs by itself, every so many minutes (15 at least, a week at most), while the plugin is on: purging what
   // expired, a reminder… Its name is lowercase letters, digits and dashes. Hodi remembers when each last started, so a
-  // restart never runs it early; one that is still running is never started again. It runs for no household (ctx's
-  // household-scoped requests are refused) and never for a person: no AI, no sign-in.
+  // restart never runs it early; one that is still running is never started again. It runs for no reader
+  // (ctx.articles is refused) and never for a person: no AI, no sign-in.
   tasks?: Record<string, PluginTask>
-  // The articles of each feed of plugin.json's feeds, by its key: read like a site's feed, every few minutes while a
-  // household follows it, for no household. At most 100; each needs a title and an https link on the feed's site, and
+  // The articles of each feed of plugin.json's feeds, by its key: read like a site's feed, every few minutes while
+  // someone follows it, for no reader. At most 100; each needs a title and an https link on the feed's site, and
   // opens with its summary and that link, never in the reader. Text is plain: tags are left out.
   feeds?: Record<string, (ctx: PluginContext) => Promise<PluginFeedArticle[]>>
   // What its AiButtons run, by the name each button gives: the only place ctx.ai answers, once per click. Hodi checks
-  // first that the plugin is signed, on, meant for this profile, that the profile is an adult's and the household's
+  // first that the plugin is signed, on, meant for this profile, that the profile is an adult's and the server's
   // admin did not turn the plugin's AI off.
   aiActions?: Record<string, PluginAiAction>
-  // Someone's data is gone from Hodi: delete what the plugin kept of it. A profile deleted (by the household's admin,
-  // or with its account), an account deleted (« Supprimer ton compte »), a household removed (by the plugin that made
-  // it, or emptied with its last adult). Every plugin that exports the hook is told, on or off, and asked again every
-  // minute until it returns without throwing: make it safe to run twice.
-  onProfileDeleted?: (deleted: { profileId: number; householdId: number }, ctx: PluginContext) => Promise<void>
+  // Someone's data is gone from Hodi: delete what the plugin kept of it. A profile deleted (a young one by its parent,
+  // or with its account), an account deleted (« Supprimer ton compte », Serveur › Comptes). When the last adult goes,
+  // every profile and account is told one by one. Every plugin that exports the hook is told, on or off, and asked
+  // again every minute until it returns without throwing: make it safe to run twice.
+  onProfileDeleted?: (deleted: { profileId: number }, ctx: PluginContext) => Promise<void>
   onAccountDeleted?: (deleted: { accountId: number }, ctx: PluginContext) => Promise<void>
-  onHouseholdRemoved?: (removed: { householdId: number }, ctx: PluginContext) => Promise<void>
   // « Télécharger une copie » in Réglages › Compte et données: what the plugin keeps of this person, as JSON (512 KB
-  // at most), put in the copy under plugins.<id>. profileId is the person's profile in that household, null without one.
-  exportData?: (
-    who: { accountId: number; profileId: number | null; householdId: number },
-    ctx: PluginContext
-  ) => Promise<unknown>
+  // at most), put in the copy under plugins.<id>. profileId is the person's profile, null without one.
+  exportData?: (who: { accountId: number; profileId: number | null }, ctx: PluginContext) => Promise<unknown>
   // The weekly report to the server's admin (Serveur › Notifications), on Monday morning: the plugin's own table
   // under its name, for the week from Monday to Sunday (YYYY-MM-DD). One to eight rows of plain text, each text one
   // or one per language: label (60 characters), value (30), and maybe its change since the week before (« +12 % »,
@@ -283,7 +277,7 @@ export interface ServerPlugin {
 // A click on the plugin's AiButton: input is what the button was given (JSON, 16 KB at most), who the adult who
 // clicked. Whatever it answers reaches the button's onAnswer.
 export type PluginAiAction = (
-  request: { input: unknown; who: { householdId: number; profileId: number } },
+  request: { input: unknown; who: { profileId: number } },
   ctx: PluginContext
 ) => Promise<unknown>
 

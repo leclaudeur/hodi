@@ -4,7 +4,6 @@ import type { Config } from '../config.ts'
 import type { Database } from '../db/database.ts'
 import type { ForgetLog } from '../db/forget-log.ts'
 import { type PluginBackup, startMaintenance } from '../db/maintenance.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
@@ -67,7 +66,6 @@ export const openStores = (
     kept: () => serverSettings.backupCopies(),
     plugins: pluginBackup
   })
-  const household = new HouseholdStore(db)
   const install = new InstallStore(db)
   const accounts = new UserAccountStore(db)
   // Serveur › Vue d'ensemble's days run in the time zone chosen at setup, else the install's.
@@ -75,7 +73,7 @@ export const openStores = (
   // A reader's days (a young profile's hours, the points of the game) run in its account's, else that one.
   const readerTimeZone = (profileId?: number) =>
     (profileId === undefined ? null : accounts.timeZoneOfProfile(profileId)) ?? timeZone()
-  // The database's catalogue, filled once from sources.yml's base sources in the household's language (at setup on a
+  // The database's catalogue, filled once from sources.yml's base sources in the server's language (at setup on a
   // new install), with the sources profiles added.
   const sources = new SourceStore(db)
   const file = loadCatalog(config.sourcesFile)
@@ -86,7 +84,6 @@ export const openStores = (
     users,
     usersOf: (profileId: number) => new UserStore(db, profileId),
     images,
-    household,
     install,
     accounts,
     accountAi: new AccountAiStore(db),

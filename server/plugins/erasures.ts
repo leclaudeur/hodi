@@ -35,7 +35,7 @@ export const pluginErasures = ({ loaded, store, dataDir, now, log }: ErasureDeps
         continue
       }
       try {
-        await plugin.sandbox.call('hook', erasure.hook, erasure.subject, callContext(erasure.householdId))
+        await plugin.sandbox.call('hook', erasure.hook, erasure.subject, callContext(false))
         store.erasureDone(erasure.id)
       } catch (error) {
         store.erasureFailed(erasure.id, now())
@@ -70,11 +70,11 @@ export const pluginErasures = ({ loaded, store, dataDir, now, log }: ErasureDeps
 
   // Every plugin Hodi keeps something of, loaded or not, on or off: the person asked for their data to go, whatever
   // the plugin's state. Whether it has the hook is known once it runs.
-  const erase = (hook: string, subject: unknown, householdId: number | null) => {
+  const erase = (hook: string, subject: unknown) => {
     const ids = new Set([...loaded.filter(plugin => plugin.manifest).map(plugin => plugin.id), ...store.ids()])
     if (existsSync(dataDir))
       for (const name of readdirSync(dataDir)) if (/^[a-z][a-z0-9-]{1,31}$/.test(name)) ids.add(name)
-    for (const id of ids) store.addErasure(id, hook, subject, householdId, now())
+    for (const id of ids) store.addErasure(id, hook, subject, now())
     void runErasures()
   }
 

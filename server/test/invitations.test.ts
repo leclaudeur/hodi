@@ -7,7 +7,6 @@ import { after, before, describe, it } from 'node:test'
 import { createApp } from '../app.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { MailSettingsStore } from '../db/mail-settings-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
@@ -73,7 +72,6 @@ describe('Personnes invitées', () => {
     const server = createApp(config, {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles,
-      household: new HouseholdStore(db),
       install: new InstallStore(db),
       accounts: new UserAccountStore(db),
       devices: new UserDeviceStore(db),

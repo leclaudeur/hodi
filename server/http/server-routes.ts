@@ -58,14 +58,13 @@ export interface ServerRoutesOptions {
   twoFactorOn?: (accountId: number) => boolean
   // « Bloquer » a source, and Sources bloquées.
   blocks?: SourceBlockOptions
-  // Comptes and Foyers › « Supprimer ».
+  // Comptes › « Supprimer ».
   deletions?: {
     data: AccountDataStore
-    // What else goes with a profile (its devices' alerts, the sources it added), read in its household.
+    // What else goes with a profile (its devices' alerts, the sources it added), and the plugins forget it.
     onProfileDeleted: (profileId: number) => void
-    // The plugins forget an account, and a household that went.
+    // The plugins forget an account.
     onAccountDeleted: (accountId: number) => void
-    onHouseholdGone: (householdId: number) => void
   }
   now: () => number
 }

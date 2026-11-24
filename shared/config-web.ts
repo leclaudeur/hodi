@@ -7,7 +7,6 @@ export const WEB_GROUPS = [
   'ai',
   'app',
   'children',
-  'household',
   'myData',
   'passwords',
   'plugins',

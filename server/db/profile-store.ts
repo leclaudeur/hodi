@@ -273,7 +273,7 @@ export class ProfileStore {
     if (profiles.length <= 1 || !profile || profile.role === 'admin') return false
     // Written down first, outside the database: a backup restored later deletes it again (forget-log.ts).
     const key = rowKey(this.#db, 'profiles', id)
-    if (key) recordForget({ kind: 'profile', ...key, householdId: DEFAULT_ACCOUNT_ID })
+    if (key) recordForget({ kind: 'profile', ...key })
     this.#db.prepare('DELETE FROM profiles WHERE id = ?').run(id)
     return true
   }

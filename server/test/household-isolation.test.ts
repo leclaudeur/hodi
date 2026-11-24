@@ -8,7 +8,6 @@ import { createApp } from '../app.ts'
 import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SignInCodeStore } from '../db/sign-in-code-store.ts'
@@ -71,7 +70,6 @@ describe('two families on one server', () => {
     const server = createApp(config, {
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles: new ProfileStore(db),
-      household: new HouseholdStore(db),
       install: new InstallStore(db),
       accounts,
       devices: new UserDeviceStore(db),

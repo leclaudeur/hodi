@@ -1,5 +1,4 @@
 import type express from 'express'
-import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { MAX_AI_INPUT_BYTES, type PluginAi, type PluginAiStatus } from '../plugins/ai.ts'
 import type { LoadedPlugin, PluginRegistry } from '../plugins/registry.ts'
 import { sameSiteOnly } from './plugin-sandbox-routes.ts'
@@ -45,9 +44,8 @@ const aiClickOf = (
     response.status(403).json({ error: 'young' })
     return null
   }
-  const householdId = DEFAULT_ACCOUNT_ID
   const profileId = profileIdOf(response)
-  if (typeof householdId !== 'number' || typeof profileId !== 'number') {
+  if (typeof profileId !== 'number') {
     response.status(403).json({ error: 'no_profile' })
     return null
   }
@@ -56,7 +54,7 @@ const aiClickOf = (
     response.status(413).json({ error: 'too_large' })
     return null
   }
-  return { plugin, action, householdId, profileId, input }
+  return { plugin, action, profileId, input }
 }
 
 // A click on a plugin's AiButton (hodi:sdk): Hodi checks the profile may use the household's AI before the plugin's
@@ -69,8 +67,8 @@ export const mountAiRoute = (router: express.Router, plugins: PluginRegistry, ai
     async (request: express.Request<{ id: string; action: string }>, response) => {
       const click = aiClickOf(plugins, request, response)
       if (!click) return
-      const { plugin, action, householdId, profileId, input } = click
-      const refused = ai ? ai.check(plugin.id, householdId, profileId) : 'unavailable'
+      const { plugin, action, profileId, input } = click
+      const refused = ai ? ai.check(plugin.id, profileId) : 'unavailable'
       if (refused) {
         response.status(AI_STATUS[refused]).json({ error: `ai_${refused}` })
         return
@@ -78,7 +76,7 @@ export const mountAiRoute = (router: express.Router, plugins: PluginRegistry, ai
       // Whatever the plugin answers, the browser reads it as data only.
       response.set('X-Content-Type-Options', 'nosniff')
       response.set('Content-Security-Policy', "default-src 'none'; sandbox")
-      const result = await plugins.runAiAction(plugin.id, action, input, { householdId, profileId })
+      const result = await plugins.runAiAction(plugin.id, action, input, { profileId })
       if (!result.ok) {
         // What became of its question says more than the plugin's failure: a cap reached, a refusal.
         const { outcome } = result

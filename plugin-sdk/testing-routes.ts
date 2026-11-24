@@ -14,7 +14,6 @@ interface KitRoutes {
   ai: PluginAi
   profiles: ProfileStore
   accounts: UserAccountStore
-  householdId: number
   signedIn: number[]
 }
 

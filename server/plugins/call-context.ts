@@ -1,10 +1,10 @@
-import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import type { PluginAiStatus } from './ai.ts'
 
-// What the call that led to a plugin's request was for: the household it runs for, or null when it runs for none (the
-// server's admin outside any household).
+// What the call that led to a plugin's request was for: a person's request in the app, or nothing of the kind (a
+// task, a hook, a feed, a public route, the server's own space).
 export interface CallContext {
-  householdId: number | null
+  // A person signed in on a device asked, with a profile open.
+  forReader: boolean
   // The address the request came from, for the sign-in throttle; absent for a hook, which no request led to.
   client?: string
   // The accounts this call made, checked the password of or found by its login: the only ones its answer may sign in.
@@ -14,22 +14,20 @@ export interface CallContext {
 }
 
 export interface AiTicket {
-  householdId: number
   profileId: number
   used: boolean
   outcome: PluginAiStatus | null
 }
 
-// A household-scoped request (ctx.articles) only runs for the call that made it: work a plugin left running after
-// its call ended, or a call made for no household, is refused rather than read in some household.
-export const householdOf = (context: unknown) => {
-  const householdId = typeof context === 'object' && context !== null ? (context as CallContext).householdId : null
-  if (typeof householdId !== 'number') throw new Error('no_household')
-  return householdId
+// A reader's request (ctx.articles) only runs for the call that made it: work a plugin left running after its call
+// ended, or a call no reader made, is refused.
+export const readerOnly = (context: unknown) => {
+  const forReader = typeof context === 'object' && context !== null && (context as CallContext).forReader === true
+  if (!forReader) throw new Error('no_reader')
 }
 
-export const callContext = (householdId: number | null = DEFAULT_ACCOUNT_ID, client?: string): CallContext => ({
-  householdId,
+export const callContext = (forReader = true, client?: string): CallContext => ({
+  forReader,
   ...(client === undefined ? {} : { client }),
   vouched: new Set()
 })

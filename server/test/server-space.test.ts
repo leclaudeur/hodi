@@ -13,7 +13,6 @@ import { hashPassword } from '../auth/password.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
 import { migrate, versionBefore } from '../db/migrations.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { MailSettingsStore, mailDraftOf } from '../db/mail-settings-store.ts'
 import { copyTimeOf, isDatabaseFile, readRestoreTime } from '../db/maintenance.ts'
@@ -169,7 +168,6 @@ describe('server overview route', () => {
       vapid: { publicKey: 'unused', privateKey: 'unused', subject: 'mailto:test@example.com' }
     }
     const catalog = parseCatalog('topics:\n  - id: monde\n    label: Monde\n    sources: []\n')
-    const household = new HouseholdStore(db)
     const install = new InstallStore(db)
     const accounts = new UserAccountStore(db)
     inbox = new ServerInboxStore(db)
@@ -177,7 +175,6 @@ describe('server overview route', () => {
       serverInbox: { store: inbox, notifier: {} as ServerNotifier },
       news: new NewsService(catalog, { fetchText: fakeFetch({}).fetchText, log: () => {} }),
       profiles: new ProfileStore(db),
-      household,
       install,
       accounts,
       devices: new UserDeviceStore(db),

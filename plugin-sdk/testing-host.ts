@@ -1,8 +1,7 @@
 import { LoginThrottle } from '../server/auth/login-throttle.ts'
 import { AccountLoginStore } from '../server/db/account-login-store.ts'
 import { openDatabase } from '../server/db/database.ts'
-import { DEFAULT_ACCOUNT_ID } from '../server/db/server-row.ts'
-import { HouseholdStore } from '../server/db/household-store.ts'
+import { InstallStore } from '../server/db/install-store.ts'
 import type { MailSettings } from '../server/db/mail-settings-store.ts'
 import { PluginStore } from '../server/db/plugin-store.ts'
 import { ProfileStore } from '../server/db/profile-store.ts'
@@ -19,7 +18,7 @@ import { type LoadPluginsOptions, loadPlugins } from '../server/plugins/registry
 import { pluginServerNotifier } from '../server/plugins/server-notify.ts'
 import type { TestPlugin, TestPluginOptions, TestSite, TestSiteRequest } from './testing.ts'
 
-// The small Hodi in memory a plugin's tests run in (testing.ts): one household, and fakes for what leaves the server.
+// The small Hodi in memory a plugin's tests run in (testing.ts): one server, and fakes for what leaves it.
 
 const MAIL: MailSettings = {
   host: 'smtp.example.test',
@@ -84,24 +83,12 @@ const fakeReach = (
   }
 }
 
-// The database and stores of a household set up for the test.
-const openHousehold = (options: TestPluginOptions, now: () => number) => {
+// The database and stores of a server set up for the test.
+const openServer = (options: TestPluginOptions, now: () => number) => {
   const db = openDatabase(':memory:')
-  const household = new HouseholdStore(db)
-  household.setUp(
-    {
-      name: options.household?.name ?? 'Test',
-      timeZone: 'UTC',
-      country: null,
-      language: options.household?.language ?? 'fr',
-      ai: null
-    },
-    now()
-  )
-  const householdId = DEFAULT_ACCOUNT_ID
+  new InstallStore(db).setUp({ language: options.language ?? 'fr', timeZone: 'UTC' }, now())
   return {
     db,
-    householdId,
     accounts: new UserAccountStore(db),
     store: new PluginStore(db),
     profiles: new ProfileStore(db)
@@ -138,14 +125,14 @@ export const startSmallHodi = async (
   recorded: Recorded,
   now: () => number
 ) => {
-  const { db, householdId, accounts, store, profiles } = openHousehold(options, now)
+  const { db, accounts, store, profiles } = openServer(options, now)
   const { mails, notifications, serverNotices, questions, log } = recorded
   const answer = options.ai
   // One for the AiButton's route and ctx.ai, as in Hodi: the hourly count is theirs together.
   const ai = pluginAi({
     isOff: () => false,
     left: () => answer !== undefined,
-    ask: async (_householdId, _pluginId, _profileId, question) => {
+    ask: async (_pluginId, _profileId, question) => {
       if (!answer) return { status: 'unavailable' }
       questions.push(question)
       return { status: 'ok', text: answer(question) }
@@ -176,8 +163,8 @@ export const startSmallHodi = async (
       log: line => log.push(line)
     }),
     notifier: pluginNotifier({
-      householdOf: profileId => (profiles.get(profileId) ? householdId : null),
-      profilesOf: accountId => accounts.profilesOf(accountId),
+      hasProfile: profileId => profiles.find(profileId) !== null,
+      profileOf: accountId => accounts.profileOf(accountId),
       push: async (profileId, payload) => {
         notifications.push({ profileId, payload })
       },
@@ -204,5 +191,5 @@ export const startSmallHodi = async (
     )
     registry.accountDeleted(account.id)
   }
-  return { db, householdId, accounts, store, profiles, ai, registry }
+  return { db, accounts, store, profiles, ai, registry }
 }

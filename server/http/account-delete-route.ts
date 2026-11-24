@@ -4,7 +4,7 @@ import type { AccountHelpers, AccountRoutesOptions } from './account-routes.ts'
 
 export const mountDeleteRoute = (
   router: express.Router,
-  { data, profiles, now, onDeleteProfile, onAccountDeleted, onHouseholdGone, cookieWithout }: AccountRoutesOptions,
+  { data, profiles, now, onDeleteProfile, onAccountDeleted, cookieWithout }: AccountRoutesOptions,
   { sessionOrRefuse, checkProof, plan }: AccountHelpers
 ) => {
   // "Supprimer ton compte", after its red confirmation and the account's password: at once, with what the plan says
@@ -30,7 +30,6 @@ export const mountDeleteRoute = (
     }
     for (const profile of [...going.profiles, ...going.children]) onDeleteProfile?.(profile.id)
     for (const accountId of data.delete(session.account, going, now())) onAccountDeleted?.(accountId)
-    if (going.serverGoes) onHouseholdGone?.()
     const left = cookieWithout ? cookieWithout(session.account.id, request).cookie : clearedSessionCookie()
     response.set('Set-Cookie', [left, clearedProfileCookie()])
     response.status(204).end()

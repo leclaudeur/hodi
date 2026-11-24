@@ -11,7 +11,6 @@ import { parseRules } from '../game/rules.ts'
 import { LoginThrottle } from '../auth/login-throttle.ts'
 import type { Config } from '../config.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { SourceStore } from '../db/source-store.ts'
@@ -34,7 +33,6 @@ let clock = Date.UTC(2026, 9, 23)
 let accountStore: UserAccountStore
 let news: NewsService
 const db = openDatabase(':memory:')
-const household = new HouseholdStore(db)
 const install = new InstallStore(db)
 
 before(async () => {
@@ -121,7 +119,6 @@ listen:
     news,
     profiles,
     ...adminStores,
-    household,
     install,
     storage: {
       usage: () => ({ databaseBytes: 1, backupBytes: 0, backups: 0, articles: 0, texts: 0 }),

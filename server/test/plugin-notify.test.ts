@@ -12,19 +12,14 @@ import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 import { callContext } from '../plugins/call-context.ts'
 import { TEST_TRUSTED_KEYS, signTestFolder } from './helpers/signing.ts'
 
-// Two households: profiles 1 and 2 in household 1, profile 3 in household 2; account 7 has profiles 2 and 3.
-const HOUSEHOLDS: Record<number, number> = { 1: 1, 2: 1, 3: 2 }
-const PROFILES_OF: Record<number, { profileId: number; householdId: number }[]> = {
-  7: [
-    { profileId: 2, householdId: 1 },
-    { profileId: 3, householdId: 2 }
-  ]
-}
+// Profiles 1, 2 and 3 are there; account 7 reads with profile 2, account 8 has no profile yet.
+const PROFILES = new Set([1, 2, 3])
+const PROFILE_OF: Record<number, number> = { 7: 2 }
 
 const notifierWith = (pushed: { profileId: number; payload: AlertPayload }[], clock = { now: 0 }) =>
   pluginNotifier({
-    householdOf: id => HOUSEHOLDS[id] ?? null,
-    profilesOf: id => PROFILES_OF[id] ?? [],
+    hasProfile: id => PROFILES.has(id),
+    profileOf: id => PROFILE_OF[id] ?? null,
     push: async (profileId, payload) => {
       pushed.push({ profileId, payload })
     },
@@ -60,10 +55,10 @@ describe('notifications of plugins', () => {
     for (const value of refused) assert.equal(pluginNotice(value), null, JSON.stringify(value))
   })
 
-  it("tells a household's people only within its calls, anyone from a task", async () => {
+  it('tells a profile, or the profile of an account', async () => {
     const pushed: { profileId: number; payload: AlertPayload }[] = []
     const notifier = notifierWith(pushed)
-    await notifier.send(PLUGIN, { profileId: 1, title: 'Bonjour', text: 'Un mot.', path: 'inbox' }, 1)
+    await notifier.send(PLUGIN, { profileId: 1, title: 'Bonjour', text: 'Un mot.', path: 'inbox' })
     assert.deepEqual(pushed, [
       {
         profileId: 1,
@@ -76,17 +71,16 @@ describe('notifications of plugins', () => {
         }
       }
     ])
-    await assert.rejects(notifier.send(PLUGIN, { profileId: 3, title: 'a', text: 'b' }, 1), /unknown_profile/)
-    await assert.rejects(notifier.send(PLUGIN, { profileId: 99, title: 'a', text: 'b' }, null), /unknown_profile/)
-    // An account: its profiles in the call's household, or all of them from a task.
+    await assert.rejects(notifier.send(PLUGIN, { profileId: 99, title: 'a', text: 'b' }), /unknown_profile/)
+    // An account: the profile it reads with; one with none yet reaches nobody.
     pushed.length = 0
-    await notifier.send(PLUGIN, { accountId: 7, title: 'a', text: 'b' }, 1)
-    await notifier.send(PLUGIN, { accountId: 7, title: 'a', text: 'b' }, null)
+    await notifier.send(PLUGIN, { accountId: 7, title: 'a', text: 'b' })
+    await notifier.send(PLUGIN, { accountId: 8, title: 'a', text: 'b' })
     assert.deepEqual(
       pushed.map(({ profileId }) => profileId),
-      [2, 2, 3]
+      [2]
     )
-    await assert.rejects(notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b', url: 'x' }, 1), /invalid_notice/)
+    await assert.rejects(notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b', url: 'x' }), /invalid_notice/)
   })
 
   it('sends a profile ten a day at most from one plugin', async () => {
@@ -94,12 +88,12 @@ describe('notifications of plugins', () => {
     const clock = { now: 0 }
     const notifier = notifierWith(pushed, clock)
     for (let index = 0; index < PLUGIN_NOTICES_PER_DAY; index++)
-      await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, 1)
-    await assert.rejects(notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, 1), /too_many_notices/)
+      await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' })
+    await assert.rejects(notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }), /too_many_notices/)
     // Another plugin, another count.
-    await notifier.send({ id: 'other', name: 'Other' }, { profileId: 1, title: 'a', text: 'b' }, 1)
+    await notifier.send({ id: 'other', name: 'Other' }, { profileId: 1, title: 'a', text: 'b' })
     clock.now += 24 * 60 * 60 * 1000
-    await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' }, 1)
+    await notifier.send(PLUGIN, { profileId: 1, title: 'a', text: 'b' })
     assert.equal(pushed.length, PLUGIN_NOTICES_PER_DAY + 2)
   })
 })
@@ -110,7 +104,7 @@ after(async () => {
 })
 
 describe('ctx.notify', () => {
-  it('exists only with permissions.notify, and reaches Hodi with the call’s household', async () => {
+  it('exists only with permissions.notify, and reaches Hodi within a call', async () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'hodi-notify-'))
     const server = `export default { routes: { 'POST /tell': async (request, ctx) => {
       if (!ctx.notify) return { body: 'none' }
@@ -146,9 +140,9 @@ describe('ctx.notify', () => {
     })
     registries.push(registry)
     const tell = (id: string, body: unknown) =>
-      registry.get(id)!.sandbox!.call('routes', 'POST /tell', { body }, callContext(1))
+      registry.get(id)!.sandbox!.call('routes', 'POST /tell', { body }, callContext())
     assert.deepEqual(await tell('teller', { profileId: 1, title: 'Salut', text: 'Un mot.' }), { body: 'sent' })
-    assert.deepEqual(await tell('teller', { profileId: 3, title: 'Salut', text: 'Un mot.' }), {
+    assert.deepEqual(await tell('teller', { profileId: 99, title: 'Salut', text: 'Un mot.' }), {
       body: 'unknown_profile'
     })
     assert.deepEqual(await tell('silent', { profileId: 1, title: 'Salut', text: 'Un mot.' }), { body: 'none' })

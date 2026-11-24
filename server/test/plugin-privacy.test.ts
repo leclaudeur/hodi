@@ -9,7 +9,6 @@ import { LoginThrottle } from '../auth/login-throttle.ts'
 import type { Config } from '../config.ts'
 import { AccountDataStore } from '../db/account-data.ts'
 import { openDatabase } from '../db/database.ts'
-import { HouseholdStore } from '../db/household-store.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { PluginStore } from '../db/plugin-store.ts'
 import { ProfileStore } from '../db/profile-store.ts'
@@ -31,7 +30,6 @@ const KEEPER = `export default {
   },
   onProfileDeleted: async (deleted, ctx) => tell('onProfileDeleted', deleted, ctx),
   onAccountDeleted: async (deleted, ctx) => tell('onAccountDeleted', deleted, ctx),
-  onHouseholdRemoved: async (removed, ctx) => tell('onHouseholdRemoved', removed, ctx),
   exportData: async (who, ctx) => ({ who, notes: ctx.db.query('SELECT count(*) AS n FROM told')[0].n })
 }
 const tell = (hook, subject, ctx) => {
@@ -106,7 +104,7 @@ const start = async (
 }
 
 describe('plugins and deleted people', () => {
-  it('tells every plugin with the hook, on or off, of a deleted profile, account and household', async () => {
+  it('tells every plugin with the hook, on or off, of a deleted profile and account', async () => {
     const { registry, store, told } = await start({
       keeper: KEEPER,
       // Off: still told, the person asked for their data to go.
@@ -115,14 +113,12 @@ describe('plugins and deleted people', () => {
       silent: `export default { routes: {} }`
     })
     store.setEnabled('off', false)
-    registry.profileDeleted(5, 2)
+    registry.profileDeleted(5)
     registry.accountDeleted(7)
-    registry.householdRemoved(2)
     await registry.runErasures()
     const all = [
-      ['onProfileDeleted', { profileId: 5, householdId: 2 }],
-      ['onAccountDeleted', { accountId: 7 }],
-      ['onHouseholdRemoved', { householdId: 2 }]
+      ['onProfileDeleted', { profileId: 5 }],
+      ['onAccountDeleted', { accountId: 7 }]
     ]
     assert.deepEqual(await told(), all)
     assert.deepEqual(await told('off'), all)
@@ -159,7 +155,7 @@ describe('plugins and deleted people', () => {
   it('keeps what a plugin must forget until it answered, and drops it with the plugin', async () => {
     const { registry, store } = await start({ keeper: KEEPER })
     await registry.get('keeper')!.sandbox!.call('routes', 'POST /fail', { body: { times: 100 } })
-    registry.profileDeleted(5, 1)
+    registry.profileDeleted(5)
     await registry.runErasures()
     assert.equal(store.erasures().length, 1)
     await registry.forget('keeper')
@@ -227,8 +223,8 @@ describe('plugins and deleted people', () => {
       broken: `export default { exportData: async () => { throw new Error('no') } }`,
       silent: `export default { routes: {} }`
     })
-    assert.deepEqual(await registry.exportData({ accountId: 7, profileId: 5, householdId: 1 }), {
-      keeper: { who: { accountId: 7, profileId: 5, householdId: 1 }, notes: 0 },
+    assert.deepEqual(await registry.exportData({ accountId: 7, profileId: 5 }), {
+      keeper: { who: { accountId: 7, profileId: 5 }, notes: 0 },
       big: { error: 'too_large' },
       broken: { error: 'unavailable' }
     })
@@ -269,7 +265,6 @@ describe('Compte et données with plugins', () => {
         log: () => {}
       }),
       profiles,
-      household: new HouseholdStore(db),
       install: new InstallStore(db),
       accounts: new UserAccountStore(db),
       devices: new UserDeviceStore(db),
@@ -300,18 +295,17 @@ describe('Compte et données with plugins', () => {
     return { registry, told, send, cookie, copy, profileId: profiles.list()[0]!.id }
   }
 
-  it('puts the plugins in the copy, and has them forget a deleted account with its profile and household', async () => {
+  it('puts the plugins in the copy, and has them forget a deleted account with its profile', async () => {
     const { registry, told, send, cookie, copy, profileId } = await startHodi({ keeper: KEEPER })
     const copied = (await (await copy()).json()) as { plugins: Record<string, unknown> }
-    assert.deepEqual(copied.plugins, { keeper: { who: { accountId: 1, profileId, householdId: 1 }, notes: 0 } })
+    assert.deepEqual(copied.plugins, { keeper: { who: { accountId: 1, profileId }, notes: 0 } })
 
-    // The last adult: the account, its profile and the household go, and the plugin hears of all three.
+    // The last adult: the account and its profile go, and the plugin hears of both.
     assert.equal((await send('/account', { password: PASSWORD }, cookie, 'DELETE')).status, 204)
     await registry.runErasures()
     assert.deepEqual(await told(), [
-      ['onProfileDeleted', { profileId, householdId: 1 }],
-      ['onAccountDeleted', { accountId: 1 }],
-      ['onHouseholdRemoved', { householdId: 1 }]
+      ['onProfileDeleted', { profileId }],
+      ['onAccountDeleted', { accountId: 1 }]
     ])
   })
 

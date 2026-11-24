@@ -33,6 +33,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 - **Hodi's limits built in.** The SDK carries the limits of the Hodi it was built with (Hodi's `config.yml`): the test
   kit and `hodi-plugin build` follow that SDK version's values, and a plugin's folder needs no config file.
+- **`ctx.articles` runs for a reader.** It answers within a route of the app, an `aiActions` handler, `exportData` and
+  `onArticle`; a task, a feed, another hook, a public route or the server's space gets `no_reader` (was
+  `no_household`).
+- **`ctx.notify` with `accountId`** reaches the profile that account reads with, from any call.
+- **`ctx.ai`'s hourly cap** of 10 questions counts per plugin and profile.
 
 ### Removed
 
@@ -48,6 +53,12 @@ and never touch `version`; a small release pull request raises `version` and mov
   no profile yet.
 - **`useServerHouseholds()`**, with Serveur › Foyers, and `householdId` in `useServerAccounts()`: every account reads
   on the server as one, with no household around it.
+- **`who.householdId`** in routes, `aiActions`, `checkSignIn` and `exportData`, and `householdId` in
+  `onProfileDeleted`: one account is one person's space, so `who.accountId` and `who.profileId` say whose data it is.
+- **`onHouseholdRemoved`.** When the last adult deletes their account and the whole server is erased, each profile's
+  `onProfileDeleted` and each account's `onAccountDeleted` are called instead.
+- **The test kit's `householdId`, `householdRemoved()` and `household` option.** `testPlugin(folder, { language })`
+  sets the server's language.
 
 ## [1.0.0-beta.5] - 2026-11-19
 

@@ -25,7 +25,6 @@ export interface Erasure {
   pluginId: string
   hook: string
   subject: unknown
-  householdId: number | null
   tries: number
 }
 
@@ -197,28 +196,23 @@ export class PluginStore {
     ).map(row => row.id)
   }
 
-  // A deletion a plugin must hear of: its hook, and what it is told (a profile, an account or a household).
-  addErasure(pluginId: string, hook: string, subject: unknown, householdId: number | null, now: number) {
+  // A deletion a plugin must hear of: its hook, and what it is told (a profile or an account).
+  addErasure(pluginId: string, hook: string, subject: unknown, now: number) {
     this.#db
-      .prepare(
-        'INSERT INTO plugin_erasures (plugin_id, hook, subject, household_id, created_at) VALUES (?, ?, ?, ?, ?)'
-      )
-      .run(pluginId, hook, JSON.stringify(subject), householdId, now)
+      .prepare('INSERT INTO plugin_erasures (plugin_id, hook, subject, created_at) VALUES (?, ?, ?, ?)')
+      .run(pluginId, hook, JSON.stringify(subject), now)
   }
 
   // The deletions due now, oldest first.
   erasures(now = Number.MAX_SAFE_INTEGER): Erasure[] {
     return (
       this.#db
-        .prepare(
-          'SELECT id, plugin_id, hook, subject, household_id, tries FROM plugin_erasures WHERE next_try_at <= ? ORDER BY id'
-        )
+        .prepare('SELECT id, plugin_id, hook, subject, tries FROM plugin_erasures WHERE next_try_at <= ? ORDER BY id')
         .all(now) as {
         id: number
         plugin_id: string
         hook: string
         subject: string
-        household_id: number | null
         tries: number
       }[]
     ).map(row => ({
@@ -226,7 +220,6 @@ export class PluginStore {
       pluginId: row.plugin_id,
       hook: row.hook,
       subject: JSON.parse(row.subject) as unknown,
-      householdId: row.household_id,
       tries: row.tries
     }))
   }

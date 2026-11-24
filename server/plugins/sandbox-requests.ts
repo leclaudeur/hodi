@@ -8,7 +8,7 @@ import { type PluginAi, PluginAiError, pluginQuestion } from './ai.ts'
 import type { PublicServerSettings } from '../db/server-settings-store.ts'
 import type { Manifest } from './manifest.ts'
 import type { SandboxRequest } from './sandbox/sandbox.ts'
-import { type CallContext, clientOf, householdOf, vouch, vouchedFor } from './call-context.ts'
+import { type CallContext, clientOf, readerOnly, vouch, vouchedFor } from './call-context.ts'
 import type { PluginServerNotifier } from './server-notify.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -160,7 +160,7 @@ const addAi = (requests: Requests, manifest: Manifest, { ai }: RequestDeps) => {
     const asked = pluginQuestion(question)
     if (!asked) throw new Error('ai_invalid_question')
     try {
-      return await ai.ask(manifest.id, ticket.householdId, ticket.profileId, asked)
+      return await ai.ask(manifest.id, ticket.profileId, asked)
     } catch (error) {
       ticket.outcome = error instanceof PluginAiError ? error.status : 'failed'
       throw error
@@ -179,11 +179,11 @@ export const requestsOf = (manifest: Manifest, deps: RequestDeps) => {
   if (manifest.permissions.articles) {
     // Only within the call that asked (call-context.ts): never from work a plugin left running.
     requests['articles.get'] = ([id], context) => {
-      householdOf(context)
+      readerOnly(context)
       return articles.get(String(id))
     }
     requests['articles.page'] = ([id], context) => {
-      householdOf(context)
+      readerOnly(context)
       return articles.page(String(id))
     }
   }
@@ -200,9 +200,9 @@ export const requestsOf = (manifest: Manifest, deps: RequestDeps) => {
   if (manifest.permissions.notify) {
     const plugin = { id: manifest.id, name: manifest.name }
     requests['notify.send'] = async ([notice], context) => {
-      // Within a household's call, only its people; a request after its call ended reaches nobody.
+      // A request after its call ended reaches nobody.
       if (typeof context !== 'object' || context === null) throw new Error('no_call')
-      await notifier.send(plugin, notice, (context as CallContext).householdId)
+      await notifier.send(plugin, notice)
       return null
     }
   }
