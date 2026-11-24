@@ -112,15 +112,14 @@ export interface AccountView {
   ai: AiKey | null
   providers: AiProviderInfo[]
   devices: AccountDevice[]
-  // householdGoes: no other adult has an account; others: the other profiles that go with it.
+  // serverGoes: no other adult has an account; others: the other profiles that go with it.
   deletion: {
-    householdGoes: boolean
+    serverGoes: boolean
     others: string[]
     // The teens and children it is the only parent of: they go too.
     children: string[]
-    heir: string | null
-    member: boolean
-    admin: boolean
+    // The server's last admin, with other people on it: another admin is named in Serveur › Comptes first.
+    handOverFirst: boolean
   } | null
   // « Validation en deux étapes »: on since then, or null. required: the server's admin cannot turn it off.
   twoFactor: { since: number | null; required: boolean; recoveryLeft: number }

@@ -214,8 +214,9 @@ describe('Serveur › Comptes › « Supprimer »', () => {
     }
   })
 
-  it('hands the household’s admin role to the next adult with an account when its admin goes', async () => {
-    const { call, admin, samId, samAccount, profiles, db, close } = await start()
+  // The profiles' role grants nothing any more: nobody inherits anything when an account goes.
+  it('hands no role to anyone when an account with the old admin role goes', async () => {
+    const { call, admin, samId, samAccount, profiles, accounts, db, close } = await start()
     try {
       // Sam, its admin as an older install could have it.
       db.prepare("UPDATE profiles SET role = CASE id WHEN ? THEN 'admin' ELSE 'member' END").run(samId)
@@ -224,9 +225,13 @@ describe('Serveur › Comptes › « Supprimer »', () => {
       assert.deepEqual(
         profiles.list().map(profile => [profile.name, profile.role]),
         [
-          ['Antho', 'admin'],
+          ['Antho', 'member'],
           ['Léa', 'member']
         ]
+      )
+      assert.deepEqual(
+        accounts.serverAdmins().map(account => account.email),
+        ['antho@example.com']
       )
     } finally {
       close()
@@ -292,15 +297,35 @@ describe('a blocked e-mail at Connexion', () => {
   })
 })
 
+describe('« Nommer admin du serveur »', () => {
+  it('makes an adult a server admin, chosen by an admin with their password only', async () => {
+    const { call, admin, sam, samAccount, accounts, close } = await start()
+    try {
+      const url = `/server/accounts/${samAccount.id}/server-admin`
+      assert.equal((await call(url, sam, 'POST', { password: ADMIN_PASSWORD })).status, 403)
+      assert.equal((await call(url, admin, 'POST')).status, 403)
+      assert.equal(
+        (await call('/server/accounts/999/server-admin', admin, 'POST', { password: ADMIN_PASSWORD })).status,
+        404
+      )
+      assert.equal(accounts.get(samAccount.id)?.serverAdmin, false)
+      assert.equal((await call(url, admin, 'POST', { password: ADMIN_PASSWORD })).status, 204)
+      assert.equal(accounts.get(samAccount.id)?.serverAdmin, true)
+      // Already one.
+      assert.equal((await call(url, admin, 'POST', { password: ADMIN_PASSWORD })).status, 409)
+    } finally {
+      close()
+    }
+  })
+})
+
 describe('Serveur › Foyers, gone', () => {
   it('deletes no household, even with the server admin’s password', async () => {
     const { call, admin, sam, samAccount, accounts, close } = await start()
     try {
-      const { households } = (await (await call('/server/households', admin)).json()) as {
-        households: { id: number }[]
-      }
-      const url = `/server/households/${households[0]!.id}`
-      assert.equal((await call(url, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 404)
+      // Neither the list nor a household of its own is served any more.
+      assert.equal((await call('/server/households', admin)).status, 404)
+      assert.equal((await call('/server/households/1', admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 404)
       assert.notEqual(accounts.get(samAccount.id), null)
       assert.equal((await call('/session', sam)).status, 200)
     } finally {

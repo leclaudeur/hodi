@@ -82,7 +82,7 @@ describe('server stats', () => {
       { id: 'world', count: 1 }
     ])
     assert.deepEqual(week.sources[0], { id: 'rtl', name: 'RTL info', count: 2 })
-    assert.equal(week.households, 1)
+    assert.equal('households' in week, false)
     assert.equal(stats.overview({ days: 30 }, NOW).days.length, 30)
   })
 
@@ -246,19 +246,25 @@ describe('server overview route', () => {
     const response = await call('/server/overview?days=7', adminCookie)
     assert.equal(response.status, 200)
     const overview = (await response.json()) as {
-      households: number
       profiles: { adults: number; young: number }
       days: { visits: number; profiles: number }[]
-      online: { name: string; household: string; device: string }[]
+      online: { name: string; device: string }[]
     }
-    assert.equal(overview.households, 1)
     assert.deepEqual(overview.profiles, { adults: 2, young: 0 })
     assert.equal(overview.days.length, 7)
     assert.equal(overview.days.at(-1)?.visits, 2)
     assert.equal(overview.days.at(-1)?.profiles, 2)
-    assert.deepEqual(overview.online.map(entry => [entry.name, entry.household, entry.device]).sort(), [
-      ['Antho', 'Hodi', 'phone'],
-      ['Sam', 'Hodi', 'phone']
+    // A first name and a device: never a household around them.
+    assert.deepEqual(
+      overview.online.map(entry => Object.keys(entry).sort()),
+      [
+        ['device', 'name', 'since'],
+        ['device', 'name', 'since']
+      ]
+    )
+    assert.deepEqual(overview.online.map(entry => [entry.name, entry.device]).sort(), [
+      ['Antho', 'phone'],
+      ['Sam', 'phone']
     ])
     assert.equal((await call('/server/overview?days=12', adminCookie)).status, 400)
     assert.equal((await call('/server/overview?days=365', adminCookie)).status, 200)
@@ -271,16 +277,9 @@ describe('server overview route', () => {
     assert.equal((await call('/server/overview?from=2026-02-30&to=2026-03-01', adminCookie)).status, 400)
   })
 
-  it('lists the households and the accounts, and makes their codes', async () => {
+  it('lists the accounts, and makes their codes', async () => {
     assert.equal((await call('/server/accounts', memberCookie)).status, 403)
-
-    const { households } = (await (await call('/server/households', adminCookie)).json()) as {
-      households: { id: number; name: string; admin: string; adults: number; young: number; accounts: number }[]
-    }
-    assert.deepEqual(
-      households.map(({ name, admin, adults, young, accounts }) => ({ name, admin, adults, young, accounts })),
-      [{ name: 'Hodi', admin: 'Antho', adults: 2, young: 0, accounts: 2 }]
-    )
+    assert.equal((await call('/server/households', adminCookie)).status, 404)
 
     const { accounts } = (await (await call('/server/accounts', adminCookie)).json()) as {
       accounts: {
@@ -288,7 +287,6 @@ describe('server overview route', () => {
         email: string
         serverAdmin: boolean
         profile: { name: string; role: string } | null
-        household: { name: string } | null
         devices: number
       }[]
     }
@@ -296,10 +294,11 @@ describe('server overview route', () => {
     assert.equal(byEmail['antho@example.com']?.serverAdmin, true)
     assert.equal(byEmail['antho@example.com']?.profile?.role, 'admin')
     assert.equal(byEmail['sam@example.com']?.profile?.name, 'Sam')
-    assert.equal(byEmail['sam@example.com']?.household?.name, 'Hodi')
+    assert.equal('household' in byEmail['sam@example.com']!, false)
 
-    // An invitation into the household, then a new password for Sam: both are « J'ai un code » codes.
-    const invite = await call(`/server/households/${households[0]!.id}/code`, adminCookie, 'POST')
+    // An invitation to the server, then a new password for Sam: both are « J'ai un code » codes.
+    assert.equal((await call('/server/invite', memberCookie, 'POST')).status, 403)
+    const invite = await call('/server/invite', adminCookie, 'POST')
     assert.equal(invite.status, 201)
     const { code: inviteCode } = (await invite.json()) as { code: string }
     const checked = await call('/codes/check', '', 'POST', { code: inviteCode })
@@ -332,7 +331,7 @@ describe('server overview route', () => {
   })
 
   it('no longer serves a household’s photo: the server has accounts, not households', async () => {
-    const id = new HouseholdStore(db).ids()[0]!
+    const id = 1
     assert.equal((await call(`/households/${id}/photo`, memberCookie)).status, 404)
     assert.equal((await call(`/server/households/${id}/photo`, adminCookie)).status, 404)
   })

@@ -3,9 +3,7 @@ import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { randomBytes } from 'node:crypto'
 import { hashPassword, verifyPassword } from '../auth/password.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
-import type { HouseholdStore } from '../db/household-store.ts'
 import type { InstallStore } from '../db/install-store.ts'
-import { currentHouseholdId, inHousehold } from '../db/household-scope.ts'
 import { type Profile, type ProfileStore, isYoung } from '../db/profile-store.ts'
 import { type SignInCode, type SignInCodeStore, signInCodeOf } from '../db/sign-in-code-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
@@ -21,7 +19,6 @@ export interface CodeJoinOptions {
   codes: SignInCodeStore
   accounts: UserAccountStore
   profiles: ProfileStore
-  household: HouseholdStore
   install: InstallStore
   // Shared with the Connexion page: a wrong code counts as a wrong password from the same device.
   throttle: LoginThrottle
@@ -121,13 +118,6 @@ export const joinRequestOf = (body: Record<string, unknown>) => {
 
 type JoinRequest = NonNullable<ReturnType<typeof joinRequestOf>>
 
-// The name of the household an account already reads in, when it is another one: an account belongs to one household
-// only, and leaves it in Mon compte before it joins another.
-const otherHouseholdOf = ({ accounts, household }: ResolvedJoinOptions, accountId: number) => {
-  const id = accounts.householdOf(accountId)
-  return id === null || id === currentHouseholdId() ? null : inHousehold(id, () => household.get().name)
-}
-
 // « J'ai déjà un compte »: the account its e-mail and password open, or null when the refusal is sent.
 export const existingAccountOf = async (
   options: ResolvedJoinOptions,
@@ -144,11 +134,6 @@ export const existingAccountOf = async (
   if (!known || !right) {
     throttle.recordFailure(now(), clientAddressOf(request))
     response.status(401).json({ error: 'invalid_credentials' })
-    return null
-  }
-  const other = otherHouseholdOf(options, known.id)
-  if (other !== null) {
-    response.status(409).json({ error: 'other_household', household: other })
     return null
   }
   if (accounts.profileOf(known.id) !== null) {

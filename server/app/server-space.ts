@@ -41,7 +41,7 @@ const mountPlugins = (api: express.Router, wiring: Wiring) => {
   )
 }
 
-// What deleting an account or a household from Serveur › Comptes and Foyers sets off.
+// What deleting an account from Serveur › Comptes sets off.
 const deletionsOf = ({ options, profileHooks }: Wiring) => {
   const { accountData, plugins } = options
   if (!accountData) return {}
@@ -155,7 +155,7 @@ const mountShareDecisions = (api: express.Router, { options }: Wiring) => {
 // /server, for the server's admin, and the plugins' own routes.
 export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
   const { options } = wiring
-  const { serverMail, accounts, news, now, serverStats, profiles, household, codes, twoFactor } = options
+  const { serverMail, accounts, news, now, serverStats, profiles, codes, twoFactor } = options
   mountPlugins(api, wiring)
   if (serverMail && accounts) {
     api.use(
@@ -182,7 +182,6 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
     stats: serverStats,
     presence: wiring.presence,
     profiles,
-    household,
     people: options.serverPeople,
     codes,
     settings: options.serverSettings,

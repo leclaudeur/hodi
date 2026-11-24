@@ -1,7 +1,6 @@
 import { BlockedEmailStore } from './blocked-email-store.ts'
 import { type Database, transaction } from './database.ts'
 import { HandleStore } from './handle-store.ts'
-import { currentHouseholdId } from './household-scope.ts'
 import { YoungAccountStore } from './young-account-store.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -153,6 +152,11 @@ export class UserAccountStore {
     return (rows as unknown as UserAccountRow[]).map(toAccount)
   }
 
+  // Serveur › Comptes › « Nommer admin du serveur »: one more account runs the server.
+  makeServerAdmin(id: number) {
+    this.#db.prepare('UPDATE users SET server_admin = 1 WHERE id = ?').run(id)
+  }
+
   // The server's first account, its admin; null when another device made one first.
   createServerAdmin(email: string, passwordHash: string, now: number): UserAccount | null {
     return transaction(this.#db, () => this.#insertServerAdmin(email, passwordHash, now))
@@ -228,20 +232,11 @@ export class UserAccountStore {
     ).map(row => ({ profileId: row.id, householdId: row.account_id }))
   }
 
-  // The profile this account reads with in the household, or null.
-  profileOf(id: number, householdId = currentHouseholdId()): number | null {
-    const row = this.#db
-      .prepare('SELECT id FROM profiles WHERE account_id = ? AND user_id = ?')
-      .get(householdId, id) as { id: number } | undefined
+  // The profile this account reads with, or null.
+  profileOf(id: number): number | null {
+    const row = this.#db.prepare('SELECT id FROM profiles WHERE user_id = ? ORDER BY id LIMIT 1').get(id) as
+      { id: number } | undefined
     return row?.id ?? null
-  }
-
-  // The household this account reads in, or null without a profile. The core has one household; with a plugin's
-  // others, the account's first.
-  householdOf(id: number): number | null {
-    const row = this.#db.prepare('SELECT account_id FROM profiles WHERE user_id = ? ORDER BY id LIMIT 1').get(id) as
-      { account_id: number } | undefined
-    return row?.account_id ?? null
   }
 
   // The account that reads with this profile, or null.

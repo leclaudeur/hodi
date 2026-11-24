@@ -10,7 +10,6 @@ import type { ArticleLoader } from './article-loader.ts'
 import { type ReaderFilter, filtered } from './reader-filter.ts'
 import { MAX_TOPIC_LIMIT, type TopicLister, byNewest } from './topic-lister.ts'
 import type { SearchItem, SearchResult } from './news-types.ts'
-import { currentHouseholdId } from '../db/household-scope.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 // The search page: articles found by words, "Historique" and "Tendances · 48 h".
@@ -52,16 +51,16 @@ const matcherOf = (query: string, words: string[]) => {
 
 export class NewsSearch {
   readonly #options: NewsSearchOptions
-  // Each household's titles of the last hours, for Tendances.
-  readonly #trendTitles = new Map<number, { at: number; titles: TrendTitle[] }>()
+  // The titles of the last hours, for Tendances.
+  #trendTitles: { at: number; titles: TrendTitle[] } | null = null
 
   constructor(options: NewsSearchOptions) {
     this.#options = options
   }
 
-  // The household's sources changed: Tendances are worked out again.
+  // The catalogue changed: Tendances are worked out again.
   forgetTrends() {
-    this.#trendTitles.delete(currentHouseholdId())
+    this.#trendTitles = null
   }
 
   // The topic that lists a source first: where its articles show in search results and "Le fil".
@@ -182,16 +181,13 @@ export class NewsSearch {
   // The day's most covered subjects, without what the profile turned off.
   async trends(filter: ReaderFilter): Promise<Trend[]> {
     const now = this.#options.now()
-    const kept = this.#trendTitles.get(currentHouseholdId())
+    let kept = this.#trendTitles
     if (!kept || now - kept.at >= TRENDS_TTL_MS) {
-      this.#trendTitles.set(currentHouseholdId(), { at: now, titles: await this.#recentTitles(now) })
+      kept = { at: now, titles: await this.#recentTitles(now) }
+      this.#trendTitles = kept
     }
     const hidden = filtered(filter)
-    return trendsOf(
-      this.#trendTitles
-        .get(currentHouseholdId())!
-        .titles.filter(entry => !filter.hiddenTopics.includes(entry.topicId) && !hidden(entry))
-    )
+    return trendsOf(kept.titles.filter(entry => !filter.hiddenTopics.includes(entry.topicId) && !hidden(entry)))
   }
 
   async #recentTitles(now: number): Promise<TrendTitle[]> {

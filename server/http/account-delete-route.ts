@@ -16,12 +16,21 @@ export const mountDeleteRoute = (
       response.status(409).json({ error: 'not_available' })
       return
     }
+    // The server's last admin names another one in Serveur › Comptes first: nobody becomes it unchosen.
+    if (plan(session.account)?.handOverFirst) {
+      response.status(409).json({ error: 'hand_over_first' })
+      return
+    }
     if (!(await checkProof(session.account, request, response))) return
     // After the password, which takes a moment: what goes is read as it is now.
     const going = plan(session.account)!
+    if (going.handOverFirst) {
+      response.status(409).json({ error: 'hand_over_first' })
+      return
+    }
     for (const profile of [...going.profiles, ...going.children]) onDeleteProfile?.(profile.id)
     for (const accountId of data.delete(session.account, going, now())) onAccountDeleted?.(accountId)
-    if (going.householdGoes) onHouseholdGone?.()
+    if (going.serverGoes) onHouseholdGone?.()
     const left = cookieWithout ? cookieWithout(session.account.id, request).cookie : clearedSessionCookie()
     response.set('Set-Cookie', [left, clearedProfileCookie()])
     response.status(204).end()

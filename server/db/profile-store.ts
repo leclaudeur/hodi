@@ -1,6 +1,6 @@
 import { type Database, transaction } from './database.ts'
 import { recordForget, rowKey } from './forget-log.ts'
-import { currentHouseholdId } from './household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from './server-row.ts'
 import { currentReaders } from './reader-scope.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -128,16 +128,9 @@ const SELECT = `SELECT p.id, p.name, p.color, p.role, p.kind, p.avatar,
 
 export class ProfileStore {
   readonly #db: Database
-  readonly #fixed: number | undefined
 
-  // Without accountId, the household of the request being served (household-scope.ts).
-  constructor(db: Database, accountId?: number) {
+  constructor(db: Database) {
     this.#db = db
-    this.#fixed = accountId
-  }
-
-  get #account(): number {
-    return this.#fixed ?? currentHouseholdId()
   }
 
   // The profiles of the accounts the request reads as (reader-scope.ts), their children's, and for the server's admin
@@ -148,35 +141,26 @@ export class ProfileStore {
     const ids = JSON.stringify(readers)
     const rows = this.#db
       .prepare(
-        `${SELECT} WHERE p.account_id = ? AND (
+        `${SELECT} WHERE (
            p.user_id IN (SELECT value FROM json_each(?))
            OR p.user_id IN (SELECT child_id FROM account_parents WHERE parent_id IN (SELECT value FROM json_each(?)))
            OR (p.user_id IS NULL AND EXISTS (
              SELECT 1 FROM users WHERE server_admin = 1 AND id IN (SELECT value FROM json_each(?))))
          ) ORDER BY p.position, p.id`
       )
-      .all(this.#account, ids, ids, ids) as unknown as ProfileRow[]
+      .all(ids, ids, ids) as unknown as ProfileRow[]
     return rows.map(toProfile)
   }
 
   // Every profile, whoever reads: for what crosses accounts (a share, its sender's name) and the server's admin.
   everyone(): Profile[] {
-    const rows = this.#db
-      .prepare(`${SELECT} WHERE p.account_id = ? ORDER BY p.position, p.id`)
-      .all(this.#account) as unknown as ProfileRow[]
+    const rows = this.#db.prepare(`${SELECT} ORDER BY p.position, p.id`).all() as unknown as ProfileRow[]
     return rows.map(toProfile)
   }
 
   // Any profile by its id, whoever reads; null when there is none.
   find(id: number): Profile | null {
     return this.everyone().find(profile => profile.id === id) ?? null
-  }
-
-  // The household a profile belongs to, whichever household this store is for; null when it is gone.
-  householdOf(id: number): number | null {
-    const row = this.#db.prepare('SELECT account_id FROM profiles WHERE id = ?').get(id) as
-      { account_id: number } | undefined
-    return row?.account_id ?? null
   }
 
   get(id: number): Profile | null {
@@ -198,7 +182,7 @@ export class ProfileStore {
            VALUES (?, ?, ?, ?, ?, ?, ?, 1)`
         )
         .run(
-          this.#account,
+          DEFAULT_ACCOUNT_ID,
           name,
           color,
           kind,
@@ -269,16 +253,16 @@ export class ProfileStore {
              ELSE -1 END AS code,
            p.created_at AS createdAt
          FROM profiles p LEFT JOIN users u ON u.id = p.user_id
-         WHERE p.id = ? AND p.account_id = ?`
+         WHERE p.id = ?`
       )
-      .get(id, this.#account) as { version: number; code: number; createdAt: number } | undefined
+      .get(id) as { version: number; code: number; createdAt: number } | undefined
     return row ? { version: `${row.version}.${row.code}.${row.createdAt}` } : null
   }
 
   photo(id: number): { data: Buffer; type: PhotoType } | null {
     const row = this.#db
-      .prepare('SELECT photo, photo_type FROM profiles WHERE id = ? AND account_id = ? AND photo IS NOT NULL')
-      .get(id, this.#account) as { photo: Uint8Array; photo_type: PhotoType } | undefined
+      .prepare('SELECT photo, photo_type FROM profiles WHERE id = ? AND photo IS NOT NULL')
+      .get(id) as { photo: Uint8Array; photo_type: PhotoType } | undefined
     return row ? { data: Buffer.from(row.photo), type: row.photo_type } : null
   }
 
@@ -289,7 +273,7 @@ export class ProfileStore {
     if (profiles.length <= 1 || !profile || profile.role === 'admin') return false
     // Written down first, outside the database: a backup restored later deletes it again (forget-log.ts).
     const key = rowKey(this.#db, 'profiles', id)
-    if (key) recordForget({ kind: 'profile', ...key, householdId: this.#account })
+    if (key) recordForget({ kind: 'profile', ...key, householdId: DEFAULT_ACCOUNT_ID })
     this.#db.prepare('DELETE FROM profiles WHERE id = ?').run(id)
     return true
   }

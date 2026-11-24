@@ -1,8 +1,14 @@
-import { Ban, KeyRound, Trash2 } from 'lucide-react'
+import { Ban, KeyRound, ShieldCheck, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { type ServerAccount, blockServerAccount, createAccountCode, deleteServerAccount } from '../../api.ts'
+import {
+  type ServerAccount,
+  blockServerAccount,
+  createAccountCode,
+  deleteServerAccount,
+  makeServerAdmin
+} from '../../api.ts'
 import { askToConfirm } from '../../lib/confirm.ts'
 import { contentDays } from '../../lib/content-days.ts'
 import { clockTime } from '../../lib/format.ts'
@@ -63,6 +69,40 @@ const confirmRemove = (account: ServerAccount, t: TFunction, blocks: boolean) =>
       window.location.reload()
     }
   })
+
+// « Nommer admin du serveur »: an adult runs the server too, with the admin's own password. The only way someone
+// becomes it, so that the last admin can leave.
+const ServerAdminRow = ({ account, name }: { account: ServerAccount; name: string }) => {
+  const { t } = useTranslation()
+  const confirm = () =>
+    askToConfirm({
+      title: t('confirm.makeServerAdmin.title', { name }),
+      message: <RichText i18nKey="confirm.makeServerAdmin.message" values={{ name }} />,
+      label: t('confirm.makeServerAdmin.button'),
+      proof: {},
+      onConfirm: async proof => {
+        await makeServerAdmin(account.id, proof)
+        void load()
+      }
+    })
+  return (
+    <>
+      <h2 className={styles.label}>{t('server.people.account.serverAdminSection')}</h2>
+      <div className={styles.card}>
+        <SettingRow
+          label={t('server.people.account.serverAdmin')}
+          hint={t('server.people.account.serverAdminHint')}
+          action={{
+            label: t('server.people.account.serverAdminButton'),
+            look: 'danger',
+            icon: ShieldCheck,
+            onClick: confirm
+          }}
+        />
+      </div>
+    </>
+  )
+}
 
 // « Mot de passe oublié » on a server without e-mail: the person waits for a code, until one is made.
 const CodeAsked = ({ at, name, onMake }: { at: number; name: string; onMake: () => void }) => {
@@ -131,6 +171,10 @@ const AccountPage = ({ id, layout }: { id: string; layout: 'desktop' | 'phone' }
             make={made ? () => Promise.resolve(made) : undefined}
           />
         </>
+      )}
+
+      {!account.serverAdmin && account.profile?.kind === 'adult' && (
+        <ServerAdminRow account={account} name={account.profile.name} />
       )}
 
       {/* The server's own admin deletes theirs from Compte et données, as everyone. */}

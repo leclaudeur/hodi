@@ -73,15 +73,20 @@ const DataRows = ({ account }: { account: AccountView }) => {
             onClick: () => window.location.assign(ACCOUNT_COPY_URL)
           }}
         />
+        {/* The server's last admin, with other people on it: another admin is named in Serveur › Comptes first. */}
         <SettingRow
           label={t('settings.account.delete')}
-          hint={t('settings.account.deleteHint')}
-          action={{
-            label: t('settings.account.deleteButton'),
-            look: 'danger',
-            icon: Trash2,
-            onClick: () => confirmDelete(account, t)
-          }}
+          hint={t(account.deletion?.handOverFirst ? 'settings.account.deleteHandOver' : 'settings.account.deleteHint')}
+          action={
+            account.deletion?.handOverFirst
+              ? undefined
+              : {
+                  label: t('settings.account.deleteButton'),
+                  look: 'danger',
+                  icon: Trash2,
+                  onClick: () => confirmDelete(account, t)
+                }
+          }
         />
       </div>
     </>

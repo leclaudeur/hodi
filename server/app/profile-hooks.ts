@@ -1,4 +1,4 @@
-import { currentHouseholdId } from '../db/household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import type { YouthSources } from '../news/youth-sources.ts'
 import type { Options } from './wiring.ts'
 
@@ -34,7 +34,7 @@ export const profileHooksOf = (options: Options, youthSources: YouthSources | nu
     deleted: id => {
       alerts?.unregisterProfile(id)
       // The plugins forget it too, now or as soon as they can.
-      plugins?.profileDeleted(id, currentHouseholdId())
+      plugins?.profileDeleted(id, DEFAULT_ACCOUNT_ID)
       for (const source of news.getSourceStatuses().filter(candidate => candidate.addedBy === id)) {
         const adder = options.sources?.store.adderOf(source.id)
         if (typeof adder === 'number') news.handOverSource(source.id, adder)

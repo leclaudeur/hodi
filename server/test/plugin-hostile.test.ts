@@ -738,29 +738,19 @@ describe('hostile plugins', () => {
     })
   }
 
-  it('never moves a device to another household, even one where its account has a profile', async () => {
-    // A second household, and only a plugin's own data could give an account a profile there: one account reads in
-    // one household.
-    db.prepare(
-      "INSERT INTO accounts (id, name, created_at, set_up_at, language) VALUES (2, 'Famille Martin', ?, ?, 'fr')"
-    ).run(Date.now(), Date.now())
-    db.prepare(
-      "INSERT INTO profiles (account_id, name, color, position, created_at, role) VALUES (2, 'Marie', 'world', 0, ?, 'admin')"
-    ).run(Date.now())
-    db.prepare(
-      "INSERT INTO profiles (account_id, name, color, position, created_at, role, user_id) VALUES (2, 'Antho', 'world', 1, ?, 'member', 1)"
-    ).run(Date.now())
+  // There is no household left to move a device to: a plugin's moveDevice answer changes nothing on the device.
+  it("never changes a device's profiles from a plugin's answer", async () => {
     const names = async () =>
       (
         (await (await fetch(`${baseUrl}/api/profiles`, { headers: { cookie: adminCookie } })).json()) as {
           profiles: { name: string }[]
         }
       ).profiles.map(profile => profile.name)
+    const before = await names()
     const moved = await call('/hostile-h50/move', { method: 'POST', body: { householdId: 2 } })
     assert.equal(moved.status, 200)
     assert.deepEqual(moved.headers.getSetCookie(), [])
-    assert.ok(!(await names()).includes('Marie'))
-    db.prepare('DELETE FROM profiles WHERE account_id = 2 AND user_id = 1').run()
+    assert.deepEqual(await names(), before)
   })
 
   it('signs a device in with an account the call made or checked, never the server admin', async () => {

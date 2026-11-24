@@ -1,6 +1,6 @@
 import { type Language, isLanguage } from '../../shared/i18n.ts'
 import { type Database, transaction } from './database.ts'
-import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from './server-row.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 // One household per install: its name, where it lives and its AI. Made in the first-run screens, changed by the
@@ -62,24 +62,9 @@ export const cleanHouseholdName = (value: unknown) => {
 
 export class HouseholdStore {
   readonly #db: Database
-  readonly #fixed: number | undefined
 
-  // Without accountId, the household of the request being served (household-scope.ts).
-  constructor(db: Database, accountId?: number) {
+  constructor(db: Database) {
     this.#db = db
-    this.#fixed = accountId
-  }
-
-  get #account(): number {
-    return this.#fixed ?? currentHouseholdId()
-  }
-
-  // Every household of the server that is set up, the first one always: the core's, even before its setup.
-  ids(): number[] {
-    const rows = this.#db
-      .prepare('SELECT id FROM accounts WHERE set_up_at IS NOT NULL OR id = ? ORDER BY id')
-      .all(DEFAULT_ACCOUNT_ID) as { id: number }[]
-    return rows.map(row => row.id)
   }
 
   get(): Household {
@@ -88,8 +73,8 @@ export class HouseholdStore {
         `SELECT name, set_up_at, time_zone, country, language, hour_cycle, ai_provider, ai_key, ai_model
          FROM accounts WHERE id = ?`
       )
-      .get(this.#account) as HouseholdRow | undefined
-    if (!row) throw new Error(`Household ${this.#account} is missing`)
+      .get(DEFAULT_ACCOUNT_ID) as HouseholdRow | undefined
+    if (!row) throw new Error(`Household ${DEFAULT_ACCOUNT_ID} is missing`)
     return {
       name: row.name,
       setUpAt: row.set_up_at,
@@ -123,7 +108,7 @@ export class HouseholdStore {
           setup.ai?.provider ?? null,
           setup.ai?.key ?? null,
           setup.ai?.model ?? null,
-          this.#account
+          DEFAULT_ACCOUNT_ID
         )
       return true
     })

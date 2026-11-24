@@ -7,7 +7,7 @@ import type { MailSettingsStore } from '../db/mail-settings-store.ts'
 import type { PluginStore } from '../db/plugin-store.ts'
 import { AccountLoginStore } from '../db/account-login-store.ts'
 import { type ServerSettingsStore, publicServerSettings } from '../db/server-settings-store.ts'
-import { inHousehold } from '../db/household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { smtpSend } from '../mail/mailer.ts'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import type { FollowedAlerts } from '../news/followed-alerts.ts'
@@ -59,9 +59,8 @@ export const startPlugins = async (wiring: PluginWiring) => {
   // A click on a signed plugin's AiButton: one question to the household's AI, in its 'plugin' caps.
   const pluginAiCalls = pluginAi({
     isOff: (_householdId, pluginId) => store.aiOff().has(pluginId),
-    left: (householdId, profileId) => inHousehold(householdId, () => news.pluginAiLeft(profileId)),
-    ask: (householdId, pluginId, profileId, question) =>
-      inHousehold(householdId, () => news.askForPlugin(pluginId, profileId, question))
+    left: (_householdId, profileId) => news.pluginAiLeft(profileId),
+    ask: (_householdId, pluginId, profileId, question) => news.askForPlugin(pluginId, profileId, question)
   })
   const plugins = await loadPlugins({
     dir: wiring.dir,
@@ -79,7 +78,7 @@ export const startPlugins = async (wiring: PluginWiring) => {
     }),
     // A plugin's notification, on the devices of a profile that want it (Réglages › Notifications › Plugins).
     notifier: pluginNotifier({
-      householdOf: profileId => profiles.householdOf(profileId),
+      householdOf: profileId => (profiles.find(profileId) ? DEFAULT_ACCOUNT_ID : null),
       profilesOf: accountId => accounts.profilesOf(accountId),
       push: (profileId, payload) => wiring.alerts.notifyShare(profileId, payload, 'plugins')
     }),

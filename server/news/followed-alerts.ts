@@ -1,5 +1,4 @@
 import type { FeedItem } from './feed-parser.ts'
-import { DEFAULT_ACCOUNT_ID } from '../db/household-scope.ts'
 import { truncate } from './text.ts'
 import { foldText, wordPattern } from '../../shared/word-match.ts'
 import { HOUR_MS } from '../../shared/time.ts'
@@ -54,10 +53,8 @@ export interface SubscriptionStore {
 }
 
 export interface FollowedAlertsOptions {
-  // The articles of every topic of a household that open in the reader.
-  listItems: (householdId: number) => Promise<FeedItem[]>
-  // The household of a device's profile: it is told about its own household's sources only.
-  householdOf?: (profileId: number) => number
+  // The articles of every topic of the server that open in the reader.
+  listItems: () => Promise<FeedItem[]>
   send: SendPush
   subscriptions?: SubscriptionStore
   now?: () => number
@@ -130,8 +127,7 @@ export const inQuietHours = ({ quietStart, quietEnd, timeZone }: AlertSettings, 
 
 // "Notifications" for followed subjects: new articles about them, grouped, outside quiet hours, within a daily cap.
 export class FollowedAlerts {
-  readonly #listItems: (householdId: number) => Promise<FeedItem[]>
-  readonly #householdOf: (profileId: number) => number
+  readonly #listItems: () => Promise<FeedItem[]>
   readonly #send: SendPush
   readonly #now: () => number
   readonly #log: (message: string) => void
@@ -147,10 +143,8 @@ export class FollowedAlerts {
     subscriptions,
     now = Date.now,
     log = console.warn,
-    mayNotify = () => true,
-    householdOf = () => DEFAULT_ACCOUNT_ID
+    mayNotify = () => true
   }: FollowedAlertsOptions) {
-    this.#householdOf = householdOf
     this.#mayNotify = mayNotify
     this.#listItems = listItems
     this.#send = send
@@ -274,21 +268,12 @@ export class FollowedAlerts {
     return this.#running
   }
 
+  // The articles, listed once for every device.
   async #check() {
-    // Each household's articles, listed once for all its devices.
-    const households = new Map<number, [string, Device][]>()
-    for (const entry of this.#devices.entries()) {
-      const { profileId } = entry[1].settings
-      const id = profileId === undefined ? DEFAULT_ACCOUNT_ID : this.#householdOf(profileId)
-      households.set(id, [...(households.get(id) ?? []), entry])
-    }
-    for (const [householdId, devices] of households) await this.#checkHousehold(householdId, devices)
-  }
-
-  async #checkHousehold(householdId: number, devices: [string, Device][]) {
+    const devices = [...this.#devices.entries()]
     let items: FeedItem[]
     try {
-      items = await this.#listItems(householdId)
+      items = await this.#listItems()
     } catch (error) {
       this.#log(`Followed alerts: listing failed: ${error instanceof Error ? error.message : String(error)}`)
       return

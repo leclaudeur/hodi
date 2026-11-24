@@ -1,7 +1,6 @@
 import type express from 'express'
 import type { RequestHandler } from 'express'
 import { PROFILE_COOKIE, readCookie, readProfileToken } from '../auth/session.ts'
-import { DEFAULT_ACCOUNT_ID, inHousehold } from '../db/household-scope.ts'
 import type { InstallStore } from '../db/install-store.ts'
 import { asReaders } from '../db/reader-scope.ts'
 import type { Profile, ProfileStore } from '../db/profile-store.ts'
@@ -38,7 +37,6 @@ const isQuiLit = (request: express.Request) =>
   (request.method === 'GET' && request.path === '/session') ||
   (request.method === 'GET' && request.path === '/profiles') ||
   (request.method === 'GET' && /^\/profiles\/\d+\/photo$/.test(request.path)) ||
-  (request.method === 'GET' && /^\/households\/\d+\/photo$/.test(request.path)) ||
   (request.method === 'PUT' && request.path === '/profiles/current')
 
 // Everything registered after this middleware requires a valid session.
@@ -96,23 +94,16 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
       return
     }
 
-    // From here on, the request is for one household: its account's. Every store of one household's data reads
-    // that one (household-scope.ts).
     const session = sessionOf(request)
     if (session) {
-      // The household a signed-in device reads in: its account's own, the only one it has. An account with no profile
-      // (made by a plugin, or whose profile was deleted) gets one now.
-      const householdId =
-        (accounts && options.profiles
-          ? giveOwnProfile(accounts, options.profiles, session.account, options)
-          : accounts?.householdOf(session.account.id)) ?? DEFAULT_ACCOUNT_ID
+      // An account with no profile (made by a plugin, or whose profile was deleted) gets one now.
+      if (accounts && options.profiles) giveOwnProfile(accounts, options.profiles, session.account, options)
       response.locals.accountId = session.account.id
       // A session from before devices were kept: this device gets its row in Appareils, and a cookie naming it.
       if (!session.device && devices) response.append('Set-Cookie', cookieFor(session.account, request))
       // The device reads as its accounts: their profiles and their children's, nobody else's.
       const readers = sessionsOf ? sessionsOf(request).map(signedIn => signedIn.account.id) : []
-      const asTheseAccounts = () => asReaders(readers.length > 0 ? readers : [session.account.id], next)
-      inHousehold(householdId, asTheseAccounts)
+      asReaders(readers.length > 0 ? readers : [session.account.id], next)
       return
     }
 

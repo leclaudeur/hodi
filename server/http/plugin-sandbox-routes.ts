@@ -1,5 +1,5 @@
 import express from 'express'
-import { currentHouseholdId } from '../db/household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import { type CallContext, callContext, vouchedFor } from '../plugins/call-context.ts'
 import { reserveIo } from '../plugins/io-budget.ts'
 import { sendZip, takeZipRoom, zipOf } from '../plugins/plugin-zip.ts'
@@ -255,7 +255,7 @@ const applySignIn = async (
 // Runs the plugin's handler and writes its answer: JSON, a 2xx or 4xx status, no header but Cache-Control; or a zip.
 const callRoute = (call: RouteCall) => async (request: express.Request, response: express.Response) => {
   const inNone = call.group === 'publicRoutes' || response.locals.serverOnly === true
-  const householdId = inNone ? null : currentHouseholdId()
+  const householdId = inNone ? null : DEFAULT_ACCOUNT_ID
   const argument = argumentOf(call, request, response, householdId)
   // Whatever the plugin answers, the browser reads it as data only.
   response.set('X-Content-Type-Options', 'nosniff')

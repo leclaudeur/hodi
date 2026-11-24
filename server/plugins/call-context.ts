@@ -1,4 +1,4 @@
-import { currentHouseholdId } from '../db/household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import type { PluginAiStatus } from './ai.ts'
 
 // What the call that led to a plugin's request was for: the household it runs for, or null when it runs for none (the
@@ -28,7 +28,7 @@ export const householdOf = (context: unknown) => {
   return householdId
 }
 
-export const callContext = (householdId: number | null = currentHouseholdId(), client?: string): CallContext => ({
+export const callContext = (householdId: number | null = DEFAULT_ACCOUNT_ID, client?: string): CallContext => ({
   householdId,
   ...(client === undefined ? {} : { client }),
   vouched: new Set()

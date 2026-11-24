@@ -44,16 +44,8 @@ export const sendJson = async <T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', r
     const body = (await response.json().catch(() => null)) as {
       error?: string
       retryAfterSeconds?: number
-      household?: unknown
     } | null
-    const household = typeof body?.household === 'string' ? body.household : null
-    throw new RequestError(
-      response.status,
-      body?.error ?? null,
-      body?.retryAfterSeconds ?? null,
-      refusalOf(body),
-      household
-    )
+    throw new RequestError(response.status, body?.error ?? null, body?.retryAfterSeconds ?? null, refusalOf(body))
   }
   return (response.status === 204 ? null : await response.json()) as T
 }
@@ -65,21 +57,17 @@ export class RequestError extends Error {
   readonly retryAfterSeconds: number | null
   // A plugin refused the sign-in ('sign_in_refused').
   readonly refusal: SignInRefusal | null
-  // The household the account already reads in ('other_household'), to name it.
-  readonly household: string | null
 
   constructor(
     status: number,
     code: string | null,
     retryAfterSeconds: number | null,
-    refusal: SignInRefusal | null = null,
-    household: string | null = null
+    refusal: SignInRefusal | null = null
   ) {
     super(`Request failed with status ${status}${code ? ` (${code})` : ''}`)
     this.status = status
     this.code = code
     this.retryAfterSeconds = retryAfterSeconds
     this.refusal = refusal
-    this.household = household
   }
 }

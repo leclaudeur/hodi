@@ -3,8 +3,7 @@ import { rateLimit } from 'express-rate-limit'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword } from '../auth/password.ts'
 import { type AccountDataStore, deletionPlan } from '../db/account-data.ts'
-import { currentHouseholdId } from '../db/household-scope.ts'
-import type { HouseholdStore } from '../db/household-store.ts'
+import { DEFAULT_ACCOUNT_ID } from '../db/server-row.ts'
 import type { InstallStore } from '../db/install-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
@@ -30,7 +29,6 @@ export interface AccountRoutesOptions extends AccountAiOptions {
   accounts: UserAccountStore
   devices: UserDeviceStore
   profiles?: ProfileStore
-  household: HouseholdStore
   install: InstallStore
   // The install's time zone, for an account and a household with none.
   defaultTimeZone?: string
@@ -153,16 +151,12 @@ const accountHelpers = ({
       })),
       // What "Supprimer ton compte" deletes, for its confirmation.
       deletion: going && {
-        householdGoes: going.householdGoes,
+        serverGoes: going.serverGoes,
         others: going.profiles.slice(1).map(profile => profile.name),
         // The teens and children it is the only parent of, which go with it.
         children: going.children.map(child => child.name),
-        // Who becomes the household's admin when the person leaves or goes.
-        heir: going.heir?.name ?? null,
-        // The person reads in this household: an account with no profile here has nothing to leave.
-        member: going.profiles.length > 0,
-        // The person runs this household: leaving hands that over to the heir.
-        admin: going.profiles[0] !== undefined && profiles?.get(going.profiles[0].id)?.role === 'admin'
+        // The server's last admin, with other people on the server: another admin is named first.
+        handOverFirst: going.handOverFirst
       },
       // « Validation en deux étapes »: the server's admin must keep it on.
       ...(twoFactor ? { twoFactor: { ...twoFactor.status(account.id), required: account.serverAdmin } } : {})
@@ -339,7 +333,7 @@ const mountCopyRoute = (
             plugins: await pluginCopies({
               accountId: session.account.id,
               profileId,
-              householdId: currentHouseholdId()
+              householdId: DEFAULT_ACCOUNT_ID
             })
           }
         : {})

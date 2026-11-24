@@ -1,6 +1,5 @@
 import express from 'express'
 import type { AccountDataStore } from '../db/account-data.ts'
-import type { HouseholdStore } from '../db/household-store.ts'
 import { type ProfileStore } from '../db/profile-store.ts'
 import type { ServerPeopleStore } from '../db/server-people-store.ts'
 import {
@@ -50,7 +49,6 @@ export interface ServerRoutesOptions {
   backups?: Backups
   accounts?: UserAccountStore
   profiles?: ProfileStore
-  household?: HouseholdStore
   // The server admin's own password, before what cannot be undone: a copy of the server, « Restaurer », a code for a
   // new password, deleting an account or a household. Absent in tests without accounts.
   checkProof?: CheckProof
@@ -120,11 +118,8 @@ const serverHelpers = ({ accounts, checkProof, twoFactorOn }: ServerRoutesOption
 
 export type ServerHelpers = ReturnType<typeof serverHelpers>
 
-const mountOverviewRoute = (
-  router: express.Router,
-  { stats, presence, profiles, household, now }: ServerRoutesOptions
-) => {
-  // Vue d'ensemble: totals over a period, and who is online, by first name, household and device.
+const mountOverviewRoute = (router: express.Router, { stats, presence, profiles, now }: ServerRoutesOptions) => {
+  // Vue d'ensemble: totals over a period, and who is online, by first name and device.
   router.get('/overview', (request, response) => {
     const period = periodOf(request.query)
     if (!period) {
@@ -132,12 +127,11 @@ const mountOverviewRoute = (
       return
     }
     const known = new Map((profiles?.everyone() ?? []).map(profile => [profile.id, profile.name]))
-    const householdName = household?.get().name ?? ''
     response.json({
       ...stats.overview(period, now()),
       online: presence.online(now()).flatMap(({ profileId, device, since }) => {
         const name = known.get(profileId)
-        return name === undefined ? [] : [{ name, household: householdName, device, since }]
+        return name === undefined ? [] : [{ name, device, since }]
       })
     })
   })
@@ -145,10 +139,7 @@ const mountOverviewRoute = (
 
 const mountPeopleRoutes = (router: express.Router, { people, codeRequests }: ServerRoutesOptions) => {
   if (!people) return
-  // Comptes: who has an account, in which household, and when it was last used. Nothing they read.
-  router.get('/households', (_request, response) => {
-    response.json({ households: people.households() })
-  })
+  // Comptes: who has an account, and when it was last used. Nothing they read.
   router.get('/accounts', (_request, response) => {
     response.json({
       accounts: people
@@ -177,13 +168,8 @@ const mountInviteRoutes = (
   { createdByOf }: ServerHelpers
 ) => {
   if (!people || !codes || !profiles) return
-  // "Inviter un adulte" in a household: the same code as Réglages › Profils gives, valid once and for a day.
-  router.post('/households/:id/code', (request, response) => {
-    const id = Number(request.params.id)
-    if (!people.households().some(entry => entry.id === id)) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
+  // « Inviter quelqu'un » under Comptes: a code to make an account on this server, valid once and for a day.
+  router.post('/invite', (_request, response) => {
     response.status(201).json(codes.create({ createdBy: createdByOf(response) }, now()))
   })
 }

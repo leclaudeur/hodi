@@ -1,4 +1,3 @@
-import { inHousehold } from '../db/household-scope.ts'
 import type { IsAllowedUrl } from '../news/address-guard.ts'
 import { type FetchHttp, type FetchText } from '../news/fetch-text.ts'
 import type { PluginAccounts } from './accounts.ts'
@@ -178,8 +177,15 @@ export const requestsOf = (manifest: Manifest, deps: RequestDeps) => {
   const { network } = manifest.permissions
   if (network.length > 0) addNetwork(requests, network, deps)
   if (manifest.permissions.articles) {
-    requests['articles.get'] = ([id], context) => inHousehold(householdOf(context), () => articles.get(String(id)))
-    requests['articles.page'] = ([id], context) => inHousehold(householdOf(context), () => articles.page(String(id)))
+    // Only within the call that asked (call-context.ts): never from work a plugin left running.
+    requests['articles.get'] = ([id], context) => {
+      householdOf(context)
+      return articles.get(String(id))
+    }
+    requests['articles.page'] = ([id], context) => {
+      householdOf(context)
+      return articles.page(String(id))
+    }
   }
   if (manifest.permissions.accounts) addAccounts(requests, manifest, deps)
   if (manifest.permissions.mail) {

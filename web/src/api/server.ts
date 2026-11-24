@@ -2,7 +2,7 @@ import { RequestError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
 import type { ReportReason, ShareReportReason } from './sources.ts'
 
-// Serveur › Vue d'ensemble: every household and profile together, totals only, day by day (YYYY-MM-DD).
+// Serveur › Vue d'ensemble: every profile together, totals only, day by day (YYYY-MM-DD).
 export interface ServerDay {
   day: string
   // Different profiles that opened Hodi.
@@ -19,7 +19,6 @@ export interface ServerDay {
 }
 
 export interface ServerOverview {
-  households: number
   profiles: { adults: number; young: number }
   // The first day with numbers: « Tout » starts there.
   since: string
@@ -28,8 +27,8 @@ export interface ServerOverview {
   previous: ServerDay[]
   topics: { id: string; count: number }[]
   sources: { id: string; name: string; count: number }[]
-  // Who has Hodi open now: a first name, its household and the kind of device, since when (ms).
-  online: { name: string; household: string; device: 'phone' | 'tablet' | 'computer'; since: number }[]
+  // Who has Hodi open now: a first name and the kind of device, since when (ms).
+  online: { name: string; device: 'phone' | 'tablet' | 'computer'; since: number }[]
 }
 
 // The last `days` days (0: everything), or any two dates (YYYY-MM-DD).
@@ -38,25 +37,20 @@ export const getServerOverview = (period: { days: number } | { from: string; to:
     `/server/overview?${'from' in period ? `from=${period.from}&to=${period.to}` : `days=${period.days}`}`
   )
 
-// Serveur › Foyers and Comptes: who has an account and where, never what anyone reads.
-export interface ServerHousehold {
-  id: number
-  name: string
-  createdAt: number
-  admin: string | null
-  adults: number
-  young: number
-  accounts: number
-}
-
+// Serveur › Comptes: who has an account, never what anyone reads.
 export interface ServerAccount {
   id: number
   email: string
   serverAdmin: boolean
   createdAt: number
   // photoVersion: null when it has no photo, the initial shows.
-  profile: { id: number; name: string; role: 'admin' | 'member'; photoVersion: number | null } | null
-  household: { id: number; name: string } | null
+  profile: {
+    id: number
+    name: string
+    role: 'admin' | 'member'
+    kind: 'adult' | 'teen' | 'child'
+    photoVersion: number | null
+  } | null
   lastSeenAt: number | null
   devices: number
   // « Mot de passe oublié » on a server without e-mail: when the person asked for a code, until one is made.
@@ -77,24 +71,25 @@ export interface InboxItem {
 
 export const getServerInbox = () => getJson<{ items: InboxItem[]; waiting: number }>('/server/inbox')
 
-export const getServerHouseholds = () => getJson<{ households: ServerHousehold[] }>('/server/households')
-
 export const getServerAccounts = async () => (await getJson<{ accounts: ServerAccount[] }>('/server/accounts')).accounts
 
-// "Inviter un adulte" into a household, and "Mot de passe oublié" for an account: « J'ai un code » codes.
-export const createHouseholdCode = (id: number) =>
-  sendJson<{ code: string; expiresAt: number }>('POST', `/server/households/${id}/code`)
+// « Inviter quelqu'un » under Comptes, and "Mot de passe oublié" for an account: « J'ai un code » codes.
+export const createInviteCode = () => sendJson<{ code: string; expiresAt: number }>('POST', '/server/invite')
 
 // It opens that person's account: with the server admin's own password and app code.
 export const createAccountCode = (id: number, proof: AdminProof) =>
   sendJson<{ code: string; expiresAt: number }>('POST', `/server/accounts/${id}/code`, proof)
+
+// « Nommer admin du serveur », with the admin's own password and app code.
+export const makeServerAdmin = (id: number, proof: AdminProof) =>
+  sendJson<null>('POST', `/server/accounts/${id}/server-admin`, proof)
 
 // Serveur › Contenu: how long the server keeps what it fetches, in days, with each one's bounds.
 export type ContentKey = 'articleDays' | 'videoDays' | 'textDays'
 export interface ServerContent {
   values: Record<ContentKey, number>
   bounds: Record<ContentKey, { min: number; max: number; byDefault: number }>
-  // How many sources a household may follow (null: no limit), and the bounds of a number.
+  // How many sources a person may follow (null: no limit), and the bounds of a number.
   maxSources: { value: number | null; min: number; max: number }
 }
 

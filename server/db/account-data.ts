@@ -1,75 +1,62 @@
 import { ownerOf } from './stats-owner.ts'
 import { type Database, transaction } from './database.ts'
 import { recordForget, resetHousehold, rowKey } from './forget-log.ts'
-import { currentHouseholdId } from './household-scope.ts'
+import { DEFAULT_ACCOUNT_ID } from './server-row.ts'
 import { accountStatRowsOf } from './account-stats.ts'
 import type { Profile, ProfileStore } from './profile-store.ts'
 import type { UserAccount, UserAccountStore } from './user-account-store.ts'
 
 // Réglages > Compte et données: a copy of what Hodi keeps of a person, and deleting their account.
 
-// What goes with an account. Its profile, always; the whole household when no other adult signs in with an account
-// of their own, since no one could open it any more.
+// What goes with an account. Its profile, always; every profile when no other adult signs in with an account of
+// their own, since no one could open them any more.
 export interface DeletionPlan {
-  householdGoes: boolean
+  serverGoes: boolean
   // The profiles deleted, the person's own first.
   profiles: Pick<Profile, 'id' | 'name' | 'kind'>[]
-  // Who takes over the household's admin and the server's, when the person held them.
-  heir: Profile | null
-  // The teens and children the person is the only parent of: their accounts go too. With the household, they are
-  // among its profiles already.
+  // The account is the server's last admin and other people still have accounts: nobody is made the server's admin
+  // without being chosen, so another admin is named in Serveur › Comptes first, and nothing is deleted until then.
+  handOverFirst: boolean
+  // The teens and children the person is the only parent of: their accounts go too. With the server, they are among
+  // its profiles already.
   children: { accountId: number; id: number; name: string }[]
 }
 
 export const deletionPlan = (
   account: UserAccount,
   accounts: UserAccountStore,
-  profiles: ProfileStore,
-  householdId = currentHouseholdId()
+  profiles: ProfileStore
 ): DeletionPlan => {
-  const own = accounts.profileOf(account.id, householdId)
-  // No profile here any more (deleted from the household): the account goes alone, never the household it left. The
-  // server's admin still hands /server over to an heir.
-  // Its children still go with it: no one would run them any more.
-  if (own === null && !account.serverAdmin)
-    return {
-      householdGoes: false,
-      profiles: [],
-      heir: null,
-      children: onlyChildren(account, accounts, profiles, householdId)
-    }
+  const own = accounts.profileOf(account.id)
   const all = profiles.everyone()
   const others = all.filter(profile => profile.kind === 'adult' && profile.hasAccount && profile.id !== own)
-  const householdGoes = others.length === 0
-  const going = householdGoes ? all : all.filter(profile => profile.id === own)
+  // An account with no profile (deleted by an admin) never takes the others with it.
+  const serverGoes = others.length === 0 && (own !== null || account.serverAdmin)
+  const going = serverGoes ? all : all.filter(profile => profile.id === own)
   going.sort((a, b) => Number(b.id === own) - Number(a.id === own))
+  const lastAdmin = account.serverAdmin && accounts.serverAdmins().every(admin => admin.id === account.id)
   return {
-    householdGoes,
+    serverGoes,
+    handOverFirst: lastAdmin && !serverGoes,
     profiles: going.map(({ id, name, kind }) => ({ id, name, kind })),
-    heir: householdGoes ? null : (others.find(profile => profile.role === 'admin') ?? others[0]!),
-    children: householdGoes ? [] : onlyChildren(account, accounts, profiles, householdId)
+    // Its children go with it: no one would run them any more.
+    children: serverGoes ? [] : onlyChildren(account, accounts, profiles)
   }
 }
 
-const onlyChildren = (account: UserAccount, accounts: UserAccountStore, profiles: ProfileStore, householdId: number) =>
+const onlyChildren = (account: UserAccount, accounts: UserAccountStore, profiles: ProfileStore) =>
   accounts.young.invitations.onlyChildrenOf(account.id).flatMap(accountId => {
-    const id = accounts.profileOf(accountId, householdId)
+    const id = accounts.profileOf(accountId)
     const profile = id === null ? null : profiles.find(id)
     return profile ? [{ accountId, id: profile.id, name: profile.name }] : []
   })
 
-// The account and what the plan says goes with it, at once. A household that goes is left as a new install's: its
-// first-run screens come back, with one first profile to give the next admin. Answers the ids of the accounts deleted:
-// the person's, and with a household that goes, those of its other profiles.
-export const deleteAccount = (
-  db: Database,
-  account: UserAccount,
-  plan: DeletionPlan,
-  now: number,
-  householdId = currentHouseholdId()
-): number[] =>
+// The account and what the plan says goes with it, at once. With the last adult, the server is left as a new
+// install's: its first-run screens come back, with one first profile to give the next admin. Answers the ids of the
+// accounts deleted: the person's, and with the last adult, those of the other profiles.
+export const deleteAccount = (db: Database, account: UserAccount, plan: DeletionPlan, now: number): number[] =>
   transaction(db, () => {
-    const others = leaveHousehold(db, account, plan, now, householdId)
+    const others = leaveServer(db, account, plan, now)
     forgetAccount(db, account.id)
     return [account.id, ...others]
   })
@@ -81,8 +68,9 @@ const forgetAccount = (db: Database, accountId: number) => {
   db.prepare('DELETE FROM users WHERE id = ?').run(accountId)
 }
 
-// The whole household goes with the account: the other accounts in it too. Their ids.
-const wipeHousehold = (db: Database, account: UserAccount, householdId: number, now: number): number[] => {
+// Everything goes with the last adult's account: the other accounts too. Their ids.
+const wipeServer = (db: Database, account: UserAccount, now: number): number[] => {
+  const householdId = DEFAULT_ACCOUNT_ID
   const keyOf = (table: 'profiles' | 'users' | 'accounts', id: number) => rowKey(db, table, id)
   const others = (
     db
@@ -105,81 +93,43 @@ const wipeHousehold = (db: Database, account: UserAccount, householdId: number, 
   return others
 }
 
-// What the plan takes in one household, the account itself left: the ids of the other accounts that went with it.
-const leaveHousehold = (
-  db: Database,
-  account: UserAccount,
-  plan: DeletionPlan,
-  now: number,
-  householdId: number
-): number[] => {
+// What the plan takes, the account itself left: the ids of the other accounts that went with it.
+const leaveServer = (db: Database, account: UserAccount, plan: DeletionPlan, now: number): number[] => {
   // What goes is written down before it commits, outside the database: a backup restored later does it again
   // (forget-log.ts).
-  const keyOf = (table: 'profiles' | 'users' | 'accounts', id: number) => rowKey(db, table, id)
-  if (plan.householdGoes) return wipeHousehold(db, account, householdId, now)
-  const children = forgetChildren(db, plan, householdId)
+  if (plan.serverGoes) return wipeServer(db, account, now)
+  const children = forgetChildren(db, plan)
   const own = plan.profiles[0]
-  // Nothing of the household is the account's: it goes alone.
-  if (!plan.heir) return children
-  const heir = plan.heir
-  const heirKey = keyOf('profiles', heir.id)
   if (own) {
-    const row = db.prepare('SELECT role FROM profiles WHERE id = ?').get(own.id) as { role: string } | undefined
-    if (row?.role === 'admin') {
-      if (heirKey) recordForget({ kind: 'admin', ...heirKey })
-      db.prepare("UPDATE profiles SET role = 'admin' WHERE id = ?").run(heir.id)
-    }
-    const ownKey = keyOf('profiles', own.id)
-    if (ownKey) recordForget({ kind: 'profile', ...ownKey, householdId })
+    const ownKey = rowKey(db, 'profiles', own.id)
+    if (ownKey) recordForget({ kind: 'profile', ...ownKey, householdId: DEFAULT_ACCOUNT_ID })
     db.prepare('DELETE FROM profiles WHERE id = ?').run(own.id)
-  }
-  if (account.serverAdmin) {
-    // Keyed on the heir's account: its profile may have had no account yet in an older copy.
-    const heirUserId = (
-      db.prepare('SELECT user_id AS id FROM profiles WHERE id = ?').get(heir.id) as { id: number | null } | undefined
-    )?.id
-    const heirUser = heirUserId ? keyOf('users', heirUserId) : null
-    if (heirUser) recordForget({ kind: 'serverAdmin', ...heirUser })
-    db.prepare('UPDATE users SET server_admin = 1 WHERE id = (SELECT user_id FROM profiles WHERE id = ?)').run(heir.id)
   }
   return children
 }
 
 // The young accounts left with no parent: their profiles and accounts, each written down first.
-const forgetChildren = (db: Database, plan: DeletionPlan, householdId: number) =>
+const forgetChildren = (db: Database, plan: DeletionPlan) =>
   plan.children.map(child => {
     const key = rowKey(db, 'profiles', child.id)
-    if (key) recordForget({ kind: 'profile', ...key, householdId })
+    if (key) recordForget({ kind: 'profile', ...key, householdId: DEFAULT_ACCOUNT_ID })
     db.prepare('DELETE FROM profiles WHERE id = ?').run(child.id)
     forgetAccount(db, child.accountId)
     return child.accountId
   })
 
-// The households an account reads in, by their ids.
-export const householdsOf = (db: Database, accountId: number) =>
-  (
-    db
-      .prepare('SELECT DISTINCT account_id AS id FROM profiles WHERE user_id = ? ORDER BY account_id')
-      .all(accountId) as { id: number }[]
-  ).map(row => row.id)
-
-// Serveur › Comptes › « Supprimer »: in each household it reads in, what « Supprimer ton compte » would take there
-// (its profile, or the whole household with its last adult), then the account. plans: by household, each read in its
-// household. Never the server's admin, whose own account goes from Compte et données.
+// Serveur › Comptes › « Supprimer »: what « Supprimer ton compte » would take (its profile, or everything with the
+// last adult), then the account. Never the server's admin, whose own account goes from Compte et données.
 export const deleteAccountFromServer = (
   db: Database,
   account: UserAccount,
-  plans: { householdId: number; plan: DeletionPlan }[],
+  plan: DeletionPlan,
   now: number
-): { accounts: number[]; households: number[] } =>
+): number[] =>
   transaction(db, () => {
-    const accounts = [account.id]
-    for (const { householdId, plan } of plans) accounts.push(...leaveHousehold(db, account, plan, now, householdId))
+    const others = leaveServer(db, account, plan, now)
     forgetAccount(db, account.id)
-    return {
-      accounts,
-      households: plans.filter(({ plan }) => plan.householdGoes).map(({ householdId }) => householdId)
-    }
+    return [account.id, ...others]
   })
 
 // The tables of a profile's own state, and the columns a copy leaves out: what only the device or the server needs.
@@ -210,19 +160,8 @@ const parsed = (row: Record<string, unknown>) =>
     })
   )
 
-// "Télécharger une copie": the account, the household as the person sees it, their profile and everything it did.
-export const accountCopy = (
-  db: Database,
-  account: UserAccount,
-  profileId: number | null,
-  now: number,
-  householdId = currentHouseholdId()
-) => {
-  const household = db
-    .prepare(
-      'SELECT name, language, country, time_zone AS timeZone, created_at AS createdAt FROM accounts WHERE id = ?'
-    )
-    .get(householdId)
+// "Télécharger une copie": the account, its profile and its children's, and everything its profile did.
+export const accountCopy = (db: Database, account: UserAccount, profileId: number | null, now: number) => {
   const user = db
     .prepare('SELECT email, created_at AS createdAt, password_changed_at AS passwordChangedAt FROM users WHERE id = ?')
     .get(account.id)
@@ -232,8 +171,11 @@ export const accountCopy = (
     )
     .all(account.id)
   const profiles = db
-    .prepare('SELECT id, name, color, kind, role FROM profiles WHERE account_id = ? ORDER BY position, id')
-    .all(householdId)
+    .prepare(
+      `SELECT id, name, color, kind, role FROM profiles
+       WHERE user_id = ? OR user_id IN (SELECT child_id FROM account_parents WHERE parent_id = ?) ORDER BY position, id`
+    )
+    .all(account.id, account.id)
   const own =
     profileId === null
       ? null
@@ -261,7 +203,7 @@ export const accountCopy = (
   return {
     exportedAt: new Date(now).toISOString(),
     account: { ...(user as object), serverAdmin: account.serverAdmin, devices },
-    household: { ...(household as object), profiles },
+    profiles,
     you: own,
     // What it read and earned, its own in any household: its readings and the game's points.
     stats: accountStatRowsOf(db, account.id)
@@ -284,11 +226,7 @@ export class AccountDataStore {
     return deleteAccount(this.#db, account, plan, now)
   }
 
-  householdsOf(accountId: number) {
-    return householdsOf(this.#db, accountId)
-  }
-
-  deleteFromServer(account: UserAccount, plans: { householdId: number; plan: DeletionPlan }[], now: number) {
-    return deleteAccountFromServer(this.#db, account, plans, now)
+  deleteFromServer(account: UserAccount, plan: DeletionPlan, now: number) {
+    return deleteAccountFromServer(this.#db, account, plan, now)
   }
 }
