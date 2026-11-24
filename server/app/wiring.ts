@@ -81,7 +81,7 @@ const youthSourcesOf = ({ youth, sources, users, profiles, news, now }: Options)
         store: sources.store,
         file: sources.file,
         users,
-        profiles: () => profiles.list(),
+        profiles: () => profiles.everyone(),
         now
       })
     : null

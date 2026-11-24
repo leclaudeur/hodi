@@ -9,6 +9,7 @@ import { mountServerSpace } from './app/server-space.ts'
 import { mountSignedOut } from './app/signed-out.ts'
 import { wiringOf } from './app/wiring.ts'
 import { jsonBodies, sameSiteOnly } from './http/request-guards.ts'
+import { asReaders } from './db/reader-scope.ts'
 import { requestLimit } from './http/request-limit.ts'
 import { securityHeaders } from './http/security-headers.ts'
 import { sessionGuards } from './http/session-guard.ts'
@@ -73,7 +74,8 @@ export const createApp = (config: Config, options: AppOptions) => {
   app.use('/api', (_request, response, next) => {
     // API responses are per-user and must never be cached by the browser or a proxy.
     response.set('Cache-Control', 'no-store')
-    next()
+    // Signed out, a request reads as nobody: it sees no profile until the session check names its accounts.
+    asReaders([], next)
   })
   app.use('/api', apiRouter(config, options))
 

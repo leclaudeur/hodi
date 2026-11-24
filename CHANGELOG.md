@@ -140,6 +140,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 ### Fixed
 
 - **Historique right after Masquer.** An article hidden a moment before opening _Historique_ is there at once.
+- **An invitation code tries no addresses.** Each e-mail it is refused because it already has an account, or is
+  blocked, counts as a failed sign-in: after a few, the device waits as after wrong passwords.
 
 ### Removed
 

@@ -1,5 +1,6 @@
 import { cleanHandle } from '../handle.ts'
 import { timingSafeEqual } from 'node:crypto'
+import { asReaders } from '../db/reader-scope.ts'
 import express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
 import { hashPassword } from '../auth/password.ts'
@@ -272,9 +273,9 @@ const mountSetupHouseholdRoute = (
     // The key given here is the admin's own: each account pays for its own AI.
     if (settings) accountAi?.set(admin.id, settings)
     // The install's first profile becomes the one set up here, its admin, and the server admin's own.
-    const first = profiles.list().find(candidate => candidate.role === 'admin')
+    const first = profiles.everyone().find(candidate => candidate.role === 'admin' && !candidate.hasAccount)
     if (first) {
-      profiles.update(first.id, { name: profileName, color })
+      asReaders([admin.id], () => profiles.update(first.id, { name: profileName, color }))
       profiles.tourTaken(first.id)
       accounts?.linkProfile(admin.id, first.id)
       const lock = profiles.lock(first.id)

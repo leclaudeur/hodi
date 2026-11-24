@@ -23,7 +23,7 @@ export const profileHooksOf = (options: Options, youthSources: YouthSources | nu
   return {
     // A young one starts with its kind's base sources only.
     created: id => {
-      const profile = profiles?.get(id)
+      const profile = profiles?.find(id)
       if (!profile) return
       if (profile.kind === 'adult') giveBaseSources(options, id)
       youthSources?.start(profile)

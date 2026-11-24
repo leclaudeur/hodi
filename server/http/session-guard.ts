@@ -97,7 +97,10 @@ const requireSessionOf = (options: SessionGuardOptions): RequestHandler => {
     const session = sessionOf(request)
     if (session) {
       // An account with no profile (made by a plugin, or whose profile was deleted) gets one now.
-      if (accounts && options.profiles) giveOwnProfile(accounts, options.profiles, session.account, options)
+      if (accounts && options.profiles) {
+        const { profiles } = options
+        asReaders([session.account.id], () => giveOwnProfile(accounts, profiles, session.account, options))
+      }
       response.locals.accountId = session.account.id
       // A session from before devices were kept: this device gets its row in Appareils, and a cookie naming it.
       if (!session.device && devices) response.append('Set-Cookie', cookieFor(session.account, request))
