@@ -64,44 +64,6 @@
   gap: 10px;
 }
 
-/* « Créer mon foyer » and « Créer un foyer », one under the other, as wide as the wider. */
-.createChoices {
-  display: inline-grid;
-  gap: 8px;
-}
-
-/* Foyers: one household per server, said above the list. The card takes the rows' padding and corners, so its
-   square lines up with the households' initials; its text keeps 14px on the right so it doesn't run into the edge. */
-.oneNote {
-  padding: 18px 0 0;
-}
-
-/* Then a line, as between the groups of the first column. */
-.oneNote::after {
-  display: block;
-  height: 1px;
-  margin: 18px 4px 0;
-  background: var(--divider);
-  content: '';
-}
-
-.oneNote > aside {
-  min-height: 0;
-  padding: 10px 14px 10px 10px;
-  border-radius: 14px;
-}
-
-@media (max-width: 1023px) {
-  .oneNote {
-    padding: 4px var(--gutter) 12px;
-  }
-
-  .oneNote > aside {
-    padding: 10px 14px 10px 10px;
-    border-radius: 16px;
-  }
-}
-
 /* « Inviter quelqu'un », under the accounts as every list's add button. */
 .invite {
   display: flex;

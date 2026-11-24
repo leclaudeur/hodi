@@ -194,10 +194,6 @@ export const mountServerSpace = (api: express.Router, wiring: Wiring) => {
     settings: options.serverSettings,
     backups: options.serverBackups,
     accounts,
-    onHouseholdSetUp: language => {
-      wiring.householdOptions?.onSetUp?.(language)
-      options.onHouseholdChange()
-    },
     checkProof: wiring.checkProof,
     ...(inbox
       ? {

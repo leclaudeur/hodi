@@ -36,7 +36,6 @@ export { default as Dialog } from '../ui/Dialog.tsx'
 export { default as DialogActions } from '../ui/DialogActions.tsx'
 export { default as EmptyState } from '../ui/EmptyState.tsx'
 export { default as FilterChip } from '../ui/FilterChip.tsx'
-export { default as HouseholdAvatar } from '../ui/HouseholdAvatar.tsx'
 // « Voir les 4 autres », the last row of a list's card that shows its first few.
 export { default as MoreRow } from '../ui/MoreRow.tsx'
 export { default as Notice } from '../ui/Notice.tsx'

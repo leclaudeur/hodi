@@ -2,14 +2,10 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { type ServerAccount, type ServerHousehold, getServerAccounts, getServerHouseholds } from '../../api.ts'
 import { numericDate } from '../../lib/format.ts'
 
-export type PeopleKind = 'households' | 'accounts'
-
 export interface People {
   households: ServerHousehold[]
   maxProfiles: number
   accounts: ServerAccount[]
-  // The setup left the household for later: « Créer un foyer » takes it up again.
-  canCreate: boolean
 }
 
 // Both lists, shared by the list column and the open page.
@@ -23,8 +19,8 @@ const subscribe = (listener: () => void) => {
 let pending: Promise<void> | null = null
 export const load = () =>
   (pending ??= Promise.all([getServerHouseholds(), getServerAccounts()])
-    .then(([{ households, maxProfiles, canCreate }, accounts]) => {
-      people = { households, maxProfiles, accounts, canCreate: canCreate === true }
+    .then(([{ households, maxProfiles }, accounts]) => {
+      people = { households, maxProfiles, accounts }
       failed = false
     })
     .catch(() => {
@@ -49,15 +45,11 @@ export const usePeople = (fresh = true) => {
 
 export const dateOf = (at: number) => numericDate(new Date(at).toISOString())
 
-// The first in a list, opened beside it on a computer when none is chosen.
-export const firstOf = (kind: PeopleKind, loaded: People | null) =>
-  loaded ? String((kind === 'households' ? loaded.households : loaded.accounts)[0]?.id ?? '') : ''
+// The first account, opened beside the list on a computer when none is chosen.
+export const firstOf = (loaded: People | null) => (loaded ? String(loaded.accounts[0]?.id ?? '') : '')
 
-// A page's title on a phone, as on a computer: the household's name, the account's first name or else its e-mail.
-export const titleOf = (kind: PeopleKind, item: string, loaded: People | null) =>
-  (kind === 'households'
-    ? loaded?.households.find(household => String(household.id) === item)?.name
-    : (() => {
-        const account = loaded?.accounts.find(entry => String(entry.id) === item)
-        return account?.profile?.name ?? account?.email
-      })()) ?? ''
+// A page's title on a phone, as on a computer: the account's first name or else its e-mail.
+export const titleOf = (item: string, loaded: People | null) => {
+  const account = loaded?.accounts.find(entry => String(entry.id) === item)
+  return account?.profile?.name ?? account?.email ?? ''
+}

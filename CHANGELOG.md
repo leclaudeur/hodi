@@ -122,6 +122,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **Plugins no longer make households.** `ctx.households` and the plugin permission _Create and manage households_ are
   gone: a plugin makes accounts instead. A plugin that still makes households stops working on this version, so
   update your plugins together with Hodi.
+- **Household photos.** Nothing showed them any more: the server deletes the ones it still kept.
 
 ## [1.0.0-beta.13] - 2026-11-19
 

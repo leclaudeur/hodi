@@ -2103,57 +2103,16 @@
       "pluginFailed": "This plugin could not be shown."
     },
     "people": {
-      "searchHouseholds": "Search households",
       "searchAccounts": "Search accounts",
-      "householdsMeta_one": "{{count}} household",
-      "householdsMeta_other": "{{count}} households",
       "accountsMeta_one": "{{count}} account",
       "accountsMeta_other": "{{count}} accounts",
-      "householdRow_one": "{{count}} profile",
-      "householdRow_other": "{{count}} profiles",
-      "householdRowFull": "{{count}} profiles, full",
-      "householdRowWaiting_one": "{{count}} profile · waiting for {{name}}",
-      "householdRowWaiting_other": "{{count}} profiles · waiting for {{name}}",
       "noHousehold": "No household",
       "noProfile": "No profile",
-      "noMatchHouseholds": "No household matches.",
       "noMatchAccounts": "No account matches.",
-      "backToHouseholds": "Back to households",
       "backToAccounts": "Back to accounts",
       "failed": "The list could not be loaded.",
       "household": {
-        "intro": "Created on {{date}}. The server sees its accounts and numbers, never what is read there. Only the household’s admin hands over the role, in <i>Settings › Profiles</i>.",
-        "this": "This household",
-        "admin": "Household admin",
-        "waiting": "{{name}} · waiting for an account",
-        "adminCode": "New code",
-        "adminCodeLabel": "New code for {{name}}",
-        "profiles": "Profiles",
-        "profilesValue": "{{count}} of {{max}}",
-        "adults_one": "{{count}} adult",
-        "adults_other": "{{count}} adults",
-        "young_one": "{{count}} young",
-        "young_other": "{{count}} young",
-        "invite": "Invite",
-        "inviteLabel": "Invite an adult",
-        "inviteHint": "A code and its QR, valid for 24 h and once",
-        "full": "Full",
-        "serverFull": "Server full",
-        "fullHint": "Full: a profile has to leave before anyone is invited",
-        "accounts": "Accounts",
-        "noAccounts": "No account yet",
-        "see": "See",
-        "seeLabel": "See {{email}}",
-        "more_one": "See the other one",
-        "more_other": "See the {{count}} others",
-        "deleteSection": "Delete",
-        "delete": "Delete this household",
-        "deleteHint": "Its profiles, their reading and its sources go with it",
-        "deleteButton": "Delete",
-        "confirmDelete": {
-          "title": "Delete this household?",
-          "message": "<b>{{name}}</b> is deleted at once with its {{count}} profiles, their saved articles, their reading and its sources. Accounts with no other household go too. Backup copies forget it within {{days}} at most. <b>This can’t be undone.</b>"
-        }
+        "serverFull": "Server full"
       },
       "account": {
         "intro": "The server sees the account, never what is read with it nor its settings.",
@@ -2193,18 +2152,7 @@
           "title": "Block this account?",
           "message": "<b>{{email}}</b> is erased at once, as with <i>Delete</i>, and this address can never make an account on this server again. At sign-in, the person reads <i>This account was blocked on this server</i>. <b>There is no going back.</b>"
         }
-      },
-      "emptyTitle": "No household",
-      "emptyText": "Create your household to read in it, or a household for someone else, who will be its admin.",
-      "createFailed": "Could not create the household. Try again in a moment.",
-      "createMine": "Create my household",
-      "createOther": "Create a household",
-      "otherIntro": "For someone else: its profile waits for that person, who becomes its admin with the code. You do not enter this household unless someone invites you.",
-      "otherAdmin": "Its admin’s first name",
-      "otherAdminPlaceholder": "E.g. Sophie",
-      "otherSubmit": "Create and make the code",
-      "oneTitle": "One household per server",
-      "oneText": "This server has its own already. To read in it, ask its admin to invite you."
+      }
     },
     "general": {
       "intro": "Hodi’s address, which the e-mails’ links open, and the public home page. A browser that never opened Hodi lands on that site, for example your presentation page; everyone else lands on <i>Sign in</i>. Then what holds for every account.",

@@ -52,7 +52,6 @@ export const accountHref = (part: AccountPart, item?: string) => `#/account/${pa
 export const SERVER_SECTIONS = [
   'overview',
   'inbox',
-  'households',
   'accounts',
   'blocks',
   'general',

@@ -1,8 +1,7 @@
 import express from 'express'
 import type { AccountDataStore } from '../db/account-data.ts'
-import { type HouseholdStore, cleanHouseholdName } from '../db/household-store.ts'
-import { MAX_PROFILES, type ProfileStore, cleanName } from '../db/profile-store.ts'
-import { type Language, isLanguage } from '../../shared/i18n.ts'
+import type { HouseholdStore } from '../db/household-store.ts'
+import { MAX_PROFILES, type ProfileStore } from '../db/profile-store.ts'
 import type { ServerPeopleStore } from '../db/server-people-store.ts'
 import {
   CONTENT_SETTINGS,
@@ -17,7 +16,6 @@ import type { Period, ServerStatsStore } from '../db/server-stats-store.ts'
 import type { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
 import type { Presence } from './presence.ts'
-import { sendHouseholdPhoto } from './household-photo.ts'
 import { profileIdOf } from './profile-routes.ts'
 import { type CheckProof, accountAsking, askingWithProof } from './proof.ts'
 import { type Backups, mountBackupRoutes } from './server-backup-routes.ts'
@@ -53,8 +51,6 @@ export interface ServerRoutesOptions {
   accounts?: UserAccountStore
   profiles?: ProfileStore
   household?: HouseholdStore
-  // A household made here for someone else: its base sources come in, in its language.
-  onHouseholdSetUp?: (language: Language) => void
   // The server admin's own password, before what cannot be undone: a copy of the server, « Restaurer », a code for a
   // new password, deleting an account or a household. Absent in tests without accounts.
   checkProof?: CheckProof
@@ -149,54 +145,24 @@ const mountOverviewRoute = (
 
 const mountPeopleRoutes = (
   router: express.Router,
-  { people, codes, profiles, household, settings, onHouseholdSetUp, codeRequests, now }: ServerRoutesOptions
+  { people, household, settings, codeRequests }: ServerRoutesOptions
 ) => {
   if (!people) return
-  // Foyers and Comptes: who has an account, in which household, and when it was last used. Nothing they read.
-  // canCreate: the setup left the household for later, « Créer un foyer » takes it up again.
+  // Comptes: who has an account, in which household, and when it was last used. Nothing they read.
   router.get('/households', (_request, response) => {
     response.json({
       households: people.households(),
-      maxProfiles: MAX_PROFILES,
-      canCreate: household !== undefined && !household.isSetUp()
+      maxProfiles: MAX_PROFILES
     })
   })
-  // A household's photo, for its row: the server's admin sees the households' names already.
-  router.get('/households/:id/photo', (request, response) => {
-    if (household) sendHouseholdPhoto(household, Number(request.params.id), request, response)
-    else response.status(404).json({ error: 'not_found' })
-  })
-  // No household yet. « Créer mon foyer »: the setup's household steps come back, for the server's admin. « Créer
-  // un foyer » for someone else: its name and the first name of its admin, whose profile waits for that person
-  // with a code (« J'ai un code »). The server's admin never enters it by itself.
-  router.post('/households', (request, response) => {
+  // The setup left the household for later: its steps come back, for the server's admin.
+  router.post('/households', (_request, response) => {
     if (!household || household.isSetUp()) {
       response.status(409).json({ error: 'already_set_up' })
       return
     }
-    const body = (request.body ?? {}) as Record<string, unknown>
-    if (body.for !== 'other') {
-      settings?.setHouseholdLater(false)
-      response.status(204).end()
-      return
-    }
-    const name = cleanHouseholdName(body.name)
-    const adminName = cleanName(body.admin)
-    const language = body.language === undefined ? 'fr' : isLanguage(body.language) ? body.language : null
-    const first = profiles?.list().find(profile => profile.role === 'admin')
-    if (!name || !adminName || !language || !first || !codes) {
-      response.status(400).json({ error: 'bad_request' })
-      return
-    }
-    if (!household.setUp({ name, timeZone: null, country: null, language, ai: null }, now())) {
-      response.status(409).json({ error: 'already_set_up' })
-      return
-    }
     settings?.setHouseholdLater(false)
-    profiles!.update(first.id, { name: adminName })
-    onHouseholdSetUp?.(language)
-    const code = codes.create({ profileId: first.id, createdBy: null }, now())
-    response.status(201).json({ profile: { id: first.id, name: adminName }, ...code })
+    response.status(204).end()
   })
   router.get('/accounts', (_request, response) => {
     response.json({
@@ -238,23 +204,6 @@ const mountInviteRoutes = (
       return
     }
     response.status(201).json(codes.create({ createdBy: createdByOf(response), householdId: id }, now()))
-  })
-
-  // « Refaire son code »: a household made for someone else whose admin has not used the first code yet (lost, or
-  // past its 24 h). The new code replaces it.
-  router.post('/households/:id/admin-code', (request, response) => {
-    const id = Number(request.params.id)
-    const admin = profiles.list().find(profile => profile.role === 'admin')
-    if (!people.households().some(entry => entry.id === id) || !admin) {
-      response.status(404).json({ error: 'not_found' })
-      return
-    }
-    if (people.accounts().some(account => account.profile?.id === admin.id)) {
-      response.status(409).json({ error: 'admin_has_account' })
-      return
-    }
-    const code = codes.create({ profileId: admin.id, createdBy: createdByOf(response), householdId: id }, now())
-    response.status(201).json({ profile: { id: admin.id, name: admin.name }, ...code })
   })
 }
 

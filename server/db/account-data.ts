@@ -1,7 +1,7 @@
 import { ownerOf } from './stats-owner.ts'
 import { type Database, transaction } from './database.ts'
-import { type RowKey, recordForget, resetHousehold, rowKey } from './forget-log.ts'
-import { DEFAULT_ACCOUNT_ID, currentHouseholdId } from './household-scope.ts'
+import { recordForget, resetHousehold, rowKey } from './forget-log.ts'
+import { currentHouseholdId } from './household-scope.ts'
 import { accountStatRowsOf, accountStatsOf } from './account-stats.ts'
 import type { Profile, ProfileStore } from './profile-store.ts'
 import type { UserAccount, UserAccountStore } from './user-account-store.ts'
@@ -76,19 +76,6 @@ export const deleteAccount = (
     const others = leaveHousehold(db, account, plan, now, householdId)
     forgetAccount(db, account.id)
     return [account.id, ...others]
-  })
-
-// Mon compte › Foyer › « Quitter »: the plan's profile goes, the account stays, in no household. The server's admin
-// keeps /server: only deleting the account hands it over.
-export const leaveHouseholdOnly = (
-  db: Database,
-  account: UserAccount,
-  plan: DeletionPlan,
-  now: number,
-  householdId = currentHouseholdId()
-): void =>
-  transaction(db, () => {
-    leaveHousehold(db, { ...account, serverAdmin: false }, plan, now, householdId)
   })
 
 // The account's row, written down first.
@@ -199,43 +186,6 @@ export const deleteAccountFromServer = (
     }
   })
 
-// Serveur › Foyers › « Supprimer »: the household with its profiles and everything they read and kept, and the
-// accounts that read in no other household. The server's admin keeps their account, in no household. The core's own
-// household is left as a new install's, a plugin's goes. Answers the ids of the accounts deleted.
-export const deleteHousehold = (db: Database, householdId: number, now: number): number[] =>
-  transaction(db, () => {
-    const keyOf = (table: 'profiles' | 'users' | 'accounts', id: number) => rowKey(db, table, id)
-    const household = keyOf('accounts', householdId)
-    if (!household) return []
-    const accounts = (
-      db
-        .prepare(
-          `SELECT DISTINCT u.id FROM profiles p JOIN users u ON u.id = p.user_id
-           WHERE p.account_id = ? AND u.server_admin = 0
-             AND NOT EXISTS (SELECT 1 FROM profiles o WHERE o.user_id = u.id AND o.account_id <> p.account_id)`
-        )
-        .all(householdId) as { id: number }[]
-    ).map(row => row.id)
-    if (householdId === DEFAULT_ACCOUNT_ID) {
-      const profiles = db
-        .prepare('SELECT id, created_at AS createdAt FROM profiles WHERE account_id = ?')
-        .all(householdId) as unknown as RowKey[]
-      recordForget({
-        kind: 'householdReset',
-        ...household,
-        profiles: profiles.map(({ id, createdAt }) => ({ id, createdAt })),
-        accounts: accounts.flatMap(id => keyOf('users', id) ?? [])
-      })
-      for (const id of accounts) db.prepare('DELETE FROM users WHERE id = ?').run(id)
-      resetHousehold(db, householdId, now)
-      return accounts
-    }
-    recordForget({ kind: 'household', ...household })
-    for (const id of accounts) forgetAccount(db, id)
-    db.prepare('DELETE FROM accounts WHERE id = ?').run(householdId)
-    return accounts
-  })
-
 // The tables of a profile's own state, and the columns a copy leaves out: what only the device or the server needs.
 // Those by owner are the account's (or a young profile's) in any household (stats-owner.ts).
 const PROFILE_TABLES: { table: string; where: string; omit?: string[] }[] = [
@@ -342,19 +292,11 @@ export class AccountDataStore {
     return deleteAccount(this.#db, account, plan, now)
   }
 
-  leave(account: UserAccount, plan: DeletionPlan, now: number) {
-    leaveHouseholdOnly(this.#db, account, plan, now)
-  }
-
   householdsOf(accountId: number) {
     return householdsOf(this.#db, accountId)
   }
 
   deleteFromServer(account: UserAccount, plans: { householdId: number; plan: DeletionPlan }[], now: number) {
     return deleteAccountFromServer(this.#db, account, plans, now)
-  }
-
-  deleteHousehold(householdId: number, now: number): number[] {
-    return deleteHousehold(this.#db, householdId, now)
   }
 }

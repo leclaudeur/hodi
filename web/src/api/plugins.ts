@@ -77,8 +77,6 @@ export const deleteServerAccount = (id: number, proof: AdminProof) =>
 // « Bloquer »: the same as « Supprimer », and its e-mail makes no account again.
 export const blockServerAccount = (id: number, proof: AdminProof) =>
   sendJson<null>('POST', `/server/accounts/${id}/block`, proof)
-export const deleteServerHousehold = (id: number, proof: AdminProof) =>
-  sendJson<null>('DELETE', `/server/households/${id}`, proof)
 
 export const installPlugin = (token: string, acceptUnsigned: boolean, proof?: AdminProof) =>
   sendJson<{ installed: string; version: string }>('POST', `/plugins/packages/${encodeURIComponent(token)}/install`, {

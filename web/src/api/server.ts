@@ -1,4 +1,3 @@
-import { type Language as InterfaceLanguage } from '../lib/i18n.ts'
 import { RequestError, getJson, sendJson } from './http.ts'
 import type { AdminProof } from './plugins.ts'
 import type { ReportReason, ShareReportReason } from './sources.ts'
@@ -48,7 +47,6 @@ export interface ServerHousehold {
   adults: number
   young: number
   accounts: number
-  photoVersion: number | null
 }
 
 export interface ServerAccount {
@@ -80,30 +78,13 @@ export interface InboxItem {
 export const getServerInbox = () => getJson<{ items: InboxItem[]; waiting: number }>('/server/inbox')
 
 export const getServerHouseholds = () =>
-  getJson<{ households: ServerHousehold[]; maxProfiles: number; canCreate?: boolean }>('/server/households')
-
-// No household yet. « Créer mon foyer »: the setup's household steps come back.
-export const startHousehold = () => sendJson<null>('POST', '/server/households', { for: 'me' })
-
-// « Créer un foyer » for someone else: its name, its admin's first name, and the code that person types.
-export const createHouseholdFor = (household: { name: string; admin: string; language: InterfaceLanguage }) =>
-  sendJson<{ profile: { id: number; name: string }; code: string; expiresAt: number }>('POST', '/server/households', {
-    for: 'other',
-    ...household
-  })
+  getJson<{ households: ServerHousehold[]; maxProfiles: number }>('/server/households')
 
 export const getServerAccounts = async () => (await getJson<{ accounts: ServerAccount[] }>('/server/accounts')).accounts
 
 // "Inviter un adulte" into a household, and "Mot de passe oublié" for an account: « J'ai un code » codes.
 export const createHouseholdCode = (id: number) =>
   sendJson<{ code: string; expiresAt: number }>('POST', `/server/households/${id}/code`)
-
-// « Refaire son code » for the admin of a household made for someone else, who has no account yet.
-export const createHouseholdAdminCode = (id: number) =>
-  sendJson<{ profile: { id: number; name: string }; code: string; expiresAt: number }>(
-    'POST',
-    `/server/households/${id}/admin-code`
-  )
 
 // It opens that person's account: with the server admin's own password and app code.
 export const createAccountCode = (id: number, proof: AdminProof) =>
