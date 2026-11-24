@@ -196,13 +196,13 @@ describe('two families on one server', () => {
     const { code } = (await made.json()) as { code: string }
     const joined = await call('/codes/join', '', 'POST', {
       code,
-      existing: true,
       email: MARTIN,
       password: PASSWORD,
+      ageConfirmed: true,
       profile: { name: 'Marc', color: 'world' }
     })
     assert.equal(joined.status, 409)
-    assert.deepEqual(await joined.json(), { error: 'already_member' })
+    assert.deepEqual(await joined.json(), { error: 'email_taken' })
     assert.equal(joined.headers.getSetCookie().length, 0)
     assert.deepEqual(
       (await json<{ profiles: { name: string }[] }>('/profiles', dupont)).profiles.map(p => p.name),

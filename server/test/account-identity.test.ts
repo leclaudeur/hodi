@@ -3,7 +3,7 @@ import { describe, it } from 'node:test'
 import { openDatabase } from '../db/database.ts'
 import { ProfileStore } from '../db/profile-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
-import { SAM_PASSWORD, cookiesFrom, startHousehold } from './helpers/household-env.ts'
+import { startHousehold } from './helpers/household-env.ts'
 
 // A person's name, colour and photo are their account's: the profile it gets in any household wears them.
 
@@ -35,49 +35,31 @@ describe('a person’s name, colour and photo', () => {
     assert.deepEqual(profiles.photo(again.id), photo)
   })
 
-  it('let an account whose profile went join again without saying who it is again', async () => {
+  // An invitation code only ever makes a new account: an e-mail that has one signs in instead, its account untouched.
+  it('refuses a code to an e-mail that already has an account', async () => {
     const env = await startHousehold()
     try {
-      const before = env.profiles.get(env.samId)!
-      // Leaving the household on one's own is no longer a way; Réglages › Profils › « Supprimer » is.
-      assert.equal((await env.call('/account/leave', env.sam, 'POST', { password: SAM_PASSWORD })).status, 404)
-      assert.ok(env.profiles.delete(env.samId))
+      const before = await env.accounts.byEmail('sam@example.com')
       const { code } = (await (await env.call('/codes', env.admin, 'POST', {})).json()) as { code: string }
       const joined = await env.call('/codes/join', '', 'POST', {
         code,
-        existing: true,
         email: 'sam@example.com',
-        password: SAM_PASSWORD
+        password: 'another-password-1',
+        ageConfirmed: true,
+        profile: { name: 'Sam', color: 'world' }
       })
-      assert.equal(joined.status, 200)
-      const { profileId } = (await joined.json()) as { profileId: number }
-      const now = env.profiles.get(profileId)!
-      assert.deepEqual([now.name, now.color], [before.name, before.color])
-      assert.ok(cookiesFrom(joined))
-    } finally {
-      env.close()
-    }
-  })
-
-  it('asks an account that was never in a household who it is first', async () => {
-    const env = await startHousehold()
-    try {
-      env.accounts.create('zoe@example.com', (await env.accounts.byEmail('sam@example.com'))!.passwordHash, 0)
-      const { code } = (await (await env.call('/codes', env.admin, 'POST', {})).json()) as { code: string }
-      const join = (profile?: { name: string; color: string }) =>
-        env.call('/codes/join', '', 'POST', {
-          code,
-          existing: true,
-          email: 'zoe@example.com',
-          password: SAM_PASSWORD,
-          ...(profile ? { profile } : {})
-        })
-      const asked = await join()
-      assert.deepEqual([asked.status, await asked.json()], [400, { error: 'profile_needed' }])
-      const joined = await join({ name: 'Zoé', color: 'science' })
-      assert.equal(joined.status, 200)
-      const { profileId } = (await joined.json()) as { profileId: number }
-      assert.equal(env.profiles.get(profileId)?.name, 'Zoé')
+      assert.deepEqual([joined.status, await joined.json()], [409, { error: 'email_taken' }])
+      assert.equal(joined.headers.getSetCookie().length, 0)
+      assert.equal((await env.accounts.byEmail('sam@example.com'))?.passwordHash, before?.passwordHash)
+      // The code was not spent on it.
+      const again = await env.call('/codes/join', '', 'POST', {
+        code,
+        email: 'zoe@example.com',
+        password: 'another-password-1',
+        ageConfirmed: true,
+        profile: { name: 'Zoé', color: 'science' }
+      })
+      assert.equal(again.status, 200)
     } finally {
       env.close()
     }

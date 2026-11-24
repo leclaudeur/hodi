@@ -62,8 +62,7 @@
     },
     "profile": {
       "title": "Dernière étape : le profil",
-      "intro": "Crée un compte : ce profil y sera lié, avec ses lectures.",
-      "introExisting": "Entre avec le compte que tu as déjà : ce profil y sera lié, avec ses lectures."
+      "intro": "Crée un compte : ce profil y sera lié, avec ses lectures."
     },
     "who": {
       "intro": "Un prénom et une couleur, que les autres verront. Tu pourras les changer dans <i>Mon compte</i>."
@@ -76,11 +75,7 @@
       "title": "Nouveau mot de passe",
       "intro": "Choisis le nouveau mot de passe du compte de <b>{{name}}</b>. Les autres appareils se déconnectent : tu t’y reconnecteras avec lui.",
       "button": "Valider"
-    },
-    "existing": "J’ai déjà un compte",
-    "newAccount": "Créer un nouveau compte",
-    "signIn": "Rejoindre",
-    "alreadyMember": "Ce compte a déjà un profil sur ce serveur : connecte-toi avec lui."
+    }
   },
   "password": {
     "show": "Afficher le mot de passe",

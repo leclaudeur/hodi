@@ -1,7 +1,5 @@
 import type express from 'express'
 import type { LoginThrottle } from '../auth/login-throttle.ts'
-import { randomBytes } from 'node:crypto'
-import { hashPassword, verifyPassword } from '../auth/password.ts'
 import { profileCookie, profileToken } from '../auth/session.ts'
 import type { InstallStore } from '../db/install-store.ts'
 import { type Profile, type ProfileStore, isYoung } from '../db/profile-store.ts'
@@ -9,11 +7,8 @@ import { type SignInCode, type SignInCodeStore, signInCodeOf } from '../db/sign-
 import { type UserAccount, type UserAccountStore, cleanEmail } from '../db/user-account-store.ts'
 import type { CookieFor } from './account-session.ts'
 import { clientAddressOf } from './client-address.ts'
-import { type CheckSignIn, refuseSignIn } from './sign-in-check.ts'
+import type { CheckSignIn } from './sign-in-check.ts'
 import { isPassword } from './household-input.ts'
-import { CONFIG } from '../fixed-config.ts'
-
-const MAX_PASSWORD_LENGTH = CONFIG.passwords.maxLength
 
 export interface CodeJoinOptions {
   codes: SignInCodeStore
@@ -30,7 +25,7 @@ export interface CodeJoinOptions {
   resetPassword?: (account: UserAccount, passwordHash: string, request: express.Request) => string | null
   // What a new profile starts with, as one added in Réglages > Profils.
   onProfileCreated?: (profileId: number) => void
-  // The plugins' say on an existing account signing in (« J'ai déjà un compte », a new password).
+  // The plugins' say on an existing account signing in again with a new password.
   checkSignIn?: CheckSignIn
   // false for an account with « Validation en deux étapes » on: what the code does is done, but this device signs in
   // on the Connexion page, with the app's code.
@@ -39,7 +34,7 @@ export interface CodeJoinOptions {
 
 export type ResolvedJoinOptions = CodeJoinOptions & Required<Pick<CodeJoinOptions, 'checkSignIn' | 'signsInHere'>>
 
-// What "Rejoins <foyer>" and "Ton profil t'attend" show of a profile: no photo, which only a session may load.
+// What "Bienvenue sur Hodi" and "Ton profil t'attend" show of a profile: no photo, which only a session may load.
 const publicProfile = ({ id, name, color, kind, avatar }: Profile) => ({ id, name, color, kind, avatar })
 
 // Whether a code may set a new password for this account: never the server's admin's, which would hand the whole
@@ -105,51 +100,10 @@ export const codeHelpers = ({ codes, accounts, profiles, install, throttle, now,
 export type CodeHelpers = ReturnType<typeof codeHelpers>
 export type ValidCode = NonNullable<ReturnType<CodeHelpers['validCode']>>
 
-// "Rejoins <foyer>": what the request asks for, or null when it is malformed.
+// "J'ai un code": the new account the request asks for, or null when it is malformed.
 export const joinRequestOf = (body: Record<string, unknown>) => {
-  const existing = body.existing === true
   const email = cleanEmail(body.email)
   const draft = (body.profile ?? {}) as { name?: unknown; color?: unknown; handle?: unknown }
-  const passwordSent =
-    typeof body.password === 'string' && body.password.length > 0 && body.password.length <= MAX_PASSWORD_LENGTH
-  if (!email || (existing ? !passwordSent : !isPassword(body.password) || body.ageConfirmed !== true)) return null
-  return { existing, email, password: body.password as string, draft }
-}
-
-type JoinRequest = NonNullable<ReturnType<typeof joinRequestOf>>
-
-// « J'ai déjà un compte »: the account its e-mail and password open, or null when the refusal is sent.
-export const existingAccountOf = async (
-  options: ResolvedJoinOptions,
-  decoyHash: () => Promise<string>,
-  { email, password }: JoinRequest,
-  request: express.Request,
-  response: express.Response
-) => {
-  const { accounts, throttle, now, checkSignIn } = options
-  // As a login: a wrong address takes as long as a wrong password, and counts as one.
-  const known = accounts.byEmail(email)
-  const decoy = decoyHash()
-  const right = await verifyPassword(password, known?.passwordHash ?? (await decoy))
-  if (!known || !right) {
-    throttle.recordFailure(now(), clientAddressOf(request))
-    response.status(401).json({ error: 'invalid_credentials' })
-    return null
-  }
-  if (accounts.profileOf(known.id) !== null) {
-    response.status(409).json({ error: 'already_member' })
-    return null
-  }
-  const refusal = await checkSignIn(known)
-  if (refusal) {
-    refuseSignIn(response, refusal)
-    return null
-  }
-  return known
-}
-
-// Compared with when no account has the e-mail typed in « J'ai déjà un compte ».
-export const decoyHashOnce = () => {
-  let decoyHash: Promise<string> | null = null
-  return () => (decoyHash ??= hashPassword(randomBytes(16).toString('hex')))
+  if (!email || !isPassword(body.password) || body.ageConfirmed !== true) return null
+  return { email, password: body.password as string, draft }
 }

@@ -3,15 +3,13 @@ import express from 'express'
 import { hashPassword } from '../auth/password.ts'
 import { type ProfileStore, cleanName, isYoung, profileColorOf } from '../db/profile-store.ts'
 import type { SignInCodeStore } from '../db/sign-in-code-store.ts'
-import type { UserAccount, UserAccountStore } from '../db/user-account-store.ts'
+import type { UserAccountStore } from '../db/user-account-store.ts'
 import {
   type CodeHelpers,
   type CodeJoinOptions,
   type ResolvedJoinOptions,
   type ValidCode,
   codeHelpers,
-  decoyHashOnce,
-  existingAccountOf,
   joinRequestOf,
   withProfileCookie
 } from './code-join.ts'
@@ -20,16 +18,14 @@ import { isPassword } from './household-input.ts'
 import { type InvitationMail, invitationRoutes, inviteOf, mailInvitation } from './invitation-routes.ts'
 import { isServerAdminOf, isParentOf, profileIdOf } from './profile-routes.ts'
 
-// "J'ai un code": an adult of the household invites a new adult, or the admin gives an adult profile without an
+// "J'ai un code": an adult invites a new adult, or the admin gives an adult profile without an
 // account its person; that person types the code on the Connexion page and makes their own account. The admin's code
 // for an adult who has an account is "Mot de passe oublié": that person chooses a new password. A young one signs in
 // with its own account, which its parents made: no code links a device to it.
 
 interface JoinChecked {
   valid: ValidCode
-  existing: boolean
   email: string
-  known: UserAccount | null
   passwordHash: string
   name: ReturnType<typeof cleanName>
   color: ReturnType<typeof profileColorOf>
@@ -41,13 +37,13 @@ interface JoinChecked {
 // From here on nothing waits: no other request runs between the checks and the writes.
 const completeJoin = (
   options: ResolvedJoinOptions,
-  { valid, existing, email, known, passwordHash, name, color, handle }: JoinChecked,
+  { valid, email, passwordHash, name, color, handle }: JoinChecked,
   request: express.Request,
   response: express.Response
 ) => {
   const { codes, accounts, profiles, now, cookieFor, onProfileCreated, signsInHere } = options
-  if (existing ? accounts.profileOf(known!.id) !== null : accounts.byEmail(email)) {
-    response.status(409).json({ error: existing ? 'already_member' : 'email_taken' })
+  if (accounts.byEmail(email)) {
+    response.status(409).json({ error: 'email_taken' })
     return
   }
   const taken = codes.take(valid.code, now())
@@ -55,7 +51,7 @@ const completeJoin = (
     response.status(403).json({ error: 'invalid_code' })
     return
   }
-  const account = known ?? accounts.create(email, passwordHash, now(), { handle })!
+  const account = accounts.create(email, passwordHash, now(), { handle })!
   let profileId = taken.profileId
   if (profileId === null) {
     const profile = profiles.create(name!, color!, now())!
@@ -78,35 +74,19 @@ const newAccountRefusal = ({ accounts, now }: ResolvedJoinOptions, email: string
   return handle && !accounts.isHandleFree(handle, now()) ? 'handle_taken' : null
 }
 
-// The new profile's name and colour: the account's own once it has been in a household, else what the person typed.
-const identityFor = (
-  { accounts }: ResolvedJoinOptions,
-  draft: { name?: unknown; color?: unknown },
-  known: UserAccount | null
-) => {
-  const own = known ? accounts.identityOf(known.id) : null
-  const name = cleanName(own?.name ?? draft.name)
-  const color = profileColorOf(own?.color ?? draft.color)
-  return name && color ? { name, color } : null
-}
-
-// An account that has been in a household joins with its own name and colour: it may send none. An identifier sent
-// must be a valid one.
+// The new profile's name and colour, as the person typed them; an identifier sent must be a valid one.
 const draftIsWhole = (
-  options: ResolvedJoinOptions,
-  asked: { existing: boolean; draft: { name?: unknown; color?: unknown; handle?: unknown } },
+  draft: { name?: unknown; color?: unknown; handle?: unknown },
   profileId: number | null,
   handle: string | null
 ) => {
-  if (profileId === null && !asked.existing && !identityFor(options, asked.draft, null)) return false
-  return asked.draft.handle === undefined || handle !== null
+  if (profileId === null && (!cleanName(draft.name) || !profileColorOf(draft.color))) return false
+  return draft.handle === undefined || handle !== null
 }
 
-// "Rejoins <foyer>" or "Ton profil t'attend": the account, its profile, and this device signed in with both.
-// existing: « J'ai déjà un compte », its e-mail and password instead of a new account (the server's admin, or with
-// a plugin someone from another household).
+// "Bienvenue sur Hodi" or "Ton profil t'attend": a new account, its profile, and this device signed in with both. Whoever
+// already has an account signs in on Connexion: every account has its own profile.
 const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { validCode }: CodeHelpers) => {
-  const decoyHash = decoyHashOnce()
   router.post('/join', async (request, response) => {
     const asked = joinRequestOf((request.body ?? {}) as Record<string, unknown>)
     if (!asked) {
@@ -121,33 +101,20 @@ const mountJoinRoute = (router: express.Router, options: ResolvedJoinOptions, { 
       return
     }
     const handle = cleanHandle(asked.draft.handle)
-    if (!draftIsWhole(options, asked, valid.found.profileId, handle)) {
+    if (!draftIsWhole(asked.draft, valid.found.profileId, handle)) {
       response.status(400).json({ error: 'bad_request' })
       return
     }
 
-    let known: UserAccount | null = null
-    let passwordHash = ''
-    if (asked.existing) {
-      known = await existingAccountOf(options, decoyHash, asked, request, response)
-      if (!known) return
-      // Never in a household yet: the person says who they are first.
-      if (valid.found.profileId === null && !identityFor(options, asked.draft, known)) {
-        response.status(400).json({ error: 'profile_needed' })
-        return
-      }
-    } else {
-      const refusal = newAccountRefusal(options, asked.email, handle)
-      if (refusal) {
-        response.status(409).json({ error: refusal })
-        return
-      }
-      passwordHash = await hashPassword(asked.password)
+    const refusal = newAccountRefusal(options, asked.email, handle)
+    if (refusal) {
+      response.status(409).json({ error: refusal })
+      return
     }
-    const identity = identityFor(options, asked.draft, known)
+    const passwordHash = await hashPassword(asked.password)
     const checked = {
-      ...{ valid, existing: asked.existing, email: asked.email, known, passwordHash, handle },
-      ...{ name: identity?.name ?? null, color: identity?.color ?? null }
+      ...{ valid, email: asked.email, passwordHash, handle },
+      ...{ name: cleanName(asked.draft.name), color: profileColorOf(asked.draft.color) }
     }
     completeJoin(options, checked, request, response)
   })
