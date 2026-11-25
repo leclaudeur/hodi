@@ -46,6 +46,7 @@ import { MAX_READ_BYTES } from '../plugins/sandbox/protocol.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 import { MAX_HTTP_BODY } from '../plugins/sandbox-requests.ts'
 import { fakeFetch } from './helpers/news.ts'
+import { NEWER_SDK, PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const ADMIN_PASSWORD = 'une phrase de passe assez longue'
 
@@ -55,6 +56,7 @@ const MANIFEST = {
   version: '0.1.0',
   description: 'Dit bonjour.',
   api: PLUGIN_API,
+  sdk: PLUGIN_SDK,
   audience: 'all',
   provides: ['speech'],
   menu: { group: 'household', after: 'household', icon: 'Hand' },
@@ -159,7 +161,8 @@ describe('plugin manifest', () => {
       name: 'Bonjour',
       version: '1.0.0',
       description: 'Dit bonjour.',
-      api: PLUGIN_API
+      api: PLUGIN_API,
+      sdk: PLUGIN_SDK
     })
     assert.equal(audience, 'all')
     assert.deepEqual(provides, [])
@@ -295,6 +298,9 @@ describe('plugin registry', () => {
     writePlugin(dir, 'future', { ...MANIFEST, id: 'future', api: PLUGIN_API + 1 })
     writePlugin(dir, 'crash', { ...MANIFEST, id: 'crash' }, 'throw new Error("boom")\nexport default {}')
     writePlugin(dir, 'old', { ...MANIFEST, id: 'old', api: 1 }, 'export default {}')
+    // Built before the SDK wrote its version, or with a newer SDK than Hodi's: listed, switched off.
+    writePlugin(dir, 'unstamped', { ...MANIFEST, id: 'unstamped', sdk: undefined }, 'export default {}')
+    writePlugin(dir, 'newer', { ...MANIFEST, id: 'newer', sdk: '99.0.0' }, 'export default {}')
     writePlugin(
       dir,
       'bad-route',
@@ -317,7 +323,9 @@ describe('plugin registry', () => {
         ['future', false],
         ['hello', true],
         ['misnamed', false],
+        ['newer', false],
         ['old', false],
+        ['unstamped', false],
         ['web-only', true]
       ]
     )
@@ -325,13 +333,16 @@ describe('plugin registry', () => {
     assert.match(plugins.get('misnamed')!.error!, /folder must be named hello/)
     assert.match(plugins.get('bad-route')!.error!, /GET greeting is not a route/)
     assert.equal(plugins.get('old')!.error, OUTDATED_API)
+    assert.equal(plugins.get('unstamped')!.error, OUTDATED_API)
+    assert.equal(plugins.get('newer')!.error, NEWER_SDK)
+    assert.equal(plugins.get('newer')!.manifest?.name, 'Bonjour')
     // Listed by its name, to be updated.
     assert.equal(plugins.get('old')!.manifest?.name, 'Bonjour')
     assert.equal(plugins.enabled('old'), false)
     assert.equal(plugins.enabled('hello'), true)
     assert.equal(plugins.enabled('crash'), false)
     assert.equal(plugins.enabled('web-only'), true)
-    assert.equal(logs.length, 5)
+    assert.equal(logs.length, 7)
     assert.deepEqual(plugins.get('hello')!.shape?.routes.slice(0, 2), ['GET /greeting', 'GET /echo/:id'])
 
     // Its steps ran in its own database, and a second start runs none again.
@@ -1131,6 +1142,13 @@ describe('plugin packages', () => {
       { code: 'invalid_manifest' }
     )
     await assert.rejects(unpackPackage(await makePackage({ 'server.js': 'x' }), into()), { code: 'invalid_manifest' })
+    // Built with an SDK this Hodi does not run: refused before any question.
+    const built = (sdk: string | undefined) =>
+      makePackage({ ...files, 'plugin.json': JSON.stringify({ ...MANIFEST, sdk }) })
+    await assert.rejects(unpackPackage(await built(undefined), into()), { code: 'outdated_api' })
+    await assert.rejects(unpackPackage(await built('1.0.0-beta.6'), into()), { code: 'outdated_api' })
+    await assert.rejects(unpackPackage(await built('99.0.0'), into()), { code: 'newer_sdk' })
+    await assert.rejects(unpackPackage(await built('beta'), into()), { code: 'invalid_manifest' })
     await assert.rejects(unpackPackage(Buffer.from('not a tar at all'), into()), { code: 'not_a_package' })
   })
 

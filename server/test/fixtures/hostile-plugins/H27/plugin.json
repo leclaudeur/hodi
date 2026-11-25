@@ -4,5 +4,6 @@
   "version": "0.0.1",
   "description": "A __proto__ key in a response pollutes nothing",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin"
 }

@@ -4,7 +4,15 @@ import { RequestError, type StagedPlugin, getCatalog, stageFromCatalog } from '.
 import { type CatalogPlugin, availableOf, updateOf } from '../../../../plugins/catalog.ts'
 import type { PluginInfo } from '../../../../plugins/registry.ts'
 
-const ERRORS = ['download_failed', 'checksum_mismatch', 'not_a_package', 'invalid_manifest', 'signed_only'] as const
+const ERRORS = [
+  'download_failed',
+  'checksum_mismatch',
+  'not_a_package',
+  'invalid_manifest',
+  'outdated_api',
+  'newer_sdk',
+  'signed_only'
+] as const
 
 // Hodi's plugin registry, read once per visit of Serveur › Plugins, and a plugin of it downloaded and checked by the
 // server before the same questions as a file.

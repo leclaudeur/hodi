@@ -10,6 +10,8 @@ import styles from '../../Settings.module.css'
 
 // The error of a plugin written for an older plugin API (OUTDATED_API in server/plugins/manifest.ts).
 export const OUTDATED_API = 'outdated_api'
+// The error of a plugin built with a newer plugin SDK than this Hodi's (NEWER_SDK in server/plugins/plugin-sdk.ts).
+export const NEWER_SDK = 'newer_sdk'
 
 export type Setting =
   | { key: string; type: 'boolean'; default: boolean }

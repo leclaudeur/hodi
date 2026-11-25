@@ -6,9 +6,10 @@ import { create } from 'tar'
 import { build } from 'vite'
 import { parseManifest } from '../server/plugins/manifest.ts'
 import { packageDigest } from '../server/plugins/package.ts'
+import { PLUGIN_SDK } from '../server/plugins/plugin-sdk.ts'
 
 // Turns a plugin's source folder into a .hodi-plugin that Serveur › Plugins installs:
-//   plugin.json          what it is (server/plugins/manifest.ts), copied as is
+//   plugin.json          what it is (server/plugins/manifest.ts), with the version of the SDK that built it
 //   server/index.ts      its server part, bundled into server.js (an ES module)
 //   web/index.tsx        its web part, bundled into web.js (a script reading Hodi's React and hodi:sdk), and web.css
 //   web/public.tsx       its places before sign-in, bundled into web-public.js and web-public.css
@@ -38,11 +39,13 @@ export const buildPlugin = async (
   source: string,
   { out = path.join(source, 'dist'), key }: { out?: string; key?: string } = {}
 ): Promise<BuiltPlugin> => {
-  const manifest = parseManifest(JSON.parse(readFileSync(path.join(source, 'plugin.json'), 'utf8')))
+  // Hodi refuses a plugin built with an SDK older than it accepts, or newer than its own: the build says which.
+  const raw = { ...(JSON.parse(readFileSync(path.join(source, 'plugin.json'), 'utf8')) as object), sdk: PLUGIN_SDK }
+  const manifest = parseManifest(raw)
   const stage = path.join(out, manifest.id)
   rmSync(stage, { recursive: true, force: true })
   mkdirSync(stage, { recursive: true })
-  cpSync(path.join(source, 'plugin.json'), path.join(stage, 'plugin.json'))
+  writeFileSync(path.join(stage, 'plugin.json'), `${JSON.stringify(raw, null, 2)}\n`)
 
   const server = firstOf(source, ['server/index.ts', 'server/index.js'])
   if (server) {

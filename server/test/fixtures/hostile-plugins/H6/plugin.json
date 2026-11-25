@@ -4,5 +4,6 @@
   "version": "0.0.1",
   "description": "An endless chain of promises is stopped",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin"
 }

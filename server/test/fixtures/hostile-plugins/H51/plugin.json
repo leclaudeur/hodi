@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "description": "publicRoutes: who is null and the body is capped",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin",
   "permissions": {
     "publicRoutes": true

@@ -10,6 +10,7 @@ import { applyPluginRestore, pluginCopyDir, readPluginManifest, stagePluginResto
 import { PluginStore } from '../db/plugin-store.ts'
 import { PLUGIN_API } from '../plugins/manifest.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 // A plugin that keeps notes in its own database.
 const NOTES = `export default {
@@ -45,7 +46,15 @@ const install = (at: Server, id: string) => {
   mkdirSync(path.join(at.dir, id), { recursive: true })
   writeFileSync(
     path.join(at.dir, id, 'plugin.json'),
-    JSON.stringify({ id, name: id, version: '0.1.0', description: 'Notes.', api: PLUGIN_API, audience: 'admin' })
+    JSON.stringify({
+      id,
+      name: id,
+      version: '0.1.0',
+      description: 'Notes.',
+      api: PLUGIN_API,
+      sdk: PLUGIN_SDK,
+      audience: 'admin'
+    })
   )
   writeFileSync(path.join(at.dir, id, 'server.js'), NOTES)
 }

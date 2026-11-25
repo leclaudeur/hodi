@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync } 
 import path from 'node:path'
 import type { PluginStore } from '../db/plugin-store.ts'
 import { type Manifest, OUTDATED_API, PLUGIN_API, parseManifest, settingValues, signedOnlyAsked } from './manifest.ts'
+import { sdkRefusal } from './plugin-sdk.ts'
 import { ownerOf, signerOf } from './package.ts'
 import { checkShape } from './plugin-shape.ts'
 import { PluginSandbox } from './sandbox/sandbox.ts'
@@ -65,6 +66,9 @@ const readManifest = (plugin: LoadedPlugin): Manifest => {
   if (manifest.id !== plugin.id) throw new Error(`its folder must be named ${manifest.id}`)
   // Set before the refusal below, so that a refused plugin is still listed by its name.
   plugin.manifest = manifest
+  // Built with an SDK too old or too new for this Hodi: listed by its name, to be updated; nothing of it runs.
+  const refusal = sdkRefusal(manifest.sdk)
+  if (refusal) throw new Error(refusal)
   // Installed before signed-only permissions existed, or copied in by hand: an unsigned plugin asking for one does
   // not run. A build of « npx hodi-plugin dev » keeps them, to test them.
   const refused = plugin.signed || plugin.dev ? [] : signedOnlyAsked(manifest)
