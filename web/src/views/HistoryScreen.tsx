@@ -6,7 +6,7 @@ import { type HistoryEntry, type TopicInfo, type TopicItem, UnauthorizedError, g
 import { matchesWords, searchWords } from '../lib/find.ts'
 import { dayOfItem } from '../lib/format.ts'
 import { clearRead, closeArticle, isRead, markUnread, useReadState } from '../lib/read-state.ts'
-import { askToConfirm } from '../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../lib/confirm.ts'
 import { showDone } from '../lib/toast.ts'
 import { sendPendingChanges } from '../lib/user-state.ts'
 import { CLOSE_READER, HISTORY_HREF, SETTINGS_HREF } from '../lib/use-hash-route.ts'
@@ -143,8 +143,9 @@ const HistoryScreen = ({ layout, topics, activeId = null, onUnauthorized }: Hist
       title: t('confirm.history.title'),
       message: <RichText i18nKey="confirm.history.message" />,
       label: t('confirm.history.button'),
-      onConfirm: () => {
-        clearRead()
+      proof: ownProof(),
+      onConfirm: async proof => {
+        await clearRead(proof)
         showDone(t('history.cleared'))
       }
     })

@@ -105,7 +105,7 @@ export const ScanStage = ({ setup }: { setup: TwoFactorSetupState }) => {
             {t('twoFactor.scan.open')}
           </Button>
         ) : setup.secret ? (
-          <QrCode value={setup.secret.uri} label={t('twoFactor.scan.qrLabel')} size={136} />
+          <QrCode value={setup.secret.uri} label={t('twoFactor.scan.qrLabel')} size={184} />
         ) : (
           <span className={styles.qrWait} aria-hidden="true" />
         )}

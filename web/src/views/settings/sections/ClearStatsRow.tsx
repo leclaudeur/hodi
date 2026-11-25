@@ -1,6 +1,6 @@
 import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { askToConfirm } from '../../../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../../../lib/confirm.ts'
 import { clearReadings } from '../../../lib/reading-stats.ts'
 import { showDone } from '../../../lib/toast.ts'
 import RichText from '../../../ui/RichText.tsx'
@@ -22,8 +22,9 @@ const ClearStatsRow = () => {
             title: t('confirm.clearStats.title'),
             message: <RichText i18nKey="confirm.clearStats.message" />,
             label: t('confirm.clearStats.button'),
-            onConfirm: () => {
-              clearReadings()
+            proof: ownProof(),
+            onConfirm: async proof => {
+              await clearReadings(proof)
               showDone(t('settings.me.clearStatsDone'))
             }
           })

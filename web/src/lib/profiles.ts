@@ -17,6 +17,7 @@ import { dropRequestsOf } from './requests.ts'
 import { SEEN_STORIES_KEY } from './seen-stories.ts'
 import { clearUserState, sendPendingChanges } from './user-state.ts'
 import { CONFIG } from './config.ts'
+import type { AdminProof } from '../api/plugins.ts'
 
 // The household's profiles ("Qui lit ?") and the one this device reads as.
 
@@ -149,8 +150,8 @@ export const editProfile = async (
   return profile
 }
 
-export const removeProfile = async (id: number) => {
-  await deleteProfile(id)
+export const removeProfile = async (id: number, proof: AdminProof) => {
+  await deleteProfile(id, proof)
   dropRequestsOf(id)
   if (!state) return
   commit({ ...state, profiles: state.profiles.filter(profile => profile.id !== id) })

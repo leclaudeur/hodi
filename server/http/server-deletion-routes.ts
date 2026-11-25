@@ -2,6 +2,7 @@ import type express from 'express'
 import { deletionPlan } from '../db/account-data.ts'
 import { type UserAccount, cleanEmail } from '../db/user-account-store.ts'
 import type { ServerHelpers, ServerRoutesOptions } from './server-routes.ts'
+import { idParam } from './id-param.ts'
 
 // Serveur › Comptes: what goes for good, each after the server admin's own password.
 
@@ -31,7 +32,7 @@ export const mountDeletionRoutes = (
   // « Supprimer » an account, never the server's admin's own: Compte et données. « Bloquer » does the same and keeps
   // its e-mail from making an account again.
   const remove = (blocks: boolean) => async (request: express.Request, response: express.Response) => {
-    const account = accounts.get(Number(request.params.id))
+    const account = accounts.get(idParam(request.params.id))
     if (!account) {
       response.status(404).json({ error: 'not_found' })
       return
@@ -51,7 +52,7 @@ export const mountDeletionRoutes = (
   // « Nommer admin du serveur »: an adult with a profile, chosen by an admin with their own password. The only way
   // one becomes it, so that the last admin can leave (account-delete-route.ts).
   router.post('/accounts/:id/server-admin', async (request, response) => {
-    const account = accounts.get(Number(request.params.id))
+    const account = accounts.get(idParam(request.params.id))
     const profileId = account ? accounts.profileOf(account.id) : null
     const profile = profileId === null ? null : profiles.find(profileId)
     if (!account || !profile) {

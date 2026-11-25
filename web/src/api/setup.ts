@@ -167,7 +167,7 @@ export const checkAccountAi = async (provider: string, key: string) =>
 export const setAccountAi = (provider: string, key: string) =>
   sendJson<AccountView>('PUT', '/account/ai', { provider, key })
 
-export const removeAccountAi = () => sendJson<AccountView>('DELETE', '/account/ai')
+export const removeAccountAi = (proof: AdminProof) => sendJson<AccountView>('DELETE', '/account/ai', proof)
 
 export const changeAccountRegion = (region: { timeZone?: string; country?: string | null }) =>
   sendJson<AccountView>('PUT', '/account/region', region)
@@ -175,7 +175,8 @@ export const changeAccountRegion = (region: { timeZone?: string; country?: strin
 // « Redemander »: every device asks for the password again.
 export const forgetTrustedDevices = () => sendJson<AccountView>('DELETE', '/account/trusted')
 
-export const signOutDevice = (id: number) => sendJson<AccountView>('DELETE', `/account/devices/${id}`)
+export const signOutDevice = (id: number, proof: AdminProof) =>
+  sendJson<AccountView>('DELETE', `/account/devices/${id}`, proof)
 
 // A JSON file, straight to the browser's downloads.
 export const ACCOUNT_COPY_URL = '/api/account/copy'
@@ -245,8 +246,8 @@ export interface ProfileDevice {
 export const getProfileDevices = async (profileId: number) =>
   (await getJson<{ devices: ProfileDevice[] }>(`/profiles/${profileId}/devices`)).devices
 
-export const removeProfileDevice = (profileId: number, device: Pick<ProfileDevice, 'id'>) =>
-  sendJson<null>('DELETE', `/profiles/${profileId}/account-devices/${device.id}`)
+export const removeProfileDevice = (profileId: number, device: Pick<ProfileDevice, 'id'>, proof: AdminProof) =>
+  sendJson<null>('DELETE', `/profiles/${profileId}/account-devices/${device.id}`, proof)
 
 export interface HouseholdSetup {
   // The server's one space needs none: a plugin with several households names them.

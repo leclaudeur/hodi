@@ -1,4 +1,5 @@
 import { type ReactNode, useSyncExternalStore } from 'react'
+import { hasNoPassword } from './two-factor.ts'
 
 // A question before something that can't be undone ("Vider", "Réinitialiser"): a dialog over the page,
 // answered by its two buttons. The toasts keep the news of what happened.
@@ -42,6 +43,9 @@ const subscribe = (listener: () => void) => {
 }
 
 export const askToConfirm = (confirmation: Confirmation) => set(confirmation)
+
+// The proof asked before what cannot be undone: the password, or only the app's code for an account without one.
+export const ownProof = (): Confirmation['proof'] => (hasNoPassword() ? { noPassword: true } : {})
 
 export const closeConfirmation = () => set(null)
 

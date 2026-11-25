@@ -107,7 +107,7 @@
     "failed": "La vérification a échoué. Réessaie dans un instant.",
     "label": "Clé d’API {{provider}}",
     "check": "Vérifier",
-    "console": "Créer une clé sur la console {{provider}}"
+    "where": "Crée-la sur la <a>console {{provider}}</a>, puis colle-la ici."
   },
   "regions": {
     "timeZone": "Fuseau horaire",
@@ -136,8 +136,10 @@
     "saveFailed": "Le profil n’a pas pu être enregistré. Réessaie dans un instant.",
     "changePhoto": "Changer la photo",
     "addPhoto": "Ajouter une photo",
+    "photoFormats": "JPEG, PNG ou WebP",
     "photoMax": "20 Mo max",
-    "removePhoto": "Retirer la photo",
+    "editPhoto": "Modifier",
+    "removePhoto": "Retirer",
     "name": "Prénom",
     "namePlaceholder": "Ex. Léa",
     "color": "Couleur",
@@ -178,7 +180,7 @@
     "handle": "Identifiant",
     "handleFree": "@{{handle}} est libre.",
     "handleTaken": "@{{handle}} est déjà pris. Essaie @{{other}}.",
-    "handleRules": "De 3 à 20 caractères : lettres, chiffres, point ou tiret bas.",
+    "handleRules": "3 à 20 lettres, chiffres, points ou _",
     "handleLocked": "Tu pourras le changer le {{date}}.",
     "handleEvery": "Tu peux le changer une fois tous les 30 jours."
   },
@@ -191,9 +193,9 @@
     "start": {
       "kicker": "Bienvenue dans Hodi",
       "title": "L’actu de toute la maison",
-      "lead": "Les sites d’info que tu préfères, <b>rangés par thème</b>, et lus <b>sans pub ni pistage</b>. Chacun a son compte, et on se partage ce qui vaut la peine d’être lu.",
+      "lead": "Les sites d’info que tu préfères, <b>rangés par thème</b> et lus <b>sans pub ni pistage</b>. Chacun son compte, et on partage ce qui vaut la peine d’être lu.",
       "codeNoticeTitle": "Le code est dans le journal du serveur",
-      "codeNoticeText": "Prends la dernière ligne <i>Setup code</i> de <code>docker compose logs app</code>.",
+      "codeNoticeText": "Prends la dernière ligne <i>Setup code</i> de <code>docker compose logs app</code>",
       "code": "Code d’installation",
       "button": "Installer Hodi",
       "length": "Quelques minutes · tout dans le navigateur"
@@ -415,7 +417,6 @@
     "editTitle": "Modifier {{name}}",
     "profileSaved": "Profil enregistré",
     "deleted": "{{name}} supprimé",
-    "deleteFailed": "La suppression a échoué. Réessaie dans un instant.",
     "backToProfiles": "Retour aux profils",
     "perDayCount": "{{count}} / jour",
     "channels": "Chaînes YouTube",
@@ -423,7 +424,6 @@
     "removeDevice": "Retirer",
     "removeDeviceLabel": "Retirer {{device}}",
     "deviceRemoved": "{{device}} retiré",
-    "deviceRemoveFailed": "Impossible de retirer cet appareil.",
     "deleteTwoParents": "{{name}} a deux parents : l’un des deux doit d’abord ne plus être parent."
   },
   "requests": {
@@ -1283,7 +1283,6 @@
       "signOut": "Déconnecter",
       "signOutLabel": "Déconnecter {{device}}",
       "signedOut": "{{device}} déconnecté",
-      "signOutFailed": "L’appareil n’a pas pu être déconnecté. Réessaie dans un instant.",
       "yourData": "Données",
       "copy": "Télécharger une copie",
       "copyHint": "Le compte, le profil, les sources, enregistrés, lus, partages et statistiques, dans un fichier JSON",
@@ -1397,7 +1396,6 @@
       "mb": "{{value}} Mo",
       "clearedFreed": "Textes vidés ({{size}} libérés)",
       "cleared": "Textes vidés",
-      "clearFailed": "Impossible de vider les textes. Réessaie dans un instant.",
       "server": "Serveur",
       "database": "Base de données",
       "articles_one": "{{total}} article, dont {{texts}} avec son texte",
@@ -1543,7 +1541,6 @@
   },
   "sources": {
     "deleted": "{{name}} supprimée",
-    "deleteFailed": "La source n’a pas pu être supprimée. Réessaie dans un instant.",
     "hideLowTitle_one": "Masquer la source peu ouverte ?",
     "hideLowTitle_other": "Masquer les {{count}} sources peu ouvertes ?",
     "hideOneTitle": "Masquer {{name}} ?",
@@ -1602,7 +1599,6 @@
     "on": "IA activée",
     "removed": "IA retirée",
     "remove": "Retirer",
-    "removeFailed": "La clé n’a pas pu être retirée. Réessaie dans un instant.",
     "provider": "Fournisseur",
     "model": "Modèle {{model}}",
     "key": "Clé d’API",

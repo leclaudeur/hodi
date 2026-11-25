@@ -27,6 +27,21 @@ const totpOf = (secret: string, label: string) =>
     secret: Secret.fromBase32(secret)
   })
 
+// The app's link without the parameters every app already assumes (SHA1, 6 digits, 30 s): a shorter link makes a QR
+// code with fewer, larger squares, which a phone reads at a glance.
+const APP_DEFAULTS = [
+  ['algorithm', 'SHA1'],
+  ['digits', '6'],
+  ['period', '30']
+] as const
+const appLink = (secret: string, label: string) => {
+  const link = new URL(totpOf(secret, label).toString())
+  for (const [name, value] of APP_DEFAULTS) {
+    if (link.searchParams.get(name) === value) link.searchParams.delete(name)
+  }
+  return link.toString()
+}
+
 // A recovery code as typed: capitals, without spaces or dashes; null when it cannot be one.
 export const recoveryCodeOf = (value: unknown) => {
   if (typeof value !== 'string' || value.length > 32) return null
@@ -109,7 +124,7 @@ export class TwoFactorStore {
     this.#db
       .prepare('UPDATE users SET two_factor_pending = ?, two_factor_pending_at = ? WHERE id = ?')
       .run(this.#seal(secret), now, userId)
-    return { secret, uri: totpOf(secret, label).toString() }
+    return { secret, uri: appLink(secret, label) }
   }
 
   // The app's first code: on from now, with new recovery codes, shown once. null when the code is not the app's.

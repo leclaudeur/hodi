@@ -3,11 +3,11 @@ import { type ReactNode, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { type AccountView, deleteAccount, signOutDevice } from '../../../api.ts'
-import { askToConfirm } from '../../../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../../../lib/confirm.ts'
 import { deviceLabel } from '../../../lib/device-label.ts'
 import { timeAgo } from '../../../lib/format.ts'
 import { t } from '../../../lib/i18n.ts'
-import { showError, showSaved } from '../../../lib/toast.ts'
+import { showSaved } from '../../../lib/toast.ts'
 import RichText from '../../../ui/RichText.tsx'
 import { contentDays } from '../../../lib/content-days.ts'
 import MoreRow from '../../../ui/MoreRow.tsx'
@@ -81,13 +81,11 @@ export const DeviceRows = ({
       title: t('confirm.signOutDevice.title', { device: label }),
       message: t('confirm.signOutDevice.message'),
       label: t('confirm.signOutDevice.button'),
-      onConfirm: () =>
-        void signOutDevice(id)
-          .then(next => {
-            onAccount(next)
-            showSaved(t('settings.account.signedOut', { device: label }))
-          })
-          .catch(() => showError(t('settings.account.signOutFailed')))
+      proof: ownProof(),
+      onConfirm: async proof => {
+        onAccount(await signOutDevice(id, proof))
+        showSaved(t('settings.account.signedOut', { device: label }))
+      }
     })
 
   const sorted = [...account.devices].sort((a, b) => Number(b.current) - Number(a.current))

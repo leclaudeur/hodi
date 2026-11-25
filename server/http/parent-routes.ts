@@ -3,6 +3,7 @@ import { cleanHandle } from '../handle.ts'
 import type { UserAccount } from '../db/user-account-store.ts'
 import { MAX_PARENTS } from '../db/parent-invitation-store.ts'
 import type { YoungAccountRoutesOptions } from './young-account-routes.ts'
+import { idParam } from './id-param.ts'
 
 type ParentOf = (request: express.Request, response: express.Response) => UserAccount | null
 
@@ -22,7 +23,7 @@ export const mountParentRoutes = (
   const ownChild = (request: express.Request, response: express.Response) => {
     const parent = parentOf(request, response)
     if (!parent) return null
-    const child = young.childOf(parent.id, Number(request.params.id))
+    const child = young.childOf(parent.id, idParam(request.params.id))
     if (!child) response.status(404).json({ error: 'not_found' })
     return child && { parent, child }
   }
@@ -76,7 +77,7 @@ export const mountParentRoutes = (
   router.post('/invitations/:childId', (request, response) => {
     const parent = parentOf(request, response)
     if (!parent) return
-    const childId = Number(request.params.childId)
+    const childId = idParam(request.params.childId)
     const answer = invitations.accept(parent.id, childId, now())
     if (answer !== 'accepted') {
       response.status(answer === 'full' ? 409 : 404).json({ error: answer === 'full' ? 'parents_full' : 'not_found' })
@@ -89,7 +90,7 @@ export const mountParentRoutes = (
   router.delete('/invitations/:childId', (request, response) => {
     const parent = parentOf(request, response)
     if (!parent) return
-    if (invitations.refuse(parent.id, Number(request.params.childId))) response.status(204).end()
+    if (invitations.refuse(parent.id, idParam(request.params.childId))) response.status(204).end()
     else response.status(404).json({ error: 'not_found' })
   })
 }

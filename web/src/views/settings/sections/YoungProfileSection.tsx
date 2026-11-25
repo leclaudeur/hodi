@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RequestError } from '../../../api/http.ts'
-import { askToConfirm } from '../../../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../../../lib/confirm.ts'
 import { isYoung, removeProfile, useProfiles } from '../../../lib/profiles.ts'
 import { usePendingRequests } from '../../../lib/requests.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
@@ -49,17 +49,19 @@ const confirmRemove = (id: number, name: string, close: () => void, t: TFunction
     title: t('confirm.deleteProfile.title'),
     message: <RichText i18nKey="confirm.deleteProfile.message" values={{ name }} />,
     label: t('confirm.deleteProfile.button'),
-    onConfirm: () => {
+    proof: ownProof(),
+    onConfirm: async proof => {
+      try {
+        await removeProfile(id, proof)
+      } catch (failure) {
+        // Another parent must agree: no password changes that, so the dialog closes on the reason.
+        if (!(failure instanceof RequestError && failure.code === 'two_parents')) throw failure
+        showError(t('young.deleteTwoParents', { name }))
+        return
+      }
       close()
-      void removeProfile(id)
-        .then(() => {
-          showSaved(t('young.deleted', { name }))
-          window.location.hash = CHILDREN_HREF
-        })
-        .catch((failure: unknown) => {
-          const twoParents = failure instanceof RequestError && failure.code === 'two_parents'
-          showError(t(twoParents ? 'young.deleteTwoParents' : 'young.deleteFailed', { name }))
-        })
+      showSaved(t('young.deleted', { name }))
+      window.location.hash = CHILDREN_HREF
     }
   })
 

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type AccountView, UnauthorizedError, changeAccountRegion, removeAccountAi } from '../../api.ts'
 import { refreshAiUsage } from '../../lib/ai-left.ts'
-import { askToConfirm } from '../../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../../lib/confirm.ts'
 import { useProfiles } from '../../lib/profiles.ts'
 import { countryName } from '../../lib/regions.ts'
 import { useAiUsage } from '../../lib/settings-data.ts'
@@ -44,10 +44,8 @@ const KeyCard = ({ account, onAccount, onUnauthorized }: KeyCardProps) => {
       title: t('confirm.removeKey.title'),
       message: <RichText i18nKey="confirm.removeKey.message" />,
       label: t('confirm.removeKey.button'),
-      onConfirm: () =>
-        void removeAccountAi()
-          .then(keyChanged)
-          .catch(failed(onUnauthorized, t('ai.removeFailed')))
+      proof: ownProof(),
+      onConfirm: async proof => keyChanged(await removeAccountAi(proof))
     })
   const saveCountry = (country: string | null) =>
     void changeAccountRegion({ country })

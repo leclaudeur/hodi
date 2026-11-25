@@ -3,6 +3,7 @@ import { type ProfileStore, isYoung } from '../db/profile-store.ts'
 import type { ServerPeopleStore } from '../db/server-people-store.ts'
 import type { SignInCodeStore } from '../db/sign-in-code-store.ts'
 import { profileIdOf } from './profile-routes.ts'
+import { idParam } from './id-param.ts'
 
 interface AccountCodeOptions {
   people?: ServerPeopleStore
@@ -26,7 +27,7 @@ export const mountAccountCodeRoute = (
   // "Mot de passe oublié" for an adult's account: a code that lets that person choose a new password, only once they
   // asked for one, so the admin cannot take an account over on their own. One's own password changes in My account.
   router.post('/accounts/:id/code', async (request, response) => {
-    const account = people.accounts().find(entry => entry.id === Number(request.params.id))
+    const account = people.accounts().find(entry => entry.id === idParam(request.params.id))
     const profile = account?.profile ? profiles.find(account.profile.id) : null
     if (!account || !profile || isYoung(profile)) {
       response.status(404).json({ error: 'not_found' })

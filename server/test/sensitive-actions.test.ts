@@ -136,8 +136,8 @@ describe('no household admin role', () => {
         before
       )
       // Sam manages no one else's profile: Léa, the admin's child, is not even on his device.
-      assert.equal((await call(`/profiles/${leaId}`, sam, 'DELETE')).status, 404)
-      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 204)
+      assert.equal((await call(`/profiles/${leaId}`, sam, 'DELETE', { password: SAM_PASSWORD })).status, 404)
+      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 204)
     } finally {
       close()
     }
@@ -158,7 +158,7 @@ describe('the admin’s password before what cannot be undone for another adult'
       const refused = await call(`/profiles/${samId}`, shared, 'DELETE', { password: ADMIN_PASSWORD })
       assert.deepEqual([refused.status, await refused.json()], [409, { error: 'account_profile' }])
       assert.notEqual(accounts.ofProfile(samId), null)
-      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 204)
+      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 204)
     } finally {
       close()
     }
@@ -342,6 +342,7 @@ describe('« Validation en deux étapes »', () => {
     assert.equal(started.status, 200)
     const { secret, uri } = (await started.json()) as { secret: string; uri: string }
     assert.match(uri, /^otpauth:\/\/totp\/Hodi:antho%40example\.com\?issuer=Hodi&secret=[A-Z2-7]+/)
+    assert.doesNotMatch(uri, /algorithm|digits|period/)
     const confirmed = await env.call('/account/two-factor', cookie, 'PUT', { code: appCode(secret, env.clock.now) })
     assert.equal(confirmed.status, 200)
     const { recoveryCodes } = (await confirmed.json()) as { recoveryCodes: string[] }

@@ -181,7 +181,7 @@ export const setServerMail = (draft: ServerMailDraft) =>
 export const changeServerMail = (changes: Partial<Omit<ServerMailDraft, 'appUrl'>>) =>
   sendJson<{ mail: ServerMail }>('PATCH', '/server/mail', changes).then(({ mail }) => mail)
 
-export const removeServerMail = () => sendJson<{ mail: null }>('DELETE', '/server/mail')
+export const removeServerMail = (proof: AdminProof) => sendJson<{ mail: null }>('DELETE', '/server/mail', proof)
 
 // « Envoyer un essai »: to the admin's own address, which comes back.
 export const sendTestMail = () => sendJson<{ to: string }>('POST', '/server/mail/test')
@@ -205,8 +205,10 @@ export const setSourceValidation = (on: boolean) =>
 
 export const decideSource = (
   id: string,
-  decision: { decision: 'accept' | 'refuse'; topicIds?: string[]; teen: boolean; child: boolean }
-) => sendJson<null>('POST', `/server/reviews/sources/${encodeURIComponent(id)}`, decision)
+  decision: { decision: 'accept' | 'refuse'; topicIds?: string[]; teen: boolean; child: boolean },
+  // Refuser asks for the admin's password first.
+  proof?: AdminProof
+) => sendJson<null>('POST', `/server/reviews/sources/${encodeURIComponent(id)}`, { ...decision, ...proof })
 
 // À traiter's reports: a source, how many reported it and why, never who.
 export interface SourceReportView {
@@ -224,8 +226,9 @@ export interface SourceReportView {
 export const getSourceReports = () => getJson<{ reports: SourceReportView[] }>('/server/reports')
 
 // Ignorer keeps the source; Retirer du catalogue takes it out for those who do not read it yet.
-export const decideReport = (id: string, decision: 'ignore' | 'unlist') =>
-  sendJson<null>('POST', `/server/reports/${encodeURIComponent(id)}`, { decision })
+// Retirer asks for the admin's password first.
+export const decideReport = (id: string, decision: 'ignore' | 'unlist', proof?: AdminProof) =>
+  sendJson<null>('POST', `/server/reports/${encodeURIComponent(id)}`, { decision, ...proof })
 
 // A share someone reported, as it was received, and its sender's account (null once deleted); never who reported it.
 export interface ShareReportView {

@@ -101,7 +101,7 @@ describe('« Mes sources » at setup', () => {
       log: () => {}
     })
     const options = { sources: { store: new SourceStore(db), file }, news, profiles, users, now: () => 5 }
-    onSetUpOf(options as unknown as Options)('fr')
+    onSetUpOf(options as unknown as Options)('fr', null)
     assert.deepEqual(users(claire.id).sources.mine(), ['rtl'])
   })
 })

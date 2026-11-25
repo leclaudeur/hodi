@@ -672,7 +672,8 @@ describe('reader state', () => {
     // Articles the feeds don't know are left out of the history's cards.
     assert.deepEqual(await (await call('GET', '/history')).json(), { items: [] })
 
-    assert.equal((await call('DELETE', '/read')).status, 200)
+    assert.equal((await call('DELETE', '/read')).status, 403)
+    assert.equal((await call('DELETE', '/read', { password: PASSWORD })).status, 200)
     assert.deepEqual(((await (await call('GET', '/')).json()) as { read: string[] }).read, [])
     assert.equal((await call('DELETE', '/read/../etc')).status, 404)
   })
@@ -1046,10 +1047,17 @@ describe('profiles', () => {
     assert.equal((await call('PATCH', '/profiles/1', { body: { name: 'X' }, cookie: asZoe })).status, 403)
     assert.equal((await call('DELETE', '/profiles/1/photo', { cookie: asZoe })).status, 403)
     assert.equal((await call('POST', '/profiles', { body: { name: 'Sam', color: 'tech' }, cookie: asZoe })).status, 403)
-    assert.equal((await call('DELETE', `/profiles/${zoe.id}`, { cookie: asZoe })).status, 403)
+    assert.equal(
+      (await call('DELETE', `/profiles/${zoe.id}`, { body: { password: MEMBER_PASSWORD }, cookie: asZoe })).status,
+      403
+    )
     assert.equal((await call('GET', '/storage', { cookie: asZoe })).status, 403)
-    assert.equal((await call('DELETE', '/storage/texts', { cookie: asZoe })).status, 403)
-    assert.equal((await call('DELETE', '/storage/texts')).status, 200)
+    assert.equal(
+      (await call('DELETE', '/storage/texts', { body: { password: MEMBER_PASSWORD }, cookie: asZoe })).status,
+      403
+    )
+    assert.equal((await call('DELETE', '/storage/texts')).status, 403)
+    assert.equal((await call('DELETE', '/storage/texts', { body: { password: PASSWORD } })).status, 200)
     // Each reader sees its own AI calls only, on its own key: no cap, so nothing to put back to 0.
     const usage = (await (await call('GET', '/ai-usage', { cookie: asZoe })).json()) as {
       kinds: Record<string, unknown>[]
@@ -1121,8 +1129,12 @@ describe('profiles', () => {
     })
     assert.equal(photo.status, 409)
 
-    // Deleting is a parent's, as everything else about a young profile: here, with no accounts, any adult's.
-    assert.equal((await call('DELETE', `/profiles/${max.id}`, { cookie: asParent })).status, 204)
+    // Deleting is a parent's, as everything else about a young profile, after the parent's own password.
+    assert.equal((await call('DELETE', `/profiles/${max.id}`, { cookie: asParent })).status, 403)
+    assert.equal(
+      (await call('DELETE', `/profiles/${max.id}`, { body: { password: MEMBER_PASSWORD }, cookie: asParent })).status,
+      204
+    )
     assert.equal((await call('DELETE', `/profiles/${parent.id}`, { body: { password: PASSWORD } })).status, 404)
   })
 
@@ -1142,7 +1154,7 @@ describe('profiles', () => {
     for (const profile of profiles.filter(other => other.id !== 1)) {
       assert.equal((await call('DELETE', `/profiles/${profile.id}`, { body: { password: PASSWORD } })).status, 204)
     }
-    assert.equal((await call('DELETE', '/profiles/1')).status, 409)
+    assert.equal((await call('DELETE', '/profiles/1', { body: { password: PASSWORD } })).status, 409)
   })
 
   it('needs a session', async () => {
@@ -1250,13 +1262,19 @@ describe('adding a source', () => {
       preferences: { hiddenSources?: string[] } | null
     }
     assert.deepEqual(zoeAgain.preferences?.hiddenSources, [id, 'gazette'])
-    assert.equal((await call('DELETE', '/sources/gazette')).status, 204)
-    assert.equal((await call('DELETE', `/sources/${id}`, { cookie: asOther })).status, 403)
+    assert.equal((await call('DELETE', '/sources/gazette', { body: { password: PASSWORD } })).status, 204)
+    assert.equal(
+      (await call('DELETE', `/sources/${id}`, { body: { password: MEMBER_PASSWORD }, cookie: asOther })).status,
+      403
+    )
     // A starting-list source: hidden by whoever wants, removed by no one.
-    assert.equal((await call('DELETE', '/sources/bx1', { cookie: asOther })).status, 403)
-    assert.equal((await call('DELETE', '/sources/nope')).status, 404)
+    assert.equal(
+      (await call('DELETE', '/sources/bx1', { body: { password: MEMBER_PASSWORD }, cookie: asOther })).status,
+      403
+    )
+    assert.equal((await call('DELETE', '/sources/nope', { body: { password: PASSWORD } })).status, 404)
 
-    assert.equal((await call('DELETE', `/sources/${id}`)).status, 204)
+    assert.equal((await call('DELETE', `/sources/${id}`, { body: { password: PASSWORD } })).status, 204)
 
     // Suggested once it is no longer followed; BX1, followed, never is.
     const suggested = (await (
@@ -1269,7 +1287,7 @@ describe('adding a source', () => {
     )
     assert.equal((await call('POST', '/sources/suggest', { body: { topicId: 'nope' } })).status, 400)
 
-    assert.equal((await call('DELETE', '/sources/bx1')).status, 403)
+    assert.equal((await call('DELETE', '/sources/bx1', { body: { password: PASSWORD } })).status, 403)
     const left = (await (await call('GET', '/sources')).json()) as { sources: { id: string; lang: string }[] }
     assert.equal(
       left.sources.some(source => source.id === 'bx1'),

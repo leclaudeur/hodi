@@ -12,7 +12,7 @@ import styles from './ProfileForm.module.css'
 // Typing stops this long before the server is asked.
 const CHECK_DELAY_MS = CONFIG.app.handleCheckDelay
 
-type HandleStatus = 'rules' | 'checking' | 'free' | 'taken' | 'own'
+type HandleStatus = 'rules' | 'invalid' | 'checking' | 'free' | 'taken' | 'own'
 
 interface Checked {
   handle: string
@@ -62,6 +62,8 @@ export const useHandle = (name: string, { enabled, current, start, code }: Handl
   const value = suggested ?? base
   const statusOf = (): HandleStatus => {
     if (value === current) return 'own'
+    // A character it can never hold is red at once; one too few is not, since typing goes on.
+    if (/[^a-z0-9._]/.test(value)) return 'invalid'
     if (cleanHandle(value) !== value) return 'rules'
     if (suggested) return 'free'
     if (!checked) return 'checking'
@@ -77,7 +79,8 @@ export type Handle = ReturnType<typeof useHandle>
 const dayOf = (at: number) =>
   new Intl.DateTimeFormat(LOCALES[getLanguage()], { day: 'numeric', month: 'long' }).format(at)
 
-// The line under the field: free in green, taken in red with a free one, else what an identifier may hold.
+// The line under the field: free in green, taken in red with a free one, else what an identifier may hold (in red
+// once it holds a character it cannot).
 const HandleStatusLine = ({ handle, lockedUntil }: { handle: Handle; lockedUntil: number | null }) => {
   const { t } = useTranslation()
   const { value, status, suggestion } = handle
@@ -87,7 +90,7 @@ const HandleStatusLine = ({ handle, lockedUntil }: { handle: Handle; lockedUntil
   if (status === 'free') return <StatusLine tone="success">{t('profileForm.handleFree', { handle: value })}</StatusLine>
   if (status === 'taken')
     return <StatusLine tone="error">{t('profileForm.handleTaken', { handle: value, other: suggestion })}</StatusLine>
-  return <StatusLine tone="info">{t('profileForm.handleRules')}</StatusLine>
+  return <StatusLine tone={status === 'invalid' ? 'error' : 'info'}>{t('profileForm.handleRules')}</StatusLine>
 }
 
 interface HandleFieldProps {
@@ -116,7 +119,7 @@ const HandleField = ({ handle, lockedUntil = null }: HandleFieldProps) => {
           autoCapitalize="none"
           spellCheck={false}
           maxLength={CONFIG.accounts.handleMaxLength}
-          aria-invalid={handle.status === 'taken'}
+          aria-invalid={handle.status === 'taken' || handle.status === 'invalid'}
           onChange={event => handle.onHandle(event.target.value.trim().replace(/^@/, '').toLowerCase())}
         />
       </span>

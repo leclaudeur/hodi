@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
-import { changeUserState, getUserState, subscribeUserState } from './user-state.ts'
+import type { AdminProof } from '../api/plugins.ts'
+import { changeUserState, changeWithProof, getUserState, subscribeUserState } from './user-state.ts'
 
 // Read articles, kept on the server and shared by every device (see user-state.ts).
 
@@ -87,8 +88,8 @@ export const markUnread = (id: string) => {
 }
 
 // "Effacer l'historique": every article unread again, on every device.
-export const clearRead = () =>
-  changeUserState(state => ({ ...state, read: [], hidden: [] }), { method: 'DELETE', path: '/read' })
+export const clearRead = (proof: AdminProof) =>
+  changeWithProof(state => ({ ...state, read: [], hidden: [] }), { method: 'DELETE', path: '/read' }, proof)
 
 // One value for the read, hidden and open articles together, built again only when one of them changes.
 let snapshot: { ids: Set<string>; hidden: Set<string>; open: string | null } = {

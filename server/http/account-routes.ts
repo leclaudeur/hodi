@@ -17,6 +17,7 @@ import { mountLockRoutes, mountParentalCodeRoutes } from './account-lock-routes.
 import { mountRegionRoutes } from './account-region-routes.ts'
 import { type AccountAiOptions, accountAiView, mountAiRoutes } from './account-ai-routes.ts'
 import { CONFIG } from '../fixed-config.ts'
+import { idParam } from './id-param.ts'
 
 // The person's own account, after the session and profile checks: Réglages > Compte et données.
 
@@ -274,7 +275,7 @@ const mountCredentialRoutes = (
   router.delete('/devices/:id', (request, response) => {
     const session = sessionOrRefuse(request, response)
     if (!session) return
-    const id = Number(request.params.id)
+    const id = idParam(request.params.id)
     if (!Number.isInteger(id) || id === session.device?.id || !devices.delete(session.account.id, id)) {
       response.status(404).json({ error: 'not_found' })
       return

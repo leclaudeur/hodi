@@ -3,6 +3,7 @@ import type { GameStore } from '../db/game-store.ts'
 import type { ProfileStore } from '../db/profile-store.ts'
 import type { NewsService } from '../news/news-service.ts'
 import { profileIdOf, requireServerAdmin } from './profile-routes.ts'
+import { idParam } from './id-param.ts'
 
 // What the server knows of an article or a video read, for the game: its kind, its theme, when it came out.
 export const readFactsOf = (news: NewsService) => (id: string) => {
@@ -103,7 +104,7 @@ const mountHouseholdGameRoutes = (router: express.Router, { game, news, profiles
 
   // Another profile's sheet: its level and the badges it earned.
   router.get('/game/profiles/:id', (request, response) => {
-    const id = Number(request.params.id)
+    const id = idParam(request.params.id)
     if (!profiles?.list().some(profile => profile.id === id)) {
       response.status(404).json({ error: 'not_found' })
       return

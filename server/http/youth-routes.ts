@@ -16,6 +16,7 @@ import type { YouthSources } from '../news/youth-sources.ts'
 import { kindOf, profileIdOf } from './profile-routes.ts'
 import { WEEK_MS } from '../../shared/time.ts'
 import { CONFIG } from '../fixed-config.ts'
+import { idParam } from './id-param.ts'
 
 const MAX_IDS = CONFIG.young.idsMax
 // A teen waits for its parents' answers past this many: a short list for them, and no flood.
@@ -149,7 +150,7 @@ export const youthProfileRoutes = (options: YouthProfileOptions) => {
 const youngOfProfiles =
   (profiles: ProfileStore, accounts: UserAccountStore | undefined) =>
   (request: express.Request, response: express.Response) => {
-    const id = Number(request.params.id)
+    const id = idParam(request.params.id)
     const profile = Number.isInteger(id) ? profiles.get(id) : null
     if (!profile || !isYoung(profile)) {
       response.status(404).json({ error: 'not_found' })

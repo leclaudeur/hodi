@@ -130,7 +130,7 @@ describe('two families on one server', () => {
     assert.equal((await call('/profiles/current', martin, 'PUT', { id: dupontAdmin })).status, 400)
     assert.equal((await call('/profiles/current', dupont, 'PUT', { id: martinTeen })).status, 400)
     assert.equal((await call(`/profiles/${dupontAdmin}`, martin, 'PATCH', { name: 'Volé' })).status, 404)
-    assert.equal((await call(`/profiles/${dupontAdmin}`, martin, 'DELETE')).status, 404)
+    assert.equal((await call(`/profiles/${dupontAdmin}`, martin, 'DELETE', { password: PASSWORD })).status, 404)
     const names = (await json<{ profiles: { name: string }[] }>('/profiles', dupont)).profiles.map(p => p.name)
     assert.deepEqual(names, ['Claire'])
   })
@@ -152,8 +152,8 @@ describe('two families on one server', () => {
   // Claire made the server, so she is its admin: never a way into the Martins' profiles or their teen's rules.
   it("gives the server's admin no hold on another account's profiles or children", async () => {
     assert.equal((await json<{ serverAdmin: boolean }>('/profiles', dupont)).serverAdmin, true)
-    assert.equal((await call(`/profiles/${martinTeen}`, dupont, 'DELETE')).status, 404)
-    assert.equal((await call(`/profiles/${martinAdmin}`, dupont, 'DELETE')).status, 404)
+    assert.equal((await call(`/profiles/${martinTeen}`, dupont, 'DELETE', { password: PASSWORD })).status, 404)
+    assert.equal((await call(`/profiles/${martinAdmin}`, dupont, 'DELETE', { password: PASSWORD })).status, 404)
     assert.equal((await call(`/profiles/${martinTeen}/rules`, dupont)).status, 404)
     assert.equal((await call(`/profiles/${martinTeen}/rules`, dupont, 'PUT', { dailyMinutes: 10 })).status, 404)
     assert.deepEqual(await profileIds(martin), [martinAdmin, martinTeen])

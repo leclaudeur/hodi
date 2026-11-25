@@ -23,9 +23,11 @@ const setupPluginsOf = ({ plugins }: Options) =>
       }
     : undefined
 
-// The catalogue waited for the household's language: its base sources are listed from now on.
-export const onSetUpOf = (options: Options) => (language: Language) => {
-  const { sources, news, profiles, now } = options
+// The catalogue waited for the household's language: its base sources are listed from now on. The admin picked it on
+// the last screen, so their own interface keeps it whatever the browser's.
+export const onSetUpOf = (options: Options) => (language: Language, profileId: number | null) => {
+  const { sources, news, profiles, users, now } = options
+  if (profileId !== null) users?.(profileId).setPreferences({ language }, now())
   if (!sources) return
   const filled = sources.store.load(sources.file, now(), language)
   for (const topic of filled.topics) {

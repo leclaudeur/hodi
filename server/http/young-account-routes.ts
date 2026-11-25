@@ -17,6 +17,7 @@ import { mountParentRoutes } from './parent-routes.ts'
 import { profileIdOf } from './profile-routes.ts'
 import type { CheckProof } from './proof.ts'
 import { CONFIG } from '../fixed-config.ts'
+import { idParam } from './id-param.ts'
 
 // Mon compte › Mes enfants: a parent makes a teen's or a child's account, gives it a new password, and deletes it.
 // Only an adult whose own profile is open here, and only for its own children.
@@ -135,7 +136,7 @@ const mountChildRoutes = (router: express.Router, options: YoungAccountRoutesOpt
   const provenChild = async (request: express.Request, response: express.Response) => {
     const parent = parentOf(request, response)
     if (!parent) return null
-    const child = young.childOf(parent.id, Number(request.params.id))
+    const child = young.childOf(parent.id, idParam(request.params.id))
     if (!child) {
       response.status(404).json({ error: 'not_found' })
       return null

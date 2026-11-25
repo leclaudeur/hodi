@@ -10,6 +10,7 @@ import { renderMail } from '../mail/template.ts'
 import type { Language } from '../../shared/i18n.ts'
 import { isParentOf, profileIdOf } from './profile-routes.ts'
 import { CONFIG } from '../fixed-config.ts'
+import { idParam } from './id-param.ts'
 
 // Réglages › Profils › Personnes invitées: the invitations this adult made and nobody used yet, each
 // under the name it was given. With Serveur › E-mail set, its code also goes by e-mail.
@@ -111,7 +112,7 @@ export const invitationRoutes = ({ codes, now, mail }: InvitationOptions) => {
   })
 
   router.delete('/:id', (request, response) => {
-    if (!codes.cancelInvitation(Number(request.params.id), profileIdOf(response)))
+    if (!codes.cancelInvitation(idParam(request.params.id), profileIdOf(response)))
       response.status(404).json({ error: 'not_found' })
     else response.status(204).end()
   })
@@ -119,7 +120,7 @@ export const invitationRoutes = ({ codes, now, mail }: InvitationOptions) => {
   // « Voir le code » or « Renvoyer »: a new code for the same invitation, sent again when it has an address.
   router.post('/:id/code', (request, response) => {
     const inviter = profileIdOf(response)
-    const renewed = codes.renewInvitation(Number(request.params.id), inviter, now())
+    const renewed = codes.renewInvitation(idParam(request.params.id), inviter, now())
     if (!renewed) {
       response.status(404).json({ error: 'not_found' })
       return

@@ -1,5 +1,6 @@
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { FeedItem, SearchItem } from './news.ts'
+import type { AdminProof } from './plugins.ts'
 import type { Profile } from './profiles.ts'
 
 // Adding a source from a link, and sharing. Mirrors server/news/source-finder.ts and server/http/source-routes.ts.
@@ -93,7 +94,8 @@ export type SourceSuggestions =
 export const suggestSources = (topicId: string, replacing: string | null) =>
   sendJson<SourceSuggestions>('POST', '/sources/suggest', { topicId, replacing })
 
-export const removeSource = (id: string) => sendJson<null>('DELETE', `/sources/${encodeURIComponent(id)}`)
+export const removeSource = (id: string, proof: AdminProof) =>
+  sendJson<null>('DELETE', `/sources/${encodeURIComponent(id)}`, proof)
 
 // The topics and sources changed (a source added or removed): the app asks for them again.
 export const TOPICS_CHANGED = 'hodi:topics-changed'

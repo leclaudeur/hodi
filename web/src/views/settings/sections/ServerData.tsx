@@ -3,9 +3,9 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { clearStoredTexts } from '../../../api.ts'
 import { getLanguage, t } from '../../../lib/i18n.ts'
-import { askToConfirm } from '../../../lib/confirm.ts'
+import { askToConfirm, ownProof, type Proof } from '../../../lib/confirm.ts'
 import { useStorage } from '../../../lib/settings-data.ts'
-import { showDone, showError } from '../../../lib/toast.ts'
+import { showDone } from '../../../lib/toast.ts'
 import RichText from '../../../ui/RichText.tsx'
 import SettingRow from '../SettingRow.tsx'
 import styles from '../Settings.module.css'
@@ -24,16 +24,15 @@ const ServerData = () => {
   const { value: storage, replace } = useStorage()
   const [clearing, setClearing] = useState(false)
 
-  const clearTexts = async () => {
+  // A refusal (the password, the code) stays in the dialog that asked for them.
+  const clearTexts = async (proof: Proof) => {
     setClearing(true)
     const before = storage?.databaseBytes ?? null
     try {
-      const after = await clearStoredTexts()
+      const after = await clearStoredTexts(proof)
       replace(after)
       const freed = before === null ? 0 : before - after.databaseBytes
       showDone(freed > 0 ? t('settings.data.clearedFreed', { size: sizeLabel(freed) }) : t('settings.data.cleared'))
-    } catch {
-      showError(t('settings.data.clearFailed'))
     } finally {
       setClearing(false)
     }
@@ -69,7 +68,8 @@ const ServerData = () => {
                 title: t('confirm.clearTexts.title'),
                 message: <RichText i18nKey="confirm.clearTexts.message" />,
                 label: t('confirm.clearTexts.button'),
-                onConfirm: () => void clearTexts()
+                proof: ownProof(),
+                onConfirm: clearTexts
               })
           }}
         />
