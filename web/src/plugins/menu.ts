@@ -8,7 +8,7 @@ import {
 } from './registry.ts'
 
 // Where plugins' own pages go in the list of Réglages. A plugin's manifest names a group and, optionally, the entry
-// it comes after; an unknown group or entry puts it at the end of the household's group.
+// it comes after; an unknown group or entry puts it at the end of the group Toi, the person's own.
 
 export interface MenuPlugin {
   id: string
@@ -26,7 +26,7 @@ export const menuPlugins = (plugins: readonly PluginInfo[], web: ReadonlyMap<str
       ...(plugin.menu!.after ? { after: plugin.menu!.after } : {})
     }))
 
-export const FALLBACK_GROUP = 'household'
+export const FALLBACK_GROUP = 'you'
 
 // Puts each plugin's entry in its group, after the entry it names (or after the plugins already placed there), else
 // at the group's end. Groups and entries keep their order; plugins keep theirs among themselves.

@@ -111,12 +111,12 @@ describe('plugin pages in Réglages', () => {
   ])
   const groups = [
     { id: 'reading', entries: [{ id: 'reading' }, { id: 'themes' }] },
-    { id: 'household', entries: [{ id: 'household' }, { id: 'ai' }, { id: 'plugins' }] }
+    { id: 'you', entries: [{ id: 'general' }, { id: 'account' }, { id: 'sharing' }] }
   ]
   const ids = (placed: typeof groups) => placed.map(group => group.entries.map(entry => entry.id))
 
   it('lists only the plugins on, loaded, with a menu and a page', () => {
-    const menu = { group: 'household', after: 'ai' }
+    const menu = { group: 'you', after: 'account' }
     expect(
       menuPlugins(
         [
@@ -127,25 +127,25 @@ describe('plugin pages in Réglages', () => {
         ],
         web
       )
-    ).toEqual([{ id: 'diagnostic', group: 'household', after: 'ai' }])
+    ).toEqual([{ id: 'diagnostic', group: 'you', after: 'account' }])
   })
 
   it('places a page after the entry its manifest names, in order', () => {
     const placed = placePlugins(
       groups,
       [
-        { id: 'diagnostic', group: 'household', after: 'ai' },
-        { id: 'other', group: 'household', after: 'ai' }
+        { id: 'diagnostic', group: 'you', after: 'account' },
+        { id: 'other', group: 'you', after: 'account' }
       ],
       plugin => ({ id: `plugin:${plugin.id}` })
     )
     expect(ids(placed)).toEqual([
       ['reading', 'themes'],
-      ['household', 'ai', 'plugin:diagnostic', 'plugin:other', 'plugins']
+      ['general', 'account', 'plugin:diagnostic', 'plugin:other', 'sharing']
     ])
   })
 
-  it('puts a page with an unknown group or entry at the end of the household', () => {
+  it('puts a page with an unknown group or entry at the end of Toi', () => {
     const placed = placePlugins(
       groups,
       [
@@ -156,7 +156,7 @@ describe('plugin pages in Réglages', () => {
     )
     expect(ids(placed)).toEqual([
       ['reading', 'themes', 'b'],
-      ['household', 'ai', 'plugins', 'a']
+      ['general', 'account', 'sharing', 'a']
     ])
   })
 })
