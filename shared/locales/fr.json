@@ -178,7 +178,7 @@
     "handle": "Identifiant",
     "handleFree": "@{{handle}} est libre.",
     "handleTaken": "@{{handle}} est déjà pris. Essaie @{{other}}.",
-    "handleRules": "De 3 à 20 caractères : lettres, chiffres, point ou tiret bas.",
+    "handleRules": "3 à 20 lettres, chiffres, points ou _",
     "handleLocked": "Tu pourras le changer le {{date}}.",
     "handleEvery": "Tu peux le changer une fois tous les 30 jours."
   },

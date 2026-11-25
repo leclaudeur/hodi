@@ -178,7 +178,7 @@
     "handle": "Username",
     "handleFree": "@{{handle}} is free.",
     "handleTaken": "@{{handle}} is taken. Try @{{other}}.",
-    "handleRules": "3 to 20 characters: letters, digits, dot or underscore.",
+    "handleRules": "3 to 20 letters, digits, dots or _",
     "handleLocked": "You can change it on {{date}}.",
     "handleEvery": "You can change it once every 30 days."
   },
