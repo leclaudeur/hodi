@@ -10,6 +10,7 @@ import { ServerSettingsStore } from '../db/server-settings-store.ts'
 import type { ServerNotice, ServerNoticeIn } from '../notices/server-notifier.ts'
 import { WEEKLY_REPORT, dueWeek, reportNotice, weeklyReport } from '../notices/weekly-report.ts'
 import { pluginReportRows, reportRowsIn } from '../plugins/report-rows.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 // Monday 16 November 2026, 08:05 in Brussels (07:05 UTC).
 const MONDAY = Date.UTC(2026, 10, 16, 7, 5)
@@ -161,7 +162,14 @@ describe('a plugin’s weeklyReport', () => {
     const folder = mkdtempSync(path.join(tmpdir(), 'hodi-weekly-'))
     writeFileSync(
       path.join(folder, 'plugin.json'),
-      JSON.stringify({ id: 'village', name: 'Village', version: '0.1.0', description: 'Des foyers.', api: 2 })
+      JSON.stringify({
+        id: 'village',
+        name: 'Village',
+        version: '0.1.0',
+        description: 'Des foyers.',
+        api: 2,
+        sdk: PLUGIN_SDK
+      })
     )
     mkdirSync(path.join(folder, 'server'))
     writeFileSync(

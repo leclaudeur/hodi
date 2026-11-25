@@ -1,3 +1,4 @@
+import semver from 'semver'
 import { type ServerNoticeSpec, parseServerNotices } from './manifest-notices.ts'
 import { CONFIG } from '../fixed-config.ts'
 
@@ -73,6 +74,8 @@ export interface Manifest {
   version: string
   description: string
   api: number
+  // The SDK it was built with, or null when built before the SDK wrote it.
+  sdk: string | null
   audience: Audience
   provides: Capability[]
   menu: MenuPlacement | null
@@ -173,7 +176,10 @@ const parseIdentity = (value: Record<string, unknown>) => {
   if (typeof version !== 'string' || !VERSION.test(version)) throw new ManifestError('version must be like 1.2.3')
   if (api === 1) throw new ManifestError(OUTDATED_API)
   if (api !== PLUGIN_API) throw new ManifestError(`api must be ${PLUGIN_API}, this plugin was written for ${api}`)
-  return { id, version, api }
+  const sdk = value.sdk ?? null
+  if (sdk !== null && (typeof sdk !== 'string' || semver.valid(sdk) !== sdk))
+    throw new ManifestError('sdk must be the version of the SDK that built it')
+  return { id, version, api, sdk }
 }
 
 const parseMenu = (menu: unknown): MenuPlacement | null => {
@@ -268,7 +274,7 @@ const parseMemory = (memoryMb: unknown) => {
 export const parseManifest = (value: unknown): Manifest => {
   if (!isRecord(value)) throw new ManifestError('plugin.json must hold an object')
 
-  const { id, version, api } = parseIdentity(value)
+  const { id, version, api, sdk } = parseIdentity(value)
 
   const audience = value.audience ?? 'all'
   if (!AUDIENCES.includes(audience as Audience)) throw new ManifestError('audience must be admin or all')
@@ -292,6 +298,7 @@ export const parseManifest = (value: unknown): Manifest => {
     version,
     description: text(value.description, 'description', 280),
     api,
+    sdk,
     audience: audience as Audience,
     provides: [...new Set(provides as Capability[])],
     menu,

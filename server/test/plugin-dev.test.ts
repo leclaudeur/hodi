@@ -15,6 +15,7 @@ import { PluginInstaller } from '../plugins/installer.ts'
 import { PLUGIN_API } from '../plugins/manifest.ts'
 import { packageDigest } from '../plugins/package.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const FILES = {
   'plugin.json': JSON.stringify({
@@ -23,6 +24,7 @@ const FILES = {
     version: '0.1.0',
     description: 'Dit bonjour.',
     api: PLUGIN_API,
+    sdk: PLUGIN_SDK,
     audience: 'all'
   }),
   'server.js': `export default { routes: { 'GET /hi': async (_request, ctx) => { ctx.log('salut'); return { body: 'hi' } } } }`,

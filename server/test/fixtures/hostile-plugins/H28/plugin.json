@@ -4,5 +4,6 @@
   "version": "0.0.1",
   "description": "A request carries no cookie, header or session",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin"
 }

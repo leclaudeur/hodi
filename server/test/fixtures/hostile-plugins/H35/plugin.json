@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "description": "accounts: remove or suspend what the plugin did not create",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin",
   "permissions": {
     "accounts": true

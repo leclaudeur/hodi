@@ -19,6 +19,7 @@ import { PLUGIN_API } from '../plugins/manifest.ts'
 import { packageDigest } from '../plugins/package.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 import { fakeFetch } from './helpers/news.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const cookiesFrom = (response: Response) =>
   response.headers
@@ -45,7 +46,15 @@ const writePlugin = (
 ) => {
   const root = path.join(dir, id)
   mkdirSync(root, { recursive: true })
-  const manifest = { id, name: id, version: '0.1.0', description: 'Ouvert à tous.', api: PLUGIN_API, permissions }
+  const manifest = {
+    id,
+    name: id,
+    version: '0.1.0',
+    description: 'Ouvert à tous.',
+    api: PLUGIN_API,
+    sdk: PLUGIN_SDK,
+    permissions
+  }
   writeFileSync(path.join(root, 'plugin.json'), JSON.stringify(manifest))
   writeFileSync(path.join(root, 'server.js'), SERVER)
   if (web) {

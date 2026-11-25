@@ -7,6 +7,7 @@ import { openDatabase } from '../db/database.ts'
 import { PluginStore } from '../db/plugin-store.ts'
 import { PLUGIN_API } from '../plugins/manifest.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const MINUTE = 60_000
 
@@ -20,6 +21,7 @@ const writePlugin = (dir: string, id: string, server: string) => {
       version: '0.1.0',
       description: 'Des tâches.',
       api: PLUGIN_API,
+      sdk: PLUGIN_SDK,
       permissions: { articles: true }
     })
   )

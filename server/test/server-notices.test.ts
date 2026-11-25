@@ -16,6 +16,7 @@ import type { AlertPayload, PushTarget } from '../news/followed-alerts.ts'
 import { type ServerNoticeIn, serverNotifier } from '../notices/server-notifier.ts'
 import { parseManifest } from '../plugins/manifest.ts'
 import { SERVER_NOTICES_PER_DAY, pluginServerNotice, pluginServerNotifier } from '../plugins/server-notify.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const MAIL: MailSettings = {
   host: 'smtp.example.test',
@@ -71,7 +72,14 @@ const NOTICE = {
 
 describe('server notices', () => {
   it('reads the kinds a plugin declares, and refuses them without permissions.notify', () => {
-    const base = { id: 'village', name: 'Village', version: '1.0.0', description: 'Des foyers.', api: 2 }
+    const base = {
+      id: 'village',
+      name: 'Village',
+      version: '1.0.0',
+      description: 'Des foyers.',
+      api: 2,
+      sdk: PLUGIN_SDK
+    }
     const manifest = parseManifest({
       ...base,
       permissions: { notify: true },
@@ -312,6 +320,7 @@ describe('ctx.notifyServerAdmin', () => {
         version: '0.1.0',
         description: 'Des foyers.',
         api: 2,
+        sdk: PLUGIN_SDK,
         permissions: { notify: true },
         serverNotifications: KINDS.map(({ type, label }) => ({ type, label }))
       })

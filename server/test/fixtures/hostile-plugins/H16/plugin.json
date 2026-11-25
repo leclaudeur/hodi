@@ -4,5 +4,6 @@
   "version": "0.0.1",
   "description": "VACUUM INTO writes no file anywhere",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin"
 }

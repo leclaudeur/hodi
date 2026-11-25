@@ -10,6 +10,18 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+## [1.0.0-beta.7] - 2026-11-25
+
+Needs Hodi 1.0.0-beta.14 or later, which runs only plugins built with this version or a later one.
+
+### Added
+
+- **The build writes the SDK's version into `plugin.json`.** `hodi-plugin build` adds `"sdk": "1.0.0-beta.7"` to the
+  package's `plugin.json` (the source folder's file is left as it is). Hodi runs a plugin only when it was built with
+  an SDK it accepts: one built before, or without `sdk`, is listed switched off with « Update »; one
+  built with a newer SDK than Hodi's own is refused at install, and asks for a newer Hodi. Rebuild and release a plugin
+  with this version for it to run on Hodi 1.0.0-beta.14.
+
 ## [1.0.0-beta.6] - 2026-11-24
 
 Hodi has no households any more: a plugin works on accounts, and every call runs for the person who reads. Needs Hodi
@@ -368,6 +380,7 @@ was never published: its changes are in this one.
 - `hodi-plugin build`, the types of the server part and of `hodi:sdk`, and signing with `--key`.
 
 [unreleased]: https://www.npmjs.com/package/@hodi-app/plugin-sdk?activeTab=versions
+[1.0.0-beta.7]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.7
 [1.0.0-beta.6]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.6
 [1.0.0-beta.5]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.5
 [1.0.0-beta.4]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.4

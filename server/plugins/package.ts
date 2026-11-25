@@ -3,6 +3,7 @@ import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync 
 import path from 'node:path'
 import { extract } from 'tar'
 import { type Manifest, parseManifest } from './manifest.ts'
+import { sdkRefusal } from './plugin-sdk.ts'
 import { CONFIG } from '../fixed-config.ts'
 
 // A plugin package (.hodi-plugin) is a gzipped tar of the plugin's folder: plugin.json at its root, then server.js,
@@ -15,9 +16,10 @@ export const MAX_UNPACKED_BYTES = CONFIG.plugins.unpackedMaxSize
 const MAX_FILES = CONFIG.plugins.packageFiles
 const SIGNATURE_FILE = 'signature'
 
-// code: what the interface says (too_big, not_a_package, invalid_manifest); detail: why, for the admin and the log.
+// code: what the interface says (too_big, not_a_package, invalid_manifest, outdated_api, newer_sdk); detail: why, for
+// the admin and the log.
 export class PackageError extends Error {
-  readonly code: 'too_big' | 'not_a_package' | 'invalid_manifest'
+  readonly code: 'too_big' | 'not_a_package' | 'invalid_manifest' | 'outdated_api' | 'newer_sdk'
   readonly detail: string | null
 
   constructor(code: PackageError['code'], detail: string | null = null) {
@@ -141,6 +143,9 @@ export const unpackPackage = async (
   } catch (error) {
     throw new PackageError('invalid_manifest', error instanceof Error ? error.message : null)
   }
+  // Built with an SDK this Hodi cannot run: refused before any question, rather than installed switched off.
+  const refusal = sdkRefusal(manifest.sdk)
+  if (refusal) throw new PackageError(refusal, manifest.sdk)
 
   return { manifest, signed: isSigned(into, keys), bytes: unpacked }
 }

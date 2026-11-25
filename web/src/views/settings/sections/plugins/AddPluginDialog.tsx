@@ -25,7 +25,15 @@ interface AddPluginDialogProps {
   initial?: StagedPlugin | null
 }
 
-const ERRORS = ['too_big', 'not_a_package', 'invalid_manifest', 'not_found', 'signed_only'] as const
+const ERRORS = [
+  'too_big',
+  'not_a_package',
+  'invalid_manifest',
+  'outdated_api',
+  'newer_sdk',
+  'not_found',
+  'signed_only'
+] as const
 
 // The package chosen and read, its install after the questions, and the drop zone's state.
 const useAddPlugin = (

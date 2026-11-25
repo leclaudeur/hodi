@@ -20,6 +20,7 @@ import { NewsService } from '../news/news-service.ts'
 import { PLUGIN_API } from '../plugins/manifest.ts'
 import { MAX_EXPORT_BYTES, type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 import { fakeFetch } from './helpers/news.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 // A plugin that writes down each deletion it is told of, and hands its notes back for the copy.
 const KEEPER = `export default {
@@ -48,6 +49,7 @@ const manifest = (id: string) => ({
   version: '0.1.0',
   description: 'Keeps notes.',
   api: PLUGIN_API,
+  sdk: PLUGIN_SDK,
   audience: 'admin'
 })
 

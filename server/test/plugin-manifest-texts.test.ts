@@ -7,6 +7,7 @@ import { create as createTar } from 'tar'
 import { PluginInstaller } from '../plugins/installer.ts'
 import { PLUGIN_API } from '../plugins/manifest.ts'
 import { manifestTranslations } from '../plugins/manifest-texts.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const MANIFEST = {
   id: 'hello',
@@ -14,6 +15,7 @@ const MANIFEST = {
   version: '0.1.0',
   description: 'Dit bonjour.',
   api: PLUGIN_API,
+  sdk: PLUGIN_SDK,
   audience: 'all',
   provides: []
 }

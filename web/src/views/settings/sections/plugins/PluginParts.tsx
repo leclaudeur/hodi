@@ -11,12 +11,15 @@ import Toggle from '../../../../ui/Toggle.tsx'
 import SettingRow, { RowButton } from '../../SettingRow.tsx'
 import styles from '../../Settings.module.css'
 import own from './Plugins.module.css'
-import { OUTDATED_API } from './PluginOptions.tsx'
+import { NEWER_SDK, OUTDATED_API } from './PluginOptions.tsx'
 import { pluginName, pluginDescription } from '../../../../plugins/plugin-texts.ts'
+
+// Off because too old or too new for this Hodi: it runs again once it, or Hodi, is updated.
+const offByVersion = (plugin: PluginInfo) => plugin.error === OUTDATED_API || plugin.error === NEWER_SDK
 
 // Off, broken, outdated or unsigned, said at the row's end; nothing when it works.
 export const stateOf = (plugin: PluginInfo, t: TFunction) => {
-  if (plugin.error === OUTDATED_API) return t('plugins.outdatedChip')
+  if (offByVersion(plugin)) return t('plugins.outdatedChip')
   if (plugin.error) return t('plugins.brokenChip')
   if (!plugin.enabled) return t('settings.hints.off')
   if (plugin.dev) return t('plugins.devChip')
@@ -35,6 +38,12 @@ export const PluginNotice = ({ plugin, onUpdate }: { plugin: PluginInfo; onUpdat
         action={{ label: t('plugins.installUpdate'), icon: Download, onClick: onUpdate }}
       >
         {t('plugins.outdated')}
+      </Notice>
+    )
+  if (plugin.error === NEWER_SDK)
+    return (
+      <Notice tone="error" icon={AlertCircle} title={t('plugins.outdatedTitle', { name: pluginName(plugin) })}>
+        {t('plugins.newerSdk')}
       </Notice>
     )
   if (plugin.error)
@@ -91,6 +100,7 @@ export const UpdateNotice = ({
 
 const enabledHint = (plugin: PluginInfo) => {
   if (plugin.error === OUTDATED_API) return 'plugins.outdatedToggleHint'
+  if (plugin.error === NEWER_SDK) return 'plugins.newerSdkToggleHint'
   return plugin.enabled ? 'plugins.enabledHint' : 'plugins.disabledHint'
 }
 
@@ -139,8 +149,9 @@ export const RemoveRows = ({ onRemove }: { onRemove: (withData: boolean) => void
 }
 
 const hintOf = (plugin: PluginInfo, phone: boolean, t: TFunction) => {
-  if (phone && plugin.error !== OUTDATED_API && stateOf(plugin, t)) return stateOf(plugin, t)
+  if (phone && !offByVersion(plugin) && stateOf(plugin, t)) return stateOf(plugin, t)
   if (plugin.error === OUTDATED_API) return t('plugins.outdatedHint')
+  if (plugin.error === NEWER_SDK) return t('plugins.newerSdkHint')
   return plugin.error ? t('plugins.brokenHint') : pluginDescription(plugin)
 }
 
@@ -153,9 +164,9 @@ const chipTone = (plugin: PluginInfo) => {
 export const PluginRow = ({ plugin, phone, update }: { plugin: PluginInfo; phone: boolean; update: string | null }) => {
   const { t } = useTranslation()
   const state = stateOf(plugin, t)
-  // On a phone the state has no room at the row's end: it takes the hint's place, as a source's. An outdated plugin
-  // says why in red at every size, since it is off without anyone turning it off.
-  const red = (phone && state && plugin.error) || plugin.error === OUTDATED_API
+  // On a phone the state has no room at the row's end: it takes the hint's place, as a source's. A plugin too old or too
+  // new says why in red at every size, since it is off without anyone turning it off.
+  const red = (phone && state && plugin.error) || offByVersion(plugin)
   return (
     <li className={styles.row}>
       <span className={own.mark} aria-hidden="true">

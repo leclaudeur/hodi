@@ -1826,6 +1826,8 @@
         "too_big": "Ce fichier est trop gros (50 Mo au plus).",
         "not_a_package": "Ce fichier n’est pas un plugin Hodi.",
         "invalid_manifest": "Ce plugin est mal décrit, il ne peut pas être installé.",
+        "outdated_api": "Ce plugin a été fait pour une ancienne version de Hodi : installe sa nouvelle version.",
+        "newer_sdk": "Ce plugin a été fait pour une version plus récente de Hodi : mets Hodi à jour d’abord.",
         "not_found": "Le fichier a expiré, choisis-le à nouveau.",
         "failed": "L’envoi a échoué. Réessaie.",
         "signed_only": "Ce plugin n’est pas vérifié et demande des accès réservés aux plugins vérifiés."
@@ -1851,6 +1853,9 @@
     "outdated": "Il a été écrit pour une ancienne version de Hodi. Installe sa nouvelle version pour l’utiliser.",
     "outdatedHint": "Trop ancien pour cette version de Hodi",
     "outdatedToggleHint": "Impossible tant qu’il n’est pas à jour",
+    "newerSdk": "Il a été fait pour une version plus récente de Hodi. Mets Hodi à jour pour l’utiliser.",
+    "newerSdkHint": "Trop récent pour cette version de Hodi",
+    "newerSdkToggleHint": "Impossible tant que Hodi n’est pas à jour",
     "installUpdate": "Mettre à jour",
     "unsignedChip": "Non vérifié",
     "unsignedTitle": "Personne n’a vérifié ce plugin",
@@ -1945,6 +1950,8 @@
         "checksum_mismatch": "Le fichier téléchargé n’est pas celui de la liste : Hodi ne l’installe pas.",
         "not_a_package": "Ce fichier n’est pas un plugin Hodi.",
         "invalid_manifest": "Ce plugin est mal décrit, il ne peut pas être installé.",
+        "outdated_api": "Ce plugin a été fait pour une ancienne version de Hodi : installe sa nouvelle version.",
+        "newer_sdk": "Ce plugin a été fait pour une version plus récente de Hodi : mets Hodi à jour d’abord.",
         "signed_only": "Ce plugin n’est pas vérifié et demande des accès réservés aux plugins vérifiés.",
         "failed": "Le téléchargement a échoué. Réessaie."
       }
