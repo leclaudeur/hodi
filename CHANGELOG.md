@@ -34,6 +34,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- Mon compte and the catalogue’s back button returns to the screen they were opened from, not always to Réglages.
 - **A field's message has its icon centred** on its first line, whatever the text's size.
 - **Removing the AI key** no longer shows its calls for a moment under the card.
 - **A QR code that scans at once.** The authenticator app's QR code is larger, with fewer squares.

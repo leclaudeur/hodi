@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { OverlayScrollbars } from 'overlayscrollbars'
 import App from './App.tsx'
+import { watchCameFrom } from './lib/came-from.ts'
 import { loadSanitizer, warmDeferred } from './lib/deferred.ts'
 import { languageReady } from './lib/i18n.ts'
 import { loadSettingsPanel } from './pages/settings-loader.ts'
@@ -10,6 +11,7 @@ import Toaster from './ui/Toaster.tsx'
 import './styles/index.ts'
 
 warmDeferred([loadSettingsPanel])
+watchCameFrom()
 // Opened on an article: its sanitizer comes now, with the article's text, rather than once the reader asks.
 if (location.hash.startsWith('#/article/')) void loadSanitizer().catch(() => {})
 

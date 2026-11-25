@@ -5,6 +5,7 @@ import type { TopicSummary } from '../api.ts'
 import { type CatalogueSort, entriesOf, partsOf } from '../lib/catalogue.ts'
 import { getLanguage } from '../lib/i18n.ts'
 import { isYoung, useProfiles } from '../lib/profiles.ts'
+import { backTo } from '../lib/came-from.ts'
 import { catalogueHref, settingsHref, useHashRoute } from '../lib/use-hash-route.ts'
 import Button from '../ui/Button.tsx'
 import Copyright from '../ui/Copyright.tsx'
@@ -111,7 +112,7 @@ const CataloguePage = () => {
 
   return (
     <div className={styles.page}>
-      <Header back={settingsHref('sources')} />
+      <Header back={backTo('#/catalogue', settingsHref('sources'))} />
       <div className={styles.frame}>
         <div className={styles.view}>
           <div className={styles.wrap}>

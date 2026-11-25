@@ -2,8 +2,9 @@ import { ArrowLeft, ListTree } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import type { AccountView } from '../api.ts'
 import { useTranslation } from 'react-i18next'
+import { backTo } from '../lib/came-from.ts'
 import { useProfiles } from '../lib/profiles.ts'
-import { type AccountPart, accountHref, useHashRoute } from '../lib/use-hash-route.ts'
+import { type AccountPart, SETTINGS_HREF, accountHref, useHashRoute } from '../lib/use-hash-route.ts'
 import { useIsPhone } from '../lib/use-media.ts'
 import Button from '../ui/Button.tsx'
 import Copyright from '../ui/Copyright.tsx'
@@ -152,7 +153,7 @@ const AccountPage = () => {
   const meta = [own?.name, account?.email].filter(Boolean).join(' · ')
   return (
     <div className={styles.page}>
-      <Header back={youngId === null ? '#/settings' : accountHref('children')} />
+      <Header back={youngId === null ? backTo('#/account', SETTINGS_HREF) : accountHref('children')} />
       <div className={styles.frame}>
         <div className={styles.view}>
           <div className={styles.wrap}>
