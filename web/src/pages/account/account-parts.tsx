@@ -1,4 +1,14 @@
-import { ChartColumn, Database, Globe, KeyRound, type LucideIcon, Sparkles, UserRound, Users } from 'lucide-react'
+import {
+  ChartColumn,
+  Database,
+  Globe,
+  KeyRound,
+  type LucideIcon,
+  Palette,
+  Sparkles,
+  UserRound,
+  Users
+} from 'lucide-react'
 import { type ReactNode, Suspense, lazy, useEffect } from 'react'
 import type { AccountView } from '../../api.ts'
 import type { AccountPart } from '../../lib/use-hash-route.ts'
@@ -9,12 +19,14 @@ import StatsSkeleton from '../../views/settings/sections/StatsSkeleton.tsx'
 import { useTopics } from '../use-home.ts'
 import AiPart from './AiPart.tsx'
 import ChildrenPart from './ChildrenPart.tsx'
+import DisplayPart from './DisplayPart.tsx'
 
 // The chart library loads with the stats only.
 const StatsSection = lazy(() => import('../../views/settings/sections/StatsSection.tsx'))
 
 export const PART_ICONS: Record<AccountPart, LucideIcon> = {
   profile: UserRound,
+  display: Palette,
   children: Users,
   'sign-in': KeyRound,
   region: Globe,
@@ -23,12 +35,12 @@ export const PART_ICONS: Record<AccountPart, LucideIcon> = {
   data: Database
 }
 
-// The sections this account has. A young profile open on another's device: this device and its stats. A teen's or a
-// child's own account: its parents run it, so only its stats.
+// The sections this account has. A young profile open on another's device: this device, its display and its stats. A
+// teen's or a child's own account: its parents run it, so only its display and its stats.
 export const partsOf = (account: AccountView | null): AccountPart[] => {
-  if (account === null) return ['sign-in', 'stats']
-  if (account.young) return ['stats']
-  return ['profile', 'children', 'sign-in', 'region', 'ai', 'stats', 'data']
+  if (account === null) return ['sign-in', 'display', 'stats']
+  if (account.young) return ['display', 'stats']
+  return ['profile', 'display', 'children', 'sign-in', 'region', 'ai', 'stats', 'data']
 }
 
 // A profile's own statistics, read from every device, as the feed reads them.
@@ -52,6 +64,7 @@ interface PartBodyProps {
 
 export const PartBody = ({ part, account, onAccount, layout, onUnauthorized }: PartBodyProps): ReactNode => {
   if (part === 'stats') return <ProfileStats onUnauthorized={onUnauthorized} />
+  if (part === 'display') return <DisplayPart />
   if (account === null) return <DevicePart />
   switch (part) {
     case 'children':

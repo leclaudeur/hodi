@@ -5,6 +5,7 @@ import RichText from '../ui/RichText.tsx'
 import { askToConfirm } from './confirm.ts'
 import { t } from './i18n.ts'
 import { isYoung } from './profiles.ts'
+import { keepAccent } from './theme.ts'
 
 const names = (list: { name: string }[]) =>
   new Intl.ListFormat(i18next.language, { type: 'conjunction' }).format(list.map(profile => profile.name))
@@ -38,6 +39,7 @@ export const confirmSignOut = async () => {
     label: t('confirm.signOut.button'),
     onConfirm: async () => {
       await logout()
+      keepAccent(null)
       window.location.reload()
     }
   })

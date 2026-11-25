@@ -84,7 +84,7 @@ export const detailOf = (home: Home): ReactNode => {
     return (
       <Suspense>
         <SettingsPanel
-          section={route.section ?? 'reading'}
+          section={route.section ?? 'sources'}
           item={route.item}
           topics={home.allTopics}
           layout={isDesktop ? 'desktop' : 'phone'}
@@ -113,7 +113,7 @@ export const columnOf = (home: Home): ReactNode => {
     return (
       <SettingsNav
         layout="desktop"
-        active={route.section ?? 'reading'}
+        active={route.section ?? 'sources'}
         activeItem={route.item}
         onLogout={home.onLogout}
         onUnauthorized={onUnauthorized}

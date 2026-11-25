@@ -1124,13 +1124,12 @@
     "groups": {
       "reading": "Lecture",
       "subjects": "Sujets",
-      "you": "Toi",
+      "you": "Compte",
       "household": "Famille",
       "device": "Cet appareil",
       "about": "Hodi"
     },
     "nav": {
-      "reading": "Lecture et affichage",
       "themes": "Thèmes",
       "sources": "Sources",
       "followed": "Sujets suivis",
@@ -1148,7 +1147,6 @@
     },
     "hints": {
       "history": "Lus et vus, 7 jours",
-      "reading": "Apparence, taille du texte",
       "themes": "Ordre et visibilité",
       "sources": "État des flux",
       "failing": "{{count}} en erreur",
@@ -1167,7 +1165,8 @@
       "server": "Plugins, pour tout le serveur",
       "about": "Version, code source, crédits",
       "plugins": "Ajouter des fonctions",
-      "general": "Visite guidée, remise à zéro"
+      "general": "Visite guidée, remise à zéro",
+      "display": "Thème, taille du texte"
     },
     "titles": {
       "reading": "Lecture",
@@ -1194,7 +1193,6 @@
       "show": "Afficher {{name}}"
     },
     "reading": {
-      "intro": "La langue de Hodi, ses couleurs et la taille du texte des articles. Ces réglages sont à toi seul et te suivent sur tous les appareils. Masquer ce que tu as lu garde le fil court : tout reste dans la recherche, les stats et l’<i>Historique</i>.",
       "appearance": "Apparence",
       "appearanceHint": "Poudré : le thème sombre, en rose",
       "themes": {
@@ -1202,19 +1200,6 @@
         "light": "Clair",
         "dark": "Sombre",
         "powder": "Poudré"
-      },
-      "accent": "Couleur d’accent",
-      "accentHint": "Logo, onglet actif, compteurs, progression",
-      "accents": {
-        "auto": "Rouille (celle du thème)",
-        "autoPowder": "Rose poudré (celle du thème)",
-        "rose": "Rose",
-        "corail": "Corail",
-        "ocre": "Ocre",
-        "vert": "Vert",
-        "turquoise": "Turquoise",
-        "bleu": "Bleu",
-        "lavande": "Lavande"
       },
       "textSize": "Taille du texte",
       "textSizeHint": "S’applique au texte des articles",
@@ -2588,6 +2573,7 @@
     "sectionsButton": "Sections",
     "sections": {
       "profile": "Profil",
+      "display": "Affichage",
       "sign-in": "Connexion",
       "region": "Région",
       "ai": "IA et crédits",
@@ -2596,12 +2582,13 @@
       "children": "Mes enfants"
     },
     "intros": {
-      "profile": "Le prénom, la photo et la couleur que les autres voient, et la langue de Hodi.",
+      "profile": "Le prénom, la photo et la couleur : celle que les autres voient, et celle de Hodi pour toi. Et la langue de Hodi.",
       "sign-in": "Comment tu te connectes, et les appareils où le compte est ouvert.",
       "region": "Le fuseau horaire dit quand commence une journée : celle des statistiques, du <i>Résumé du jour</i> et des badges.",
       "data": "Une copie de tout ce que Hodi garde du compte, ou sa suppression.",
       "ai": "Chaque bouton violet est un appel à l’IA, payé avec la clé d’API de ce compte : rien ne part sans un clic. Les appels se comptent sur 24 heures glissantes, sans plafond : la clé est à toi.",
-      "children": "Les comptes des ados et des enfants que tu gères : chacun se connecte avec son identifiant et le mot de passe que tu choisis."
+      "children": "Les comptes des ados et des enfants que tu gères : chacun se connecte avec son identifiant et le mot de passe que tu choisis.",
+      "display": "Le thème et la taille du texte des articles. Ces réglages te suivent sur tous les appareils. Masquer ce que tu as lu garde le fil court : tout reste dans la recherche, les stats et l’<i>Historique</i>."
     }
   },
   "children": {

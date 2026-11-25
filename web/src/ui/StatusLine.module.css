@@ -7,11 +7,12 @@
   line-height: 1.5;
 }
 
-/* On the middle of the first line's letters, which sit a little above the middle of the line's box. */
+/* As tall as the first line, so the icon sits on the middle of its capitals, whatever the text's size: the font's
+   metrics put capitals in the middle of the line. */
 .mark {
   display: flex;
   flex-shrink: 0;
-  height: 17.5px;
+  height: 1lh;
   align-items: center;
 }
 

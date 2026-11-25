@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { type ProfileColor, type TopicItem, type TopicSummary } from '../api.ts'
+import { type TopicItem, type TopicSummary } from '../api.ts'
 import type { HourCycle } from './format.ts'
 import { type Language, isLanguage } from './i18n.ts'
 import { isDismissed, isReadAndClosed } from './read-state.ts'
@@ -16,35 +16,6 @@ export const THEMES: Theme[] = ['system', 'light', 'dark', 'powder']
 // The themes' names before every id was English.
 const OLD_THEMES: Record<string, Theme> = { poudre: 'powder' }
 
-// The brand's colour: the theme's own (rust, Poudré's pink), or one of five profile colours. Six choices at most:
-// more were hard to tell apart in a row.
-export const ACCENT_COLORS = [
-  'belgium',
-  'world',
-  'tech',
-  'science',
-  'film-tv'
-] as const satisfies readonly ProfileColor[]
-export const ACCENTS = ['auto', ...ACCENT_COLORS] as const
-export type Accent = (typeof ACCENTS)[number]
-
-// The accent colours before they were the profile colours, and the profile colours no longer offered, each to
-// the nearest colour kept.
-const OLD_ACCENTS: Record<string, Accent> = {
-  rose: 'film-tv',
-  corail: 'film-tv',
-  ocre: 'belgium',
-  vert: 'science',
-  turquoise: 'tech',
-  bleu: 'world',
-  lavande: 'world',
-  gaming: 'film-tv',
-  ai: 'science',
-  broadcast: 'world',
-  sport: 'belgium',
-  music: 'film-tv'
-}
-
 export interface Preferences {
   // Articles already opened leave the topics.
   hideRead: boolean
@@ -58,7 +29,6 @@ export interface Preferences {
   followedWords: string[]
   // Clair, Sombre or Poudré.
   theme: Theme
-  accent: Accent
   // Index in TEXT_SCALES (text-size.ts).
   textSize: number
   // "Partages": off, this profile neither sends nor receives articles; and the profiles not to receive from.
@@ -83,7 +53,6 @@ const DEFAULTS: Preferences = {
   mutedWords: [],
   followedWords: [],
   theme: 'system',
-  accent: 'auto',
   textSize: DEFAULT_TEXT_SIZE,
   sharing: true,
   mutedSharers: [],
@@ -95,11 +64,6 @@ const DEFAULTS: Preferences = {
 
 const strings = (value: unknown) =>
   Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : []
-
-const accentOf = (stored: unknown): Accent => {
-  const accent = typeof stored === 'string' ? currentTopicId(stored) : ''
-  return ACCENTS.includes(accent as Accent) ? (accent as Accent) : (OLD_ACCENTS[accent] ?? 'auto')
-}
 
 // Whatever was stored, with anything unexpected left out.
 export const parsePreferences = (stored: unknown): Preferences => {
@@ -117,7 +81,6 @@ export const parsePreferences = (stored: unknown): Preferences => {
     theme: THEMES.includes(value.theme as Theme)
       ? (value.theme as Theme)
       : (OLD_THEMES[value.theme as string] ?? 'system'),
-    accent: accentOf(value.accent),
     textSize: Number.isInteger(value.textSize) ? (value.textSize as number) : DEFAULT_TEXT_SIZE,
     sharing: value.sharing !== false,
     mutedSharers: Array.isArray(value.mutedSharers)

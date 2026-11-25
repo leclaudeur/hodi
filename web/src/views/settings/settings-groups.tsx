@@ -13,8 +13,8 @@ import {
   Puzzle,
   Rss,
   Send,
-  Server,
-  Type
+  Palette,
+  Server
 } from 'lucide-react'
 import type { TFunction } from 'i18next'
 import type { ComponentType, ReactNode } from 'react'
@@ -40,7 +40,7 @@ import { pluginName, pluginDescription } from '../../plugins/plugin-texts.ts'
 export interface Entry {
   // Historique is a page of the app, not a settings section: it has its own address. A plugin's page is
   // plugin:<its id>.
-  id: SettingsSection | 'history' | 'server' | `plugin:${string}`
+  id: SettingsSection | 'history' | 'display' | 'server' | `plugin:${string}`
   href?: string
   // Opens a page outside Réglages: its line ends with the external-link icon, even though it stays in the tab.
   leaves?: boolean
@@ -80,8 +80,6 @@ const readingGroups = ({ t, sources, failing, asked, preferences }: GroupData): 
     id: 'reading',
     label: t('settings.groups.reading'),
     entries: [
-      { id: 'reading', label: t('settings.nav.reading'), hint: t('settings.hints.reading'), icon: Type },
-      { id: 'themes', label: t('settings.nav.themes'), hint: t('settings.hints.themes'), icon: Layers },
       {
         id: 'sources',
         label: t('settings.nav.sources'),
@@ -90,6 +88,7 @@ const readingGroups = ({ t, sources, failing, asked, preferences }: GroupData): 
           : t('settings.hints.sources'),
         icon: Rss
       },
+      { id: 'themes', label: t('settings.nav.themes'), hint: t('settings.hints.themes'), icon: Layers },
       {
         id: 'history',
         leaves: true,
@@ -137,6 +136,14 @@ const yourGroups = (data: GroupData): Group[] => {
           label: t('settings.nav.general'),
           hint: young ? t('limits.meHint') : t('settings.hints.general'),
           icon: Settings2
+        },
+        {
+          id: 'display',
+          label: t('accountPage.sections.display'),
+          hint: t('settings.hints.display'),
+          icon: Palette,
+          href: accountHref('display'),
+          leaves: true
         },
         {
           id: 'stats',

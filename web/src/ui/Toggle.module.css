@@ -26,14 +26,14 @@
     background-color var(--duration) var(--ease);
 }
 
-/* On, it keeps a button's weight: a raised fill and a stronger border, only the knob takes the text colour. */
+/* On, it turns sage green, the same in every theme, with a white knob: on reads at a glance. */
 .toggle[aria-checked='true'] {
-  border-color: var(--border-strong);
-  background: var(--raised);
+  border-color: var(--approve-border);
+  background: var(--approve-border);
 }
 
 .toggle[aria-checked='true'] .knob {
-  background: var(--text);
+  background: var(--toggle-knob-on);
   transform: translateX(22px);
 }
 

@@ -122,8 +122,8 @@ const Usage = ({ onUnauthorized }: { onUnauthorized: () => void }) => {
 const AiPart = ({ account, onAccount, onUnauthorized }: KeyCardProps) => (
   <>
     <KeyCard account={account} onAccount={onAccount} onUnauthorized={onUnauthorized} />
-    {/* Read again with each new key: the buttons come or go with it. */}
-    <Usage key={account.ai?.keyHint ?? 'none'} onUnauthorized={onUnauthorized} />
+    {/* Read again with each new key. Gone with the key at once, before the last count is read again. */}
+    {account.ai && <Usage key={account.ai.keyHint} onUnauthorized={onUnauthorized} />}
   </>
 )
 

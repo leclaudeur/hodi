@@ -10,6 +10,14 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **Mon compte › Affichage.** The theme, the text's size and hiding what was read move from Réglages to Mon compte,
+  with the rest of the account. Réglages opens on Sources, then Thèmes and Historique, and its group « Toi » is now
+  « Compte ».
+- **The profile's colour is Hodi's accent** everywhere, in place of rust, Mon compte and Serveur included. The accent
+  colour setting went.
+- **A switch that is on turns green.**
+- **The setup guesses the country from the device's time zone**, the browser's language choosing only among the
+  countries of one zone: someone reading in French from New York gets the United States.
 - **The password before every red button.** Emptying Historique, clearing the stats, resetting the settings, deleting a
   source, a young one's profile or one of their devices, signing a device out, removing the AI key, and in Server
   removing the e-mail settings, emptying the articles' texts, taking a source off the catalogue or refusing one: each
@@ -26,6 +34,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **A field's message has its icon centred** on its first line, whatever the text's size.
+- **Removing the AI key** no longer shows its calls for a moment under the card.
 - **A QR code that scans at once.** The authenticator app's QR code is larger, with fewer squares.
 - **A username with a forbidden character shows in red** at once, with what it may hold on one line.
 - **The link to make an AI key** sits in the sentence above the key's field, no longer pushed down by the check's

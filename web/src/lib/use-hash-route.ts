@@ -42,7 +42,7 @@ export type Route =
     }
 
 // Mon compte's sections, in their order in its sidebar.
-export const ACCOUNT_PARTS = ['profile', 'children', 'sign-in', 'region', 'ai', 'stats', 'data'] as const
+export const ACCOUNT_PARTS = ['profile', 'display', 'children', 'sign-in', 'region', 'ai', 'stats', 'data'] as const
 export type AccountPart = (typeof ACCOUNT_PARTS)[number]
 const accountPartOf = (value: string): AccountPart | null =>
   ACCOUNT_PARTS.includes(value as AccountPart) ? (value as AccountPart) : null
@@ -65,9 +65,8 @@ export type ServerSection = (typeof SERVER_SECTIONS)[number]
 const serverSectionOf = (slug: string) => SERVER_SECTIONS.find(section => section === slug) ?? null
 
 export const SETTINGS_SECTIONS = [
-  'reading',
-  'themes',
   'sources',
+  'themes',
   'followed',
   'muted',
   'notifications',
@@ -84,7 +83,6 @@ export type SettingsSection = (typeof SETTINGS_SECTIONS)[number]
 
 // The section names in the address.
 const SECTION_SLUGS: Record<SettingsSection, string> = {
-  reading: 'reading',
   themes: 'topics',
   sources: 'sources',
   followed: 'followed',
@@ -165,6 +163,14 @@ const SIMPLE_ROUTES = new Map<string, () => Route>([
   ['profiles', () => ({ name: 'profiles' })]
 ])
 
+// Réglages' sections that are Mon compte's now. Lecture et affichage went: the theme and the text's size follow the
+// account, in Mon compte › Affichage.
+const MOVED_TO_ACCOUNT = new Map<string, AccountPart>([
+  ['stats', 'stats'],
+  ['ai', 'ai'],
+  ['reading', 'display']
+])
+
 const settingsRoute = (second: string, third: string, path: string): Route => {
   // A teen's request, opened from its notification or the pile on top of Réglages.
   if (second === 'requests' && /^\d+$/.test(third)) return { name: 'settings', section: null, request: Number(third) }
@@ -175,7 +181,8 @@ const settingsRoute = (second: string, third: string, path: string): Route => {
   if (second === 'account') return { name: 'account', part: accountPartOf(third) }
   // Réglages › Ados et enfants went: the young ones are their parents' Mon compte › Mes enfants.
   if (second === 'profiles') return { name: 'account', part: 'children', ...(third ? { item: third } : {}) }
-  if (second === 'stats' || second === 'ai') return { name: 'account', part: second }
+  const moved = MOVED_TO_ACCOUNT.get(second)
+  if (moved) return { name: 'account', part: moved }
   // Réglages › Foyer went: what held for everyone is in Serveur › Général, its admin's.
   if (second === 'household') return { name: 'server', section: 'general' }
   // Mon profil became Général: its name and photo moved to Mon compte.

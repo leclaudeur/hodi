@@ -101,6 +101,11 @@ describe('hash routes', () => {
     expect(parseRoute('#/settings/account/sign-in')).toEqual({ name: 'account', part: 'sign-in' })
     expect(parseRoute('#/settings/stats')).toEqual({ name: 'account', part: 'stats' })
     expect(parseRoute('#/settings/ai')).toEqual({ name: 'account', part: 'ai' })
+    // Lecture et affichage went: its theme and text size are Mon compte › Affichage, old French address included.
+    expect(parseRoute('#/settings/reading')).toEqual({ name: 'account', part: 'display' })
+    expect(parseRoute('#/reglages/lecture')).toEqual({ name: 'account', part: 'display' })
+    expect(parseRoute(accountHref('display'))).toEqual({ name: 'account', part: 'display' })
+    expect(parseRoute('#/settings/constructor')).toEqual({ name: 'settings', section: null })
   })
 
   it('opens the catalogue on its Officielles or a topic', () => {
@@ -186,15 +191,9 @@ describe('topics renamed in English', () => {
   it('reads preferences a device kept with the old ids', () => {
     const preferences = parsePreferences({
       topicOrder: ['monde', 'tech', 'belgique'],
-      hiddenTopics: ['sante'],
-      accent: 'jeux-video'
+      hiddenTopics: ['sante']
     })
     expect(preferences.topicOrder).toEqual(['world', 'tech', 'belgium'])
     expect(preferences.hiddenTopics).toEqual(['health'])
-    // Corail (gaming) is no longer an accent: the nearest one kept, Rose.
-    expect(preferences.accent).toBe('film-tv')
-    expect(parsePreferences({ accent: 'corail' }).accent).toBe('film-tv')
-    expect(parsePreferences({ accent: 'ocre' }).accent).toBe('belgium')
-    expect(parsePreferences({ accent: 'music' }).accent).toBe('film-tv')
   })
 })
