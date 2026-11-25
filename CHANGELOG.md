@@ -16,6 +16,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 - **The profile's colour is Hodi's accent** everywhere, in place of rust, Mon compte and Serveur included. The accent
   colour setting went.
 - **A switch that is on turns green.**
+- **The setup guesses the country from the device's time zone**, the browser's language choosing only among the
+  countries of one zone: someone reading in French from New York gets the United States.
 - **The password before every red button.** Emptying Historique, clearing the stats, resetting the settings, deleting a
   source, a young one's profile or one of their devices, signing a device out, removing the AI key, and in Server
   removing the e-mail settings, emptying the articles' texts, taking a source off the catalogue or refusing one: each

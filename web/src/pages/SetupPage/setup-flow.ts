@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
 import { type KeyCheck, RequestError, type SetupState } from '../../api.ts'
 import { t as textNow } from '../../lib/i18n.ts'
 import { EMAIL_PATTERN } from '../../lib/email.ts'
 import { passwordStrength } from '../../lib/password-strength.ts'
 import { type SetupDraft, blobOf } from '../../lib/setup-draft.ts'
-import { deviceCountry, deviceTimeZone } from '../../lib/regions.ts'
+import { deviceCountry, deviceTimeZone, timeZoneCountry } from '../../lib/regions.ts'
 import type { ProfileDraft } from '../../views/profiles/ProfileForm.tsx'
 import { NO_AI } from './AiStep.tsx'
 
@@ -59,6 +59,18 @@ export const useFlow = (draft: SetupDraft | null) => {
 
 export type Flow = ReturnType<typeof useFlow>
 
+// A first install guesses the country from the device's time zone, once its table has loaded, unless a country was
+// already picked by then.
+const useCountryGuess = (guess: boolean, setCountry: Dispatch<SetStateAction<string | null>>) => {
+  useEffect(() => {
+    if (!guess) return
+    const spoken = deviceCountry()
+    void timeZoneCountry(deviceTimeZone())
+      .then(found => setCountry(current => (current === spoken ? found : current)))
+      .catch(() => {})
+  }, [guess, setCountry])
+}
+
 // The answers, kept on this device until the last step, all but the password and the AI key.
 export const useAnswers = (draft: SetupDraft | null) => {
   const [email, setEmail] = useState(draft?.email ?? '')
@@ -74,6 +86,7 @@ export const useAnswers = (draft: SetupDraft | null) => {
   const [keyCheck, setKeyCheck] = useState<KeyCheck | null>(null)
   const [timeZone, setTimeZone] = useState(draft?.timeZone ?? deviceTimeZone)
   const [country, setCountry] = useState<string | null>(draft ? draft.country : deviceCountry)
+  useCountryGuess(draft === null, setCountry)
   const strongEnough = passwordStrength(password).score > 0
   const accountReady = EMAIL_PATTERN.test(email.trim()) && strongEnough && password === confirm
   return {

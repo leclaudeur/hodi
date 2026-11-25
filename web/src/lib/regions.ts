@@ -45,3 +45,14 @@ export const deviceCountry = () => {
   }
   return null
 }
+
+// The country of a time zone (America/New_York: US), the browser's language choosing among several
+// (Europe/Brussels: BE, LU or NL), or the language's alone when the zone names none (UTC). The device's place says
+// more than its language: someone reading in French from New York is in the US. The table loads only when asked.
+export const timeZoneCountry = async (timeZone: string) => {
+  const { getTimezone } = await import('countries-and-timezones')
+  const countries: string[] = (getTimezone(timeZone)?.countries ?? []).filter(code => COUNTRY_CODES.includes(code))
+  const spoken = deviceCountry()
+  if (spoken && countries.includes(spoken)) return spoken
+  return countries[0] ?? spoken
+}
