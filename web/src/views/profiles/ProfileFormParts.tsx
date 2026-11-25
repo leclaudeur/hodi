@@ -1,4 +1,4 @@
-import { Camera, ImagePlus, Trash2 } from 'lucide-react'
+import { Camera, ImagePlus, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -99,14 +99,20 @@ export const PhotoPicker = ({ profile, name, color, preview, hasPhoto, onPick, o
         </span>
       </button>
       <span className={styles.photoHint}>
-        JPEG, PNG ou WebP<span className={styles.hintDot}> · </span>
+        {t('profileForm.photoFormats')}
+        <span className={styles.hintDot}> · </span>
         <span className={styles.hintSize}>{t('profileForm.photoMax')}</span>
       </span>
-      {/* Add and Retirer take the same place, so the dialog keeps its height once a photo is in. */}
+      {/* Add, and Modifier with Retirer, take the same place, so the dialog keeps its height once a photo is in. */}
       {hasPhoto ? (
-        <Button look="danger" compact icon={Trash2} onClick={onRemove}>
-          {t('profileForm.removePhoto')}
-        </Button>
+        <span className={styles.photoActions}>
+          <Button compact icon={Pencil} onClick={() => inputRef.current?.click()}>
+            {t('profileForm.editPhoto')}
+          </Button>
+          <Button look="danger" compact icon={Trash2} onClick={onRemove}>
+            {t('profileForm.removePhoto')}
+          </Button>
+        </span>
       ) : (
         <Button compact icon={ImagePlus} onClick={() => inputRef.current?.click()}>
           {t('profileForm.addPhoto')}

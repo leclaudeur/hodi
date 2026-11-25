@@ -23,6 +23,11 @@
   text-align: center;
 }
 
+.photoActions {
+  display: flex;
+  gap: 10px;
+}
+
 .avatarButton {
   position: relative;
   padding: 0;
