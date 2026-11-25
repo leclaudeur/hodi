@@ -1,6 +1,6 @@
 import { ExternalLink, KeyRound, ShieldCheck } from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { type ReactNode, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { type AiProviderInfo, type KeyCheck, RequestError, UnauthorizedError } from '../../api.ts'
 import Button from '../../ui/Button.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
@@ -20,6 +20,14 @@ interface AiKeyFieldProps {
   check: (provider: string, key: string) => Promise<KeyCheck>
   onUnauthorized?: () => void
 }
+
+// The provider's page where a key is made, in the sentence above the field: never pushed down by the check's line.
+const ConsoleLink = ({ href, children }: { href: string; children?: ReactNode }) => (
+  <a className={styles.keysLink} href={href} target="_blank" rel="noopener noreferrer">
+    {children}
+    <ExternalLink size={13} aria-hidden="true" />
+  </a>
+)
 
 // An AI's key: pasted, then checked on a click, with where to make one.
 const AiKeyField = ({ provider, value, onChange, result, onResult, check, onUnauthorized }: AiKeyFieldProps) => {
@@ -44,6 +52,13 @@ const AiKeyField = ({ provider, value, onChange, result, onResult, check, onUnau
   return (
     <div className={styles.keyField}>
       <span className={styles.fieldLabel}>{t('aiKey.label', { provider: provider.name })}</span>
+      <p className={styles.keyWhere}>
+        <Trans
+          i18nKey="aiKey.where"
+          values={{ provider: provider.name.replace(/ \(.*\)$/, '') }}
+          components={{ a: <ConsoleLink href={provider.keysUrl} /> }}
+        />
+      </p>
       <div className={styles.fieldRow}>
         <TextField
           icon={KeyRound}
@@ -66,10 +81,6 @@ const AiKeyField = ({ provider, value, onChange, result, onResult, check, onUnau
           result && <StatusLine tone={TONES[result]}>{t(`aiKey.${result}`)}</StatusLine>
         )}
       </div>
-      <a className={styles.keysLink} href={provider.keysUrl} target="_blank" rel="noopener noreferrer">
-        {t('aiKey.console', { provider: provider.name.replace(/ \(.*\)$/, '') })}
-        <ExternalLink size={14} aria-hidden="true" />
-      </a>
     </div>
   )
 }

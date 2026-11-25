@@ -107,7 +107,7 @@
     "failed": "The check failed. Try again in a moment.",
     "label": "{{provider}} API key",
     "check": "Check",
-    "console": "Create a key in the {{provider}} console"
+    "where": "Make one in the <a>{{provider}} console</a>, then paste it here."
   },
   "regions": {
     "timeZone": "Time zone",

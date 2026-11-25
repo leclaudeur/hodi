@@ -107,7 +107,7 @@
     "failed": "La vérification a échoué. Réessaie dans un instant.",
     "label": "Clé d’API {{provider}}",
     "check": "Vérifier",
-    "console": "Créer une clé sur la console {{provider}}"
+    "where": "Crée-la sur la <a>console {{provider}}</a>, puis colle-la ici."
   },
   "regions": {
     "timeZone": "Fuseau horaire",
