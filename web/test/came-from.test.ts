@@ -23,4 +23,12 @@ describe('came from', () => {
     recordMove('#/saved', '#/accounting')
     expect(backTo('#/account', '#/settings')).toBe('#/followed')
   })
+
+  it('keeps a page’s origin when another page opened from it goes back to it', () => {
+    recordMove('#/settings/sources', '#/catalogue/world')
+    recordMove('#/catalogue/world', '#/account/profile')
+    recordMove('#/account/profile', '#/catalogue/world')
+    expect(backTo('#/catalogue', '#/settings/sources')).toBe('#/settings/sources')
+    expect(backTo('#/account', '#/settings')).toBe('#/catalogue/world')
+  })
 })

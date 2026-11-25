@@ -7,10 +7,13 @@ const pageOf = (hash: string): Page | undefined => PAGES.find(page => hash === p
 
 const openedFrom = new Map<Page, string>()
 
-// Moving between a page's own sections keeps where it was opened from.
+// Moving between a page's own sections keeps where it was opened from, and so does going back: from Mon compte back
+// to the catalogue it was opened from, the catalogue keeps its own origin rather than pointing at Mon compte.
 export const recordMove = (from: string, to: string) => {
+  const left = pageOf(from)
+  if (left && openedFrom.get(left) === to) return
   const page = pageOf(to)
-  if (page && pageOf(from) !== page) openedFrom.set(page, from || '#/')
+  if (page && left !== page) openedFrom.set(page, from || '#/')
 }
 
 const hashOf = (url: string) => new URL(url).hash
