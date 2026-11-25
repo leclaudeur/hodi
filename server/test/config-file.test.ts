@@ -22,7 +22,7 @@ describe('config.yml', () => {
     assert.equal(CONFIG.signIn.failureWindow, 15 * 60_000)
     assert.equal(CONFIG.sourceIcons.maxSize, 256 * 1024)
     assert.equal(CONFIG.passwords.minLength, 8)
-    assert.ok(CONFIG.blocks.sharedHosts.includes('youtube.com'))
+    assert.ok(CONFIG.blocks.sharedHosts.some(host => host === 'youtube.com'))
   })
 
   it('stops at a missing setting, naming it', () => {
