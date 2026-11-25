@@ -30,6 +30,8 @@
   --approve: #16291c;
   --approve-border: #5f9c6c;
   --approve-text: #cdeccf;
+  /* A switch that is on: white on the green in every theme. */
+  --toggle-knob-on: #ffffff;
   --warning: #d4a64a;
   /* The game's badge tiers. */
   --bronze: #a87c5a;

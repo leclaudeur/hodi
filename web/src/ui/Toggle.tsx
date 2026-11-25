@@ -7,7 +7,7 @@ interface ToggleProps {
   onChange: (checked: boolean) => void
 }
 
-// The charter's switch: a white pill with a dark knob when on, a dim one when off.
+// The charter's switch: green with a white knob when on, a dim knob when off.
 const Toggle = ({ checked, label, disabled = false, onChange }: ToggleProps) => (
   <button
     type="button"
