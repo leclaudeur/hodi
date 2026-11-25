@@ -342,6 +342,7 @@ describe('« Validation en deux étapes »', () => {
     assert.equal(started.status, 200)
     const { secret, uri } = (await started.json()) as { secret: string; uri: string }
     assert.match(uri, /^otpauth:\/\/totp\/Hodi:antho%40example\.com\?issuer=Hodi&secret=[A-Z2-7]+/)
+    assert.doesNotMatch(uri, /algorithm|digits|period/)
     const confirmed = await env.call('/account/two-factor', cookie, 'PUT', { code: appCode(secret, env.clock.now) })
     assert.equal(confirmed.status, 200)
     const { recoveryCodes } = (await confirmed.json()) as { recoveryCodes: string[] }
