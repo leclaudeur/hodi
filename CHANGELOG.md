@@ -36,6 +36,7 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 - Mon compte and the catalogue’s back button returns to the screen they were opened from, not always to Réglages.
 - The dashed cards that add something (a source, a child) open with a click anywhere on them, not only on their button.
+- **Add a source › For a topic** works without AI: the topic’s first sources in the catalogue (most read, or A to Z), the AI’s below when it is set, and a link to all of them in the catalogue.
 - **A field's message has its icon centred** on its first line, whatever the text's size.
 - **Removing the AI key** no longer shows its calls for a moment under the card.
 - **A QR code that scans at once.** The authenticator app's QR code is larger, with fewer squares.

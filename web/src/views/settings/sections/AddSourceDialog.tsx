@@ -9,6 +9,7 @@ import TopicCapsule from '../../../ui/TopicCapsule.tsx'
 import styles from '../Settings.module.css'
 import AddSource from './AddSource.tsx'
 import dialogStyles from './AddSourceDialog.module.css'
+import CataloguePicks from './CataloguePicks.tsx'
 import SourceSuggestions from './SourceSuggestions.tsx'
 import RichText from '../../../ui/RichText.tsx'
 
@@ -28,9 +29,8 @@ interface AddSourceDialogProps {
   onUnauthorized: () => void
 }
 
-// "Ajouter une source", over the page, one way at a time: a link pasted, or with AI, the sites it finds for a topic
-// (the catalogue has the server's own). The topics show until one is picked, then give way to its sites.
-// Without AI, the link alone.
+// "Ajouter une source", over the page, one way at a time: a link pasted, or for a topic, the catalogue's first
+// sources and, with AI, the sites it finds. The topics show until one is picked, then give way to its sites.
 type Way = 'link' | 'topic'
 
 interface WayProps {
@@ -39,6 +39,7 @@ interface WayProps {
   way: Way
   picked: string | null
   onPick: (id: string | null) => void
+  withAi: boolean
   onAdded: (id: string) => void
   onUnauthorized: () => void
 }
@@ -64,8 +65,8 @@ const TopicPicker = ({ topics, onPick }: { topics: TopicInfo[]; onPick: (id: str
   )
 }
 
-// The way picked: a link pasted, or the sites the AI finds for a topic.
-const WayContent = ({ topics, request, way, picked, onPick, onAdded, onUnauthorized }: WayProps) => {
+// The way picked: a link pasted, or for a topic, the catalogue's sources and the sites the AI finds.
+const WayContent = ({ topics, request, way, picked, onPick, withAi, onAdded, onUnauthorized }: WayProps) => {
   const { t } = useTranslation()
   const topic = topics.find(candidate => candidate.id === picked) ?? null
   if (way === 'link') {
@@ -78,14 +79,17 @@ const WayContent = ({ topics, request, way, picked, onPick, onAdded, onUnauthori
         <TopicCapsule topicId={topic.id} label={topic.label} size="filter" selected href={null} />
         <Button onClick={() => onPick(null)}>{t('settings.addSource.changeTopic')}</Button>
       </div>
-      <SourceSuggestions
-        // A new topic: the last suggestions go.
-        key={picked}
-        topic={topic}
-        replacing={request.replacing?.id ?? null}
-        onAdded={onAdded}
-        onUnauthorized={onUnauthorized}
-      />
+      <CataloguePicks key={`catalogue-${topic.id}`} topic={topic} onAdded={onAdded} onUnauthorized={onUnauthorized} />
+      {withAi && (
+        <SourceSuggestions
+          // A new topic: the last suggestions go.
+          key={picked}
+          topic={topic}
+          replacing={request.replacing?.id ?? null}
+          onAdded={onAdded}
+          onUnauthorized={onUnauthorized}
+        />
+      )}
     </>
   )
 }
@@ -116,30 +120,29 @@ const AddSourceDialog = ({ topics, request, onClose, onAdded, onUnauthorized }: 
         request?.replacing ? (
           <RichText i18nKey="dialogIntro.replaceSource" values={{ name: request.replacing.name }} />
         ) : (
-          <RichText i18nKey={withAi ? 'dialogIntro.addSource' : 'dialogIntro.addSourceLink'} />
+          <RichText i18nKey={withAi ? 'dialogIntro.addSource' : 'dialogIntro.addSourceTopic'} />
         )
       }
     >
       {request && (
         <>
-          {withAi && (
-            <Segmented
-              label={t('settings.addSource.how')}
-              wide
-              value={way}
-              options={[
-                { value: 'link', label: t('settings.addSource.byLink') },
-                { value: 'topic', label: t('settings.addSource.forTopic') }
-              ]}
-              onChange={setWay}
-            />
-          )}
+          <Segmented
+            label={t('settings.addSource.how')}
+            wide
+            value={way}
+            options={[
+              { value: 'link', label: t('settings.addSource.byLink') },
+              { value: 'topic', label: t('settings.addSource.forTopic') }
+            ]}
+            onChange={setWay}
+          />
           <WayContent
             topics={topics}
             request={request}
-            way={withAi ? way : 'link'}
+            way={way}
             picked={picked}
             onPick={setPicked}
+            withAi={withAi}
             onAdded={onAdded}
             onUnauthorized={onUnauthorized}
           />
