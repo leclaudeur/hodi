@@ -191,7 +191,7 @@
     "start": {
       "kicker": "Welcome to Hodi",
       "title": "News for the whole home",
-      "lead": "Your favourite news sites, <b>sorted by topic</b>, read <b>with no ads or tracking</b>. Everyone has their own account, and you share what’s worth reading.",
+      "lead": "Your favourite news sites, <b>sorted by topic</b>, read <b>with no ads or tracking</b>. Everyone has an account, and you share what’s worth reading.",
       "codeNoticeTitle": "The code is in the server’s log",
       "codeNoticeText": "Take the last <i>Setup code</i> line of <code>docker compose logs app</code>",
       "code": "Setup code",

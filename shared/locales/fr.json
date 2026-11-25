@@ -191,7 +191,7 @@
     "start": {
       "kicker": "Bienvenue dans Hodi",
       "title": "L’actu de toute la maison",
-      "lead": "Les sites d’info que tu préfères, <b>rangés par thème</b>, et lus <b>sans pub ni pistage</b>. Chacun a son compte, et on se partage ce qui vaut la peine d’être lu.",
+      "lead": "Les sites d’info que tu préfères, <b>rangés par thème</b> et lus <b>sans pub ni pistage</b>. Chacun son compte, et on partage ce qui vaut la peine d’être lu.",
       "codeNoticeTitle": "Le code est dans le journal du serveur",
       "codeNoticeText": "Prends la dernière ligne <i>Setup code</i> de <code>docker compose logs app</code>",
       "code": "Code d’installation",
