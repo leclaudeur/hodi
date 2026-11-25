@@ -190,6 +190,22 @@
   border-top-style: dashed;
 }
 
+/* Its button reaches over the whole card, so a click anywhere on it adds; the focus ring stays on the button. */
+.empty button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.empty:has(button:hover) {
+  border-color: var(--border-strong);
+}
+
+/* Pressed, a button shrinks, which would shrink its reach to itself: the click would then land beside it. */
+.empty button:not(:disabled):active {
+  scale: none;
+}
+
 .emptyAvatar {
   display: grid;
   place-items: center;
