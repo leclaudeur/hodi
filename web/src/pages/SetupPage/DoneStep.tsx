@@ -2,8 +2,10 @@ import { ArrowRight, Clock } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AiProviderInfo } from '../../api.ts'
+import { LANGUAGES, LANGUAGE_NAMES, setChosenLanguage, useLanguage } from '../../lib/i18n.ts'
 import { timeZoneOffset } from '../../lib/regions.ts'
 import Button from '../../ui/Button.tsx'
+import Segmented from '../../ui/Segmented.tsx'
 import StatusLine from '../../ui/StatusLine.tsx'
 import { TimeZonePicker } from '../../views/household/RegionPickers.tsx'
 import SettingRow from '../../views/settings/SettingRow.tsx'
@@ -25,15 +27,32 @@ interface DoneStepProps {
   onBack: () => void
 }
 
-// The recap, with the time zone, before the profile reaches the server.
+// The recap, with the language and the time zone, before the profile reaches the server.
 const DoneStep = (props: DoneStepProps) => {
   const { t } = useTranslation()
   const [picking, setPicking] = useState(false)
+  // The one shown in the header from the start: the server and the admin's own interface keep it.
+  const language = useLanguage()
   const { provider } = props
   return (
     <div className={styles.form}>
       <StepHeader step={props.step} total={props.total} title={t('setup.done.title')} intro={t('setup.done.intro')} />
       <div className={settingsStyles.card}>
+        <SettingRow
+          label={t('language.label')}
+          choice={
+            <Segmented
+              label={t('language.label')}
+              value={language}
+              onChange={setChosenLanguage}
+              options={LANGUAGES.map(option => ({
+                value: option,
+                title: LANGUAGE_NAMES[option],
+                label: LANGUAGE_NAMES[option]
+              }))}
+            />
+          }
+        />
         <SettingRow
           label={t('regions.timeZone')}
           value={`${props.timeZone} · ${timeZoneOffset(props.timeZone)}`}

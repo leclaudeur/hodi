@@ -41,8 +41,8 @@ export interface HouseholdRoutesOptions {
   cookieFor: CookieFor
   // Region or AI changed: the news service takes the new ones.
   onChange: () => void
-  // The household now exists, in this language: its base sources come in.
-  onSetUp?: (language: Language) => void
+  // The household now exists, in this language: its base sources come in, and the admin's profile reads in it.
+  onSetUp?: (language: Language, profileId: number | null) => void
   // « Mot de passe oublié » can send its link: Serveur › E-mail is set.
   canResetByMail?: () => boolean
   // Serveur › Général: where a browser that never signed in here goes from the app's bare address.
@@ -283,7 +283,7 @@ const mountSetupHouseholdRoute = (
       const lock = profiles.lock(first.id)
       response.set('Set-Cookie', profileCookie(profileToken(first.id, lock?.version ?? 0, secret)))
     }
-    onSetUp(language)
+    onSetUp(language, first?.id ?? null)
     onChange()
     response.json({ profileId: first?.id ?? null })
   })

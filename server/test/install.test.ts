@@ -14,6 +14,7 @@ import { ProfileStore } from '../db/profile-store.ts'
 import { ServerSettingsStore } from '../db/server-settings-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { UserDeviceStore } from '../db/user-device-store.ts'
+import { UserStore } from '../db/user-store.ts'
 import { parseCatalog } from '../news/catalog.ts'
 import { NewsService } from '../news/news-service.ts'
 import { fakeFetch } from './helpers/news.ts'
@@ -51,7 +52,8 @@ async function startServer() {
     install: new InstallStore(db),
     accounts: new UserAccountStore(db),
     devices: new UserDeviceStore(db),
-    serverSettings: new ServerSettingsStore(db)
+    serverSettings: new ServerSettingsStore(db),
+    users: (id: number) => new UserStore(db, id)
   }).listen(0)
   await new Promise(resolve => server.once('listening', resolve))
   const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
@@ -98,6 +100,14 @@ describe('the setup, to the end', () => {
     assert.deepEqual(chosen, { language: 'en', timeZone: 'Europe/Brussels', hourCycle: 24 })
     const setup = (await (await env.call('/setup', '')).json()) as { needed: boolean; language: string }
     assert.deepEqual([setup.needed, setup.language], [false, 'en'])
+    // The admin's own interface keeps the language picked, whatever their browser's.
+    const own = env.db.prepare("SELECT value FROM profile_settings WHERE key = 'preferences'").all() as {
+      value: string
+    }[]
+    assert.deepEqual(
+      own.map(row => (JSON.parse(row.value) as { language?: string }).language),
+      ['en']
+    )
   })
 })
 
