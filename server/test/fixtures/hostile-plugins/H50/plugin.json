@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "description": "moveDevice is no longer an answer: a device never changes household",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin",
   "permissions": {
     "accounts": true,

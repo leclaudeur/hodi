@@ -4,5 +4,6 @@
   "version": "0.0.1",
   "description": "PRAGMAs that change the file or the quota are refused",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin"
 }

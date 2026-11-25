@@ -22,6 +22,7 @@ interface PluginsFoundStepProps {
 
 const hintOf = (plugin: SetupPlugin, t: TFunction) => {
   if (plugin.error === 'outdated_api') return t('plugins.outdatedHint')
+  if (plugin.error === 'newer_sdk') return t('plugins.newerSdkHint')
   if (plugin.error) return t('setup.plugins.broken')
   if (!plugin.signed) return t('setup.plugins.unsigned')
   return pluginDescription(plugin) ?? undefined

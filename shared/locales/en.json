@@ -1826,6 +1826,8 @@
         "too_big": "This file is too big (50 MB at most).",
         "not_a_package": "This file is not a Hodi plugin.",
         "invalid_manifest": "This plugin is badly described and cannot be installed.",
+        "outdated_api": "This plugin was made for an older version of Hodi: install its new version.",
+        "newer_sdk": "This plugin was made for a newer version of Hodi: update Hodi first.",
         "not_found": "The file expired, choose it again.",
         "failed": "Sending failed. Try again.",
         "signed_only": "This plugin is not verified and asks for access only verified plugins get."
@@ -1851,6 +1853,9 @@
     "outdated": "It was written for an older version of Hodi. Install its new version to use it.",
     "outdatedHint": "Too old for this version of Hodi",
     "outdatedToggleHint": "Not possible until it is updated",
+    "newerSdk": "It was made for a newer version of Hodi. Update Hodi to use it.",
+    "newerSdkHint": "Too new for this version of Hodi",
+    "newerSdkToggleHint": "Not possible until Hodi is updated",
     "installUpdate": "Update",
     "unsignedChip": "Not verified",
     "unsignedTitle": "Nobody checked this plugin",
@@ -1945,6 +1950,8 @@
         "checksum_mismatch": "The downloaded file isn’t the one on the list: Hodi won’t install it.",
         "not_a_package": "This file isn’t a Hodi plugin.",
         "invalid_manifest": "This plugin is badly described and can’t be installed.",
+        "outdated_api": "This plugin was made for an older version of Hodi: install its new version.",
+        "newer_sdk": "This plugin was made for a newer version of Hodi: update Hodi first.",
         "signed_only": "This plugin isn’t verified and asks for access only verified plugins get.",
         "failed": "The download failed. Try again."
       }

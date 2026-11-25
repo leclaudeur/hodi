@@ -14,6 +14,7 @@ import { PluginCatalog } from '../plugins/catalog.ts'
 import { PluginInstaller } from '../plugins/installer.ts'
 import { PLUGIN_API } from '../plugins/manifest.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const REPO = 'https://github.com/someone/hodi-plugin-hello'
 const URL = `${REPO}/releases/download/v0.2.0/hello-0.2.0.hodi-plugin`
@@ -27,6 +28,7 @@ const makePackage = async (version = '0.2.0') => {
       version,
       description: 'Dit bonjour.',
       api: PLUGIN_API,
+      sdk: PLUGIN_SDK,
       audience: 'all'
     }),
     'server.js': 'export default {}',
@@ -51,6 +53,7 @@ const entry = (overrides: Record<string, unknown> = {}) => ({
   repo: REPO,
   version: '0.2.0',
   api: PLUGIN_API,
+  sdk: PLUGIN_SDK,
   url: URL,
   sha256: '0'.repeat(64),
   ...overrides

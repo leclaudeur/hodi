@@ -19,6 +19,7 @@ import { PLUGIN_API } from '../plugins/manifest.ts'
 import { packageDigest } from '../plugins/package.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 import { fakeFetch } from './helpers/news.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const cookiesFrom = (response: Response) =>
   response.headers
@@ -33,7 +34,8 @@ const writePlugin = (dir: string, id: string, server?: string) => {
     name: id === 'hello' ? 'Bonjour' : id,
     version: '0.1.0',
     description: 'Dit bonjour.',
-    api: PLUGIN_API
+    api: PLUGIN_API,
+    sdk: PLUGIN_SDK
   }
   writeFileSync(path.join(dir, id, 'plugin.json'), JSON.stringify(manifest))
   if (server !== undefined) writeFileSync(path.join(dir, id, 'server.js'), server)

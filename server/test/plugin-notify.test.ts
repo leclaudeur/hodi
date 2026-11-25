@@ -11,6 +11,7 @@ import { PLUGIN_NOTICES_PER_DAY, PLUGIN_NOTICES_PER_HOUR, pluginNotice, pluginNo
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
 import { callContext } from '../plugins/call-context.ts'
 import { TEST_TRUSTED_KEYS, signTestFolder } from './helpers/signing.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 // Profiles 1, 2 and 3 are there; account 7 reads with profile 2, account 8 has no profile yet. Profiles 1 and 2 are
 // family; 3 has no tie with either.
@@ -149,6 +150,7 @@ describe('ctx.notify', () => {
           version: '0.1.0',
           description: 'Tells.',
           api: PLUGIN_API,
+          sdk: PLUGIN_SDK,
           permissions: { notify }
         })
       )

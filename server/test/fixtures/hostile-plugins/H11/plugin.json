@@ -4,5 +4,6 @@
   "version": "0.0.1",
   "description": "Many calls at once queue, then overflow",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin"
 }

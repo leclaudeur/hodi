@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { after, describe, it } from 'node:test'
 import { type TestPlugin, testPlugin } from '../../plugin-sdk/testing.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 // A plugin as an author writes one: its folder, built by the kit as `hodi-plugin build` would.
 const pluginFolder = (permissions: Record<string, unknown> = {}) => {
@@ -16,6 +17,7 @@ const pluginFolder = (permissions: Record<string, unknown> = {}) => {
       version: '0.1.0',
       description: 'Tried by the test kit.',
       api: 2,
+      sdk: PLUGIN_SDK,
       audience: 'all',
       settings: [{ key: 'greeting', type: 'text', default: 'Bonjour', maxLength: 40 }],
       permissions: { network: ['news.example.test'], ...permissions }

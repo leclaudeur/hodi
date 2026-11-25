@@ -8,6 +8,13 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Changed
+
+- **Plugins too old or too new for this Hodi.** A plugin built with an SDK older than 1.0.0-beta.7, or without the SDK's
+  version in its `plugin.json`, is listed switched off in Server › Plugins with « Update », and refused at install. One
+  built with a newer SDK than Hodi's own is refused too, and asks for a newer Hodi. The plugin SDK goes to
+  1.0.0-beta.7, whose build writes its version into each plugin.
+
 ### Fixed
 
 - **Downloading a backup.** In Server › Backups, the browser downloads the copy itself, with its own progress,

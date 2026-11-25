@@ -10,6 +10,7 @@ import { ServerNoticeStore } from '../db/server-notice-store.ts'
 import { UserAccountStore } from '../db/user-account-store.ts'
 import { serverNotifier } from '../notices/server-notifier.ts'
 import { pluginServerNotice, pluginServerNotifier } from '../plugins/server-notify.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 // A plugin's notice someone waits on (a waitlist sign-up): under « À traiter » until the plugin says it is handled.
 
@@ -70,6 +71,7 @@ describe('a plugin’s important server notice', () => {
         version: '0.1.0',
         description: 'Des foyers.',
         api: 2,
+        sdk: PLUGIN_SDK,
         permissions: { notify: true },
         serverNotifications: KINDS.map(({ type, label }) => ({ type, label }))
       })

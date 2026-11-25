@@ -14,6 +14,7 @@ import { NewsService } from '../news/news-service.ts'
 import { MAX_FEED_ITEMS, feedEntries, feedSource, pluginFeedReader, withPluginFeeds } from '../plugins/feeds.ts'
 import { PLUGIN_API, parseManifest } from '../plugins/manifest.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const NOW = Date.parse('2026-11-08T12:00:00Z')
 
@@ -23,6 +24,7 @@ const MANIFEST = {
   version: '0.1.0',
   description: 'Les événements du quartier.',
   api: PLUGIN_API,
+  sdk: PLUGIN_SDK,
   permissions: { network: ['agenda.example'] },
   feeds: [{ key: 'events', name: 'Agenda du quartier', site: 'agenda.example', lang: 'fr', topic: 'belgium' }]
 }

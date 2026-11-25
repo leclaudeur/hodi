@@ -19,16 +19,38 @@ import { openDatabase } from '../db/database.ts'
 import { PluginStore } from '../db/plugin-store.ts'
 import { unpackPackage } from '../plugins/package.ts'
 import { loadPlugins } from '../plugins/registry.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const HELLO_WORLD = path.join(import.meta.dirname, '..', '..', 'plugin-sdk', 'test', 'hello-world')
 
 describe('plugin SDK', () => {
+  it('writes its own version into each plugin.json it builds, the one Hodi checks', async () => {
+    const sdk = JSON.parse(
+      readFileSync(path.join(import.meta.dirname, '..', '..', 'plugin-sdk', 'package.json'), 'utf8')
+    ) as { version: string }
+    assert.equal(PLUGIN_SDK, sdk.version)
+    const out = mkdtempSync(path.join(tmpdir(), 'hodi-sdk-stamp-'))
+    const built = await buildPlugin(HELLO_WORLD, { out })
+    const into = path.join(mkdtempSync(path.join(tmpdir(), 'hodi-sdk-stamp-plugins-')), 'hello-world')
+    const { manifest } = await unpackPackage(readFileSync(built.file), into, [])
+    assert.equal(manifest.sdk, sdk.version)
+    // The source folder's plugin.json is left as it is.
+    assert.equal('sdk' in JSON.parse(readFileSync(path.join(HELLO_WORLD, 'plugin.json'), 'utf8')), false)
+  })
+
   it('bundles the packages a server part imports, and refuses those of Node', async () => {
     const source = mkdtempSync(path.join(tmpdir(), 'hodi-sdk-deps-'))
     symlinkSync(path.join(import.meta.dirname, '..', '..', 'node_modules'), path.join(source, 'node_modules'))
     writeFileSync(
       path.join(source, 'plugin.json'),
-      JSON.stringify({ id: 'deps', name: 'Deps', version: '0.1.0', description: 'Bundles clsx.', api: 2 })
+      JSON.stringify({
+        id: 'deps',
+        name: 'Deps',
+        version: '0.1.0',
+        description: 'Bundles clsx.',
+        api: 2,
+        sdk: PLUGIN_SDK
+      })
     )
     mkdirSync(path.join(source, 'server'))
     writeFileSync(
@@ -63,6 +85,7 @@ describe('plugin SDK', () => {
         version: '0.1.0',
         description: 'Before sign-in.',
         api: 2,
+        sdk: PLUGIN_SDK,
         permissions: { publicRoutes: true }
       })
     )

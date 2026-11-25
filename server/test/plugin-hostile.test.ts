@@ -40,6 +40,7 @@ import { hashPassword } from '../auth/password.ts'
 import type { MailMessage } from '../mail/mailer.ts'
 import { fakeFetch } from './helpers/news.ts'
 import { TEST_TRUSTED_KEYS, signTestFolder } from './helpers/signing.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 // The hostile plugins of the security review (fixtures/hostile-plugins/H*/): each one is written to do harm, and each
 // expected.json says what Hodi must answer instead. The structured checks run as written; the plain-text ones (setup,
@@ -248,6 +249,7 @@ describe('hostile plugins', () => {
         version: '0.0.1',
         description: 'Makes an account and signs the device in',
         api: 2,
+        sdk: PLUGIN_SDK,
         audience: 'admin',
         permissions: { accounts: true, publicRoutes: true, signIn: true }
       })

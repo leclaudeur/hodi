@@ -4,5 +4,6 @@
   "version": "0.0.1",
   "description": "No network primitive inside the sandbox",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin"
 }

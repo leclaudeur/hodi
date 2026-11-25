@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "description": "checkPassword cannot be used to guess passwords or block sign-in",
   "api": 2,
+  "sdk": "1.0.0-beta.7",
   "audience": "admin",
   "permissions": {
     "accounts": true,

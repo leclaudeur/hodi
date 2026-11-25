@@ -23,6 +23,7 @@ import {
 import { PLUGIN_API } from '../plugins/manifest.ts'
 import { packageDigest } from '../plugins/package.ts'
 import { type PluginRegistry, loadPlugins } from '../plugins/registry.ts'
+import { PLUGIN_SDK } from '../plugins/plugin-sdk.ts'
 
 const NOW = Date.parse('2026-11-08T12:00:00Z')
 
@@ -32,6 +33,7 @@ const MANIFEST = {
   version: '0.1.0',
   description: 'Résume avec l’IA du foyer.',
   api: PLUGIN_API,
+  sdk: PLUGIN_SDK,
   audience: 'all',
   permissions: { ai: true }
 }
