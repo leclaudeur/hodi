@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { createReadStream, existsSync, statSync } from 'node:fs'
 import path from 'node:path'
+import { pipeline } from 'node:stream'
 import type express from 'express'
 import { Zip, ZipPassThrough } from 'fflate'
 import { pluginCopyDir, readPluginManifest } from '../db/plugin-backup.ts'
@@ -89,7 +90,8 @@ export const sendCopy = async (response: express.Response, dir: string, name: st
     response.set('Content-Type', 'application/vnd.sqlite3')
     response.set('Content-Length', String(statSync(file).size))
     response.set('Content-Disposition', `attachment; filename="${name}"`)
-    createReadStream(file).pipe(response)
+    // A copy pruned meanwhile ends the download instead of an error nobody listens to.
+    pipeline(createReadStream(file), response, () => {})
     return
   }
   const files = [
