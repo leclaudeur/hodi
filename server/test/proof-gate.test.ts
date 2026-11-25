@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import { after, before, describe, it } from 'node:test'
-import { needsProof } from '../http/proof-gate.ts'
 import { ADMIN_PASSWORD, startHousehold } from './helpers/household-env.ts'
 
 // Every red button of the app and of /server: refused without the password, whatever the route would answer next.
@@ -36,6 +35,17 @@ describe('the red buttons', () => {
     })
   }
 
+  it('asks for it whatever the case or a trailing slash, as the router matches both', async () => {
+    for (const [method, path] of [
+      ['DELETE', '/account/ai/'],
+      ['DELETE', '/ACCOUNT/AI'],
+      ['DELETE', '/Sources/gazette/']
+    ]) {
+      const refused = await household.call(path, household.admin, method, {})
+      assert.deepEqual([path, refused.status, await refused.json()], [path, 403, { error: 'invalid_password' }])
+    }
+  })
+
   it('lets the route answer once the password is right, never a wrong one', async () => {
     const wrong = await household.call('/account/ai', household.admin, 'DELETE', { password: 'pas le bon' })
     assert.deepEqual([wrong.status, await wrong.json()], [403, { error: 'invalid_password' }])
@@ -43,10 +53,17 @@ describe('the red buttons', () => {
     assert.equal(cleared.status, 200)
   })
 
-  it('leaves alone what undoes nothing', () => {
-    assert.equal(needsProof('POST', '/server/reports/gazette', { decision: 'ignore' }), false)
-    assert.equal(needsProof('POST', '/server/reviews/sources/gazette', { decision: 'accept' }), false)
-    assert.equal(needsProof('DELETE', '/me/read/abcdefghij012345', {}), false)
-    assert.equal(needsProof('PUT', '/me/preferences', {}), false)
+  it('leaves alone what undoes nothing', async () => {
+    const answers: [string, string, Record<string, unknown>][] = [
+      ['POST', '/server/reports/gazette', { decision: 'ignore' }],
+      ['POST', '/server/reviews/sources/gazette', { decision: 'accept' }],
+      ['DELETE', '/me/read/abcdefghij012345', {}],
+      ['PUT', '/me/preferences', {}],
+      ['DELETE', '/profiles/current', {}]
+    ]
+    for (const [method, path, body] of answers) {
+      const answer = await household.call(path, household.admin, method, body)
+      assert.notDeepEqual([path, await answer.json().catch(() => null)], [path, { error: 'invalid_password' }])
+    }
   })
 })
