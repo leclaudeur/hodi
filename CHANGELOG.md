@@ -10,6 +10,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **Mon compte › Affichage.** The theme, the text's size and hiding what was read move from Réglages to Mon compte,
+  with the rest of the account. Réglages opens on Sources, then Thèmes and Historique, and its group « Toi » is now
+  « Compte ».
+- **The profile's colour is Hodi's accent** everywhere, in place of rust, Mon compte and Serveur included. The accent
+  colour setting went.
+- **A switch that is on turns green.**
 - **The password before every red button.** Emptying Historique, clearing the stats, resetting the settings, deleting a
   source, a young one's profile or one of their devices, signing a device out, removing the AI key, and in Server
   removing the e-mail settings, emptying the articles' texts, taking a source off the catalogue or refusing one: each

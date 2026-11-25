@@ -11,7 +11,6 @@ import FollowedSection from './sections/FollowedSection.tsx'
 import GeneralSection from './sections/GeneralSection.tsx'
 import MutedSection from './sections/MutedSection.tsx'
 import NotificationsSection from './sections/NotificationsSection.tsx'
-import ReadingSection from './sections/ReadingSection.tsx'
 import SharingSection from './sections/SharingSection.tsx'
 import ShortcutsSection from './sections/ShortcutsSection.tsx'
 import SourcesSection from './sections/SourcesSection.tsx'
@@ -30,8 +29,6 @@ interface SettingsPanelProps {
 // A section's own page, by its address. A plain function rather than a component: the panel's tree stays the same.
 const sectionContent = ({ section, item, topics, layout, onUnauthorized }: SettingsPanelProps, waiting: ReactNode) => {
   switch (section) {
-    case 'reading':
-      return <ReadingSection layout={layout} />
     case 'themes':
       return topics ? <ThemesSection topics={topics} layout={layout} /> : waiting
     case 'sources':

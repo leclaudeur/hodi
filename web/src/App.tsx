@@ -12,6 +12,7 @@ import { usePreferences } from './lib/preferences.ts'
 import { startLimits, useLimits, useLimitsReady } from './lib/limits.ts'
 import { PROFILE_SWITCHING } from './lib/profiles.ts'
 import { anotherTabOpen, answerOtherTabs } from './lib/other-tabs.ts'
+import { useTheme } from './lib/theme.ts'
 import { useHashRoute } from './lib/use-hash-route.ts'
 import { loadedPlugins, loadPlugins, loadPublicPlugins } from './plugins/registry.ts'
 import SignedOut from './app/SignedOut.tsx'
@@ -143,6 +144,8 @@ const Unreachable = ({ retry }: { retry: () => void }) => {
 // The app once a profile is open, or « Qui lit ? » to open one.
 const SignedIn = ({ status, setStatus }: { status: Status; setStatus: (status: Status) => void }) => {
   const route = useHashRoute()
+  // The theme and the profile's colour, on every page of the app: Mon compte and Serveur too.
+  useTheme()
   const limits = useLimits()
   const limitsReady = useLimitsReady()
   // Its time is up or it is outside its hours: the feed is closed to it.

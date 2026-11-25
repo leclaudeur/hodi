@@ -10,7 +10,6 @@ import { useKeyboardShortcuts } from '../lib/keyboard-shortcuts.ts'
 import { refreshListen } from '../lib/listen.ts'
 import { useNotificationSync } from '../lib/notifications.ts'
 import { hasShownSource, orderTopics, usePreferences } from '../lib/preferences.ts'
-import { useTheme } from '../lib/theme.ts'
 import { useFadeIn } from '../lib/use-fade-in.ts'
 import { useHashRoute } from '../lib/use-hash-route.ts'
 import { useIsDesktop, useIsTabletAcross } from '../lib/use-media.ts'
@@ -63,7 +62,6 @@ const HomePage = ({ onLoggedOut }: HomePageProps) => {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const openShortcuts = useCallback(() => setShowShortcuts(true), [])
   useKeyboardShortcuts(openShortcuts)
-  useTheme()
   const { home, listKey } = useHome(onLoggedOut, isDesktop, isTablet)
   const { route, list, topics } = home
   useScrollMemory(route, listKey, isDesktop, isTablet, panel)

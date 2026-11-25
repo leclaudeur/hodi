@@ -1124,13 +1124,12 @@
     "groups": {
       "reading": "Reading",
       "subjects": "Subjects",
-      "you": "You",
+      "you": "Account",
       "household": "Family",
       "device": "This device",
       "about": "Hodi"
     },
     "nav": {
-      "reading": "Reading and display",
       "themes": "Topics",
       "sources": "Sources",
       "followed": "Followed",
@@ -1148,7 +1147,6 @@
     },
     "hints": {
       "history": "Read and watched, 7 days",
-      "reading": "Appearance, text size",
       "themes": "Order, visibility",
       "sources": "Feed status",
       "failing": "{{count}} failing",
@@ -1167,7 +1165,8 @@
       "server": "Plugins, for the whole server",
       "about": "Version, source code, credits",
       "plugins": "Add features",
-      "general": "Guided tour, reset"
+      "general": "Guided tour, reset",
+      "display": "Theme, text size"
     },
     "titles": {
       "reading": "Reading",
@@ -1194,7 +1193,6 @@
       "show": "Show {{name}}"
     },
     "reading": {
-      "intro": "Hodi’s language, its colours and the size of the articles’ text. These settings are yours alone and follow you on all your devices. Hiding what you’ve read keeps your feed short: everything stays in search, the stats and <i>History</i>.",
       "appearance": "Theme",
       "appearanceHint": "Poudré: the dark theme, in pink",
       "themes": {
@@ -1202,19 +1200,6 @@
         "light": "Light",
         "dark": "Dark",
         "powder": "Poudré"
-      },
-      "accent": "Accent colour",
-      "accentHint": "Logo, active tab, counters, progress",
-      "accents": {
-        "auto": "Rust (the theme’s)",
-        "autoPowder": "Powder pink (the theme’s)",
-        "rose": "Pink",
-        "corail": "Coral",
-        "ocre": "Gold",
-        "vert": "Sage",
-        "turquoise": "Turquoise",
-        "bleu": "Blue",
-        "lavande": "Lilac"
       },
       "textSize": "Text size",
       "textSizeHint": "Applies to the text of articles",
@@ -2588,6 +2573,7 @@
     "sectionsButton": "Sections",
     "sections": {
       "profile": "Profile",
+      "display": "Display",
       "sign-in": "Sign-in",
       "region": "Region",
       "ai": "AI and credits",
@@ -2596,12 +2582,13 @@
       "children": "My children"
     },
     "intros": {
-      "profile": "The name, photo and colour others see, and Hodi's language.",
+      "profile": "The name, photo and colour: the one others see, and Hodi’s for you. And Hodi’s language.",
       "sign-in": "How you sign in, and the devices where the account is open.",
       "region": "The time zone says when a day starts: the statistics', the <i>Daily summary</i>'s and the badges'.",
       "data": "A copy of everything Hodi keeps about the account, or deleting it.",
       "ai": "Each purple button is a call to the AI, paid with this account's API key: nothing goes without a click. Calls count over a rolling 24 hours, with no cap: the key is yours.",
-      "children": "The teens’ and children’s accounts you run: each signs in with their username and the password you choose."
+      "children": "The teens’ and children’s accounts you run: each signs in with their username and the password you choose.",
+      "display": "The theme and the size of the articles’ text. These settings follow you on every device. Hiding what you’ve read keeps the feed short: all of it stays in search, the stats and <i>History</i>."
     }
   },
   "children": {
