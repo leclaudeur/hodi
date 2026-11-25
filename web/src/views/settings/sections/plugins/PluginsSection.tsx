@@ -14,7 +14,7 @@ import styles from '../../Settings.module.css'
 import AddPluginDialog from './AddPluginDialog.tsx'
 import DevMode from './DevMode.tsx'
 import own from './Plugins.module.css'
-import { PluginOptions } from './PluginOptions.tsx'
+import { OUTDATED_API, PluginOptions } from './PluginOptions.tsx'
 import { PluginFacts, PluginNotice, PluginRow, RemoveRows, UpdateNotice } from './PluginParts.tsx'
 import AvailablePlugins from './AvailablePlugins.tsx'
 import { useCatalog } from './use-catalog.ts'
@@ -40,16 +40,29 @@ interface PageInput {
 
 // One plugin's page: its version, on or off, its settings, then what it draws itself. A plain function, not a
 // component: the list and a plugin's page keep the same SectionPage, as before.
+// A plugin too old to run says so once: its red notice takes the registry's new version when there is one, else a file.
+const updateNotices = ({ opened, onUpdate, catalog }: Pick<PageInput, 'opened' | 'onUpdate' | 'catalog'>) => {
+  const version = catalog.updateOf(opened)
+  const busy = catalog.staging === opened.id
+  const fromCatalog = () => void catalog.stage(opened.id)
+  if (opened.error !== OUTDATED_API)
+    return (
+      <>
+        <UpdateNotice plugin={opened} version={version} busy={busy} error={catalog.error} onUpdate={fromCatalog} />
+        <PluginNotice plugin={opened} onUpdate={onUpdate} />
+      </>
+    )
+  return (
+    <>
+      <PluginNotice plugin={opened} busy={busy} onUpdate={version ? fromCatalog : onUpdate} />
+      {version && catalog.error && <StatusLine tone="error">{catalog.error}</StatusLine>}
+    </>
+  )
+}
+
 const pluginPage = ({ opened, admin, layout, Page, onUpdate, catalog, extras }: PageInput) => (
   <SectionPage title={pluginName(opened)} intro={pluginDescription(opened) ?? undefined} layout={layout}>
-    <UpdateNotice
-      plugin={opened}
-      version={catalog.updateOf(opened)}
-      busy={catalog.staging === opened.id}
-      error={catalog.error}
-      onUpdate={() => void catalog.stage(opened.id)}
-    />
-    <PluginNotice plugin={opened} onUpdate={onUpdate} />
+    {updateNotices({ opened, onUpdate, catalog })}
     <PluginFacts plugin={opened} onEnabled={enabled => admin.change(opened, { enabled })} />
     <PluginOptions plugin={opened} layout={layout} onSave={settings => admin.change(opened, { settings })} />
     {opened.enabled && Page && <PluginSlot id={opened.id} component={Page} />}
