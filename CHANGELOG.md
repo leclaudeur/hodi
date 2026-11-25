@@ -26,6 +26,8 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **A field's message has its icon centred** on its first line, whatever the text's size.
+- **Removing the AI key** no longer shows its calls for a moment under the card.
 - **A QR code that scans at once.** The authenticator app's QR code is larger, with fewer squares.
 - **A username with a forbidden character shows in red** at once, with what it may hold on one line.
 - **The link to make an AI key** sits in the sentence above the key's field, no longer pushed down by the check's
