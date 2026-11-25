@@ -7,6 +7,7 @@ import type { YouthSources } from '../news/youth-sources.ts'
 import { isServerAdminOf, isParentOf, kindOf, profileIdOf } from './profile-routes.ts'
 import { MAX_PENDING_REQUESTS, idList } from './youth-routes.ts'
 import { CONFIG } from '../fixed-config.ts'
+import { idParam } from './id-param.ts'
 
 const MAX_LINK_LENGTH = CONFIG.sources.linkMaxLength
 
@@ -125,7 +126,7 @@ export const sourceRequestRoutes = ({
   // a section of "Vidéos" (Divers unless said).
   router.post('/:id', (request, response) => {
     if (!parentsOnly(response)) return
-    const entry = youth.request(Number(request.params.id))
+    const entry = youth.request(idParam(request.params.id))
     const profile = entry ? profiles.get(entry.profileId) : null
     const accept: unknown = request.body?.accept
     const topicIds = request.body?.topicIds === undefined ? undefined : idList(request.body.topicIds)

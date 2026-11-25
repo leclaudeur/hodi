@@ -22,6 +22,7 @@ import { mountAccountCodeRoute } from './server-account-code-route.ts'
 import { mountGeneralRoutes } from './server-general-routes.ts'
 import { accountRemover, mountDeletionRoutes } from './server-deletion-routes.ts'
 import { type SourceBlockOptions, mountSourceBlockRoutes } from './source-block-routes.ts'
+import { idParam } from './id-param.ts'
 
 // The server's own space (#/server), for its admin only: requireServerAdmin stands in front of these.
 
@@ -149,7 +150,7 @@ const mountPeopleRoutes = (router: express.Router, { people, codeRequests }: Ser
   // An account's profile photo, for its row, as a household's: the server's admin sees the accounts' names already.
   // ?v=<photoVersion>: a new photo has a new address, so each one is kept by the browser for good.
   router.get('/accounts/photos/:profileId', (request, response) => {
-    const id = Number(request.params.profileId)
+    const id = idParam(request.params.profileId)
     const photo = Number.isInteger(id) ? people.accountPhoto(id) : null
     if (!photo) {
       response.status(404).json({ error: 'not_found' })

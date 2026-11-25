@@ -46,6 +46,21 @@ describe('the red buttons', () => {
     }
   })
 
+  it('asks for it whatever way a profile’s number is written', async () => {
+    const made = await household.call('/account/children', household.admin, 'POST', {
+      kind: 'teen',
+      name: 'Léa',
+      color: 'world',
+      password: 'le mot de passe de Léa'
+    })
+    const { profileId } = (await made.json()) as { profileId: number }
+    for (const id of [`${profileId}.0`, `0x${profileId.toString(16)}`, `${profileId}e0`, `+${profileId}`]) {
+      const refused = await household.call(`/profiles/${id}`, household.admin, 'DELETE', {})
+      assert.notEqual(refused.status, 204, id)
+    }
+    assert.ok(household.profiles.find(profileId))
+  })
+
   it('lets the route answer once the password is right, never a wrong one', async () => {
     const wrong = await household.call('/account/ai', household.admin, 'DELETE', { password: 'pas le bon' })
     assert.deepEqual([wrong.status, await wrong.json()], [403, { error: 'invalid_password' }])

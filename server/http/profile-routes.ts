@@ -32,6 +32,7 @@ export const PIN_GLOBAL_MAX_FAILURES = CONFIG.profilePin.failuresServerWide
 
 import { isParentOf, isServerAdminOf, kindOf, profileIdOf } from './request-locals.ts'
 import { CONFIG } from '../fixed-config.ts'
+import { idParam } from './id-param.ts'
 
 export { isParentOf, isServerAdminOf, kindOf, profileIdOf }
 
@@ -65,7 +66,7 @@ export const profileRoutes = (options: ProfileRoutesOptions) => {
 
 const profileHelpers = ({ profiles, accounts }: ProfileRoutesOptions) => {
   const idOf = (request: express.Request) => {
-    const id = Number(request.params.id)
+    const id = idParam(request.params.id)
     return Number.isInteger(id) && profiles.get(id) ? id : null
   }
 

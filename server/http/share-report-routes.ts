@@ -1,5 +1,6 @@
 import express from 'express'
 import { type ShareReportStore, isShareReportReason } from '../db/share-report-store.ts'
+import { idParam } from './id-param.ts'
 
 interface ShareReportOptions {
   reports: ShareReportStore
@@ -56,7 +57,7 @@ export const shareDecisionRoutes = ({ reports, onDecided, now }: ShareDecisionOp
     response.json({ reports: reports.all() })
   })
   router.post('/:id', (request, response) => {
-    const id = Number(request.params.id)
+    const id = idParam(request.params.id)
     if (request.body?.decision !== 'ignore') {
       response.status(400).json({ error: 'bad_request' })
       return

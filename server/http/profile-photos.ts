@@ -3,6 +3,7 @@ import { MAX_PHOTO_BYTES, PHOTO_TYPES, type PhotoType, type ProfileStore } from 
 import { pictureMaker } from '../news/picture-maker.ts'
 import { CONFIG } from '../fixed-config.ts'
 import { profileIdOf } from './request-locals.ts'
+import { idParam } from './id-param.ts'
 
 // The app makes a photo 256 pixels square; a header that declares far more is refused, since a few kilobytes could
 // unpack into gigabytes in every browser that shows it.
@@ -80,7 +81,7 @@ export const mountPhotoRoutes = (
   // accounts for their profiles, and for someone else's by those it shared with or is family of: ids follow each other,
   // so anyone else would go through every adult's photo.
   router.get('/:id/photo', (request, response) => {
-    const asked = Number(request.params.id)
+    const asked = idParam(request.params.id)
     const target = Number.isInteger(asked) ? profiles.find(asked) : null
     const me = profileIdOf(response)
     const known = target !== null && me !== null && (knows?.(me, target.id) ?? false)

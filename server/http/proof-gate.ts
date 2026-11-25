@@ -23,7 +23,7 @@ const PROVED_ROUTES: ProvedRoute[] = [
   // A source added by hand, for everyone who reads it.
   { method: 'delete', path: '/sources/:id' },
   // A young one's profile, and a device of theirs.
-  { method: 'delete', path: '/profiles/:id', when: request => /^\d+$/.test(String(request.params.id)) },
+  { method: 'delete', path: '/profiles/:id', when: request => String(request.params.id).toLowerCase() !== 'current' },
   { method: 'delete', path: '/profiles/:id/account-devices/:device' },
   // Mon compte: a device signed out, the AI key removed.
   { method: 'delete', path: '/account/devices/:id' },

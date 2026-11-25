@@ -3,6 +3,7 @@ import { type ProfileStore, isYoung } from '../db/profile-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
 import type { UserDeviceStore } from '../db/user-device-store.ts'
 import { isParentOfYoung } from './parent-check.ts'
+import { idParam } from './id-param.ts'
 
 interface ProfileDeviceRoutesOptions {
   profiles: ProfileStore
@@ -18,7 +19,7 @@ export const profileDeviceRoutes = ({ profiles, accounts, accountDevices }: Prof
 
   // The young profile the request is about, when the profile asking is one of its parents.
   const youngOf = (request: express.Request, response: express.Response) => {
-    const id = Number(request.params.id)
+    const id = idParam(request.params.id)
     const target = Number.isInteger(id) ? profiles.get(id) : null
     if (!target || !isYoung(target)) {
       response.status(404).json({ error: 'not_found' })
@@ -46,7 +47,7 @@ export const profileDeviceRoutes = ({ profiles, accounts, accountDevices }: Prof
     const target = youngOf(request, response)
     if (!target) return
     const account = accounts?.ofProfile(target.id)
-    if (!account || !accountDevices?.delete(account.id, Number(request.params.device))) {
+    if (!account || !accountDevices?.delete(account.id, idParam(request.params.device))) {
       response.status(404).json({ error: 'not_found' })
       return
     }
