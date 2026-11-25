@@ -144,6 +144,9 @@ backups:
   check_every: 1h
   # A restored copy also forgets what was deleted up to this long before it was made.
   forget_margin: 5m
+  # A copy leaves through a link made once the password is checked: the browser downloads it with its own progress.
+  # The link works once, within this time.
+  download_link: 1m
 
 # ======================================================================================================================
 # 2. Content

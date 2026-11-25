@@ -15,6 +15,11 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
   built with a newer SDK than Hodi's own is refused too, and asks for a newer Hodi. The plugin SDK goes to
   1.0.0-beta.7, whose build writes its version into each plugin.
 
+### Fixed
+
+- Server › Backups › Download: the browser downloads the copy itself, with its own progress, instead of a button that
+  spun with no sign of progress until the whole copy was in the page.
+
 ## [1.0.0-beta.14] - 2026-11-24
 
 No households any more: a server and its accounts, each with its own settings, sources, AI key and stats. Reports and

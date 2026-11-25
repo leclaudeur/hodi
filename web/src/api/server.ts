@@ -137,12 +137,13 @@ export const downloadBackup = async (name: string, proof: AdminProof) => {
     const body = (await response.json().catch(() => null)) as { error?: string } | null
     throw new RequestError(response.status, body?.error ?? null, null)
   }
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(await response.blob())
-  // A copy with the plugins' data comes as a zip: the server names the file.
-  link.download = /filename="([^"]+)"/.exec(response.headers.get('Content-Disposition') ?? '')?.[1] ?? name
-  link.click()
-  setTimeout(() => URL.revokeObjectURL(link.href), 1000)
+  // The password made a link that works once: the browser downloads the copy itself, with its own progress, and the
+  // server names the file (a zip when the plugins' data comes with it).
+  const { link } = (await response.json()) as { link: string }
+  const anchor = document.createElement('a')
+  anchor.href = link
+  anchor.download = ''
+  anchor.click()
 }
 
 // Serveur › E-mail: the mail server Hodi sends through. Its password never comes back, only whether there is one.
