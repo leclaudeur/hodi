@@ -10,6 +10,15 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Changed
 
+- **The password before every red button.** Emptying Historique, clearing the stats, resetting the settings, deleting a
+  source, a young one's profile or one of their devices, signing a device out, removing the AI key, and in Server
+  removing the e-mail settings, emptying the articles' texts, taking a source off the catalogue or refusing one: each
+  asks for the account's password first, and the app's code when two-step verification is on. The server refuses them
+  without it.
+- **Pick the language on the setup's last screen.** Beside the time zone, it starts on the one chosen in the header,
+  and the admin's own interface keeps it, whatever the browser's language.
+- **Edit and Remove under a profile photo.** Add a photo when there is none, Edit and Remove side by side once there
+  is one, at the same place: the dialog no longer jumps.
 - **Plugins too old or too new for this Hodi.** A plugin built with an SDK older than 1.0.0-beta.7, or without the SDK's
   version in its `plugin.json`, is listed switched off in Server › Plugins with « Update », and refused at install. One
   built with a newer SDK than Hodi's own is refused too, and asks for a newer Hodi. The plugin SDK goes to
@@ -17,6 +26,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **A QR code that scans at once.** The authenticator app's QR code is larger, with fewer squares.
+- **A username with a forbidden character shows in red** at once, with what it may hold on one line.
+- **The link to make an AI key** sits in the sentence above the key's field, no longer pushed down by the check's
+  message.
+- **Setup texts.** The start screen's text fits on two lines in French, and the setup code notice no longer ends the
+  `docker compose logs app` command with a period that came along when copied.
 - **One notice for a plugin too old to run.** In Server › Plugins, its red notice now downloads the new version from
   the registry when there is one, instead of a second blue notice beside it doing that while the red one asked for a
   file.
