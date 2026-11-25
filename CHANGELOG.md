@@ -17,6 +17,9 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ### Fixed
 
+- **One notice for a plugin too old to run.** In Server › Plugins, its red notice now downloads the new version from
+  the registry when there is one, instead of a second blue notice beside it doing that while the red one asked for a
+  file.
 - **Downloading a backup.** In Server › Backups, the browser downloads the copy itself, with its own progress,
   instead of a button that spun with no sign of progress until the whole copy was in the page.
 

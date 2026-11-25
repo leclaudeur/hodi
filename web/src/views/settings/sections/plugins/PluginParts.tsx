@@ -27,7 +27,16 @@ export const stateOf = (plugin: PluginInfo, t: TFunction) => {
 }
 
 // What is wrong with it, first: off because too old (with the way out), broken, or not checked by anyone.
-export const PluginNotice = ({ plugin, onUpdate }: { plugin: PluginInfo; onUpdate: () => void }) => {
+// busy: its new version is downloading from Hodi's registry.
+export const PluginNotice = ({
+  plugin,
+  busy = false,
+  onUpdate
+}: {
+  plugin: PluginInfo
+  busy?: boolean
+  onUpdate: () => void
+}) => {
   const { t } = useTranslation()
   if (plugin.error === OUTDATED_API)
     return (
@@ -35,7 +44,11 @@ export const PluginNotice = ({ plugin, onUpdate }: { plugin: PluginInfo; onUpdat
         tone="error"
         icon={AlertCircle}
         title={t('plugins.outdatedTitle', { name: pluginName(plugin) })}
-        action={{ label: t('plugins.installUpdate'), icon: Download, onClick: onUpdate }}
+        action={{
+          label: t(busy ? 'plugins.catalog.downloading' : 'plugins.installUpdate'),
+          icon: Download,
+          onClick: onUpdate
+        }}
       >
         {t('plugins.outdated')}
       </Notice>
