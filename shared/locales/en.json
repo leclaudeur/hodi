@@ -193,7 +193,7 @@
       "title": "News for the whole home",
       "lead": "Your favourite news sites, <b>sorted by topic</b>, read <b>with no ads or tracking</b>. Everyone has their own account, and you share what’s worth reading.",
       "codeNoticeTitle": "The code is in the server’s log",
-      "codeNoticeText": "Take the last <i>Setup code</i> line of <code>docker compose logs app</code>.",
+      "codeNoticeText": "Take the last <i>Setup code</i> line of <code>docker compose logs app</code>",
       "code": "Setup code",
       "button": "Install Hodi",
       "length": "A few minutes · all in the browser"
