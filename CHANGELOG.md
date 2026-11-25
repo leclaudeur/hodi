@@ -8,6 +8,12 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+## [1.0.0-beta.14] - 2026-11-24
+
+No households any more: a server and its accounts, each with its own settings, sources, AI key and stats. Reports and
+blocks for the server's admin, usernames, teens' and children's accounts for their parents, and sources as cards.
+Plugins need `@hodi-app/plugin-sdk` 1.0.0-beta.6 for what is new here.
+
 ### Added
 
 - **Report a source.** A flag on every source card, in My sources and the catalogue, tells the server's admin why a
@@ -661,7 +667,8 @@ a ready-made image for servers without a shell. The plugin API is frozen until 1
 - Hodi refuses a change sent by another website (`Sec-Fetch-Site`), including one on a sibling subdomain.
 - Wrong passwords from an IPv6 connection count for its whole /64.
 
-[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.13...HEAD
+[unreleased]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.14...HEAD
+[1.0.0-beta.14]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.13...v1.0.0-beta.14
 [1.0.0-beta.13]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.12...v1.0.0-beta.13
 [1.0.0-beta.12]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.11...v1.0.0-beta.12
 [1.0.0-beta.11]: https://github.com/leclaudeur/hodi/compare/v1.0.0-beta.10...v1.0.0-beta.11

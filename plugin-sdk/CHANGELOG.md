@@ -10,6 +10,11 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 ## [Unreleased]
 
+## [1.0.0-beta.6] - 2026-11-24
+
+Hodi has no households any more: a plugin works on accounts, and every call runs for the person who reads. Needs Hodi
+1.0.0-beta.14 or later.
+
 ### Added
 
 - **`ctx.accounts.list`, `suspend`, `resume` and `remove`.** A plugin with `permissions.accounts` lists the accounts it
@@ -23,11 +28,6 @@ and never touch `version`; a small release pull request raises `version` and mov
 
 - **`ctx.accounts.create({ name })`.** The person's first name, as _Mon compte_ shows it: a sign-up form no longer
   needs a household to keep it.
-
-### Deprecated
-
-- **`ctx.households`.** Households are leaving Hodi: one account is one person's space. Use `ctx.accounts` instead;
-  `who.householdId` goes in a later beta.
 
 ### Changed
 
@@ -368,6 +368,7 @@ was never published: its changes are in this one.
 - `hodi-plugin build`, the types of the server part and of `hodi:sdk`, and signing with `--key`.
 
 [unreleased]: https://www.npmjs.com/package/@hodi-app/plugin-sdk?activeTab=versions
+[1.0.0-beta.6]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.6
 [1.0.0-beta.5]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.5
 [1.0.0-beta.4]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.4
 [1.0.0-beta.3]: https://www.npmjs.com/package/@hodi-app/plugin-sdk/v/1.0.0-beta.3
