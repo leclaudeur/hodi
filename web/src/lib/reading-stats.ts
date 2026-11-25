@@ -1,5 +1,6 @@
 import { refreshGameSoon } from './game.ts'
-import { changeUserState, getUserState } from './user-state.ts'
+import type { AdminProof } from '../api/plugins.ts'
+import { changeUserState, changeWithProof, getUserState } from './user-state.ts'
 import { CONFIG } from './config.ts'
 
 // What was read and when, for the stats page. Kept on the server and shared by every device.
@@ -82,7 +83,7 @@ export const isRead = (entry: ReadingEntry) => entry.done !== false
 
 export const isVideoReading = (entry: ReadingEntry) => entry.kind === 'video' || entry.kind === 'podcast'
 
-export const clearReadings = () =>
-  changeUserState(state => ({ ...state, readings: [] }), { method: 'DELETE', path: '/readings' })
+export const clearReadings = (proof: AdminProof) =>
+  changeWithProof(state => ({ ...state, readings: [] }), { method: 'DELETE', path: '/readings' }, proof)
 
 export const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate())

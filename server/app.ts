@@ -12,6 +12,7 @@ import { jsonBodies, sameSiteOnly } from './http/request-guards.ts'
 import { asReaders } from './db/reader-scope.ts'
 import { requestLimit } from './http/request-limit.ts'
 import { securityHeaders } from './http/security-headers.ts'
+import { proofGate } from './http/proof-gate.ts'
 import { sessionGuards } from './http/session-guard.ts'
 import { errorHandler, serveWebApp } from './http/web-app.ts'
 
@@ -43,6 +44,7 @@ const apiRouter = (config: Config, appOptions: AppOptions) => {
   })
   api.use(requireSession)
   api.use(chooseProfile)
+  api.use(proofGate(wiring.checkProof, options.accounts))
 
   mountAccountSpace(api, wiring)
   mountServerSpace(api, wiring)

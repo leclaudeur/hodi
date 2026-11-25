@@ -2,7 +2,7 @@ import { EyeOff, X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { REPORT_REASONS, type SourceReportView, decideReport } from '../../../api.ts'
-import { askToConfirm } from '../../../lib/confirm.ts'
+import { askToConfirm, ownProof, type Proof } from '../../../lib/confirm.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
 import Button from '../../../ui/Button.tsx'
 import { rich } from '../../../ui/rich.tsx'
@@ -18,26 +18,31 @@ import { inboxChanged } from './use-inbox.ts'
 const SourceReportPanel = ({ report }: { report: SourceReportView }) => {
   const { t } = useTranslation()
   const [busy, setBusy] = useState<'ignore' | 'unlist' | null>(null)
-  const decide = (decision: 'ignore' | 'unlist') => {
+  // Retirer comes with the password, and a refusal stays in the dialog that asked for it.
+  const decide = async (decision: 'ignore' | 'unlist', proof?: Proof) => {
     setBusy(decision)
-    decideReport(report.id, decision)
-      .then(() => {
-        showSaved(
-          decision === 'ignore'
-            ? t('server.inbox.report.ignored')
-            : t('server.inbox.report.unlisted', { name: report.name })
-        )
-        inboxChanged()
-      })
-      .catch(() => showError(t('server.inbox.report.failed')))
-      .finally(() => setBusy(null))
+    try {
+      await decideReport(report.id, decision, proof)
+      showSaved(
+        decision === 'ignore'
+          ? t('server.inbox.report.ignored')
+          : t('server.inbox.report.unlisted', { name: report.name })
+      )
+      inboxChanged()
+    } catch (failure) {
+      if (proof) throw failure
+      showError(t('server.inbox.report.failed'))
+    } finally {
+      setBusy(null)
+    }
   }
   const unlist = () =>
     askToConfirm({
       title: t('server.inbox.report.unlistTitle', { name: report.name }),
       message: rich(t('server.inbox.report.unlistText', { name: report.name })),
       label: t('server.inbox.report.unlist'),
-      onConfirm: () => decide('unlist')
+      proof: ownProof(),
+      onConfirm: proof => decide('unlist', proof)
     })
   const reasons = REPORT_REASONS.filter(reason => report.reasons[reason] > 0)
   return (
@@ -55,7 +60,7 @@ const SourceReportPanel = ({ report }: { report: SourceReportView }) => {
         ))}
       </div>
       <div className={styles.decision}>
-        <Button icon={X} busy={busy === 'ignore'} disabled={busy !== null} onClick={() => decide('ignore')}>
+        <Button icon={X} busy={busy === 'ignore'} disabled={busy !== null} onClick={() => void decide('ignore')}>
           {t('server.inbox.report.ignore')}
         </Button>
         <Button look="danger" icon={EyeOff} busy={busy === 'unlist'} disabled={busy !== null} onClick={unlist}>

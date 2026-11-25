@@ -2,6 +2,7 @@ import type { PluginTranslations } from '../plugins/plugin-texts.ts'
 import { UnauthorizedError, getJson, sendJson } from './http.ts'
 import type { ArticleResult, FeedItem, SourceStatus } from './news.ts'
 import { CONFIG } from '../lib/config.ts'
+import type { AdminProof } from './plugins.ts'
 
 // The reader's calls to the API in the last 24 hours, on its own key. No cap: the key is theirs.
 export interface AiUsage {
@@ -40,12 +41,7 @@ export interface StorageUsage {
 export const getStorage = () => getJson<StorageUsage>('/storage')
 
 // Empties the stored reader texts (saved articles keep theirs) and gives the new figures.
-export const clearStoredTexts = async () => {
-  const response = await fetch('/api/storage/texts', { method: 'DELETE' })
-  if (response.status === 401) throw new UnauthorizedError('Session expired')
-  if (!response.ok) throw new Error(`DELETE /storage/texts failed with status ${response.status}`)
-  return (await response.json()) as StorageUsage
-}
+export const clearStoredTexts = (proof: AdminProof) => sendJson<StorageUsage>('DELETE', '/storage/texts', proof)
 
 export const getSources = async () => (await getJson<{ sources: SourceStatus[] }>('/sources')).sources
 

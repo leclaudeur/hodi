@@ -567,7 +567,7 @@ describe('server overview route', () => {
   })
 
   it('fills the mail server one row at a time, and sends nothing until the server and the sender are there', async () => {
-    await call('/server/mail', adminCookie, 'DELETE')
+    await call('/server/mail', adminCookie, 'DELETE', { password: 'une phrase de passe assez longue' })
     assert.equal((await call('/server/mail', memberCookie, 'PATCH', { host: 'smtp.example.com' })).status, 403)
     assert.equal((await call('/server/mail', adminCookie, 'PATCH', {})).status, 400)
     assert.equal((await call('/server/mail', adminCookie, 'PATCH', { host: 'http://x/y' })).status, 400)
@@ -598,7 +598,7 @@ describe('server overview route', () => {
     const sender = await call('/server/mail', adminCookie, 'PATCH', { sender: 'Hodi@Example.com' })
     assert.equal(((await sender.json()) as { mail: { ready: boolean } }).mail.ready, true)
     assert.equal(new MailSettingsStore(db).get()?.host, 'smtp.example.com')
-    await call('/server/mail', adminCookie, 'DELETE')
+    await call('/server/mail', adminCookie, 'DELETE', { password: 'une phrase de passe assez longue' })
   })
 
   it('keeps the mail server, never gives its password back, and sends a test to the admin', async () => {
@@ -653,7 +653,12 @@ describe('server overview route', () => {
     assert.equal(store.get()?.password, null)
 
     assert.equal((await call('/server/mail', memberCookie, 'DELETE')).status, 403)
-    assert.deepEqual(await (await call('/server/mail', adminCookie, 'DELETE')).json(), { mail: null })
+    assert.deepEqual(
+      await (
+        await call('/server/mail', adminCookie, 'DELETE', { password: 'une phrase de passe assez longue' })
+      ).json(),
+      { mail: null }
+    )
     assert.equal(store.get(), null)
   })
 })

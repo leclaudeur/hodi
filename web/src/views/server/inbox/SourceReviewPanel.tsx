@@ -2,7 +2,7 @@ import { Check, ExternalLink, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type SourceReview, type TopicInfo, decideSource, getTopics } from '../../../api.ts'
-import { askToConfirm } from '../../../lib/confirm.ts'
+import { askToConfirm, ownProof, type Proof } from '../../../lib/confirm.ts'
 import { showError, showSaved } from '../../../lib/toast.ts'
 import Button from '../../../ui/Button.tsx'
 import { rich } from '../../../ui/rich.tsx'
@@ -59,19 +59,24 @@ const SourceReviewPanel = ({ review }: { review: SourceReview }) => {
   const [busy, setBusy] = useState<'accept' | 'refuse' | null>(null)
   const withTopics = review.kind === 'article' && topics.length > 0
 
-  const decide = (decision: 'accept' | 'refuse') => {
+  // Refuser comes with the password, and a refusal stays in the dialog that asked for it.
+  const decide = async (decision: 'accept' | 'refuse', proof?: Proof) => {
     setBusy(decision)
-    decideSource(review.id, { decision, teen, child, ...(withTopics && decision === 'accept' ? { topicIds } : {}) })
-      .then(() => {
-        showSaved(
-          t(decision === 'accept' ? 'server.inbox.source.accepted' : 'server.inbox.source.refused', {
-            name: review.name
-          })
-        )
-        inboxChanged()
-      })
-      .catch(() => showError(t('server.inbox.source.failed')))
-      .finally(() => setBusy(null))
+    const chosen = { decision, teen, child, ...(withTopics && decision === 'accept' ? { topicIds } : {}) }
+    try {
+      await decideSource(review.id, chosen, proof)
+      showSaved(
+        t(decision === 'accept' ? 'server.inbox.source.accepted' : 'server.inbox.source.refused', {
+          name: review.name
+        })
+      )
+      inboxChanged()
+    } catch (failure) {
+      if (proof) throw failure
+      showError(t('server.inbox.source.failed'))
+    } finally {
+      setBusy(null)
+    }
   }
 
   const refuse = () =>
@@ -79,7 +84,8 @@ const SourceReviewPanel = ({ review }: { review: SourceReview }) => {
       title: t('server.inbox.source.refuseTitle', { name: review.name }),
       message: rich(t('server.inbox.source.refuseText', { name: review.name })),
       label: t('server.inbox.source.refuse'),
-      onConfirm: () => decide('refuse')
+      proof: ownProof(),
+      onConfirm: proof => decide('refuse', proof)
     })
 
   return (
@@ -115,7 +121,7 @@ const SourceReviewPanel = ({ review }: { review: SourceReview }) => {
           icon={Check}
           busy={busy === 'accept'}
           disabled={busy !== null || (withTopics && topicIds.length === 0)}
-          onClick={() => decide('accept')}
+          onClick={() => void decide('accept')}
         >
           {t('server.inbox.source.accept')}
         </Button>

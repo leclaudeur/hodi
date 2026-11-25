@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type SourceStatus, TOPICS_CHANGED, UnauthorizedError, getSources, removeSource } from '../../../api.ts'
-import { askToConfirm } from '../../../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../../../lib/confirm.ts'
 import { setMySources } from '../../../lib/preferences.ts'
-import { showError, showSaved } from '../../../lib/toast.ts'
+import { showSaved } from '../../../lib/toast.ts'
 import RichText from '../../../ui/RichText.tsx'
 import type { AddSourceRequest } from './AddSourceDialog.tsx'
 
@@ -31,19 +31,17 @@ export const useSourceActions = ({ replace, adding, setAdding, onUnauthorized }:
       title: t('confirm.deleteSource.title'),
       message: <RichText i18nKey="confirm.deleteSource.message" values={{ name }} />,
       label: t('confirm.deleteSource.button'),
-      onConfirm: () => {
+      proof: ownProof(),
+      onConfirm: async proof => {
         setRemoving(id)
-        void removeSource(id)
-          .then(async () => {
-            window.dispatchEvent(new Event(TOPICS_CHANGED))
-            await reload()
-            showSaved(t('sources.deleted', { name }))
-          })
-          .catch((error: unknown) => {
-            if (error instanceof UnauthorizedError) onUnauthorized()
-            else showError(t('sources.deleteFailed'))
-          })
-          .finally(() => setRemoving(null))
+        try {
+          await removeSource(id, proof)
+        } finally {
+          setRemoving(null)
+        }
+        window.dispatchEvent(new Event(TOPICS_CHANGED))
+        await reload()
+        showSaved(t('sources.deleted', { name }))
       }
     })
 

@@ -145,7 +145,16 @@ describe('a row that goes never lets its cookie open the next one given its id',
       devices: { id: number; current: boolean }[]
     }
     const lostId = Math.max(...view.devices.map(device => device.id))
-    assert.equal((await install.call(`/account/devices/${lostId}`, { method: 'DELETE', cookie: kept })).status, 200)
+    assert.equal(
+      (
+        await install.call(`/account/devices/${lostId}`, {
+          method: 'DELETE',
+          cookie: kept,
+          body: { password: PASSWORD }
+        })
+      ).status,
+      200
+    )
     assert.equal(await sessionStatus(lost), 401)
 
     // A minute later, a new sign-in: SQLite gives its device the id of the one signed out.

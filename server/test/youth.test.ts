@@ -566,7 +566,7 @@ listen:
     assert.ok(users(1).sources.mine().includes(blogId))
     assert.ok(!users(zoe.id).sources.mine().includes(blogId))
     assert.ok(users(zoe.id).revision > zoeRevision)
-    assert.equal((await call('DELETE', `/sources/${blogId}`, 1)).status, 204)
+    assert.equal((await call('DELETE', `/sources/${blogId}`, 1, { password: PASSWORD })).status, 204)
     // Deleted, it is in nobody's list any more.
     assert.ok(!users(1).sources.mine().includes(blogId))
 
@@ -578,7 +578,7 @@ listen:
     assert.equal((await call('PUT', '/me/sources/lemonde', 1)).status, 200)
     assert.ok(users(paul.id).hiddenSources().includes('lemonde'))
     assert.ok(!users(1).hiddenSources().includes('lemonde'))
-    assert.equal((await call('DELETE', `/profiles/${paul.id}`, 1)).status, 204)
+    assert.equal((await call('DELETE', `/profiles/${paul.id}`, 1, { password: PASSWORD })).status, 204)
 
     const readersOf = async () =>
       ((await (await call('GET', '/sources', 1)).json()) as { sources: { id: string; readers?: number }[] }).sources
@@ -780,7 +780,7 @@ listen:
   it('drops a teen’s requests with its profile', async () => {
     const zoe = profiles.list().find(profile => profile.name === 'Zoé')!
     assert.ok(youth.requests({ profileId: zoe.id }).length > 0)
-    assert.equal((await call('DELETE', `/profiles/${zoe.id}`, 1)).status, 204)
+    assert.equal((await call('DELETE', `/profiles/${zoe.id}`, 1, { password: PASSWORD })).status, 204)
     const left = (await (await call('GET', '/source-requests', 1)).json()) as { requests: { profileId: number }[] }
     assert.deepEqual(
       left.requests.filter(request => request.profileId === zoe.id),

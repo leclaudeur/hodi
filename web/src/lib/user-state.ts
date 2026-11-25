@@ -6,6 +6,8 @@
 import { t } from './i18n.ts'
 import { showError, showInfo, showSaved } from './toast.ts'
 import { CONFIG } from './config.ts'
+import { sendJson } from '../api/http.ts'
+import type { AdminProof } from '../api/plugins.ts'
 
 export interface StoredSavedEntry {
   item: { id: string } & Record<string, unknown>
@@ -218,6 +220,20 @@ export const changeUserState = (update: (current: UserState) => UserState, chang
   }
   writeJson(OUTBOX_KEY, outbox)
   void flush()
+}
+
+// What cannot be undone (Vider, Effacer, Réinitialiser): the server first, with the password, and this device only once
+// it agreed. A refusal throws, and the dialog that asked shows it.
+export const changeWithProof = async (
+  update: (current: UserState) => UserState,
+  change: { method: 'PUT' | 'DELETE'; path: string; body?: Record<string, unknown> },
+  proof: AdminProof
+) => {
+  await flush()
+  await sendJson(change.method, `/me${change.path}`, { ...change.body, ...proof })
+  commit(update(state))
+  lastRefresh = 0
+  void refreshUserState()
 }
 
 // Fetches the server's state, unless this device already has its revision.

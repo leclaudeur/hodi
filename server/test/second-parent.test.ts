@@ -85,7 +85,9 @@ describe('Mon compte › Mes enfants › Parents', () => {
     // Neither deletes her behind the other's back.
     const path2 = `/account/children/${zoe.accountId}`
     assert.equal((await household.call(path2, household.admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 409)
-    const profile = await household.call(`/profiles/${zoe.profileId}`, household.sam, 'DELETE', {})
+    const profile = await household.call(`/profiles/${zoe.profileId}`, household.sam, 'DELETE', {
+      password: SAM_PASSWORD
+    })
     assert.equal(profile.status, 409)
   })
 

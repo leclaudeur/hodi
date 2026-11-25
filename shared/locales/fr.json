@@ -417,7 +417,6 @@
     "editTitle": "Modifier {{name}}",
     "profileSaved": "Profil enregistré",
     "deleted": "{{name}} supprimé",
-    "deleteFailed": "La suppression a échoué. Réessaie dans un instant.",
     "backToProfiles": "Retour aux profils",
     "perDayCount": "{{count}} / jour",
     "channels": "Chaînes YouTube",
@@ -425,7 +424,6 @@
     "removeDevice": "Retirer",
     "removeDeviceLabel": "Retirer {{device}}",
     "deviceRemoved": "{{device}} retiré",
-    "deviceRemoveFailed": "Impossible de retirer cet appareil.",
     "deleteTwoParents": "{{name}} a deux parents : l’un des deux doit d’abord ne plus être parent."
   },
   "requests": {
@@ -1285,7 +1283,6 @@
       "signOut": "Déconnecter",
       "signOutLabel": "Déconnecter {{device}}",
       "signedOut": "{{device}} déconnecté",
-      "signOutFailed": "L’appareil n’a pas pu être déconnecté. Réessaie dans un instant.",
       "yourData": "Données",
       "copy": "Télécharger une copie",
       "copyHint": "Le compte, le profil, les sources, enregistrés, lus, partages et statistiques, dans un fichier JSON",
@@ -1399,7 +1396,6 @@
       "mb": "{{value}} Mo",
       "clearedFreed": "Textes vidés ({{size}} libérés)",
       "cleared": "Textes vidés",
-      "clearFailed": "Impossible de vider les textes. Réessaie dans un instant.",
       "server": "Serveur",
       "database": "Base de données",
       "articles_one": "{{total}} article, dont {{texts}} avec son texte",
@@ -1545,7 +1541,6 @@
   },
   "sources": {
     "deleted": "{{name}} supprimée",
-    "deleteFailed": "La source n’a pas pu être supprimée. Réessaie dans un instant.",
     "hideLowTitle_one": "Masquer la source peu ouverte ?",
     "hideLowTitle_other": "Masquer les {{count}} sources peu ouvertes ?",
     "hideOneTitle": "Masquer {{name}} ?",
@@ -1604,7 +1599,6 @@
     "on": "IA activée",
     "removed": "IA retirée",
     "remove": "Retirer",
-    "removeFailed": "La clé n’a pas pu être retirée. Réessaie dans un instant.",
     "provider": "Fournisseur",
     "model": "Modèle {{model}}",
     "key": "Clé d’API",

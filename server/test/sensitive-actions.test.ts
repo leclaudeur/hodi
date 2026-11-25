@@ -136,8 +136,8 @@ describe('no household admin role', () => {
         before
       )
       // Sam manages no one else's profile: Léa, the admin's child, is not even on his device.
-      assert.equal((await call(`/profiles/${leaId}`, sam, 'DELETE')).status, 404)
-      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 204)
+      assert.equal((await call(`/profiles/${leaId}`, sam, 'DELETE', { password: SAM_PASSWORD })).status, 404)
+      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 204)
     } finally {
       close()
     }
@@ -158,7 +158,7 @@ describe('the admin’s password before what cannot be undone for another adult'
       const refused = await call(`/profiles/${samId}`, shared, 'DELETE', { password: ADMIN_PASSWORD })
       assert.deepEqual([refused.status, await refused.json()], [409, { error: 'account_profile' }])
       assert.notEqual(accounts.ofProfile(samId), null)
-      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE')).status, 204)
+      assert.equal((await call(`/profiles/${leaId}`, admin, 'DELETE', { password: ADMIN_PASSWORD })).status, 204)
     } finally {
       close()
     }

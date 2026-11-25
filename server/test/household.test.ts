@@ -579,11 +579,17 @@ describe('the account and its data', () => {
     assert.equal(view.email, EMAIL)
     assert.equal(view.devices.length, 2)
     const elsewhere = view.devices.find(device => !device.current)!
-    assert.equal((await post(`/account/devices/${elsewhere.id}`, {}, { cookie: antho }, 'DELETE')).status, 200)
+    assert.equal(
+      (await post(`/account/devices/${elsewhere.id}`, { password: PASSWORD }, { cookie: antho }, 'DELETE')).status,
+      200
+    )
     assert.equal(await sessionOf(other), 401)
     assert.equal(await sessionOf(antho), 200)
     const current = view.devices.find(device => device.current)!
-    assert.equal((await post(`/account/devices/${current.id}`, {}, { cookie: antho }, 'DELETE')).status, 404)
+    assert.equal(
+      (await post(`/account/devices/${current.id}`, { password: PASSWORD }, { cookie: antho }, 'DELETE')).status,
+      404
+    )
   })
 
   it('moves a session from before devices to one of its own', async () => {

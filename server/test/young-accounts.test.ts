@@ -157,7 +157,11 @@ describe('Mon compte › Mes enfants', () => {
       devices: { id: number; current: boolean }[]
     }
     const other = view.devices.find(device => !device.current)!
-    assert.equal((await household.call(`/account/devices/${other.id}`, own, 'DELETE')).status, 200)
+    assert.equal(
+      (await household.call(`/account/devices/${other.id}`, own, 'DELETE', { password: 'le mot de passe de Zoé' }))
+        .status,
+      200
+    )
     assert.equal((await household.call('/account', cookiesFrom(phone))).status, 401)
     assert.equal((await household.call('/account/children', own)).status, 403)
     // Léa, with no password yet, opens nowhere on her own.
@@ -178,12 +182,21 @@ describe('Mon compte › Mes enfants', () => {
     const signedIn = listed.devices.filter(device => device.kind === 'account')
     assert.ok(signedIn.length >= 1)
     const path = (id: number) => `/profiles/${zoe.profileId}/account-devices/${id}`
-    assert.equal((await household.call(path(signedIn[0]!.id), household.sam, 'DELETE')).status, 404)
+    assert.equal(
+      (await household.call(path(signedIn[0]!.id), household.sam, 'DELETE', { password: SAM_PASSWORD })).status,
+      404
+    )
     for (const device of signedIn)
-      assert.equal((await household.call(path(device.id), household.admin, 'DELETE')).status, 204)
+      assert.equal(
+        (await household.call(path(device.id), household.admin, 'DELETE', { password: ADMIN_PASSWORD })).status,
+        204
+      )
     assert.equal((await household.call('/account', tablet)).status, 401)
     // Not one of hers: nothing to remove.
-    assert.equal((await household.call(path(signedIn[0]!.id), household.admin, 'DELETE')).status, 404)
+    assert.equal(
+      (await household.call(path(signedIn[0]!.id), household.admin, 'DELETE', { password: ADMIN_PASSWORD })).status,
+      404
+    )
   })
 
   it('gives a new password and deletes, for its parents only, after their own password', async () => {
@@ -221,7 +234,9 @@ describe('Mon compte › Mes enfants', () => {
     assert.equal((await rename(household.sam)).status, 200)
     // Not one of the admin's children: not even on the admin's device.
     assert.equal((await rename(household.admin)).status, 404)
-    const deleted = await household.call(`/profiles/${noa.profileId}`, household.admin, 'DELETE')
+    const deleted = await household.call(`/profiles/${noa.profileId}`, household.admin, 'DELETE', {
+      password: ADMIN_PASSWORD
+    })
     assert.equal(deleted.status, 404)
     assert.ok(household.profiles.find(noa.profileId))
   })

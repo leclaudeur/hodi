@@ -2,7 +2,7 @@ import { Pencil, Play, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Profile } from '../../../api.ts'
-import { askToConfirm } from '../../../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../../../lib/confirm.ts'
 import { useCountdown, useLimits } from '../../../lib/limits.ts'
 import { resetPreferences } from '../../../lib/preferences.ts'
 import { editProfile, isYoung, useProfiles } from '../../../lib/profiles.ts'
@@ -70,8 +70,9 @@ const ResetRows = ({ young }: { young: boolean }) => {
                 title: t('confirm.resetSettings.title'),
                 message: <RichText i18nKey="confirm.resetSettings.message" />,
                 label: t('confirm.resetSettings.button'),
-                onConfirm: () => {
-                  resetPreferences()
+                proof: ownProof(),
+                onConfirm: async proof => {
+                  await resetPreferences(proof)
                   showDone(t('settings.me.resetSettingsDone'))
                 }
               })

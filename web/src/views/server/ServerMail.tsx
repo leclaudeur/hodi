@@ -2,7 +2,7 @@ import { Pencil, Send, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RequestError, type ServerMail as Mail, getServerMail, removeServerMail, sendTestMail } from '../../api.ts'
-import { askToConfirm } from '../../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../../lib/confirm.ts'
 import { showError, showSaved } from '../../lib/toast.ts'
 import StatusLine from '../../ui/StatusLine.tsx'
 import SectionPage from '../settings/SectionPage.tsx'
@@ -121,13 +121,12 @@ const ServerMail = ({ layout }: { layout: 'desktop' | 'phone' }) => {
       title: t('confirm.removeMail.title'),
       message: t('confirm.removeMail.message'),
       label: t('confirm.removeMail.button'),
-      onConfirm: () =>
-        void removeServerMail()
-          .then(() => {
-            setMail(null)
-            showSaved(t('server.mail.removed'))
-          })
-          .catch(() => showError(t('server.mail.saveFailed')))
+      proof: ownProof(),
+      onConfirm: async proof => {
+        await removeServerMail(proof)
+        setMail(null)
+        showSaved(t('server.mail.removed'))
+      }
     })
 
   return (

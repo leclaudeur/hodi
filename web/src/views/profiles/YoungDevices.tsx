@@ -2,10 +2,10 @@ import { LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type ProfileDevice, getProfileDevices, removeProfileDevice } from '../../api.ts'
-import { askToConfirm } from '../../lib/confirm.ts'
+import { askToConfirm, ownProof } from '../../lib/confirm.ts'
 import { deviceLabel } from '../../lib/device-label.ts'
 import { timeAgo } from '../../lib/format.ts'
-import { showError, showSaved } from '../../lib/toast.ts'
+import { showSaved } from '../../lib/toast.ts'
 import RichText from '../../ui/RichText.tsx'
 import SettingRow from '../settings/SettingRow.tsx'
 
@@ -36,13 +36,12 @@ const YoungDevices = ({ profile }: YoungDevicesProps) => {
       title: t('confirm.removeYoungDevice.title', { device: label }),
       message: <RichText i18nKey="confirm.removeYoungDevice.message" values={{ name: profile.name }} />,
       label: t('confirm.removeYoungDevice.button'),
-      onConfirm: () =>
-        void removeProfileDevice(profile.id, device)
-          .then(() => {
-            setDevices(current => current.filter(other => other !== device))
-            showSaved(t('young.deviceRemoved', { device: label }))
-          })
-          .catch(() => showError(t('young.deviceRemoveFailed')))
+      proof: ownProof(),
+      onConfirm: async proof => {
+        await removeProfileDevice(profile.id, device, proof)
+        setDevices(current => current.filter(other => other !== device))
+        showSaved(t('young.deviceRemoved', { device: label }))
+      }
     })
 
   return devices.map(device => {

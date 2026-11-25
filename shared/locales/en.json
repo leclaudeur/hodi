@@ -417,7 +417,6 @@
     "editTitle": "Edit {{name}}",
     "profileSaved": "Profile saved",
     "deleted": "{{name}} deleted",
-    "deleteFailed": "Deleting failed. Try again in a moment.",
     "backToProfiles": "Back to the profiles",
     "perDayCount": "{{count}} / day",
     "channels": "YouTube channels",
@@ -425,7 +424,6 @@
     "removeDevice": "Remove",
     "removeDeviceLabel": "Remove {{device}}",
     "deviceRemoved": "{{device}} removed",
-    "deviceRemoveFailed": "Couldn’t remove this device.",
     "deleteTwoParents": "{{name}} has two parents: one of you first has to stop being a parent."
   },
   "requests": {
@@ -1285,7 +1283,6 @@
       "signOut": "Sign out",
       "signOutLabel": "Sign out {{device}}",
       "signedOut": "{{device}} signed out",
-      "signOutFailed": "The device could not be signed out. Try again in a moment.",
       "yourData": "Data",
       "copy": "Download a copy",
       "copyHint": "Your account, profile, sources, saved, read, shares and statistics, in a JSON file",
@@ -1399,7 +1396,6 @@
       "mb": "{{value}} MB",
       "clearedFreed": "Texts cleared ({{size}} freed)",
       "cleared": "Cleared",
-      "clearFailed": "The texts could not be cleared. Try again in a moment.",
       "server": "Server",
       "database": "Database",
       "articles_one": "{{total}} article, {{texts}} with its text",
@@ -1545,7 +1541,6 @@
   },
   "sources": {
     "deleted": "{{name}} deleted",
-    "deleteFailed": "The source could not be deleted. Try again in a moment.",
     "hideLowTitle_one": "Hide the little-read source?",
     "hideLowTitle_other": "Hide the {{count}} little-read sources?",
     "hideOneTitle": "Hide {{name}}?",
@@ -1604,7 +1599,6 @@
     "on": "AI on",
     "removed": "AI removed",
     "remove": "Remove",
-    "removeFailed": "The key could not be removed. Try again in a moment.",
     "provider": "Provider",
     "model": "Model {{model}}",
     "key": "API key",

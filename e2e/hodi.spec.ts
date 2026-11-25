@@ -363,7 +363,11 @@ test('signs Zoé’s own tablet in with her username, which opens her profile on
   await expect(removes).not.toHaveCount(0)
   for (let left = await removes.count(); left > 0; left -= 1) {
     await removes.first().click()
-    await page.getByRole('dialog').getByRole('button', { name: 'Retirer' }).click()
+    // What cannot be undone asks for Alex's password and code first.
+    const proof = page.getByRole('dialog')
+    await proof.getByLabel('Mon mot de passe').fill(PASSWORD)
+    await proof.getByLabel('Code de l’app d’authentification').fill(await appCode())
+    await proof.getByRole('button', { name: 'Retirer' }).click()
     await expect(removes).toHaveCount(left - 1)
   }
   await tablet.reload()
@@ -577,7 +581,10 @@ test('lists the account’s devices in Mon compte and signs one out', async ({ b
     .getByRole('button', { name: /^Déconnecter / })
     .first()
     .click()
-  await page.getByRole('dialog').getByRole('button', { name: 'Déconnecter' }).click()
+  const proof = page.getByRole('dialog')
+  await proof.getByLabel('Mon mot de passe').fill(PASSWORD)
+  await proof.getByLabel('Code de l’app d’authentification').fill(await appCode())
+  await proof.getByRole('button', { name: 'Déconnecter' }).click()
   await expect(page.getByText(/déconnecté$/)).toBeVisible()
   await other.reload()
   await expect(other.getByRole('textbox', { name: 'E-mail' })).toBeVisible()

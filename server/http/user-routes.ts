@@ -201,7 +201,8 @@ const mountStateRoutes = (router: express.Router, { users, now, lock }: Resolved
     response.json(users(response).getState())
   })
 
-  router.put('/preferences', (request, response) => {
+  // « Réinitialiser » sends the defaults the same way, on a path of its own that asks for the password first.
+  router.put(['/preferences', '/preferences/reset'], (request, response) => {
     const preferences = parsePreferences(request.body?.preferences)
     if (!preferences) {
       response.status(400).json({ error: 'bad_request' })

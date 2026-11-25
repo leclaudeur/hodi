@@ -4,7 +4,8 @@ import type { HourCycle } from './format.ts'
 import { type Language, isLanguage } from './i18n.ts'
 import { isDismissed, isReadAndClosed } from './read-state.ts'
 import { currentTopicId } from './renamed-topics.ts'
-import { changeUserState, getUserState, subscribeUserState } from './user-state.ts'
+import type { AdminProof } from '../api/plugins.ts'
+import { changeUserState, changeWithProof, getUserState, subscribeUserState } from './user-state.ts'
 import { foldText, wordPattern } from '../../../shared/word-match.ts'
 
 // What to show and in which order, shared by every device (kept on the server, see user-state.ts).
@@ -166,8 +167,13 @@ export const setMySources = (ids: string[], mine: boolean, { quiet = false } = {
   )
 }
 
-// Quiet: its button says "Réglages réinitialisés" at once.
-export const resetPreferences = () => updatePreferences(DEFAULTS, { quiet: true })
+// After the password: its button then says "Réglages réinitialisés".
+export const resetPreferences = (proof: AdminProof) =>
+  changeWithProof(
+    state => ({ ...state, preferences: { ...current(), ...DEFAULTS } }),
+    { method: 'PUT', path: '/preferences/reset', body: { preferences: DEFAULTS } },
+    proof
+  )
 
 export const getPreferences = current
 

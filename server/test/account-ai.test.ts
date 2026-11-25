@@ -4,7 +4,7 @@ import type { Config } from '../config.ts'
 import { InstallStore } from '../db/install-store.ts'
 import { KEY_CHECKS_PER_MINUTE } from '../http/account-ai-routes.ts'
 import { accountAiTools } from '../start/account-ai.ts'
-import { startHousehold } from './helpers/household-env.ts'
+import { SAM_PASSWORD, startHousehold } from './helpers/household-env.ts'
 
 describe('an account’s own AI key', () => {
   let household: Awaited<ReturnType<typeof startHousehold>>
@@ -55,7 +55,7 @@ describe('an account’s own AI key', () => {
   })
 
   it('takes the key away', async () => {
-    const response = await household.call('/account/ai', household.sam, 'DELETE')
+    const response = await household.call('/account/ai', household.sam, 'DELETE', { password: SAM_PASSWORD })
     assert.equal(((await response.json()) as { ai: unknown }).ai, null)
     assert.equal(household.accountAi.get(household.samAccount.id), null)
   })
