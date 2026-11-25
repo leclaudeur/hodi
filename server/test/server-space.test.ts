@@ -472,13 +472,23 @@ describe('server overview route', () => {
     assert.equal((await download(copy!.name, 'pas le bon')).status, 403)
     assert.equal((await download('hodi-1999-01-01.db', 'une phrase de passe assez longue')).status, 404)
     assert.equal((await download('..%2Fhodi.db', 'une phrase de passe assez longue')).status, 404)
-    const file = await download(copy!.name, 'une phrase de passe assez longue')
+    const asked = await download(copy!.name, 'une phrase de passe assez longue')
+    assert.equal(asked.status, 201)
+    const { link } = (await asked.json()) as { link: string }
+    assert.match(link, /^\/api\/server\/backups\/download\/[\w-]{43}$/)
+    const address = link.replace(/^\/api/, '')
+    // Only for the account that gave its password, and once.
+    assert.equal((await call(address, memberCookie)).status, 403)
+    assert.equal((await call('/server/backups/download/not-a-link', adminCookie)).status, 404)
+    const file = await call(address, adminCookie)
     assert.equal(file.status, 200)
+    assert.equal(file.headers.get('content-length'), String(copy!.bytes))
     assert.match(file.headers.get('content-disposition') ?? '', /attachment/)
     // A SQLite file, whole.
     const bytes = Buffer.from(await file.arrayBuffer())
     assert.equal(bytes.subarray(0, 15).toString(), 'SQLite format 3')
     assert.equal(bytes.length, copy!.bytes)
+    assert.equal((await call(address, adminCookie)).status, 404)
 
     assert.equal((await call('/server/backups', adminCookie, 'PATCH', { kept: 31 })).status, 400)
     await new Promise(resolve => setTimeout(resolve, 1100))
@@ -528,9 +538,11 @@ describe('server overview route', () => {
     const pluginBytes = statSync(path.join(pluginDataDir, 'club', 'plugin.db')).size
     assert.equal(copy!.bytes, statSync(path.join(backupDir, copy!.name)).size + pluginBytes)
 
-    const file = await call(`/server/backups/${copy!.name}/download`, adminCookie, 'POST', {
+    const asked = await call(`/server/backups/${copy!.name}/download`, adminCookie, 'POST', {
       password: 'une phrase de passe assez longue'
     })
+    const { link } = (await asked.json()) as { link: string }
+    const file = await call(link.replace(/^\/api/, ''), adminCookie)
     assert.equal(file.status, 200)
     assert.equal(file.headers.get('content-type'), 'application/zip')
     assert.match(file.headers.get('content-disposition') ?? '', /filename="hodi-[\d-]+\.zip"/)

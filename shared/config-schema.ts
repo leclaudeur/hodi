@@ -48,7 +48,7 @@ export const CONFIG_SCHEMA = {
   mail: { hostMaxLength: 'count', userMaxLength: 'count', passwordMaxLength: 'count', timeout: 'duration' },
   requests: { perMinute: 'count' },
   database: { busyTimeout: 'duration' },
-  backups: { checkEvery: 'duration', forgetMargin: 'duration' },
+  backups: { checkEvery: 'duration', forgetMargin: 'duration', downloadLink: 'duration' },
   blocks: { sharedHosts: 'list' },
   feeds: {
     cacheFor: 'duration',

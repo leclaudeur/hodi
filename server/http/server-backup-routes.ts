@@ -1,7 +1,6 @@
-import { createReadStream, existsSync, rmSync, writeFileSync } from 'node:fs'
+import { rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import type express from 'express'
-import { Zip, ZipPassThrough } from 'fflate'
 import { verifyPassword } from '../auth/password.ts'
 import type { Database } from '../db/database.ts'
 import {
@@ -15,9 +14,10 @@ import {
   restoreTimeFile,
   stageRestore
 } from '../db/maintenance.ts'
-import { pluginCopyDir, readPluginManifest, stagePluginRestore } from '../db/plugin-backup.ts'
+import { pluginCopyDir, stagePluginRestore } from '../db/plugin-backup.ts'
 import { BACKUP_COPIES, type ServerSettingsStore, isValidCopies } from '../db/server-settings-store.ts'
 import type { UserAccountStore } from '../db/user-account-store.ts'
+import { downloadLinks, sendCopy } from './backup-download.ts'
 import { type CheckProof, accountAsking } from './proof.ts'
 
 // Serveur › Sauvegardes: the copies of the whole database, their download and « Restaurer ».
@@ -35,39 +35,6 @@ interface BackupOptions {
   accounts: UserAccountStore
   checkProof?: CheckProof
   now: () => number
-}
-
-// Files sent as one zip as they are read, stored without compression (databases): what was written leaves before more
-// is read. A failure once bytes have left ends the download, which the browser shows as failed.
-const sendFilesAsZip = async (response: express.Response, files: { path: string; file: string }[]) => {
-  let failed = false
-  const archive = new Zip((error, chunk, final) => {
-    if (error || failed) {
-      failed = true
-      response.destroy()
-      return
-    }
-    response.write(chunk)
-    if (final) response.end()
-  })
-  try {
-    for (const { path: name, file } of files) {
-      const entry = new ZipPassThrough(name)
-      archive.add(entry)
-      let last: Buffer | null = null
-      for await (const chunk of createReadStream(file)) {
-        if (last) entry.push(last)
-        last = chunk as Buffer
-        if (response.writableNeedDrain) await new Promise(resolve => response.once('drain', resolve))
-        if (response.destroyed) throw new Error('closed')
-      }
-      entry.push(last ?? new Uint8Array(0), true)
-    }
-    archive.end()
-  } catch {
-    failed = true
-    response.destroy()
-  }
 }
 
 // 403 two_factor_setup while the server admin's « Validation en deux étapes » is off; false when sent.
@@ -136,8 +103,14 @@ const backupProofOf = ({ accounts, checkProof }: BackupOptions, twoFactorReady: 
 
 type BackupProof = ReturnType<typeof backupProofOf>
 
-const mountDownloadRoute = (router: express.Router, { backups: { dir } }: BackupOptions, backupProof: BackupProof) => {
-  // A copy holds everyone's data: it leaves the server only with the password of the account asking for it.
+const mountDownloadRoute = (
+  router: express.Router,
+  { accounts, backups: { dir }, now }: BackupOptions,
+  backupProof: BackupProof
+) => {
+  const links = downloadLinks(now)
+  // A copy holds everyone's data: the password of the account asking makes a link, which the browser then follows to
+  // download the copy itself, showing its own progress instead of holding the whole file in the page.
   router.post('/backups/:name/download', async (request, response) => {
     const { name } = request.params
     if (!BACKUP_FILE.test(name) || !listBackups(dir).some(copy => copy.name === name)) {
@@ -145,31 +118,19 @@ const mountDownloadRoute = (router: express.Router, { backups: { dir } }: Backup
       return
     }
     if (!(await backupProof(request, response))) return
-    response.set('Cache-Control', 'no-store')
-    const file = path.join(dir, name)
-    const plugins = pluginCopyDir(file)
-    const manifest = existsSync(plugins) ? readPluginManifest(plugins) : null
-    const pluginFiles = (manifest?.plugins ?? []).flatMap(id =>
-      [`${id}.db`, `${id}.db-journal`]
-        .map(entry => ({ path: `plugins/${entry}`, file: path.join(plugins, entry) }))
-        .filter(entry => existsSync(entry.file))
-    )
-    // Without any plugin's data, the core's database alone, as before.
-    if (pluginFiles.length === 0) {
-      response.set('Content-Type', 'application/vnd.sqlite3')
-      response.set('Content-Disposition', `attachment; filename="${name}"`)
-      createReadStream(file).pipe(response)
+    const account = accountAsking(response, accounts)!
+    response.status(201).json({ link: `/api/server/backups/download/${links.make(name, account.id)}` })
+  })
+
+  // Once, soon after, and only for the account that gave its password.
+  router.get('/backups/download/:token', async (request, response) => {
+    const account = accountAsking(response, accounts)
+    const name = account ? links.take(request.params.token, account.id) : null
+    if (name == null || !listBackups(dir).some(copy => copy.name === name)) {
+      response.status(404).json({ error: 'not_found' })
       return
     }
-    // With the plugins' data: one zip, the core's database and each plugin's, as they are on the server.
-    const files = [
-      { path: name, file },
-      { path: 'plugins/copy.json', file: path.join(plugins, 'copy.json') },
-      ...pluginFiles
-    ]
-    response.set('Content-Type', 'application/zip')
-    response.set('Content-Disposition', `attachment; filename="${name.replace(/\.db$/, '.zip')}"`)
-    await sendFilesAsZip(response, files)
+    await sendCopy(response, dir, name)
   })
 }
 
