@@ -76,6 +76,7 @@ export const CONFIG_SCHEMA = {
     linkMaxLength: 'count',
     foundKeptFor: 'duration',
     aiSuggestions: 'count',
+    cataloguePicks: 'count',
     readerSample: 'count',
     nameMaxLength: 'count',
     descriptionMaxLength: 'count',

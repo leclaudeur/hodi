@@ -221,6 +221,8 @@ sources:
   found_kept_for: 10m
   # Sources the AI suggests for a topic.
   ai_suggestions: 4
+  # Catalogue sources offered for a topic in « Ajouter une source », before the way to all of them.
+  catalogue_picks: 3
   # Articles of a new source tried in the reader before it is added.
   reader_sample: 3
   name_max_length: 60

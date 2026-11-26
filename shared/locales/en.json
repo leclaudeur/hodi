@@ -1426,7 +1426,10 @@
       "byLink": "With a link",
       "forTopic": "For a topic",
       "pickTopic": "Pick a topic",
-      "changeTopic": "Change topic"
+      "changeTopic": "Change topic",
+      "inCatalogue": "In the catalogue",
+      "allMine": "All the catalogue’s sources for this topic are already in My sources.",
+      "seeCatalogue": "More in the catalogue"
     },
     "about": {
       "intro": "Hodi is free software, under the AGPL-3.0 licence: its code is open to all, and anyone can install it at home. Here, this install’s version and the credits of those who made it possible.",
@@ -1736,8 +1739,8 @@
     "timeZone": "It sets <b>when each day starts</b>: new feed, <i>Daily summary</i>, quiet hours and young readers’ screen time.",
     "country": "It places the <b>AI’s web searches</b>: <i>will it rain tomorrow?</i> looks near you.",
     "share": "The <b>original link</b>, to the publisher’s site, to send anywhere.",
-    "addSource": "Paste a <b>site’s link</b>, or pick a topic for the AI to suggest sites. The source joins <i>My sources</i>.",
-    "addSourceLink": "Paste the <b>link of a site</b>, an RSS feed or a YouTube channel. The source joins <i>My sources</i>.",
+    "addSource": "Paste a <b>site’s link</b>, or pick a topic: its catalogue sources, then those the AI finds. The source joins <i>My sources</i>.",
+    "addSourceTopic": "Paste a <b>site’s link</b>, or pick a topic to see its catalogue sources. The source joins <i>My sources</i>.",
     "replaceSource": "Find another source to replace <b>{{name}}</b>. It’s hidden once the new one is added.",
     "aiTurnOn": "Paste an <b>API key</b> from your provider. It’s checked without spending credits, then kept on this server.",
     "aiReplace": "The new key replaces the old one <b>for this account</b>. It’s checked without spending credits.",
@@ -2704,7 +2707,7 @@
     "moreTopics_other": "{{count}} more topics",
     "low": "Little read",
     "addTitle": "Add a source",
-    "addText": "From its link, or found with the AI.",
+    "addText": "By its link, or by topic.",
     "ask": "Ask",
     "askTitle": "Ask for a source",
     "askText": "The parents approve it before it arrives."

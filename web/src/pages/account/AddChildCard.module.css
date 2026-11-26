@@ -1,7 +1,25 @@
 /* The row still to fill: dashed, its round empty, as Mes sources' first card. */
 .card {
+  position: relative;
   border: 1px dashed var(--border);
   border-radius: 16px;
+  transition: border-color var(--duration) var(--ease);
+}
+
+/* Its button reaches over the whole row, so a click anywhere on it adds; the focus ring stays on the button. */
+.card button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.card:has(button:hover) {
+  border-color: var(--border-strong);
+}
+
+/* Pressed, a button shrinks, which would shrink its reach to itself: the click would then land beside it. */
+.card button:not(:disabled):active {
+  scale: none;
 }
 
 .avatar {
