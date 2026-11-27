@@ -8,6 +8,10 @@ release moves them under its number and date. The plugin SDK has its own: [plugi
 
 ## [Unreleased]
 
+### Added
+
+- **Source catalogue** Manga/Anime and Cyber & Cybersecurity themes with 13 French and English feeds.
+
 ### Changed
 
 - **Mon compte › Affichage.** The theme, the text's size and hiding what was read move from Réglages to Mon compte,
